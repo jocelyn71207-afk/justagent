@@ -199,7 +199,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res1',
-    fileName: '檔案名稱很長長長長長長長長長長長長.ppt',
+    fileName: '26W產品特色簡報.pptx',
     fileUrl: '',
     fileType: 'PPT',
     creatorType: 'USER',
@@ -210,7 +210,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res2',
-    fileName: '檔案名稱.pdf',
+    fileName: '25W產品銷售DM.pdf',
     fileUrl: '',
     fileType: 'PDF',
     creatorType: 'USER',
@@ -221,7 +221,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res3',
-    fileName: '檔案名稱.xlsx',
+    fileName: 'Teva202502庫存資料.xlsx',
     fileUrl: '',
     fileType: 'EXCEL',
     creatorType: 'USER',
@@ -232,7 +232,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res4',
-    fileName: '檔案名稱.pdf',
+    fileName: '25W產品特色搭配建議.pdf',
     fileUrl: '',
     fileType: 'PDF',
     creatorType: 'USER',
@@ -243,7 +243,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res5',
-    fileName: '檔案名稱.html',
+    fileName: '競品戶外涼鞋分析報告.html',
     fileUrl: '',
     fileType: 'HTML',
     creatorType: 'USER',
@@ -254,7 +254,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res6',
-    fileName: '檔案名稱.png',
+    fileName: 'DM設計用背景圖（清晨）.png',
     fileUrl: 'https://picsum.photos/410/240.webp?random=10',
     fileType: 'IMAGE',
     creatorType: 'AI',
@@ -265,7 +265,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res7',
-    fileName: '檔案名稱.png',
+    fileName: 'DM設計用背景圖（山景）.png',
     fileUrl: 'https://picsum.photos/410/240.webp?random=11',
     fileType: 'IMAGE',
     creatorType: 'AI',
@@ -276,7 +276,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res8',
-    fileName: '檔案名稱.md',
+    fileName: '特殊材質名稱轉換清單.md',
     fileUrl: '',
     fileType: 'MD',
     creatorType: 'USER',
@@ -287,7 +287,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res9',
-    fileName: '檔案名稱.txt',
+    fileName: '特殊材質名稱轉換清單(新）.txt',
     fileUrl: '',
     fileType: 'TXT',
     creatorType: 'USER',
@@ -298,7 +298,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res10',
-    fileName: '檔案名稱.docx',
+    fileName: '26W電商上架資訊包含SEO.pdf',
     fileUrl: '',
     fileType: 'WORD',
     creatorType: 'USER',
@@ -309,7 +309,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res11',
-    fileName: '檔案名稱.chart',
+    fileName: '官網新用戶消費傾向分析.chart',
     fileUrl: '',
     fileType: 'CHART',
     creatorType: 'AI',
@@ -320,7 +320,7 @@ const resourceList = ref([
   {
     showMoreOption: false,
     id: 'res12',
-    fileName: '未被定義的檔案類型.xyz',
+    fileName: 'unknown.xyz',
     fileUrl: '',
     fileType: 'OTHER',
     creatorType: 'AI',

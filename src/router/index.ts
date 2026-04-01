@@ -63,6 +63,11 @@ export const routes: RouteRecordRaw[] = [
         name: 'KnowledgeBase',
         component: () => import('@/views/KnowledgeBase.vue'),
       },
+      {
+        path: '/view/Explore',
+        name: 'Explore',
+        component: () => import('@/views/Explore.vue'),
+      },
     ]
   },
 ]

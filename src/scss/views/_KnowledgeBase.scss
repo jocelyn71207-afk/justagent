@@ -154,12 +154,30 @@
     }
 
     .more-btn {
+      display: inline-flex;
+      font-size: 20px;
       color: var(--color-text-alpha50);
-      cursor: pointer;
+      padding: 4px;
       border-radius: 4px;
-      padding: 2px;
+      cursor: pointer;
       &:hover {
-        background-color: var(--color-background-2-alpha20);
+        background-color: var(--color-background-2-alpha30);
+        color: var(--color-text);
+      }
+    }
+
+    td:last-child {
+      position: relative;
+    }
+
+    .next-option-box {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      visibility: hidden;
+      &.show {
+        visibility: visible;
       }
     }
 

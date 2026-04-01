@@ -131,7 +131,7 @@ const projectList = ref([
   {
     showMoreOption: false, // TODO... 前端UI用, 之後後端吐的資料中, 前端要自己加上這個欄位來控制UI
     id: 'aaa',
-    name: 'testProject1',
+    name: '26W官網選品建議',
     agents: [ 'testAgent1' ],
     imgSrc: 'https://picsum.photos/410/240.webp?random=62',
     owner: {
@@ -151,7 +151,7 @@ const projectList = ref([
   {
     showMoreOption: false, // TODO... 前端UI用, 之後後端吐的資料中, 前端要自己加上這個欄位來控制UI
     id: 'bbb',
-    name: 'testProject2',
+    name: '26W特色鞋款行銷方案',
     agents: [ 'testAgent2', 'testAgent3' ],
     imgSrc: 'https://picsum.photos/410/240.webp?random=63',
     owner: {
@@ -171,7 +171,7 @@ const projectList = ref([
   {
     showMoreOption: false, // TODO... 前端UI用, 之後後端吐的資料中, 前端要自己加上這個欄位來控制UI
     id: 'ccc',
-    name: 'testProject3',
+    name: '門市－長青鞋款銷售數據分析',
     agents: [ 'testAgent1', 'testAgent2', 'testAgent3' ],
     imgSrc: 'https://picsum.photos/410/240.webp?random=64',
     owner: {

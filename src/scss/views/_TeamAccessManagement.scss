@@ -1,15 +1,56 @@
+@use "sass:color";
+
 .TeamAccessManagement {
+
+  // 設計切換按鈕（演示用）
+  .design-toggle-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 24px;
+    border: none;
+    background-color: $color_main_1;
+    color: $white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba($color_main_1, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    i {
+      font-size: 18px;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba($color_main_1, 0.5);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // ==================== 舊版樣式 ====================
+
   .views-page-header {
     .search-box {
       position: relative;
       display: flex;
       align-items: center;
+
       > i {
         position: absolute;
         left: 8px;
         color: var(--color-text-alpha50);
         pointer-events: none;
       }
+
       .custom-input {
         padding-left: 34px;
       }
@@ -21,6 +62,7 @@
       th {
         white-space: nowrap;
       }
+
       .col-action {
         text-align: right;
         white-space: nowrap;
@@ -38,9 +80,206 @@
       cursor: pointer;
       border-radius: 4px;
       padding: 2px;
+
       &:hover {
         background-color: var(--color-background-2-alpha20);
       }
+    }
+  }
+
+  .sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    user-select: none;
+
+    i {
+      font-size: 16px;
+    }
+  }
+
+  // ==================== 新版樣式 ====================
+
+  .page-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .team-name-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    background-color: var(--color-background-1);
+    border: 1px solid var(--color-border-1-alpha50);
+    color: var(--color-text-alpha70);
+  }
+
+  // 角色統計概覽列
+  .stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background-color: var(--color-background-1);
+    border: 1px solid var(--color-border-1-alpha50);
+    border-radius: 12px;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border-1-alpha50);
+  }
+
+  .stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--color-text-alpha70);
+  }
+
+  .stat-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  // 新版表格
+  .new-table-box {
+    border-radius: 14px;
+    border: 1px solid var(--color-border-1-alpha50);
+    overflow: hidden;
+
+    .custom-table {
+      border-radius: 0;
+
+      th {
+        white-space: nowrap;
+        font-size: 13px;
+      }
+
+      td {
+        font-size: 14px;
+      }
+
+      .col-action {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      tbody tr {
+        transition: background-color 0.1s ease;
+
+        .action-btn {
+          opacity: 0;
+          transition: opacity 0.1s ease;
+        }
+
+        &:hover {
+          .action-btn {
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .action-btn {
+      color: var(--color-text-alpha50);
+      cursor: pointer;
+      border-radius: 6px;
+      padding: 3px;
+      font-size: 18px;
+
+      &:hover {
+        background-color: var(--color-background-2-alpha20);
+        color: var(--color-text);
+      }
+
+      & + .action-btn {
+        margin-left: 4px;
+      }
+    }
+  }
+
+  .member-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  // 角色色彩對應
+  .role-owner {
+    background-color: $color_main_4;
+    color: $color_main_1;
+
+    &.stat-dot { background-color: $color_main_1; }
+  }
+
+  .role-admin {
+    background-color: color.adjust($color_blue_1, $lightness: 42%);
+    color: color.adjust($color_blue_1, $lightness: -10%);
+
+    &.stat-dot { background-color: $color_blue_1; }
+  }
+
+  .role-manager {
+    background-color: $color_yellow_1;
+    color: color.adjust($color_yellow_2, $lightness: -25%);
+
+    &.stat-dot { background-color: $color_yellow_2; }
+  }
+
+  .role-staff {
+    background-color: color.adjust($color_green_1, $lightness: 45%);
+    color: color.adjust($color_green_1, $lightness: -15%);
+
+    &.stat-dot { background-color: $color_green_1; }
+  }
+
+  .role-viewer {
+    background-color: var(--color-background-2-alpha10);
+    color: var(--color-text-alpha50);
+
+    &.stat-dot {
+      background-color: var(--color-text-alpha50);
     }
   }
 }

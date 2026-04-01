@@ -47,10 +47,10 @@
         </RouterLink>
       </div>
       <div class="one-btn-item">
-        <a href="javascript:;">
+        <RouterLink to="/view/Explore">
           <i class="material-symbols-outlined">lightbulb</i>
           探索
-        </a>
+        </RouterLink>
       </div>
 
     </div>

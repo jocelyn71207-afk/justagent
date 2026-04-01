@@ -252,7 +252,7 @@ function getProjectList() {
   const temp = [{
     showMoreOption: false, // TODO... 前端UI用, 之後後端吐的資料中, 前端要自己加上這個欄位來控制UI
     id: 'aaa',
-    name: 'testProject1',
+    name: '26W官網選品建議',
     agents: ['testAgent1'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=62',
     owner: {
@@ -269,7 +269,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'bbb',
-    name: 'testProject2',
+    name: '26W特色鞋款行銷方案',
     agents: ['testAgent2', 'testAgent3'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=63',
     owner: {
@@ -286,7 +286,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'ccc',
-    name: 'testProject3',
+    name: '門市－長青鞋款銷售數據分析',
     agents: ['testAgent1', 'testAgent2', 'testAgent3'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=64',
     owner: {
@@ -303,7 +303,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'ddd',
-    name: 'testProject4',
+    name: '電商－長青鞋款銷售數據分析',
     agents: ['testAgent1'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=65',
     owner: {
@@ -320,7 +320,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'eee',
-    name: 'testProject5',
+    name: '經常消費用戶圖譜',
     agents: ['testAgent2'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=66',
     owner: {
@@ -337,7 +337,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'fff',
-    name: 'testProject6',
+    name: '新用戶消費傾向分析＋潛在消費傾向',
     agents: ['testAgent3'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=67',
     owner: {
