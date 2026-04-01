@@ -259,10 +259,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: {
-      id: 'testTeam1',
-      name: '團隊一'
-    },
+    team: { id: 'testTeam1', name: 'Teva電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -279,10 +276,7 @@ function getProjectList() {
       userId: 'user2',
       uaerName: '滷卡酥'
     },
-    team: {
-      id: 'testTeam2',
-      name: '團隊二'
-    },
+    team: { id: 'testTeam2', name: 'Teva實體門市' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -299,10 +293,7 @@ function getProjectList() {
       userId: 'user3',
       uaerName: '小烏龜'
     },
-    team: {
-      id: 'testTeam2',
-      name: '團隊二'
-    },
+    team: { id: 'testTeam2', name: 'Teva實體門市' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -319,10 +310,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: {
-      id: 'testTeam1',
-      name: '團隊一'
-    },
+    team: { id: 'testTeam1', name: 'Teva電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -339,10 +327,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: {
-      id: 'testTeam1',
-      name: '團隊一'
-    },
+    team: { id: 'testTeam1', name: 'Teva電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -359,10 +344,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: {
-      id: 'testTeam1',
-      name: '團隊一'
-    },
+    team: { id: 'testTeam1', name: 'Teva電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'

@@ -58,6 +58,11 @@ export const routes: RouteRecordRaw[] = [
         name: 'ProjectTrashCans',
         component: () => import('@/views/ProjectTrashCans.vue'),
       },
+      {
+        path: '/view/KnowledgeBase',
+        name: 'KnowledgeBase',
+        component: () => import('@/views/KnowledgeBase.vue'),
+      },
     ]
   },
 ]

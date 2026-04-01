@@ -36,12 +36,12 @@ export const useRootStore = defineStore('rootStore', () => {
   const testGroups = ref([
     {
     id: 'testTeam1',
-      name: '團隊一',
+      name: 'Teva電子商務',
       isOpen: false,
     },
     {
       id: 'testTeam2',
-      name: '團隊二',
+      name: 'Teva實體門市',
       isOpen: false,
     }
   ]) as any;

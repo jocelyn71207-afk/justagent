@@ -95,6 +95,14 @@
             </RouterLink>
           </div>
           <div class="one-btn-item">
+            <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: item.id, teamName: item.name } }" custom v-slot="{ href, navigate }">
+              <a :href="href" @click="navigate" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == item.id }">
+                <i class="material-symbols-outlined">menu_book</i>
+                知識庫管理
+              </a>
+            </RouterLink>
+          </div>
+          <div class="one-btn-item">
             <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: item.id, teamName: item.name } }" custom v-slot="{ href, navigate }">
               <a :href="href" @click="navigate" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == item.id }">
                 <i class="material-symbols-outlined">lock_person</i>
