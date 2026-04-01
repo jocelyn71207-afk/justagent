@@ -4,7 +4,7 @@
 
       <div class="views-page-header">
         <h3>
-          共享資源庫
+          共用檔案管理
           <div class="secondary-box">{{ teamName }}</div>
         </h3>
         <div class="header-right-box">
@@ -68,8 +68,9 @@
               <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = !item.showMoreOption">more_horiz</i>
               <div :class="['next-option-box', { show: item.showMoreOption }]">
                 <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
-                <div class="option-item" >下載檔案</div>
-                <div class="option-item" @click="deleteResource(item)">刪除</div>
+                <div class="option-item">下載檔案</div>
+                <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
+                <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
               </div>
             </div>
           </div>
@@ -82,9 +83,10 @@
             <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
           </div>
 
-          <!-- 卡片 footer: 上傳者 + 時間 -->
+          <!-- 卡片 footer: 狀態 + 時間 -->
           <div class="card-footer-box">
-            {{ item.ownerName }}上傳 · {{ formatDate(item.lastModify) }}
+            <span :class="['status-badge', `status-badge--${item.status}`]">{{ statusLabel[item.status] }}</span>
+            <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
           </div>
 
         </div>
@@ -95,9 +97,11 @@
         <table class="custom-table">
           <thead>
             <tr>
-              <th>資源名稱</th>
-              <th >上傳者</th>
-              <th >上傳時間</th>
+              <th>檔案名稱</th>
+              <th width="90">檔案格式</th>
+              <th width="130">處理方式</th>
+              <th width="110">狀態</th>
+              <th>最後更新時間</th>
               <th width="60"></th>
             </tr>
           </thead>
@@ -117,7 +121,18 @@
                   v-model="nowModifyItem.fileName"
                   @blur="saveModifyFileName()" />
               </td>
-              <td>{{ item.ownerName }}</td>
+              <td class="fc-grey-1">{{ item.fileType }}</td>
+              <td>
+                <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
+                  <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
+                  {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
+                </span>
+              </td>
+              <td>
+                <span :class="['status-badge', `status-badge--${item.status}`]">
+                  {{ statusLabel[item.status] }}
+                </span>
+              </td>
               <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
               <td>
                 <div class="d-flex">
@@ -126,8 +141,9 @@
                 <!-- 更多選項小介面 -->
                 <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
                   <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
-                  <div class="option-item" >下載檔案</div>
-                  <div class="option-item" @click="deleteResource(item)">刪除</div>
+                  <div class="option-item">下載檔案</div>
+                  <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
+                  <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
                 </div>
               </td>
             </tr>
@@ -183,151 +199,40 @@ watch(() => route.query, (newQuery) => {
   teamName.value = newQuery.teamName;
 });
 
-// 過濾條件: 檔案建立者是 User 還是 AI Agent
+// 過濾條件: 全部 / 資料入庫型 / 原檔保存型
 const filterValue = ref('ALL');
 const filterTabs = [
-  { label: '全部', value: 'ALL' },
-  { label: 'User', value: 'USER' },
-  { label: 'AI Agent', value: 'AI' },
+  { label: '全部檔案', value: 'ALL' },
+  { label: '資料入庫型', value: 'AI_PARSED' },
+  { label: '原檔保存型', value: 'RAW' },
 ];
+
+// 狀態標籤對照
+const statusLabel: Record<string, string> = {
+  uploading: '上傳中',
+  parsing:   '解析中',
+  stored:    '已入庫',
+  saved:     '已儲存',
+  failed:    '失敗',
+};
 
 // 過濾條件
 const filterTypeValue = ref('') as Ref<string | number>;
 
 // 資源列表  TODO... 這裡的資料結構只是測試用，之後要改成後端吐的格式
 const resourceList = ref([
-  {
-    showMoreOption: false,
-    id: 'res1',
-    fileName: '26W產品特色簡報.pptx',
-    fileUrl: '',
-    fileType: 'PPT',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res2',
-    fileName: '25W產品銷售DM.pdf',
-    fileUrl: '',
-    fileType: 'PDF',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res3',
-    fileName: 'Teva202502庫存資料.xlsx',
-    fileUrl: '',
-    fileType: 'EXCEL',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res4',
-    fileName: '25W產品特色搭配建議.pdf',
-    fileUrl: '',
-    fileType: 'PDF',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res5',
-    fileName: '競品戶外涼鞋分析報告.html',
-    fileUrl: '',
-    fileType: 'HTML',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res6',
-    fileName: 'DM設計用背景圖（清晨）.png',
-    fileUrl: 'https://picsum.photos/410/240.webp?random=10',
-    fileType: 'IMAGE',
-    creatorType: 'AI',
-    ownerId: 'AiAgent1',
-    ownerName: 'Ai Agent',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res7',
-    fileName: 'DM設計用背景圖（山景）.png',
-    fileUrl: 'https://picsum.photos/410/240.webp?random=11',
-    fileType: 'IMAGE',
-    creatorType: 'AI',
-    ownerId: 'AiAgent1',
-    ownerName: 'Ai Agent',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res8',
-    fileName: '特殊材質名稱轉換清單.md',
-    fileUrl: '',
-    fileType: 'MD',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res9',
-    fileName: '特殊材質名稱轉換清單(新）.txt',
-    fileUrl: '',
-    fileType: 'TXT',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res10',
-    fileName: '26W電商上架資訊包含SEO.pdf',
-    fileUrl: '',
-    fileType: 'WORD',
-    creatorType: 'USER',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res11',
-    fileName: '官網新用戶消費傾向分析.chart',
-    fileUrl: '',
-    fileType: 'CHART',
-    creatorType: 'AI',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'res12',
-    fileName: 'unknown.xyz',
-    fileUrl: '',
-    fileType: 'OTHER',
-    creatorType: 'AI',
-    ownerId: 'user1',
-    ownerName: 'Lucas',
-    lastModify: '2026-02-06 14:15:00',
-  },
+  { showMoreOption: false, id: 'res1',  fileName: '26W產品特色簡報.pptx',           fileUrl: '',                                        fileType: 'PPT',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res2',  fileName: '25W產品銷售DM.pdf',               fileUrl: '',                                        fileType: 'PDF',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res3',  fileName: 'Teva202502庫存資料.xlsx',         fileUrl: '',                                        fileType: 'EXCEL', processType: 'AI_PARSED', status: 'stored',    creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res4',  fileName: '25W產品特色搭配建議.pdf',         fileUrl: '',                                        fileType: 'PDF',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res5',  fileName: '競品戶外涼鞋分析報告.html',       fileUrl: '',                                        fileType: 'HTML',  processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res6',  fileName: 'DM設計用背景圖（清晨）.png',      fileUrl: 'https://picsum.photos/410/240.webp?random=10', fileType: 'IMAGE', processType: 'RAW',  status: 'saved',     creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res7',  fileName: 'DM設計用背景圖（山景）.png',      fileUrl: 'https://picsum.photos/410/240.webp?random=11', fileType: 'IMAGE', processType: 'RAW',  status: 'saved', creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res8',  fileName: '特殊材質名稱轉換清單.md',         fileUrl: '',                                        fileType: 'MD',    processType: 'AI_PARSED', status: 'parsing',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res9',  fileName: '特殊材質名稱轉換清單(新）.txt',   fileUrl: '',                                        fileType: 'TXT',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res10', fileName: '26W電商上架資訊包含SEO.docx',     fileUrl: '',                                        fileType: 'WORD',  processType: 'RAW',       status: 'saved',    creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res11', fileName: '官網新用戶消費傾向分析.chart',    fileUrl: '',                                        fileType: 'CHART', processType: 'RAW',       status: 'saved',     creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+  { showMoreOption: false, id: 'res12', fileName: 'unknown.xyz',                    fileUrl: '',                                        fileType: 'OTHER', processType: 'RAW',       status: 'saved',     creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
 ]);
 
 // 頁碼相關
@@ -338,7 +243,7 @@ const numberOfRowsPerPage = ref(10);
 const filteredList = computed(() => {
   let list = resourceList.value;
   if (filterValue.value !== 'ALL') {
-    list = list.filter((item: any) => item.creatorType === filterValue.value);
+    list = list.filter((item: any) => item.processType === filterValue.value);
   }
   if (filterTypeValue.value) {
     list = list.filter((item: any) => item.fileType === filterTypeValue.value);
@@ -422,6 +327,13 @@ function saveModifyFileName() {
   console.log('TODO...儲存檔案名稱', nowModifyItem.value.fileName);
   nowModifyItem.value = null;
   // 重新撈取列表資料...
+}
+
+// 建立為知識內容
+function createKnowledge(item: any) {
+  item.showMoreOption = false;
+  // TODO... 導向知識庫管理並帶入來源檔案資訊
+  console.log('TODO... 建立為知識內容', item);
 }
 
 // 刪除資源

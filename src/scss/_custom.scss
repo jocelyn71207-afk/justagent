@@ -230,3 +230,61 @@
     transform: rotate(360deg);
   }
 }
+
+// ── 檔案處理方式 badge（共用於 AppBatchUpload、ResourceLibrary）──
+.process-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-weight: 500;
+
+  i {
+    font-size: 14px;
+  }
+
+  &.badge--ai {
+    background: rgba(138, 63, 252, 0.10);
+    color: #7c3aed;
+  }
+
+  &.badge--raw {
+    background: rgba(30, 136, 229, 0.10);
+    color: #1565c0;
+  }
+}
+
+// ── 檔案狀態 badge ──
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-weight: 500;
+
+  &--uploading {
+    background: rgba(30, 136, 229, 0.10);
+    color: #1565c0;
+  }
+  &--parsing {
+    background: rgba(251, 192, 0, 0.15);
+    color: #b07d00;
+  }
+  &--stored {
+    background: rgba(2, 195, 0, 0.10);
+    color: #02a100;
+  }
+  &--saved {
+    background: rgba(0, 150, 136, 0.10);
+    color: #00695c;
+  }
+  &--failed {
+    background: rgba(229, 57, 53, 0.10);
+    color: #c62828;
+  }
+}

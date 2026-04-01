@@ -4,8 +4,10 @@
     isThinking: props.source.isThinking,
     feedback: props.source.finishResponse
   }]">
+    <!-- AI 頭像 (非使用者、非 thinking 狀態) -->
+    <div class="ai-avatar" v-if="!props.source.forUser && !props.source.isThinking">AI</div>
+
     <div class="content-box">
-      <!-- AiViewerRecord {{ props.index }}: -->
       <div v-html="displayMsg" v-if="!props.source.isThinking"></div>
       <!-- 檔案項目   TODO... 邏輯還未確定-->
       <oneFileItem v-if="props.source.id === 'id_97'" />

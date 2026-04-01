@@ -7,7 +7,7 @@
     <!-- 對話標題大區域 -->
     <div class="AiAgentHeaderArea">
       <div class="chat-header-box">
-        <div class="project-name" v-tooltip.bottom="'2026 年度銷售數據挖掘計畫畫畫畫畫畫畫畫畫畫畫畫畫畫畫畫畫'"
+        <div class="project-name" v-tooltip.bottom="currentConversationTitle"
           ref="projectNameDropDown"
           @mouseleave="debugCount = 0;"
           @click="() => {
@@ -21,7 +21,7 @@
               debugCount = 0;
             }
           }">
-          2026 年度銷售數據挖掘計畫畫畫畫畫畫畫畫畫畫畫畫畫畫畫畫畫
+          {{ currentConversationTitle }}
           <i class="material-symbols-outlined fs-17">keyboard_arrow_down</i>
         </div>
         <i class="material-symbols-outlined ctrl-btn" v-tooltip="'搜尋發話'"
@@ -59,6 +59,7 @@
       :footer-class="'AiAgentChatArea-footer-box'"
       @totop="scrollCall('DESC')"
       @tobottom="scrollCall('ASC')"
+      @click="handleChatAreaClick($event)"
     >
       <template #footer>
         <!-- <i class="material-symbols-outlined AiAgentChatAreaToscrollBtn"
@@ -183,6 +184,9 @@
 
     </div>
 
+    <!-- AI 內容免責聲明 -->
+    <div class="ai-disclaimer">由 AI 產生的內容，有時可能不完全準確，請再人工查證</div>
+
     <!-- 評論列表 comment list -->
     <commentListArea :setMainStagePosition="props.setMainStagePosition" />
 
@@ -196,7 +200,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
@@ -219,7 +223,13 @@ const { nowChoiceAiViewerId, copyAiViewerBlock, isStopCopyPasteAiViewerBlock, is
 const { fullAiViewerBlockId, isAspectRatioMode } = storeToRefs(aiviewerStore);
 const { aiViewerBlocks } = storeToRefs(aiviewerStore);
 const { sendUserInput } = aiviewerStore;
-const { isOpenConversationListModal } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
+const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
+
+const conversationTitles: Record<string, string> = {
+  conv1: '2026 年度銷售數據挖掘計畫',
+  conv2: "競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋",
+};
+const currentConversationTitle = computed(() => conversationTitles[currentConversationId.value] ?? '對話');
 
 const { isTouchDevice } = storeToRefs(aiviewerStore);
 
@@ -461,7 +471,7 @@ const tempDebugMsg = computed(() => {
     </p>
   `;
 });
-const testMsgs = ref([]) as Ref<any[]>;
+const conv1Msgs = ref([]) as Ref<any[]>;
 for (let i = 1; i <= 100; i++) {
   const temp: any = { id: 'id_' + i, msg: 'aaaaaa' + i };
   // 造假這是用戶發話
@@ -490,8 +500,223 @@ for (let i = 1; i <= 100; i++) {
     temp.isThinking = true;
     temp.msg = 'AI 正在思考中...';
   }
-  testMsgs.value.push(temp);
+  conv1Msgs.value.push(temp);
 }
+
+// -------- Conversation 2 流程 --------
+const DEMO_IMG = 'https://d12ro2iv4p7r0b.cloudfront.net/media/catalog/product/u/g/ug1183390sndc-1.jpg';
+const DEMO_DESC = '淺粉色系絨室內拖鞋，動物臉設計，具有柔潤立體造型和寬闊防滑底，前頭設計，毛茸茸的感覺適合屋家穿著。';
+
+let conv2IdCounter = 2;
+const conv2Mode = ref('');
+
+const CONV2_MODE_CARD_MSG = `你好！請選擇想要的分析模式：
+<div class="ai-mode-card">
+  <div class="ai-mode-item" data-action="select-mode" data-value="init">
+    <div class="ai-mode-icon">🔍</div>
+    <div class="ai-mode-info">
+      <div class="ai-mode-title">初步分析</div>
+      <div class="ai-mode-desc">快速掌握市場上的直接與功能競品</div>
+    </div>
+    <i class="material-symbols-outlined ai-mode-arrow">chevron_right</i>
+  </div>
+  <div class="ai-mode-item" data-action="select-mode" data-value="deep">
+    <div class="ai-mode-icon">🧠</div>
+    <div class="ai-mode-info">
+      <div class="ai-mode-title">深度分析</div>
+      <div class="ai-mode-desc">DeepAgent 深度搜尋並產出完整報告</div>
+    </div>
+    <i class="material-symbols-outlined ai-mode-arrow">chevron_right</i>
+  </div>
+  <div class="ai-mode-item" data-action="select-mode" data-value="direct">
+    <div class="ai-mode-icon">⚡</div>
+    <div class="ai-mode-info">
+      <div class="ai-mode-title">直接生成報告</div>
+      <div class="ai-mode-desc">提供競品網址，直接輸出分析報告</div>
+    </div>
+    <i class="material-symbols-outlined ai-mode-arrow">chevron_right</i>
+  </div>
+</div>`;
+
+const conv2Msgs = ref<any[]>([{ id: 'c2_1', msg: CONV2_MODE_CARD_MSG }]);
+
+function c2Push(msg: any) {
+  conv2Msgs.value.push({ id: `c2_${conv2IdCounter++}`, ...msg });
+}
+function c2Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+function handleChatAreaClick(e: MouseEvent) {
+  if (currentConversationId.value !== 'conv2') return;
+  const target = e.target as HTMLElement;
+  const el = target.closest('[data-action]') as HTMLElement | null;
+  if (!el) return;
+  e.stopPropagation();
+  const action = el.dataset.action!;
+  const value = el.dataset.value ?? '';
+  conv2Dispatch(action, value);
+}
+
+function conv2Dispatch(action: string, value: string) {
+  switch (action) {
+    case 'select-mode':    conv2SelectMode(value); break;
+    case 'start-analysis': conv2StartAnalysis(); break;
+    case 'confirm-product': conv2ConfirmProduct(); break;
+    case 'submit-urls':    conv2SubmitUrls(); break;
+    case 'confirm-comps':  conv2ConfirmComps(); break;
+  }
+}
+
+function conv2SelectMode(mode: string) {
+  if (conv2Msgs.value.length > 1) return;
+  conv2Mode.value = mode;
+  // lock mode card visually
+  conv2Msgs.value[0] = {
+    ...conv2Msgs.value[0],
+    msg: CONV2_MODE_CARD_MSG.replace('class="ai-mode-card"', 'class="ai-mode-card ai-mode-card--locked"'),
+  };
+  const labels: Record<string, string> = { init: '初步分析', deep: '深度分析', direct: '直接生成報告' };
+  c2Push({ forUser: true, msg: labels[mode] });
+
+  if (mode === 'direct') {
+    setTimeout(() => {
+      c2Push({ msg: '請提供競品的商品頁面網址（最多 5 個），我將直接爬取資料並生成完整分析報告。' });
+      c2Push({ msg: `<div class="conv2-url-card">
+  <div class="conv2-url-header">示範網址（可直接送出）</div>
+  <div class="conv2-url-item"><span class="conv2-url-num">1</span><span class="conv2-url-text">shopee.tw — 日陞威 系泰迪絨拖</span></div>
+  <div class="conv2-url-item"><span class="conv2-url-num">2</span><span class="conv2-url-text">paidal.com.tw — 萌系嬰兒棉拖鞋</span></div>
+  <div class="conv2-url-item"><span class="conv2-url-num">3</span><span class="conv2-url-text">zara.com/tw — CAPYFUN 室內拖鞋</span></div>
+  <div class="conv2-url-actions"><button class="conv2-action-btn" data-action="submit-urls">開始分析 →</button></div>
+</div>` });
+      c2Scroll();
+    }, 400);
+    return;
+  }
+
+  setTimeout(() => {
+    c2Push({ msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請分享一下你想分析的商品資訊。` });
+    c2Push({ msg: `<div class="conv2-upload-card">
+  <img class="conv2-upload-img" src="${DEMO_IMG}" />
+  <div class="conv2-upload-info">
+    <div class="conv2-upload-sku">示範商品</div>
+    <div class="conv2-upload-name">Women's Elea Pooch Slip-on</div>
+    <div class="conv2-upload-desc">${DEMO_DESC}</div>
+    <button class="conv2-action-btn" data-action="start-analysis" style="margin-top:8px">點擊使用此商品開始分析 →</button>
+  </div>
+</div>` });
+    c2Scroll();
+  }, 400);
+}
+
+function conv2StartAnalysis() {
+  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--color-border)" src="${DEMO_IMG}"/><span>${DEMO_DESC}</span></div>` });
+  c2Push({ isThinking: true, msg: 'AI 正在思考中...' });
+  c2Scroll();
+  setTimeout(() => {
+    const idx = conv2Msgs.value.findIndex((m) => m.isThinking);
+    if (idx !== -1) conv2Msgs.value.splice(idx, 1);
+    c2Push({ msg: `已識別為<strong>系絨動物臉室內拖鞋</strong>，捕捉到以下特徵：` });
+    const btnLabel = conv2Mode.value === 'deep' ? '確認並開始深度分析 →' : '確認並產出初步分析報告 →';
+    c2Push({ msg: `<div class="conv2-product-card">
+  <div class="conv2-pc-head">
+    <img class="conv2-pc-thumb" src="${DEMO_IMG}"/>
+    <div>
+      <div class="conv2-pc-sku">圖片分析結果</div>
+      <div class="conv2-pc-name">系絨動物臉室內拖鞋</div>
+      <div class="conv2-pc-brand">淺粉色 · 柔潤立體 · 前頭設計</div>
+    </div>
+  </div>
+  <div class="conv2-pc-tags">
+    <span class="conv2-tag">系絨材質</span><span class="conv2-tag">動物臉</span><span class="conv2-tag">柔潤立體</span><span class="conv2-tag">前頭設計</span><span class="conv2-tag">防滑底</span><span class="conv2-tag">保暖</span>
+  </div>
+  <button class="conv2-action-btn" data-action="confirm-product" style="margin-top:10px">${btnLabel}</button>
+</div>` });
+    c2Scroll();
+  }, 1200);
+}
+
+function conv2ConfirmProduct() {
+  if (conv2Mode.value === 'init') {
+    c2Push({ msg: '正在產出初步分析報告⋯' });
+    c2Scroll();
+    setTimeout(() => {
+      c2Push({ msg: `初步分析完成，共找到 <strong>5 個直接競品</strong>、<strong>1 個功能競品</strong>：<div class="conv2-init-list">
+  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">1</span><span class="conv2-comp-name">ZARA CAPYFUN 室內拖鞋</span><span class="conv2-comp-price">NT$890</span></div>
+  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">2</span><span class="conv2-comp-name">Paidal 萌系嬰兒棉拖鞋</span><span class="conv2-comp-price">NT$599</span></div>
+  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">3</span><span class="conv2-comp-name">Zivmode 保暖厚底系絨拖鞋</span><span class="conv2-comp-price">NT$520</span></div>
+  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">4</span><span class="conv2-comp-name">貝柔 系絨毛保暖拖鞋</span><span class="conv2-comp-price">NT$299</span></div>
+  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">5</span><span class="conv2-comp-name">ZARA 動物臉家居鞋</span><span class="conv2-comp-price">NT$890</span></div>
+  <div class="conv2-comp-item conv2-comp-item--rank conv2-comp-item--fn"><span class="conv2-comp-rank conv2-comp-rank--fn">f</span><span class="conv2-comp-name">iSlippers 輕活系列前頭系絨家居鞋</span><span class="conv2-comp-price">NT$420</span></div>
+</div>` });
+      conv2ShowReport('初步分析', 5);
+      c2Scroll();
+    }, 1000);
+    return;
+  }
+  c2Push({ msg: '商品特徵已確認，DeepAgent 開始深度搜索⋯' });
+  c2Push({ msg: `<div class="conv2-search-card">
+  <div class="conv2-ss conv2-ss--done">SearchStrategist 產生深度搜索任務</div>
+  <div class="conv2-ss conv2-ss--done">GoogleSearchEngine 搜索並過濾關鍵字</div>
+  <div class="conv2-ss conv2-ss--active">ImageSimilarityFilter 圖片相似度篩選中</div>
+  <div class="conv2-ss conv2-ss--wait">篩選完成，產出備選競品清單</div>
+</div>` });
+  c2Scroll();
+  setTimeout(() => {
+    c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，以下已預選 4 個，請確認後產出報告：` });
+    c2Push({ msg: `<div class="conv2-comp-list">
+  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">1</span><span class="conv2-comp-name">日陞威 系泰迪絨拖</span><span class="conv2-comp-price">NT$590</span></div>
+  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">2</span><span class="conv2-comp-name">Paidal 萌系嬰兒棉拖鞋</span><span class="conv2-comp-price">NT$599</span></div>
+  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">3</span><span class="conv2-comp-name">ZARA CAPYFUN 室內拖鞋</span><span class="conv2-comp-price">NT$890</span></div>
+  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">4</span><span class="conv2-comp-name">貝柔 系絨毛保暖拖鞋</span><span class="conv2-comp-price">NT$299</span></div>
+  <div class="conv2-comp-actions"><button class="conv2-action-btn" data-action="confirm-comps">確認競品，產出報告 →</button></div>
+</div>` });
+    c2Scroll();
+  }, 1800);
+}
+
+function conv2ConfirmComps() {
+  c2Push({ forUser: true, msg: '確認以上 4 個競品，請生成分析報告。' });
+  c2Push({ msg: `已確認 4 個競品，開始生成報告⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取競品頁面資料</div>
+  <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對與評分中</div>
+  <div class="conv2-ss conv2-ss--wait">ReportGenerator 產出 HTML 報告</div>
+</div>` });
+  c2Scroll();
+  setTimeout(() => { conv2ShowReport('深度分析', 4); c2Scroll(); }, 2200);
+}
+
+function conv2SubmitUrls() {
+  c2Push({ forUser: true, msg: '提供 3 個競品網址：<br>1. shopee.tw — 日陞威 系泰迪絨拖<br>2. paidal.com.tw — 萌系嬰兒棉拖鞋<br>3. zara.com/tw — CAPYFUN 室內拖鞋' });
+  c2Push({ msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取商品資料中</div>
+  <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對分析中</div>
+  <div class="conv2-ss conv2-ss--wait">ReportGenerator 生成競品報告</div>
+</div>` });
+  c2Scroll();
+  setTimeout(() => { conv2ShowReport('直接生成報告', 3); c2Scroll(); }, 2400);
+}
+
+function conv2ShowReport(mode: string, count: number) {
+  c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。' });
+  c2Push({ finishResponse: true, msg: `<div class="conv2-report-card">
+  <div class="conv2-report-header">
+    <div class="conv2-report-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+    <div><div class="conv2-report-title">競品分析報告</div><div class="conv2-report-sub">competitor_analysis_report.html</div></div>
+  </div>
+  <div class="conv2-report-meta">
+    <div class="conv2-report-meta-item"><div class="conv2-report-meta-k">分析模式</div><div class="conv2-report-meta-v">${mode}</div></div>
+    <div class="conv2-report-meta-item"><div class="conv2-report-meta-k">競品數量</div><div class="conv2-report-meta-v">${count} 個</div></div>
+    <div class="conv2-report-meta-item"><div class="conv2-report-meta-k">生成日期</div><div class="conv2-report-meta-v">2026/4/1</div></div>
+  </div>
+  <div class="conv2-report-actions"><button class="conv2-action-btn">下載分析報告</button></div>
+</div>` });
+}
+// -------- end Conversation 2 流程 --------
+
+const testMsgs = computed(() =>
+  currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value
+);
 
 // degub 相關
 const { debugCount, lookDebug } = storeToRefs(aiviewerStore);

@@ -21,8 +21,8 @@
           <i class="material-symbols-outlined ">cloud_upload</i>
           <h4>請選擇或拖曳你要上傳的檔案至此</h4>
           <div>
-            可以上傳的檔案類型：PDF、MD、TXT、XLS、<br>
-            XLSX、PPT、PPTX、PNG、JPG、JPEG、GIF。<br>
+            支援上傳 Excel、CSV、Markdown、Word、PDF、PPT、圖片等格式。<br>
+            系統會依檔案類型自動處理：可解析檔案將寫入資料庫，文件與媒體檔將保留於檔案庫。<br>
             限制：每個檔案上限 5GB，一次最多 5 個檔案。
           </div>
 
@@ -39,6 +39,10 @@
             <img class="file-icon" :src="item.preview ?? ''" alt="">
             <div class="file-info-box">
               <div class="file-name">{{ item.file.name }}</div>
+              <div :class="['process-type-badge', isParseable(item.fileType) ? 'badge--ai' : 'badge--raw']">
+                <i class="material-symbols-outlined">{{ isParseable(item.fileType) ? 'auto_awesome' : 'save' }}</i>
+                {{ isParseable(item.fileType) ? 'AI 解析入庫' : '原檔保存' }}
+              </div>
             </div>
             <i class="material-symbols-outlined delete-btn" @click="onRemoveChoiceFile(i)">delete</i>
           </div>
@@ -118,6 +122,11 @@ interface ChoicedFileItem {
 }
 
 const supportedFileTypes = [...imgFileTypes, ...pdfFileTypes, ...excelFileTypes, ...pptFileTypes, ...txtFileTypes, ...markdownFileTypes];
+
+// 判斷是否為可 AI 解析入庫的類型（Excel / MD）
+function isParseable(fileType: FileType): boolean {
+  return fileType === 'EXCEL' || fileType === 'MD';
+}
 
 const aiviewerStore = useAiviewerStore();
 const { getBlockTypeByFileMime, useIconFileTypes } = aiviewerStore;

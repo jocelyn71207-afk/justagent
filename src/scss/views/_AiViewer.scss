@@ -285,6 +285,13 @@
       @include no-scroll-bar();
       // @include use-scroll-bar(var(--color-scrollbar));
     }
+    // AI 內容免責聲明
+    .ai-disclaimer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--color-text-alpha50);
+      padding: 6px 20px 12px;
+    }
     // user 輸入大區域
     .AiViewrUserInputArea {
       position: relative;
@@ -1819,32 +1826,60 @@
 
 // 右側: 單一筆對話紀錄
 .AiViewerRecord {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
   font-size: 14px;
-  .content-box {
-    // background-color: var(--color-background);
-    padding: 0px;
-    margin: 25px 0;
-    border-radius: 15px;
-  }
-  &.forUser {
+
+  // AI 頭像
+  .ai-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--color-background-1);
+    border: 1px solid var(--color-border);
+    font-size: 10px;
+    font-weight: 600;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-text-alpha60);
+    margin-top: 2px;
+  }
+
+  .content-box {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 14px;
+    background-color: var(--color-background-1);
+    border-radius: 12px;
+    border-top-left-radius: 2px;
+    line-height: 1.6;
+  }
+
+  &.forUser {
     justify-content: flex-end;
+    .ai-avatar { display: none; }
     .content-box {
-      padding: 12px;
-      border-top-right-radius: 0;
       background-color: var(--color-userSay-record);
-      color: var(--color-text);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      border-top-right-radius: 2px;
       width: fit-content;
       max-width: 80%;
+      flex: unset;
       font-size: 15px;
     }
   }
+
   &.isThinking {
+    .ai-avatar { display: none; }
     .content-box {
       background-color: transparent;
-      padding: 15px 0;
+      padding: 6px 0;
       text-align: center;
-      // 動畫效果
       i {
         display: inline-block;
         vertical-align: middle;
@@ -1852,10 +1887,11 @@
       }
     }
   }
+
   // 建議追問
   .suggest-asking-box {
     text-align: left;
-    margin-top: 30px;
+    margin-top: 16px;
     .suggest-item {
       display: flex;
       align-items: center;
@@ -1873,6 +1909,277 @@
     }
   }
 }
+
+// 對話2 初始狀態：模式選擇卡片
+.ai-mode-card {
+  margin-top: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--color-background);
+
+  .ai-mode-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: background-color 0.12s;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background-color: var(--color-background-1); }
+
+    .ai-mode-icon {
+      font-size: 18px;
+      width: 26px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .ai-mode-info {
+      flex: 1;
+      .ai-mode-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--color-text);
+      }
+      .ai-mode-desc {
+        font-size: 12px;
+        color: var(--color-text-alpha50);
+        margin-top: 2px;
+      }
+    }
+    .ai-mode-arrow {
+      color: var(--color-text-alpha40);
+      font-size: 18px;
+    }
+  }
+}
+// locked mode card (after selection)
+.ai-mode-card--locked {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+// conv2 flow cards
+.conv2-upload-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-background);
+  margin-top: 8px;
+
+  .conv2-upload-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: contain;
+    border: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .conv2-upload-info {
+    flex: 1;
+    .conv2-upload-sku { font-size: 10px; color: var(--color-text-alpha50); margin-bottom: 2px; }
+    .conv2-upload-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .conv2-upload-desc { font-size: 11px; color: var(--color-text-alpha70); line-height: 1.5; }
+  }
+}
+
+.conv2-action-btn {
+  display: block;
+  width: 100%;
+  padding: 7px 13px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--color-text);
+  color: var(--color-background);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-sizing: border-box;
+  &:hover { opacity: 0.85; }
+}
+
+.conv2-product-card {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--color-background);
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .conv2-pc-head {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    .conv2-pc-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: contain;
+      border: 1px solid var(--color-border);
+      flex-shrink: 0;
+    }
+    .conv2-pc-sku { font-size: 10px; color: var(--color-text-alpha50); }
+    .conv2-pc-name { font-size: 13px; font-weight: 500; }
+    .conv2-pc-brand { font-size: 12px; color: var(--color-text-alpha60); margin-top: 2px; }
+  }
+
+  .conv2-pc-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+}
+
+.conv2-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background-color: var(--color-background-1);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-alpha70);
+}
+
+.conv2-search-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-background);
+
+  .conv2-ss {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+
+    &::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+    }
+    &.conv2-ss--done { color: #166534; &::before { content: '✓'; background: #f0fdf4; font-weight: 700; } }
+    &.conv2-ss--active { color: #1d4ed8; &::before { content: '⋯'; background: #eff6ff; font-size: 11px; } }
+    &.conv2-ss--wait { color: var(--color-text-alpha40); &::before { content: '○'; background: var(--color-background-1); } }
+  }
+}
+
+.conv2-comp-list,
+.conv2-init-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+  .conv2-comp-actions { padding-top: 8px; }
+}
+
+.conv2-comp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+
+  &--sel { background: #eff6ff; }
+  &--fn  { background: #fffbeb; }
+  &--rank { background: var(--color-background-1); }
+
+  .conv2-comp-rank {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    &--fn { background: #fffbeb; color: #92400e; border-color: rgba(146,64,14,.28); }
+  }
+  .conv2-comp-name { flex: 1; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .conv2-comp-price { font-size: 11px; color: var(--color-text-alpha50); }
+}
+
+.conv2-url-card {
+  margin-top: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--color-background);
+
+  .conv2-url-header { font-size: 11px; color: var(--color-text-alpha50); margin-bottom: 8px; }
+  .conv2-url-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--color-border);
+    &:last-of-type { border-bottom: none; }
+    .conv2-url-num { font-size: 11px; font-weight: 500; color: var(--color-text-alpha40); width: 14px; text-align: right; flex-shrink: 0; }
+    .conv2-url-text { font-size: 12px; color: var(--color-text-alpha70); }
+  }
+  .conv2-url-actions { padding-top: 10px; display: flex; justify-content: flex-end; }
+}
+
+.conv2-report-card {
+  margin-top: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-background);
+
+  .conv2-report-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-border);
+    .conv2-report-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid rgba(22,101,52,.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #166534;
+    }
+    .conv2-report-title { font-size: 13px; font-weight: 500; }
+    .conv2-report-sub { font-size: 11px; color: var(--color-text-alpha50); margin-top: 1px; }
+  }
+
+  .conv2-report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-border);
+    .conv2-report-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .conv2-report-meta-k { font-size: 10px; color: var(--color-text-alpha50); white-space: nowrap; }
+    .conv2-report-meta-v { font-size: 12px; font-weight: 500; white-space: nowrap; }
+  }
+
+  .conv2-report-actions { padding: 10px 14px; }
+}
+
 @keyframes aiThinking {
   0% {
     opacity: 0.1;

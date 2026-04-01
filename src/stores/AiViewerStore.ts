@@ -137,6 +137,9 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   // 是否開啟對話列表 Modal
   const isOpenConversationListModal = ref(false) as Ref<boolean>;
 
+  // 目前選中的對話 ID
+  const currentConversationId = ref('conv1') as Ref<string>;
+
   // 使用者畫布中的區塊  TODO... 之後再定義 interface
   const aiViewerBlocks = ref([]) as Ref<any[]>;
   // 目前選中的內容區塊 ID
@@ -947,6 +950,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     isShowBlockListView,
     isShowFileListView,
     isOpenConversationListModal,
+    currentConversationId,
     aiViewerBlocks,
     nowChoiceAiViewerId,
     isMultiChoiceAiViewerMode,

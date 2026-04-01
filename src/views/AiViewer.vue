@@ -556,7 +556,7 @@ const AiViewerRightResizerDOM = ref<HTMLElement | null>(null);
 const isShowLeftFrame = ref(false); // 是否顯示左區塊
 const isShowRightFrame = ref(true); // 是否顯示右區塊
 const leftWidth = ref(!isTouchDevice.value ? 200 : 100); // 左區塊預設寬度
-const rightWidth = ref((window.innerWidth <= 400 )? 200 : 400); // 右區塊預設寬度 (手機版預設200px, 桌面版預設400px)
+const rightWidth = ref((window.innerWidth <= 400 )? 200 : 440); // 右區塊預設寬度 (手機版預設200px, 桌面版預設440px)
 const minRightWidth = ref(300); // 右區塊最小寬度 for desktop
 const mobileMinRightWidth = ref(170); // 右區塊最小寬度 for mobile
 const resizeType: Ref<"left" | "right" | null> = ref(null); // 拖曳調整大小的區塊, 左或右
