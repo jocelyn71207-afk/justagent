@@ -1,0 +1,488 @@
+#app {
+  width: 100%;
+  height: 100svh;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+  overflow: hidden;
+  visibility: hidden;
+  // 注意: 這裡的 visibility 是為了等字體加載完成後才顯示內容，避免 FOUT (Flash of Unstyled Text)
+  &.show {
+    visibility: visible;
+  }
+}
+
+// 包住所有登入後的頁面
+.Full {
+  position: fixed; // 避免平板的小鍵盤出現時下方的白白區塊
+  margin: 0 auto;
+  height: 100svh;
+  width: 100svw;
+  // overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  @include no-scroll-bar();
+  @include use-scroll-bar(var(--color-scrollbar-alpha50));
+}
+
+// 包住主要內容區域 (不包含 header/footer) (注意: 這main不提供給 AiViewer 單元使用)
+.main {
+  // min-height: 100svh;
+  display: flex;
+
+  // 注意:這個 div 是頁面右邊的主要內容區域用 (畫布那一個單元也會用到)
+  // > div {
+  //   flex: 1;
+  // }
+  .AppMenuTree {
+    flex: none; // 固定寬度不縮放
+  }
+  // 登入後每一個單元共用的樣式 (排除畫布那一個單元)
+  .views-page {
+    flex: 1;
+    padding: 46px;
+    background-color: var(--color-background-1);
+    // max-width: 100%;
+    // min-width: 600px;
+    width: calc(100vw - #{$menuWidth});
+    overflow: hidden;
+    overflow-x: auto;
+    @include no-scroll-bar();
+    @include use-scroll-bar(var(--color-scrollbar-alpha50));
+
+    // 注意: 這是每一頁都會有的容器 (排除畫布那一個單元)
+    .views-page-content-box {
+      min-width: 500px;
+    }
+
+    // 每頁共用的 header 樣式
+    .views-page-header {
+      position: relative;
+      flex-wrap: wrap;
+      gap: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      h3 {
+        font-size: 1.375rem;
+        font-weight: 700;
+        flex: 1;
+        > .secondary-box {
+          font-size: 1rem;
+          font-weight: normal;
+          color: var(--color-text-alpha50);
+        }
+      }
+      .header-right-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+    }
+  }
+
+  // 通用性查詢結果介面的樣式 (依賴於 .views-page 的樣式)
+  .AppSearchPage {
+    flex: 1;
+    padding: 46px;
+    background-color: var(--color-background-1);
+    width: calc(100vw - #{$menuWidth});
+    overflow: auto;
+    @include no-scroll-bar();
+    @include use-scroll-bar(var(--color-scrollbar-alpha50));
+  }
+}
+// 處理手機尺寸時
+@media (max-width: $breakpoint-mobile) {
+  .main {
+    .views-page {
+      width: calc(100vw - #{$menuSmallWidth});
+      padding-top: 66px;
+      padding-left: 20px;
+      padding-right: 20px;
+      .views-page-header {
+        flex-direction: column;
+        align-items: start;
+        .header-right-box {
+          margin-top: 12px;
+        }
+      }
+      .views-page-content-box {
+        min-width: 100%;
+      }
+    }
+  }
+}
+
+// 通用卡片列表的樣式
+.card-list-box {
+  display: grid;
+  gap: 24px;
+  place-items: center;
+  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  // width: calc(100% - 24px);
+  width: calc(100% - 0px);
+  // 單一張卡片的共用樣式
+  .one-card-box {
+    border-radius: 16px;
+    background-color: var(--color-background);
+    user-select: none;
+    width: 100%;
+    max-width: 362px;
+
+    // for 專案的卡片樣式
+    &.project-card {
+      position: relative;
+      .team-name-box {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        background-color: var(--color-background-1);
+        border-radius: 8px;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+      .favorite-btn {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+        background-color: var(--color-background-1);
+        color: var(--color-text-alpha50);
+        border-radius: 8px;
+        padding: 6px;
+        font-size: 20px;
+        &.active {
+          color: $color_yellow_2;
+          background-color: var(--color-background-1);
+        }
+      }
+      .img-box {
+        border-radius: 16px;
+        border: 1px solid var(--color-border-1-alpha50);
+        box-shadow: 0 4px 10px -6px rgba(from var(--color-shadow) r g b / 0.5);
+        height: 205px;
+        overflow: hidden;
+        > img {
+          object-position: 50% 50%;
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+        }
+      }
+      .footer-box {
+        position: relative;
+        font-size: 14px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .info-box {
+          flex: 1;
+          min-width: 0;
+          .project-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text);
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+          }
+          .lastModify {
+            font-size: 14px;
+            color: var(--color-text-alpha50);
+            margin-top: 5px;
+          }
+        }
+        .owner-box {
+          width: 24px;
+          height: 24px;
+          border-radius: 24px;
+          overflow: hidden;
+          background-color: red; // js 會改顏色
+          color: $white;
+          font-size: 11px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          user-select: none;
+          margin-left: 16px;
+        }
+        .more-btn {
+          font-size: 18px;
+          color: var(--color-text-alpha50);
+          padding: 4px;
+          border-radius: 4px;
+          margin-left: 10px;
+          cursor: pointer;
+          &:hover {
+            background-color: var(--color-background-1);
+            color: var(--color-text);
+          }
+        }
+        .next-option-box {
+          position: absolute;
+          right: 14px;
+          top: 55px;
+          visibility: hidden;
+          &.show {
+            visibility: visible;
+          }
+        }
+      }
+    }
+    // for 檔案的卡片樣式
+    &.file-card {
+      cursor: default;
+
+      .card-header-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 14px 0;
+        gap: 8px;
+        .file-name {
+          font-size: 14px;
+          font-weight: 500;
+          flex: 1;
+          min-width: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .more-menu-wrap {
+          position: relative;
+          flex-shrink: 0;
+          .more-btn {
+            font-size: 20px;
+            color: var(--color-text-alpha50);
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px;
+            display: block;
+            &:hover {
+              background-color: var(--color-background-1);
+              color: var(--color-text);
+            }
+          }
+          .next-option-box {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            visibility: hidden;
+            &.show {
+              visibility: visible;
+            }
+          }
+        }
+      }
+
+      .card-body-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 175px;
+        padding: 12px;
+        .preview-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 8px;
+        }
+        .file-type-icon {
+          max-height: 54px;
+          object-fit: contain;
+        }
+        .other-file-icon {
+          font-size: 48px;
+          color: var(--color-text-alpha50);
+        }
+      }
+
+      .card-footer-box {
+        font-size: 12px;
+        color: var(--color-text-alpha50);
+        padding: 10px 14px 14px;
+      }
+    }
+  }
+}
+// 處理平板時
+@media (max-width: $breakpoint-tablet) {
+  // 卡片列表變成一欄的樣式
+  .card-list-box {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 100%), 1fr));
+  }
+}
+
+// 通用表格列表的樣式 (依賴於 .custom-table 的樣式)
+.table-list-box {
+  border-radius: 16px;
+  background-color: var(--color-background);
+  padding: 12px;
+  .custom-table {
+    th,
+    td {
+      border-color: transparent;
+      font-size: 14px;
+      padding: 1.1rem 1.2rem;
+    }
+
+    tbody tr:hover {
+      td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+      td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+      td {
+        background-color: var(--color-background-2-alpha20);
+      }
+    }
+  }
+
+  // for 專案的列表樣式
+  &.project-list {
+    .custom-table {
+      tbody {
+        tr {
+          cursor: pointer;
+          user-select: none;
+
+          td:last-child {
+            position: relative;
+          }
+        }
+      }
+    }
+    .favorite-btn {
+      display: inline-block;
+      color: var(--color-text-alpha50);
+      background-color: transparent;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 20px;
+      cursor: pointer;
+      vertical-align: middle;
+      // visibility: hidden;
+      &.active {
+        color: $color_yellow_2;
+        background-color: var(--color-background-1);
+        // visibility: visible;
+      }
+    }
+    .img-box {
+      display: inline-block;
+      border-radius: 4px;
+      border: 1px solid var(--color-border-1);
+      height: 32px;
+      width: 32px;
+      vertical-align: middle;
+      margin: 0 12px;
+      overflow: hidden;
+      > img {
+        object-position: 50% 50%;
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+    }
+    .owner-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 24px;
+      overflow: hidden;
+      background-color: red; // js 會改顏色
+      color: $white;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      margin-right: 10px;
+    }
+    .more-btn {
+      display: inline-flex;
+      font-size: 20px;
+      color: var(--color-text-alpha50);
+      padding: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      &:hover {
+        background-color: var(--color-background-2-alpha30);
+        color: var(--color-text);
+      }
+    }
+    .next-option-box {
+      position: absolute;
+      right: 14px;
+      top: 55px;
+      visibility: hidden;
+      &.show {
+        visibility: visible;
+      }
+    }
+  }
+  // for 檔案的列表樣式
+  &.file-list {
+    .custom-table {
+      tbody {
+        tr {
+          cursor: default;
+        }
+        td:last-child {
+          position: relative;
+        }
+      }
+    }
+    .file-icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      // border: 1px solid var(--color-border-1);
+      height: 32px;
+      width: 32px;
+      vertical-align: middle;
+      margin-right: 12px;
+      overflow: hidden;
+      > img {
+        object-position: 50% 50%;
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+      }
+    }
+    .more-btn {
+      display: inline-flex;
+      font-size: 20px;
+      color: var(--color-text-alpha50);
+      padding: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      &:hover {
+        background-color: var(--color-background-2-alpha30);
+        color: var(--color-text);
+      }
+    }
+    .next-option-box {
+      position: absolute;
+      right: 14px;
+      top: 55px;
+      visibility: hidden;
+      &.show {
+        visibility: visible;
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+// Import Sass functions for color manipulation - must be first
+// @use 'sass:color'; // 之後在需要使用 color.lighten(#3498db, 20%); 等等的檔案中再引入
+
+@import "./base/index";
+
+// Import all library styles
+@import "./libs/index";
+
+@import "./layout";
+
+// Import all view styles
+@import "./views/index";
+
+// Import all component styles
+@import "./components/index";
+
+// 客製化
+@import "./custom.scss";

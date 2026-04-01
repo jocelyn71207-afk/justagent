@@ -1,0 +1,194 @@
+$gapLevel: (
+  "0": 0,
+  "1": 8,
+  "2": 18,
+  "3": 30,
+  "4": 40,
+  "5": 50,
+);
+
+@each $name, $weight in $gapLevel {
+  // margin
+  .m-#{$name} {
+    margin: #{$weight}px !important;
+  }
+  .mt-#{$name} {
+    margin-top: #{$weight}px !important;
+  }
+  .mr-#{$name} {
+    margin-right: #{$weight}px !important;
+  }
+  .mb-#{$name} {
+    margin-bottom: #{$weight}px !important;
+  }
+  .ml-#{$name} {
+    margin-left: #{$weight}px !important;
+  }
+  // padding
+  .p-#{$name} {
+    padding: #{$weight}px !important;
+  }
+  .pt-#{$name} {
+    padding-top: #{$weight}px !important;
+  }
+  .pr-#{$name} {
+    padding-right: #{$weight}px !important;
+  }
+  .pb-#{$name} {
+    padding-bottom: #{$weight}px !important;
+  }
+  .pl-#{$name} {
+    padding-left: #{$weight}px !important;
+  }
+}
+
+$fontSize: (
+  "10": 10,
+  "11": 11,
+  "12": 12,
+  "13": 13,
+  "14": 14,
+  "15": 15,
+  "16": 16,
+  "17": 17,
+  "18": 18,
+  "19": 19,
+  "20": 20,
+  "21": 21,
+  "22": 22,
+  "23": 23,
+  "24": 24,
+  "25": 25,
+  "26": 26,
+  "27": 27,
+  "28": 28,
+  "29": 29,
+  "30": 30,
+);
+@each $name, $item in $fontSize {
+  .fs-#{$name} {
+    font-size: #{$item}px !important;
+  }
+}
+
+// 粗細
+$fontWeight: (
+  "100": 100,
+  "200": 200,
+  "300": 300,
+  "400": 400,
+  "500": 500,
+  "600": 600,
+  "700": 700,
+);
+@each $name, $item in $fontWeight {
+  .fw-#{$name} {
+    font-weight: #{$item} !important;
+  }
+}
+
+// 顏色
+$colors: (
+  "main-1": $color_main_1,
+  "main-2": $color_main_2,
+  "main-3": $color_main_3,
+  "main-4": $color_main_4,
+  "main-5": $color_main_5,
+  "main-6": $color_main_6,
+
+  "grey-1": $color_grey_1,
+  "grey-2": $color_grey_2,
+
+  "green-1": $color_green_1,
+
+  "blue-1": $color_blue_1,
+
+  "red-1": $color_red_1,
+  "red-2": $color_red_2,
+
+  "yellow-1": $color_yellow_1,
+
+  "white": $white,
+  "black": $black,
+);
+@each $name, $item in $colors {
+  // 文字顏色
+  .fc-#{$name} {
+    color: #{$item} !important;
+  }
+  // 背景顏色
+  .bgc-#{$name} {
+    background-color: #{$item} !important;
+  }
+}
+
+// 寬度
+$widthSizes: (
+  "100": 100%,
+  "80": 80%,
+  "75": 75%,
+  "50": 50%,
+  "25": 25%,
+  "20": 20%,
+  "10": 10%,
+);
+@each $name, $item in $widthSizes {
+  .w-#{$name} {
+    width: #{$item} !important;
+  }
+}
+
+// text align
+.text-center {
+  text-align: center !important;
+}
+.text-left {
+  text-align: left !important;
+}
+.text-right {
+  text-align: right !important;
+}
+
+// Flexbox utilities
+.d-flex {
+  display: flex !important;
+}
+.flex-align-start {
+  align-items: flex-start !important;
+}
+.flex-align-end {
+  align-items: flex-end !important;
+}
+.flex-align-center {
+  align-items: center !important;
+}
+
+.flex-justify-between {
+  justify-content: space-between !important;
+}
+.flex-justify-center {
+  justify-content: center !important;
+}
+.flex-justify-end {
+  justify-content: flex-end !important;
+}
+
+.flex-wrap {
+  flex-wrap: wrap !important;
+}
+.flex-column {
+  flex-direction: column !important;
+}
+.flex-row {
+  flex-direction: row !important;
+}
+
+.no-user-select {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+.cursor-pointer {
+  cursor: pointer !important;
+}

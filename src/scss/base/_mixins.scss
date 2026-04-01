@@ -1,0 +1,34 @@
+@mixin no-scroll-bar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background-color: transparent;
+    display: none;
+  }
+  &::-webkit-scrollbar-track {
+    border-radius: 5px;
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: $grey-border;
+  }
+}
+// 注意: 因為有深淺色主題的關係, 不提供預設顏色, 使用時請自行帶入主題變數
+@mixin use-scroll-bar ($useColor) {
+  &::-webkit-scrollbar {
+    display: block;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: $useColor;
+  }
+  scrollbar-width: auto; /* Firefox */
+}
+
+// 禁止使用者選取文字
+@mixin user-select-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

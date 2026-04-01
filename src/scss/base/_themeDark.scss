@@ -1,0 +1,87 @@
+@use "sass:color";
+
+// Dark mode styles (如果產品規劃上沒有 dark mode, 可以刪掉這段)
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #{$color-background-dark}; // 主背景顏色
+    --color-background-alpha90: #{rgba($color-background-dark, 0.9)}; // 主背景顏色 90% 不透明度
+    --color-background-alpha80: #{rgba($color-background-dark, 0.8)}; // 主背景顏色 80% 不透明度
+    --color-background-alpha70: #{rgba($color-background-dark, 0.7)}; // 主背景顏色 70% 不透明度
+    --color-background-alpha60: #{rgba($color-background-dark, 0.6)}; // 主背景顏色 60% 不透明度
+    --color-background-alpha50: #{rgba($color-background-dark, 0.5)}; // 主背景顏色 50% 不透明度
+    --color-background-alpha40: #{rgba($color-background-dark, 0.4)}; // 主背景顏色 40% 不透明度
+    --color-background-alpha30: #{rgba($color-background-dark, 0.3)}; // 主背景顏色 30% 不透明度
+    --color-background-alpha20: #{rgba($color-background-dark, 0.2)}; // 主背景顏色 20% 不透明度
+    --color-background-alpha10: #{rgba($color-background-dark, 0.1)}; // 主背景顏色 10% 不透明度
+
+    --color-background-1: #{$color-background-dark-1}; // 次背景顏色 1
+    --color-background-1-alpha90: #{rgba($color-background-dark-1, 0.9)}; // 次背景顏色 1 90% 不透明度
+    --color-background-1-alpha80: #{rgba($color-background-dark-1, 0.8)}; // 次背景顏色 1 80% 不透明度
+    --color-background-1-alpha70: #{rgba($color-background-dark-1, 0.7)}; // 次背景顏色 1 70% 不透明度
+    --color-background-1-alpha60: #{rgba($color-background-dark-1, 0.6)}; // 次背景顏色 1 60% 不透明度
+    --color-background-1-alpha50: #{rgba($color-background-dark-1, 0.5)}; // 次背景顏色 1 50% 不透明度
+    --color-background-1-alpha40: #{rgba($color-background-dark-1, 0.4)}; // 次背景顏色 1 40% 不透明度
+    --color-background-1-alpha30: #{rgba($color-background-dark-1, 0.3)}; // 次背景顏色 1 30% 不透明度
+    --color-background-1-alpha20: #{rgba($color-background-dark-1, 0.2)}; // 次背景顏色 1 20% 不透明度
+    --color-background-1-alpha10: #{rgba($color-background-dark-1, 0.1)}; // 次背景顏色 1 10% 不透明度
+
+    --color-background-2: #{$color-background-dark-2}; // 次背景顏色 2
+    --color-background-2-alpha90: #{rgba($color-background-dark-2, 0.9)}; // 次背景顏色 2 90% 不透明度
+    --color-background-2-alpha80: #{rgba($color-background-dark-2, 0.8)}; // 次背景顏色 2 80% 不透明度
+    --color-background-2-alpha70: #{rgba($color-background-dark-2, 0.7)}; // 次背景顏色 2 70% 不透明度
+    --color-background-2-alpha60: #{rgba($color-background-dark-2, 0.6)}; // 次背景顏色 2 60% 不透明度
+    --color-background-2-alpha50: #{rgba($color-background-dark-2, 0.5)}; // 次背景顏色 2 50% 不透明度
+    --color-background-2-alpha40: #{rgba($color-background-dark-2, 0.4)}; // 次背景顏色 2 40% 不透明度
+    --color-background-2-alpha30: #{rgba($color-background-dark-2, 0.3)}; // 次背景顏色 2 30% 不透明度
+    --color-background-2-alpha20: #{rgba($color-background-dark-2, 0.2)}; // 次背景顏色 2 20% 不透明度
+    --color-background-2-alpha10: #{rgba($color-background-dark-2, 0.1)}; // 次背景顏色 2 10% 不透明度
+
+    --color-border: #{$color-border-dark}; // 線顏色
+    --color-border-alpha90: #{rgba($color-border-dark, 0.9)}; // 線顏色 90% 不透明度
+    --color-border-alpha80: #{rgba($color-border-dark, 0.8)}; // 線顏色 80% 不透明度
+    --color-border-alpha70: #{rgba($color-border-dark, 0.7)}; // 線顏色 70% 不透明度
+    --color-border-alpha60: #{rgba($color-border-dark, 0.6)}; // 線顏色 60% 不透明度
+    --color-border-alpha50: #{rgba($color-border-dark, 0.5)}; // 線顏色 50% 不透明度
+    --color-border-alpha40: #{rgba($color-border-dark, 0.4)}; // 線顏色 40% 不透明度
+    --color-border-alpha30: #{rgba($color-border-dark, 0.3)}; // 線顏色 30% 不透明度
+    --color-border-alpha20: #{rgba($color-border-dark, 0.2)}; // 線顏色 20% 不透明度
+    --color-border-alpha10: #{rgba($color-border-dark, 0.1)}; // 線顏色 10% 不透明度
+
+    --color-border-1: #{$color-border-dark-1}; // 線顏色 1
+    --color-border-1-alpha90: #{rgba($color-border-dark-1, 0.9)}; // 線顏色 1 90% 不透明度
+    --color-border-1-alpha80: #{rgba($color-border-dark-1, 0.8)}; // 線顏色 1 80% 不透明度
+    --color-border-1-alpha70: #{rgba($color-border-dark-1, 0.7)}; // 線顏色 1 70% 不透明度
+    --color-border-1-alpha60: #{rgba($color-border-dark-1, 0.6)}; // 線顏色 1 60% 不透明度
+    --color-border-1-alpha50: #{rgba($color-border-dark-1, 0.5)}; // 線顏色 1 50% 不透明度
+    --color-border-1-alpha40: #{rgba($color-border-dark-1, 0.4)}; // 線顏色 1 40% 不透明度
+    --color-border-1-alpha30: #{rgba($color-border-dark-1, 0.3)}; // 線顏色 1 30% 不透明度
+    --color-border-1-alpha20: #{rgba($color-border-dark-1, 0.2)}; // 線顏色 1 20% 不透明度
+    --color-border-1-alpha10: #{rgba($color-border-dark-1, 0.1)}; // 線顏色 1 10% 不透明度
+
+    --color-heading: #{$color-heading-dark}; // 標題文字顏色
+
+    --color-text: #{$color-text-dark}; // 文字顏色
+    --color-text-alpha90: #{rgba($color-text-dark, 0.9)}; // 文字顏色 90% 不透明度
+    --color-text-alpha80: #{rgba($color-text-dark, 0.8)}; // 文字顏色 80% 不透明度
+    --color-text-alpha70: #{rgba($color-text-dark, 0.7)}; // 文字顏色 70% 不透明度
+    --color-text-alpha60: #{rgba($color-text-dark, 0.6)}; // 文字顏色 60% 不透明度
+    --color-text-alpha50: #{rgba($color-text-dark, 0.5)}; // 文字顏色 50% 不透明度
+    --color-text-alpha40: #{rgba($color-text-dark, 0.4)}; // 文字顏色 40% 不透明度
+    --color-text-alpha30: #{rgba($color-text-dark, 0.3)}; // 文字顏色 30% 不透明度
+    --color-text-alpha20: #{rgba($color-text-dark, 0.2)}; // 文字顏色 20% 不透明度
+    --color-text-alpha10: #{rgba($color-text-dark, 0.1)}; // 文字顏色 10% 不透明度
+
+    --color-link-text: #{$color-text-link-dark}; // 連結文字顏色
+    --color-link-text-active: #{$color-text-link-active-dark}; // 連結文字懸停顏色
+
+    --color-shadow: #{$color-shadow-dark}; // 陰影顏色
+
+    --color-scrollbar: #{$color-scrollbar-dark}; // 滾動條顏色
+    --color-scrollbar-alpha50: #{rgba($color-scrollbar-dark, 0.5)}; // 滾動條顏色 50% 不透明度
+
+    --color-userSay-record: #{$color-userSay-record-dark}; // user 角度的對話紀錄背景色
+
+    --color-tab-active-bg: #{$color-tab-active-bg-dark}; // 頁籤 active 的背景顏色
+    --color-switch-active-bg: #{$color-switch-active-bg-dark}; // switch active 的背景顏色
+  }
+}

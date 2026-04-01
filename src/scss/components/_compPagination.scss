@@ -1,0 +1,131 @@
+.compPagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--color-text);
+  user-select: none;
+}
+
+// 左側資訊
+.compPagination-info {
+  // flex: 1;
+  white-space: nowrap;
+  color: var(--color-text-alpha70);
+
+  .compPagination-info-highlight {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+}
+
+// 頁碼區塊
+.compPagination-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+
+  .compPagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    appearance: none;
+    border: none;
+    background: none;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0 6px;
+    border-radius: $radius;
+    color: var(--color-text);
+    font-size: 13px;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
+    // 頁碼按鈕的樣式
+    &.compPagination-btn--page {
+      background-color: transparent;
+    }
+    // 箭頭按鈕的樣式
+    &.compPagination-btn--arrow {
+      border: 1px solid var(--color-border);
+      i {
+        font-size: 23px;
+        line-height: 1;
+      }
+    }
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-background-2-alpha30);
+    }
+
+    &:disabled {
+      color: var(--color-text-alpha30);
+      border-color: var(--color-background-2-alpha50);
+      cursor: not-allowed;
+    }
+
+    &.is-active {
+      background-color: var(--color-background-2-alpha20);
+      border-color: var(--color-border);
+      font-weight: 500;
+    }
+  }
+
+  .compPagination-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-alpha50);
+  }
+}
+
+// 右側功能區塊
+.compPagination-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .compPagination-per-page,
+  .compPagination-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--color-text-alpha70);
+    white-space: nowrap;
+  }
+
+  .compPagination-select {
+    padding: 3px 1.8rem 3px 8px !important;
+    font-size: 13px;
+    height: 32px;
+  }
+
+  .compPagination-jump-input {
+    width: 56px;
+    padding: 4px 6px !important;
+    font-size: 13px;
+    height: 32px;
+    text-align: center;
+
+    // 隱藏 number input 的上下箭頭
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
+  }
+}

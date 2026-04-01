@@ -1,0 +1,19 @@
+// CSS 參考 https://floating-vue.starpad.dev/guide/css
+.v-popper__popper {
+  font-size: 13px;
+  user-select: none;
+
+  --v-popover-border-arrow-color: #272626; // 邊框與箭頭
+  --v-popover-bg-color: #272626; // 背景色
+  --v-popover-font-color: #ffffff; // 文字顏色
+
+  .v-popper__inner {
+    background: var(--v-popover-bg-color);
+    border-color: var(--v-popover-border-arrow-color);
+    color: var(--v-popover-font-color);
+  }
+  .v-popper__arrow-inner,
+  .v-popper__arrow-outer {
+    border-color: var(--v-popover-border-arrow-color);
+  }
+}

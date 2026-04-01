@@ -1,0 +1,10 @@
+.ProjectDashboard {
+  .createProjectOptionBox {
+    position: absolute;
+    right: 100px;
+    top: calc(100% + 6px);
+    .description {
+      color: var(--color-text-alpha50);
+    }
+  }
+}

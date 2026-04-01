@@ -1,0 +1,80 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+import { useRootStore } from '@/stores/rootStore'
+
+import AppEntrance from '../views/AppEntrance.vue'
+
+export const routes: RouteRecordRaw[] = [
+  {
+    path: '/', // App入口,也是解析登入者資料頁
+    name: 'AppEntrance',
+
+    component: AppEntrance,
+  },
+  {
+    path: '/view',
+    redirect: '/view/ProjectDashboard',
+    name: 'Home',
+    component: () => import('../container/Full.vue'),
+    children: [
+      {
+        path: '/view/ProjectDashboard',
+        name: 'ProjectDashboard',
+        component: () => import('@/views/ProjectDashboard.vue'),
+      },
+      {
+        path: '/view/TeamProject',
+        name: 'TeamProject',
+        component: () => import('@/views/TeamProject.vue'),
+      },
+      {
+        path: '/view/ResourceLibrary',
+        name: 'ResourceLibrary',
+        component: () => import('@/views/ResourceLibrary.vue'),
+      },
+      {
+        path: '/view/TeamAccessManagement',
+        name: 'TeamAccessManagement',
+        component: () => import('@/views/TeamAccessManagement.vue'),
+      },
+      {
+        path: '/view/AiViewer',
+        name: 'AiViewer',
+        component: () => import('@/views/AiViewer.vue'),
+        meta: { hideMenuTree: true },
+      },
+      {
+        path: '/view/CompanyTeamSettings',
+        name: 'CompanyTeamSettings',
+        component: () => import('@/views/CompanyTeamSettings.vue'),
+      },
+      {
+        path: '/view/GUI',
+        name: 'GUI',
+        component: () => import('@/views/GUI.vue'),
+      },
+      {
+        path: '/view/ProjectTrashCans',
+        name: 'ProjectTrashCans',
+        component: () => import('@/views/ProjectTrashCans.vue'),
+      },
+    ]
+  },
+]
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+})
+
+router.beforeEach((to, from, next) => {
+  // TODO... 之後還要處理登入驗證的邏輯 (可參考中台, 因為也是走Ｂ端身份識別中心)
+
+  const rootStore = useRootStore()
+  rootStore.isEnterAppSearchPage = false
+  rootStore.appSearchKeyword = ''
+
+  next();
+})
+
+export default router

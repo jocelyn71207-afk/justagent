@@ -1,0 +1,25 @@
+version: 0.2
+
+env:
+  variables:
+    ENV: $ENV
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+
+  pre_build:
+    commands:
+      - npm install
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - npm run $ENV
+
+artifacts:
+  files:
+    - "**/*"
+  discard-paths: no
+  base-directory: dist

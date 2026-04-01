@@ -1,0 +1,247 @@
+.AppBatchUpload {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 11;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(#000, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  .close-btn,
+  .hide-btn {
+    border: 0;
+    background-color: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  // 進入：正在上傳中的樣式
+  &.uploading {
+    right: 30px;
+    left: auto;
+    top: auto;
+    width: 500px;
+    max-width: calc(100svw - 60px);
+    background: transparent;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 2px 10px rgba(#000, 0.2);
+    .modal-panel {
+      display: none;
+    }
+    .list-panel {
+      display: block;
+    }
+  }
+
+  // 畫面正中間選擇樣案的介面
+  .modal-panel {
+    display: block;
+    background-color: var(--color-background);
+    border-radius: 16px;
+    margin: 10px;
+    padding: 30px;
+    width: 669px;
+    max-width: calc(100% - 20px);
+    max-height: calc(100% - 20px);
+    overflow: auto;
+    @include no-scroll-bar();
+
+    .title-box {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .body-box {
+      .step1 {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        text-align: center;
+        border: 1px dashed var(--color-border-1);
+        border-radius: 12px;
+        padding: 50px 20px;
+        // 拖檔案進來的樣式
+        &.dragover,
+        &:hover {
+          background-color: var(--color-background-1);
+        }
+
+        > i {
+          font-size: 48px;
+        }
+        > h4 {
+          font-weight: 500;
+          margin-bottom: 8px;
+          margin-top: 8px;
+        }
+        > div {
+          font-size: 14px;
+        }
+
+        .file-input {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          right: 0;
+          opacity: 0;
+          cursor: pointer;
+        }
+      }
+      .step2 {
+        min-height: 250px;
+        .oneFileItem {
+          border-color: transparent;
+          width: 100%;
+          align-items: center;
+          user-select: none;
+          -webkit-user-select: none;
+          &:hover {
+            background-color: var(--color-background-2-alpha20);
+          }
+          .file-icon {
+            margin-right: 10px;
+          }
+          .file-info-box {
+            flex: 1;
+            width: calc(100% - 100px);
+            .file-name {
+              max-width: 100%;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+          .delete-btn {
+            font-size: 24px;
+            color: $color_grey_1;
+            padding: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            &:hover {
+              background-color: var(--color-background-2-alpha30);
+              color: var(--color-text);
+            }
+          }
+        }
+      }
+    }
+
+    .footer-box {
+      display: flex;
+      margin-top: 20px;
+      button {
+        flex: 1;
+        margin: 0 10px;
+        &:first-child {
+          margin-left: 0;
+        }
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+  }
+
+  // 在畫面右下角正在傳輸中的介面
+  .list-panel {
+    display: none;
+    width: 100%;
+    max-height: 100svh;
+
+    .title-box {
+      background-color: var(--color-background-1);
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      padding: 24px 20px 16px 24px;
+      border-radius: 16px 16px 0 0;
+      border: 1px solid var(--color-border-1-alpha50);
+      border-bottom: 0;
+      color: var(--color-text);
+      button {
+        color: var(--color-text);
+      }
+    }
+
+    .body-box {
+      border: 1px solid var(--color-border-1-alpha50);
+      border-bottom: 0;
+      background-color: var(--color-background);
+      padding: 10px 20px;
+      max-height: calc(100svh - 75px);
+      overflow: auto;
+      @include no-scroll-bar();
+      @include use-scroll-bar(var(--color-scrollbar));
+      .oneFileItem {
+        border-color: transparent;
+        width: 100%;
+        align-items: center;
+        user-select: none;
+        -webkit-user-select: none;
+        .file-icon {
+          margin-right: 10px;
+        }
+        .file-info-box {
+          flex: 1;
+          width: calc(100% - 165px);
+          .file-name {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+        .uploadPercent-box {
+          width: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: end;
+          .percent-info {
+            font-size: 14px;
+            margin-right: 8px;
+            color: $color_grey_1;
+          }
+          .percent-circle {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: conic-gradient(
+              $color_green_1 var(--progress, 0%),
+              $color_grey_1 var(--progress, 0%)
+            );
+            &::after {
+              content: "";
+              position: absolute;
+              inset: 3px;
+              border-radius: 50%;
+              background: var(--color-background);
+            }
+          }
+          .ok {
+            color: $color_green_1;
+          }
+          .delete-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            &.disabled {
+              opacity: 0.15;
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
+    }
+  }
+}

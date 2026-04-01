@@ -1,0 +1,26 @@
+/** Google Material Icons 字體變化設定
+    參考：https://developers.google.com/fonts/docs/material_symbols
+
+    字體預設是 font-family: 'Material Symbols Outlined'; // 線條風格 + 銳利 的字體
+    字體變異設定說明：
+      FILL: 0=未填充, 1=已填充
+      wght: 字體粗細，100~700
+      GRAD: -50~200，字體傾斜度
+      opsz: 20~48，字體大小優化
+
+    提醒: 這邊不定義 "粗體字,字級" 的樣式，請使用 _utils.scss 內的通用字級、粗細樣式類別
+*/
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Rounded"; // 圓角風格的字體
+  font-variation-settings: "wght" 350;
+  user-select: none;
+}
+
+.material-fill {
+  font-variation-settings: "FILL" 1; /* 0=未填充, 1=已填充 */
+}
+
+.material-sharp {
+  font-family: "Material Symbols Sharp"; // 銳利邊角的字體
+}

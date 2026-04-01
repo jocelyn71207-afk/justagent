@@ -1,0 +1,259 @@
+.AppMenuTree {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  background-color: var(--color-background);
+  // border-right: 1px solid var(--color-border);
+  width: $menuWidth;
+  height: 100svh;
+  transition: all $menutransition;
+  display: grid;
+  grid-template-rows: $menuHeaderHeight 1fr $menuFooterHeight;
+
+  .header-box {
+    padding: 16px;
+    // background-color: var(--color-background);
+    height: $menuHeaderHeight;
+    border-bottom: 1px solid var(--color-border);
+    .user-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      .user-avatar {
+        font-weight: bold;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        background-color: var(--color-text); // js 給予嗎？
+        color: var(--color-background);
+      }
+      .user-name {
+        font-size: 16px;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        p {
+          max-width: 155px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          margin: 0;
+        }
+        > i {
+          margin-left: 5px;
+          border-radius: 6px;
+        }
+      }
+      &.active {
+        .user-name > i {
+          background-color: var(--color-background-1);
+        }
+      }
+      // 更多用戶選項選單
+      .more-userOption-box {
+        position: absolute;
+        top: 100%;
+        right: 0%;
+      }
+    }
+
+    // 通用性查詢關鍵字輸入框
+    .universal-search-box {
+      position: relative;
+      margin: 12px 0;
+      i {
+        position: absolute;
+        left: 11px;
+        top: 8px;
+        font-size: 21px;
+        &.clear-btn {
+          left: auto;
+          right: 11px;
+          cursor: pointer;
+        }
+      }
+      input {
+        padding-left: 40px;
+      }
+    }
+  }
+
+  .menu-list-box {
+    // position: sticky;
+    // top: $menuHeaderHeight + 20px;
+    // z-index: 1;
+    // height: calc(100dvh - #{$menuHeaderHeight} - #{$menuFooterHeight} - 20px);
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    height: 100%;
+    padding: 16px;
+    @include no-scroll-bar();
+    // @include use-scroll-bar(var(--color-scrollbar-alpha50));
+
+    .company-box {
+      select {
+        margin-bottom: 5px;
+      }
+    }
+
+    // 單一個團隊區塊
+    .one-group-box {
+      margin-top: 4px;
+      .group-name-box {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        font-size: 14px;
+        color: var(--color-text-alpha50);
+        border-radius: $radius;
+        user-select: none;
+        cursor: pointer;
+        &:hover {
+          background-color: var(--color-background-1);
+        }
+        .group-name {
+          max-width: 90%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          padding: 10px 10px 10px 10px;
+        }
+        i {
+          font-size: 19px;
+          color: var(--color-text-alpha50);
+        }
+      }
+      .group-btn-box {
+        margin-top: 4px;
+        .one-btn-item {
+          margin-bottom: 4px;
+        }
+      }
+    }
+  }
+
+  .menu-footer {
+    // position: fixed;
+    // bottom: 0px;
+    // z-index: 1;
+    font-size: 12px;
+    color: var(--color-text-alpha50);
+    padding: 5px;
+    height: $menuFooterHeight;
+    width: $menuWidth;
+    // border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all $menutransition;
+    > img {
+      height: 80%;
+      margin: 0;
+    }
+  }
+
+  .one-btn-item {
+    display: flex;
+    align-items: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 0px;
+    user-select: none;
+    a {
+      text-decoration: none;
+      font-size: 14px;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: $radius;
+      width: 100%;
+      &:hover {
+        background-color: var(--color-background-1);
+      }
+      &:focus {
+        outline: 1px solid transparent;
+      }
+      &.router-link-active,
+      &.active {
+        background-color: var(--color-background-1);
+      }
+      i {
+        margin: 0 10px 0 0;
+        font-size: 19px;
+      }
+    }
+  }
+}
+
+// 處理瀏覽器小於平板但大於手機時，主選單寬度變小
+@media (max-width: $breakpoint-tablet) and (min-width: $breakpoint-mobile) {
+  .AppMenuTree {
+    width: $menuSmallWidth;
+    .menu-footer {
+      width: $menuSmallWidth;
+    }
+  }
+}
+
+// 漢堡按鈕預設隱藏（非手機尺寸不顯示）
+.hamburger-btn {
+  display: none;
+}
+
+// 處理手機時，主選單變成漢堡模式
+@media (max-width: $breakpoint-mobile) {
+  // 漢堡按鈕（fixed 浮動在左上角）
+  .hamburger-btn {
+    display: flex;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 300;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: $radius;
+    background-color: var(--color-background-1);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all $menutransition;
+    i { font-size: 22px; }
+  }
+
+  // 選單預設隱藏
+  .AppMenuTree {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100svh;
+    width: $menuWidth;
+    transform: translateX(-#{$menuWidth});
+    transition: transform $menutransition;
+    z-index: 300;
+
+    &.is-mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  // 半透明 overlay
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background-color: rgba(#000, 0.4);
+  }
+}

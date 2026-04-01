@@ -1,0 +1,120 @@
+@use "sass:color";
+
+button.custom-btn {
+  // default
+  padding: 0.375rem 0.8rem;
+  border: 2px solid var(--color-border);
+  border-radius: $radius;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: $line-height-base;
+  font-family: $font-family;
+  vertical-align: bottom;
+  white-space: nowrap; // 實驗按鈕強制不換行看看
+  cursor: pointer;
+  &:hover {
+    border-color: $color_main_3;
+    color: $color_main_3;
+  }
+  &:active,
+  &:focus {
+    border-color: $color_main_2;
+    color: $color_main_2;
+    background-color: var(--color-background);
+    outline: none;
+    box-shadow: none;
+  }
+  &:disabled {
+    opacity: 0.3;
+    &:hover {
+      border-color: var(--color-border);
+      color: var(--color-text);
+    }
+  }
+  &.error {
+    color: $color_red_2;
+    border-color: $color_red_2;
+  }
+  // icon 樣式
+  > i {
+    font-size: 20px;
+    vertical-align: text-top;
+  }
+}
+
+// 按鈕 - 企業色主題 (不受 light/dark 模式影響)
+.custom-btn.custom-main-btn {
+  border: 2px solid $color_main_1;
+  background-color: $color_main_1;
+  color: $white;
+  &:hover {
+    border-color: $color_main_3;
+    background-color: $color_main_3;
+    color: $white;
+  }
+  &:active,
+  &:focus {
+    border-color: $color_main_2;
+    background-color: $color_main_2;
+    color: $white;
+  }
+
+  &:disabled {
+    &:hover,
+    &:active,
+    &:focus {
+      border-color: $color_main_1;
+      background-color: $color_main_1;
+      color: $white;
+    }
+  }
+  &.error {
+    color: $white;
+    background-color: $color_red_2;
+    border-color: $color_red_2;
+  }
+}
+
+// 按鈕 - 沒有邊框
+.custom-btn.no-border:not(.custom-main-btn) {
+  border-color: transparent;
+  &:hover {
+    border-color: transparent;
+  }
+  &:active,
+  &:focus {
+    border-color: transparent;
+  }
+  &:disabled {
+    &:hover,
+    &:active,
+    &:focus {
+      border-color: transparent;
+    }
+  }
+  &.error {
+    border-color: transparent;
+  }
+}
+// 按鈕 - 沒有背景
+.custom-btn.no-bg:not(.custom-main-btn) {
+  background-color: transparent;
+  &:hover {
+    background-color: transparent;
+  }
+  &:active,
+  &:focus {
+    background-color: transparent;
+  }
+  &:disabled {
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: transparent;
+    }
+  }
+  &.error {
+    background-color: transparent;
+  }
+}

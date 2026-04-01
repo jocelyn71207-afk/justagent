@@ -1,0 +1,125 @@
+@use "sass:color";
+
+// Layout
+$header-height: 36px;
+$header-AiViewer-height: 0px;
+$menuWidth: 306px;
+$menuSmallWidth: 200px;
+$menuHeaderHeight: 216px;
+$menuFooterHeight: 50px;
+$menutransition: 0.2s;
+
+// Breakpoints
+$breakpoint-desktop: 1024px; // 筆電或桌機
+$breakpoint-tablet: 900px; // 平板
+$breakpoint-mobile: 768px; // 手機
+
+// default colors
+$white: #ffffff;
+$black: #000000;
+
+// 灰色基調定義
+$grey-border: #d3d4d8; // 邊框
+$grey-font: #232735; // 文字
+$grey-shadow: #29323c; // 陰影
+
+// Main
+$color_main_1: #3eb5cc; // 產品主色 (預設justka use)
+$color_main_2: #22c2d3;
+$color_main_3: #76cbdd;
+$color_main_4: #ceecf2;
+$color_main_5: #e9f9fb;
+$color_main_6: #ecfbff;
+
+// 灰色
+$color_grey_1: #8b90a0;
+$color_grey_2: #9fabba; // 下拉選單右邊三角形的顏色
+
+// Green
+$color_green_1: #02c300; // LINE use
+
+// Blue
+$color_blue_1: #1877f2; // FB use
+
+// Red
+$color_red_1: #dd4b39; // google use
+$color_red_2: #dd4839;
+
+// Yellow
+$color_yellow_1: #fcfdcf;
+$color_yellow_2: #fbc000;
+
+// 瀏覽器 淺色主題語意色彩  (注意: 這幾個變數不應該在其他地方直接使用，其他地方請使用 _html.scss 內的CSS 變數)
+$color-background-light: $white; // 主背景顏色
+$color-background-light-1: color.adjust($white, $lightness: -5%); // 次背景顏色 1
+$color-background-light-2: color.adjust($white, $lightness: -35%); // 次背景顏色 2
+$color-border-light: color.adjust($grey-border, $lightness: 0%); // 線顏色定義
+$color-border-light-1: color.adjust($grey-border, $lightness: -10%); // 線顏色定義 1
+$color-heading-light: $color_main_1; // 標題文字顏色
+$color-text-light: $grey-font; // 文字顏色
+$color-text-link-light: $color_main_1; // 連結文字顏色
+$color-text-link-active-light: color.adjust($color_main_1, $lightness: -15%); // 連結文字懸停顏色
+$color-shadow-light: color.change($grey-shadow, $alpha: 0.3); // 陰影顏色
+$color-scrollbar-light: color.adjust($grey-border, $lightness: -7%); // 滾動條顏色
+$color-userSay-record-light: $white; // user 角度的對話紀錄背景色
+$color-tab-active-bg-light: $white; // 頁籤 active 的背景顏色
+$color-switch-active-bg-light: color.adjust(
+  $white,
+  $lightness: -70%
+); // switch active 狀態的背景顏色
+
+// 瀏覽器 深色主題語意顏色  (注意: 這幾個變數不應該在其他地方直接使用，其他地方請使用 _html.scss 內的CSS 變數)
+$for-dark-base: #313132; // 基底色
+$color-background-dark: $for-dark-base; // 主背景顏色
+$color-background-dark-1: color.adjust($for-dark-base, $lightness: -3%); // 次背景顏色 1
+$color-background-dark-2: color.adjust($for-dark-base, $lightness: -8%); // 次背景顏色 2
+$color-border-dark: color.adjust($for-dark-base, $lightness: 20%); // 線顏色定義
+$color-border-dark-1: color.adjust($for-dark-base, $lightness: 30%); // 線顏色定義 1
+$color-heading-dark: $color_main_1; // 標題文字顏色
+$color-text-dark: $white; // 文字顏色
+$color-text-link-dark: $color_main_1; // 連結文字顏色
+$color-text-link-active-dark: color.adjust($color_main_1, $lightness: 35%); // 連結文字懸停顏色
+$color-shadow-dark: color.change(
+  color.adjust($grey-shadow, $lightness: -15%),
+  $alpha: 0.9
+); // 陰影顏色
+$color-scrollbar-dark: color.adjust($grey-border, $lightness: -30%); // 滾動條顏色
+$color-userSay-record-dark: color.adjust(
+  $for-dark-base,
+  $lightness: -10%
+); // user 角度的對話紀錄背景色
+$color-tab-active-bg-dark: color.adjust($for-dark-base, $lightness: 100%); // 頁籤 active 的背景顏色
+$color-switch-active-bg-dark: color.adjust(
+  $for-dark-base,
+  $lightness: -9%
+); // switch active 狀態的背景顏色
+
+// Transitions
+$transition-duration: 0.4s;
+$color-transition-duration: 0.5s;
+
+$font-family:
+  "ui-sans-serif", "-apple-system", "system-ui", "Segoe UI", "Helvetica", "Apple Color Emoji",
+  "Arial", "sans-serif", "Segoe UI Emoji", "Segoe UI Symbol";
+
+// Typography
+// $font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+// $font-family: "Microsoft Jhenghei UI", Pmingliu, "Segoe UI", -apple-system, system-ui, Roboto, "Helvetica Neue", sans-serif;
+$font-family:
+  "Microsoft Jhenghei UI",
+  Pmingliu,
+  "Segoe UI",
+  -apple-system,
+  system-ui,
+  Roboto,
+  "Helvetica Neue",
+  sans-serif;
+$font-size-base: 16px;
+$font-form-size: 14px;
+$line-height-base: 1.5;
+
+// 下拉選單的三角形
+$select_triangle: "data:image/gif;base64,R0lGODlhZABCAPMAAJ+ruqWxv7K8yLnBzL/H0cXN1szS2tLY39nd4+Xp7ezu8fL09vn5+gAAAAAAAAAAACH5BAEAAA0ALAAAAABkAEIAAAT+sMlJq7046827/2AojmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqdDENhYUMQEkaGAAAIKGgFLgBB1Iq731j4TBYSzlwvbA2nBgPweJpFhx+ECHl6fIIAAgxDgYJyKX1nh0WKeYwmjmKQRpJwlCOWXJhHmmecIJ6GiEqiYqQdpqCphawarqhNqoOtha+2sXsZtE8Ut2izurXBEsOyDcDIFcq+Es3Oz70U09TVi2nY2dqTCt3e34V5u+MWw4Ln6Onlj8ftGeqf8fLz5ez3GLf6+/xw/P0DWG+gCAQBBtgzyLChw4cQI0qcSLGixYsYM2rcyLGjRwoCEQAAOw==";
+
+// 導角
+$radius: 8px;

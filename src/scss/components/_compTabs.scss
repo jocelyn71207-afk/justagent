@@ -1,0 +1,51 @@
+@use "sass:color";
+
+.compTabs {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .compTabs-item {
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: background-color 0.35s;
+    user-select: none;
+  }
+
+  .compTabs-item.is-active {
+    background-color: var(--color-tab-active-bg);
+    .compTabs-label-btn {
+      color: $grey-font;
+    }
+  }
+
+  .compTabs-label-btn {
+    border: 0;
+    background: transparent !important;
+    padding: 3px 8px;
+    font-size: 14px;
+    border-radius: 8px;
+    > * {
+      font-size: 14px;
+      line-height: normal;
+    }
+    &:hover,
+    &:focus {
+      color: var(--color-text);
+    }
+    &:disabled {
+      color: var(--color-text);
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    &:focus-visible {
+      outline: 2px solid $color_main_1;
+      outline-offset: 2px;
+    }
+  }
+}

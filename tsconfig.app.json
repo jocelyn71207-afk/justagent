@@ -1,0 +1,20 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "public/libs", "types/**/*.d.ts"],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
+    // 新增這兩行避免IDE自動移除code用
+    "allowUnreachableCode": true, // 允許不可達代碼
+    "allowUnusedLabels": true,    // 允許未使用的標籤（相關設定）
+
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    "module": "ESNext",           // 或 "ES2020", "ES2022", "ESNext"
+    "target": "ES2020",           // 或更高版本
+    "moduleResolution": "bundler", // Vite 推薦設定
+  }
+}
