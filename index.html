@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/justagent/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>AI AGENT</title>
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+  <!-- Google Material Symbols 圖示庫，同時載入 Outlined / Rounded / Sharp 三種樣式 -->
+  <!-- 圖示瀏覽：https://fonts.google.com/icons?icon.size=24&icon.color=%231f1f1f -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <!-- Start Single Page Apps for GitHub Pages -->
+  <script type="text/javascript">
+    (function(l) {
+      if (l.search[1] === '/' ) {
+        var decoded = l.search.slice(1).split('&').map(function(s) { 
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+            l.pathname.slice(0, l.pathname.lastIndexOf('/')) + decoded + l.hash
+        );
+      }
+    }(window.location))
+  </script>
+  <!-- End Single Page Apps for GitHub Pages -->
+  <script type="module" crossorigin src="/justagent/assets/index-B2Q-IxHT.js"></script>
+  <link rel="stylesheet" crossorigin href="/justagent/assets/index-doWSxdya.css">
+</head>
+
+<body>
+  <div id="app"></div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- TODO... 之後刪除 -->
+  <script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script> <!-- TODO... 之後刪除 -->
+
+  <!-- 這是 Tim 找的 x-data-spreadsheet 套件 
+     由於文件上面說很多深度功能要對源碼下手 
+     所以我下載源碼放在 /public/libs/xspreadsheet 目錄底下 
+     每一次如果有改動套件都要重新 build 一次.
+    -->
+  <link rel="stylesheet" href="/justagent/libs/xspreadsheet/dist/xspreadsheet.css">
+  <script src="/justagent/libs/xspreadsheet/dist/xspreadsheet.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <!-- PDF.js套件也放在 /public/libs/ 目錄下 -->
+  <script src="/justagent/libs/pdf.min.js"></script>
+
+  <!-- TODO... 實驗 hmtl to pdf 用 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+
+
+</body>
+
+</html>
