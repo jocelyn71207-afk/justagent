@@ -61,22 +61,181 @@
       @tobottom="scrollCall('ASC')"
       @click="handleChatAreaClick($event)"
     >
-      <template #footer>
-        <!-- <i class="material-symbols-outlined AiAgentChatAreaToscrollBtn"
-          @click="AiAgentChatListScrollTo('DESC')">arrow_upward</i> -->
-        <i class="material-symbols-outlined AiAgentChatAreaToscrollBtn"
-          @click="AiAgentChatListScrollTo('ASC')">arrow_downward</i>
-        <!-- <div class="AiAgentChatAreaToscrollBtn">top</div>
-        <div class="AiAgentChatAreaToscrollBtn">bottom</div> -->
-      </template>
+      <template #footer></template>
     </VirtualList>
     <!-- </div> -->
 
 
     <!-- user 輸入大區域  TODO... 思考是否要拔出去成為組件 -->
     <div :class="['AiViewrUserInputArea', { enterCannedTask: isShowCannedTaskListBox }]">
+
+      <!-- Conv2 上傳商品懸浮面板 -->
+      <div v-show="conv2UploadFpVisible && currentConversationId === 'conv2'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">上傳商品資料</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv2UploadFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-up-panel">
+            <div class="conv2-up-img-box">
+              <img :src="DEMO_IMG" />
+            </div>
+            <div class="conv2-up-desc-box">
+              <div class="conv2-up-lbl">商品描述 <span class="conv2-up-hint">圖片或描述至少填一項</span></div>
+              <textarea class="conv2-up-ta" v-model="conv2UploadDesc" rows="3" @click.stop></textarea>
+              <div class="conv2-up-status conv2-up-status--ready">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                圖片已上傳・描述已填寫
+              </div>
+            </div>
+          </div>
+          <div class="conv2-fp-btn-row">
+            <button class="conv2-fp-submit-btn" @click.stop="conv2StartAnalysis()">開始分析 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conv2 深度分析步驟設定懸浮面板 -->
+      <div v-show="conv2StepFpVisible && currentConversationId === 'conv2'" class="conv2-fp conv2-step-fp-panel" @click.stop>
+        <div class="conv2-fp-top">
+          <div class="conv2-step-track-wrap">
+            <div class="conv2-step-track">
+              <template v-for="(s, si) in conv2StepDefs" :key="s.key">
+                <div :class="['conv2-sd', {'conv2-sd--done': isConv2StepDone(s.key), 'conv2-sd--active': conv2CurStep === s.key}]">
+                  {{ isConv2StepDone(s.key) ? '✓' : s.label }}
+                </div>
+                <div class="conv2-sl" v-if="si < conv2StepDefs.length - 1"></div>
+              </template>
+            </div>
+            <span class="conv2-step-title">{{ conv2StepTitleMap[String(conv2CurStep)] }}</span>
+          </div>
+          <button class="conv2-fp-close-btn" @click.stop="conv2StepFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <!-- Step 1: 商品類別 -->
+          <div v-show="conv2CurStep === 1">
+            <div class="conv2-info-note">✦ AI 從圖片識別商品，可調整</div>
+            <div class="conv2-chips">
+              <div v-for="c in ['室內拖鞋','系絨拖鞋','動物臉拖鞋','家居鞋']" :key="c"
+                :class="['conv2-chip', {sel: conv2S1Cat === c && !conv2S1Custom}]"
+                @click.stop="conv2S1Cat = c; conv2S1Custom = ''">{{ c }}</div>
+            </div>
+            <input class="conv2-fi conv2-fi--full" v-model="conv2S1Custom" placeholder="找不到，自行輸入…" @click.stop style="margin-top:4px" />
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(2)">確認 →</button>
+            </div>
+          </div>
+          <!-- Step 2: 商品資訊 -->
+          <div v-show="conv2CurStep === 2">
+            <div class="conv2-info-note">✦ AI 從圖片與描述自動帶入，非必填</div>
+            <div class="conv2-fg">
+              <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop /></div>
+              <div><div class="conv2-fl">定價 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Price" @click.stop /></div>
+            </div>
+            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop /></div>
+            <div><div class="conv2-fl">商品描述 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop></textarea></div>
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)">← 返回</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認 →</button>
+            </div>
+          </div>
+          <!-- Step 3: 分析特徵 -->
+          <div v-show="conv2CurStep === 3">
+            <div class="conv2-pdesc">多選（至少 1 項）</div>
+            <div v-for="f in conv2S3Features" :key="f.key"
+              :class="['conv2-feat-item', {sel: f.sel}]"
+              @click.stop="conv2TogFeat(f)">
+              <div class="conv2-fcb">
+                <svg v-if="f.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div><div class="conv2-ft">{{ f.title }}</div><div class="conv2-fd">{{ f.desc }}</div></div>
+            </div>
+            <div class="conv2-err">{{ conv2S3Err }}</div>
+            <div class="conv2-fp-btn-row">
+              <span class="conv2-cbadge">已選 {{ conv2S3Features.filter(f => f.sel).length }} / {{ conv2S3Features.length }}</span>
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(2)">← 返回</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(4)">確認 →</button>
+            </div>
+          </div>
+          <!-- Step 4: 搜索範圍 -->
+          <div v-show="conv2CurStep === 4">
+            <div class="conv2-chips">
+              <div :class="['conv2-chip', {sel: conv2S4Scope === 'tw'}]" @click.stop="conv2S4Scope = 'tw'">台灣市場</div>
+              <div :class="['conv2-chip', {sel: conv2S4Scope === 'domain'}]" @click.stop="conv2S4Scope = 'domain'">指定網址</div>
+            </div>
+            <div v-show="conv2S4Scope === 'domain'" style="margin-top:8px">
+              <div class="conv2-fl">指定網址 <span style="font-size:10px;color:var(--color-text-alpha50)">可輸入多個，用逗號分隔</span></div>
+              <input class="conv2-fi conv2-fi--full" v-model="conv2S4Domain" placeholder="e.g. shopee.tw, momo.com.tw" @click.stop />
+            </div>
+            <div style="font-size:11px;color:var(--color-text-alpha50);margin-top:8px">確認後進入設定審核，無誤後 DeepAgent 開始搜索</div>
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(3)">← 返回</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep('45')">確認 →</button>
+            </div>
+          </div>
+          <!-- Step 45: 確認設定 -->
+          <div v-show="conv2CurStep === '45'">
+            <div style="font-size:12px;font-weight:500;margin-bottom:8px">請確認設定是否正確，有誤可點「返回修改」</div>
+            <div class="conv2-review-grid">
+              <div class="conv2-rv-row"><span class="conv2-rv-k">商品類別</span><span class="conv2-rv-v">{{ conv2S1Custom || conv2S1Cat }}</span></div>
+              <div class="conv2-rv-row"><span class="conv2-rv-k">品牌 / 定價</span><span class="conv2-rv-v">{{ conv2S2Brand || '—' }} / {{ conv2S2Price || '—' }}</span></div>
+              <div class="conv2-rv-row"><span class="conv2-rv-k">分析特徵</span><span class="conv2-rv-v">{{ conv2S3Features.filter(f => f.sel).length }} 項</span></div>
+              <div class="conv2-rv-row"><span class="conv2-rv-k">搜索範圍</span><span class="conv2-rv-v">{{ conv2S4Scope === 'tw' ? '台灣市場' : '指定網址：' + conv2S4Domain }}</span></div>
+            </div>
+            <div class="conv2-fp-btn-row" style="margin-top:10px">
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(4)">← 返回修改</button>
+              <button class="conv2-fp-btn conv2-fp-btn--green" @click.stop="conv2StartSearch()">確認無誤，開始搜索 →</button>
+            </div>
+          </div>
+          <!-- Step 5: 確認競品 -->
+          <div v-show="conv2CurStep === 5">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:12px;color:var(--color-text-alpha50)">DeepAgent 找到 12 個備選競品，最多選 5 個</div>
+              <span class="conv2-cbadge">已選 {{ conv2S5SelComps.size }} / 5</span>
+            </div>
+            <div class="conv2-comp-layout-fp">
+              <div class="conv2-comp-list-fp">
+                <div v-for="comp in conv2S5Comps" :key="comp.id"
+                  :class="['conv2-ci-row', {sel: conv2S5SelComps.has(comp.id), blocked: !conv2S5SelComps.has(comp.id) && conv2S5SelComps.size >= 5}]"
+                  @click.stop="conv2TogComp(comp)"
+                  @mouseenter="conv2HoverComp = comp">
+                  <div class="conv2-ci-ic">{{ comp.icon }}</div>
+                  <div class="conv2-ci-info">
+                    <div class="conv2-ci-nm">{{ comp.name }}</div>
+                    <div class="conv2-ci-mt">{{ comp.price }}</div>
+                  </div>
+                  <input type="checkbox" class="conv2-ci-chk" :checked="conv2S5SelComps.has(comp.id)" @click.stop />
+                </div>
+              </div>
+              <div class="conv2-prev-col-fp">
+                <div class="conv2-prev-img-area-fp">
+                  <img v-if="conv2HoverComp?.img" :src="conv2HoverComp.img" style="width:100%;height:100%;object-fit:cover" />
+                  <div v-else class="conv2-prev-ph-fp">
+                    <i class="material-symbols-outlined">image</i>
+                    <span>游標移至競品<br>預覽圖片</span>
+                  </div>
+                </div>
+                <div class="conv2-prev-info-fp">
+                  <div class="conv2-prev-nm-fp">{{ conv2HoverComp?.name || '—' }}</div>
+                  <div style="font-size:11px;color:var(--color-text-alpha50)">{{ conv2HoverComp?.price || '' }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="conv2-err">{{ conv2S5Err }}</div>
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-sec-btn" @click.stop="conv2ResetComps()">重設</button>
+              <button class="conv2-fp-btn" :disabled="conv2S5SelComps.size < 1" @click.stop="conv2DoneComps()">產出報告 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 要上傳的附件 -->
-      <div :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
+      <div v-if="!conv2FpActive" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
         <!-- 已選擇的檔案附件 -->
         <div :class="['accessory-item-box', {'no-accessory-item': userInputModal.userUploadFiles.length === 0 && userInputModal.aiFiles.length === 0}]">
@@ -112,7 +271,26 @@
       </div>
       <!-- 使用者輸入區 -->
       <div :class="['input-group-box', { hidden: isShowCannedTaskListBox }]">
-        <textarea :class="['custom-textarea']"
+        <!-- Conv2 pills：panel 曾開啟就顯示，點擊可收合/展開 panel -->
+        <template v-if="currentConversationId === 'conv2'">
+          <div class="conv2-pill-row" v-show="conv2ShowUploadPill || conv2ShowStepPill">
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv2UploadFpVisible}"
+              v-show="conv2ShowUploadPill"
+              @click.stop="conv2UploadFpVisible = !conv2UploadFpVisible">
+              <span class="conv2-pill-dot"></span>上傳商品資料
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv2UploadFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv2StepFpVisible}"
+              v-show="conv2ShowStepPill"
+              @click.stop="conv2StepFpVisible = !conv2StepFpVisible">
+              <span class="conv2-pill-dot"></span>
+              Step {{ conv2CurStep === '45' ? '確認' : conv2CurStep }} · {{ conv2StepTitleMap[String(conv2CurStep)] }}
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv2StepFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+          </div>
+        </template>
+        <!-- fp 互動模式時完全移除輸入框 -->
+        <textarea v-if="!conv2FpActive" :class="['custom-textarea']"
           id="userInput"
           placeholder="請輸入您的需求"
           ref="userInputRef"
@@ -121,7 +299,7 @@
           @blur="inputBlur()"
           @keydown="inputKeyPress($event); handleEnterKeySubmit($event, sendUserInput)">
         </textarea>
-        <div>
+        <div v-if="!conv2FpActive">
           <!-- 展開快速罐頭任務區塊按鈕 -->
           <button class="custom-btn" v-tooltip.top="'使用快速任務'"
             @click="isShowCannedTaskListBox = true">
@@ -149,7 +327,7 @@
           <div class="option-item">從共享資源庫新增</div>
         </div>
         <!-- 發送按鈕 -->
-        <button class="custom-btn" v-tooltip="'發送訊息'"
+        <button class="custom-btn" v-if="!conv2FpActive" v-tooltip="'發送訊息'"
           @click="send()"><i class="material-symbols-outlined material-fill">send</i></button>
       </div>
 
@@ -158,14 +336,7 @@
 
         <div :class="['canned-list-box', {hide: !isShowCannedTaskListBox}]">
           <div :class="['canned-task-item', { 'active': false }]"
-            v-for="(item, i) in [
-              { id: 'cannedTask1', text: '快速罐頭任務範例文字1' },
-              { id: 'cannedTask2', text: '快速罐頭任務範例文字2' },
-              { id: 'cannedTask3', text: '快速罐頭任務範例文字33333333333333333333333' },
-              { id: 'cannedTask4', text: '快速罐頭任務範例文字4' },
-              { id: 'cannedTask5', text: '快速罐頭任務範例文字5' },
-              { id: 'cannedTask5', text: '快速罐頭任務範例文字6' },
-            ]" :key="'cannedTaskItem' + i"
+            v-for="(item, i) in cannedTaskItems" :key="'cannedTaskItem' + i"
             @click="sendCannedTask(item)">
             {{ item.text }}
           </div>
@@ -185,7 +356,10 @@
     </div>
 
     <!-- AI 內容免責聲明 -->
-    <div class="ai-disclaimer">由 AI 產生的內容，有時可能不完全準確，請再人工查證</div>
+    <div class="ai-disclaimer">
+      由 AI 產生的內容，有時可能不完全準確，請再人工查證
+      <span class="ai-disclaimer-reset" @click="resetConversation()">還原對話內容</span>
+    </div>
 
     <!-- 評論列表 comment list -->
     <commentListArea :setMainStagePosition="props.setMainStagePosition" />
@@ -212,6 +386,7 @@ import fileListArea from '@/components/AiViewer/fileListArea.vue';
 import blockListArea from '@/components/AiViewer/blockListArea.vue';
 import popDialog from '@/services/popDialog';
 import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions } from '@/utils/file';
+import htmlIcon from '@/assets/fileTypeIcon/html.png';
 
 const props = defineProps<{
   rightWidth: number;
@@ -225,11 +400,11 @@ const { aiViewerBlocks } = storeToRefs(aiviewerStore);
 const { sendUserInput } = aiviewerStore;
 const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
-const conversationTitles: Record<string, string> = {
-  conv1: '2026 年度銷售數據挖掘計畫',
-  conv2: "競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋",
-};
-const currentConversationTitle = computed(() => conversationTitles[currentConversationId.value] ?? '對話');
+const conv2Title = ref('');
+const currentConversationTitle = computed(() => {
+  if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
+  return '2026 年度銷售數據挖掘計畫';
+});
 
 const { isTouchDevice } = storeToRefs(aiviewerStore);
 
@@ -267,13 +442,27 @@ const AiAgentChatList = ref<InstanceType<typeof VirtualList>|null>(null);
 
 // 目前選擇的罐頭任務  TODO... 格式暫定, TODO... 是否要拔到 store 裡？
 const isShowCannedTaskListBox = ref(false);
+const cannedTaskItems = computed(() => {
+  if (currentConversationId.value === 'conv2') {
+    return [{ id: 'competitorAnalysis', text: '商品競品分析' }];
+  }
+  return [
+    { id: 'cannedTask1', text: '快速罐頭任務範例文字1' },
+    { id: 'cannedTask2', text: '快速罐頭任務範例文字2' },
+    { id: 'cannedTask3', text: '快速罐頭任務範例文字33333333333333333333333' },
+    { id: 'cannedTask4', text: '快速罐頭任務範例文字4' },
+    { id: 'cannedTask5', text: '快速罐頭任務範例文字5' },
+    { id: 'cannedTask6', text: '快速罐頭任務範例文字6' },
+  ];
+});
 // 切換罐頭任務
 function sendCannedTask(item: any) {
+  isShowCannedTaskListBox.value = false;
+  if (currentConversationId.value === 'conv2' && item.id === 'competitorAnalysis') {
+    conv2InitFlow();
+    return;
+  }
   send();
-  // userInputModal.value.msg = item.text;
-  // nextTick(() => {
-  //   adjustTextareaHeight();
-  // });
 }
 
 // 是否焦點在使用者輸入框
@@ -510,6 +699,129 @@ const DEMO_DESC = '淺粉色系絨室內拖鞋，動物臉設計，具有柔潤�
 let conv2IdCounter = 2;
 const conv2Mode = ref('');
 
+// ── 懸浮面板 state ──
+const conv2UploadFpVisible = ref(false);
+const conv2ShowUploadPill = ref(false); // pill 是否顯示（獨立於 panel 展開狀態）
+const conv2UploadDesc = ref(DEMO_DESC);
+
+const conv2StepFpVisible = ref(false);
+const conv2ShowStepPill = ref(false); // pill 是否顯示
+const conv2CurStep = ref<number | string>(1);
+
+// 任一 fp 面板開啟中（隱藏輸入框用）
+const conv2AnyFpOpen = computed(() =>
+  currentConversationId.value === 'conv2' && (conv2UploadFpVisible.value || conv2StepFpVisible.value)
+);
+// fp 互動模式中（有 pill 顯示）：完全隱藏原始輸入列
+const conv2FpActive = computed(() =>
+  currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value)
+);
+
+const conv2StepTitleMap: Record<string, string> = {
+  '1': '商品類別確認', '2': '商品資訊確認',
+  '3': '選擇分析特徵', '4': '設定搜索範圍',
+  '45': '確認設定內容', '5': '確認競品',
+};
+const conv2StepDefs = [
+  { key: 1, label: '1' }, { key: 2, label: '2' }, { key: 3, label: '3' },
+  { key: 4, label: '4' }, { key: '45', label: '✓' }, { key: 5, label: '5' },
+];
+const conv2StepOrder: Array<number | string> = [1, 2, 3, 4, '45', 5];
+function isConv2StepDone(key: number | string) {
+  const ci = conv2StepOrder.indexOf(conv2CurStep.value);
+  const ki = conv2StepOrder.indexOf(key);
+  return ki < ci;
+}
+function conv2GoStep(n: number | string) { conv2CurStep.value = n; }
+
+// Step 1
+const conv2S1Cat = ref('室內拖鞋');
+const conv2S1Custom = ref('');
+// Step 2
+const conv2S2Brand = ref('UGG');
+const conv2S2Price = ref('NT$5,980');
+const conv2S2Name = ref("Women's Elea Pooch Slip-on");
+const conv2S2Desc = ref(DEMO_DESC);
+// Step 3
+const conv2S3Err = ref('');
+const conv2S3Features = ref([
+  { key: 'material', title: '材質與觸感',   desc: '系絨材質與質感資料', sel: true },
+  { key: 'design',   title: '設計風格',     desc: '動物臉設計、顏色、外觀吸引度', sel: true },
+  { key: 'slip',     title: '防滑與耐用性', desc: '適腳設計與使用壽命', sel: false },
+  { key: 'warmth',   title: '保暖功能',     desc: '內絨毛與適合季節', sel: false },
+  { key: 'price',    title: '性價比',       desc: '定價相對材質功能價值', sel: false },
+]);
+function conv2TogFeat(f: any) {
+  const selCount = conv2S3Features.value.filter(x => x.sel).length;
+  if (f.sel && selCount <= 1) { conv2S3Err.value = '至少選 1 個特徵'; return; }
+  f.sel = !f.sel;
+  conv2S3Err.value = '';
+}
+// Step 4
+const conv2S4Scope = ref('tw');
+const conv2S4Domain = ref('');
+// Step 5
+const conv2S5Err = ref('');
+const conv2S5SelComps = ref(new Set<number>());
+const conv2HoverComp = ref<any>(null);
+const conv2S5Comps = [
+  { id: 1,  icon: '🐾', name: '日陞威 系泰迪絨拖',        price: 'NT$590', img: 'https://image-cdn-flare.qdm.cloud/q66fb53643c070/image/data/2020/10/09/b25b12f8d33e814f3428a2a76c2445da.jpg' },
+  { id: 2,  icon: '🐱', name: 'Paidal 萌系嬰兒棉拖鞋',    price: 'NT$599', img: '' },
+  { id: 3,  icon: '🌾', name: '貝柔 系絨毛保暖拖鞋',      price: 'NT$299', img: '' },
+  { id: 4,  icon: '🦌', name: 'ZARA CAPYFUN 室內拖鞋',    price: 'NT$890', img: '' },
+  { id: 5,  icon: '🌻', name: '木天 動物臉家居布絨',       price: '未定',   img: '' },
+  { id: 6,  icon: '🏠', name: 'Sugar Jardin 保暖系絨拖',  price: 'NT$480', img: '' },
+  { id: 7,  icon: '🦦', name: 'Zivmode 厚底系絨拖鞋',     price: 'NT$520', img: '' },
+  { id: 8,  icon: '🐻', name: 'OZKIZ 系絨防滑萌人拖鞋',   price: 'NT$350', img: '' },
+  { id: 9,  icon: '🐼', name: 'iSlippers 前頭系絨拖鞋',   price: 'NT$420', img: '' },
+  { id: 10, icon: '🐨', name: '黑貓窩 熊熊系列系絨拖鞋',  price: 'NT$580', img: '' },
+  { id: 11, icon: '🐯', name: 'WUWU 可愛動物家居拖鞋',    price: 'NT$399', img: '' },
+  { id: 12, icon: '🦆', name: '家居館廊 保暖動物童拖鞋',  price: 'NT$280', img: '' },
+];
+function conv2TogComp(comp: any) {
+  const s = new Set(conv2S5SelComps.value);
+  if (s.has(comp.id)) { s.delete(comp.id); }
+  else {
+    if (s.size >= 5) { conv2S5Err.value = '最多選 5 個競品'; return; }
+    s.add(comp.id);
+  }
+  conv2S5Err.value = '';
+  conv2S5SelComps.value = s;
+}
+function conv2ResetComps() { conv2S5SelComps.value = new Set(); conv2S5Err.value = ''; }
+function conv2DoneComps() {
+  if (conv2S5SelComps.value.size < 1) return;
+  const names = [...conv2S5SelComps.value].map(id => conv2S5Comps.find(c => c.id === id)?.name ?? '').filter(Boolean);
+  conv2StepFpVisible.value = false;
+  conv2ShowStepPill.value = false;
+  c2Push({ forUser: true, msg: `確認以上 ${names.length} 個競品，請生成分析報告。` });
+  c2Push({ msg: `已確認 ${names.length} 個競品，開始生成報告⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取競品頁面資料</div>
+  <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對與評分中</div>
+  <div class="conv2-ss conv2-ss--wait">ReportGenerator 產出 HTML 報告</div>
+</div>` });
+  c2Scroll();
+  setTimeout(() => { conv2ShowReport('深度分析', names.length); c2Scroll(); }, 2200);
+}
+function conv2StartSearch() {
+  conv2StepFpVisible.value = false;
+  c2Push({ forUser: true, msg: '確認無誤，開始搜索。' });
+  c2Push({ msg: `設定已確認，DeepAgent 開始深度搜索⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">SearchStrategist 產生深度搜索任務</div>
+  <div class="conv2-ss conv2-ss--done">GoogleSearchEngine 搜索並過濾關鍵字</div>
+  <div class="conv2-ss conv2-ss--active">ImageSimilarityFilter 圖片相似度篩選中</div>
+  <div class="conv2-ss conv2-ss--wait">篩選完成，產出備選競品清單</div>
+</div>` });
+  c2Scroll();
+  setTimeout(() => {
+    c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
+    c2Scroll();
+    conv2CurStep.value = 5;
+    conv2S5SelComps.value = new Set([1, 2, 3, 4]);
+    conv2StepFpVisible.value = true;
+  }, 1800);
+}
+
 const CONV2_MODE_CARD_MSG = `你好！請選擇想要的分析模式：
 <div class="ai-mode-card">
   <div class="ai-mode-item" data-action="select-mode" data-value="init">
@@ -538,7 +850,17 @@ const CONV2_MODE_CARD_MSG = `你好！請選擇想要的分析模式：
   </div>
 </div>`;
 
-const conv2Msgs = ref<any[]>([{ id: 'c2_1', msg: CONV2_MODE_CARD_MSG }]);
+const conv2Msgs = ref<any[]>([]);
+
+function conv2InitFlow() {
+  if (conv2Msgs.value.length > 0) return;
+  conv2Title.value = '商品競品分析';
+  c2Push({ forUser: true, msg: '商品競品分析' });
+  setTimeout(() => {
+    c2Push({ msg: CONV2_MODE_CARD_MSG });
+    c2Scroll();
+  }, 300);
+}
 
 function c2Push(msg: any) {
   conv2Msgs.value.push({ id: `c2_${conv2IdCounter++}`, ...msg });
@@ -564,7 +886,6 @@ function conv2Dispatch(action: string, value: string) {
     case 'start-analysis': conv2StartAnalysis(); break;
     case 'confirm-product': conv2ConfirmProduct(); break;
     case 'submit-urls':    conv2SubmitUrls(); break;
-    case 'confirm-comps':  conv2ConfirmComps(); break;
   }
 }
 
@@ -594,23 +915,20 @@ function conv2SelectMode(mode: string) {
     return;
   }
 
+  // init / deep: 開啟上傳懸浮面板
   setTimeout(() => {
-    c2Push({ msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請分享一下你想分析的商品資訊。` });
-    c2Push({ msg: `<div class="conv2-upload-card">
-  <img class="conv2-upload-img" src="${DEMO_IMG}" />
-  <div class="conv2-upload-info">
-    <div class="conv2-upload-sku">示範商品</div>
-    <div class="conv2-upload-name">Women's Elea Pooch Slip-on</div>
-    <div class="conv2-upload-desc">${DEMO_DESC}</div>
-    <button class="conv2-action-btn" data-action="start-analysis" style="margin-top:8px">點擊使用此商品開始分析 →</button>
-  </div>
-</div>` });
+    c2Push({ msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請在下方面板上傳商品資訊。` });
     c2Scroll();
+    conv2UploadFpVisible.value = true;
+    conv2ShowUploadPill.value = true;
   }, 400);
 }
 
 function conv2StartAnalysis() {
-  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--color-border)" src="${DEMO_IMG}"/><span>${DEMO_DESC}</span></div>` });
+  conv2UploadFpVisible.value = false;
+  conv2ShowUploadPill.value = false;
+  conv2Title.value = "競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋";
+  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--color-border)" src="${DEMO_IMG}"/><span>${conv2UploadDesc.value}</span></div>` });
   c2Push({ isThinking: true, msg: 'AI 正在思考中...' });
   c2Scroll();
   setTimeout(() => {
@@ -641,50 +959,51 @@ function conv2ConfirmProduct() {
     c2Push({ msg: '正在產出初步分析報告⋯' });
     c2Scroll();
     setTimeout(() => {
+      const extIco = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V7M8 1h3m0 0v3m0-3L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       c2Push({ msg: `初步分析完成，共找到 <strong>5 個直接競品</strong>、<strong>1 個功能競品</strong>：<div class="conv2-init-list">
-  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">1</span><span class="conv2-comp-name">ZARA CAPYFUN 室內拖鞋</span><span class="conv2-comp-price">NT$890</span></div>
-  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">2</span><span class="conv2-comp-name">Paidal 萌系嬰兒棉拖鞋</span><span class="conv2-comp-price">NT$599</span></div>
-  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">3</span><span class="conv2-comp-name">Zivmode 保暖厚底系絨拖鞋</span><span class="conv2-comp-price">NT$520</span></div>
-  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">4</span><span class="conv2-comp-name">貝柔 系絨毛保暖拖鞋</span><span class="conv2-comp-price">NT$299</span></div>
-  <div class="conv2-comp-item conv2-comp-item--rank"><span class="conv2-comp-rank">5</span><span class="conv2-comp-name">ZARA 動物臉家居鞋</span><span class="conv2-comp-price">NT$890</span></div>
-  <div class="conv2-comp-item conv2-comp-item--rank conv2-comp-item--fn"><span class="conv2-comp-rank conv2-comp-rank--fn">f</span><span class="conv2-comp-name">iSlippers 輕活系列前頭系絨家居鞋</span><span class="conv2-comp-price">NT$420</span></div>
+  <div class="conv2-comp-item conv2-comp-item--rank">
+    <span class="conv2-comp-rank">1</span>
+    <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">ZARA</div><div class="conv2-comp-title">CAPYFUN 室內拖鞋 - 粉色</div><div class="conv2-comp-feat">毛絨材質・動物臉設計・室內防滑底・NT$890</div></div>
+    <a class="conv2-comp-ext" href="https://www.zara.com/tw/" target="_blank">${extIco}</a>
+  </div>
+  <div class="conv2-comp-item conv2-comp-item--rank">
+    <span class="conv2-comp-rank">2</span>
+    <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">Paidal</div><div class="conv2-comp-title">萌系嬰兒棉拖鞋</div><div class="conv2-comp-feat">動物臉設計・嬰兒棉質地・萌感外觀・NT$599</div></div>
+    <a class="conv2-comp-ext" href="https://www.paidal.com.tw/" target="_blank">${extIco}</a>
+  </div>
+  <div class="conv2-comp-item conv2-comp-item--rank">
+    <span class="conv2-comp-rank">3</span>
+    <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">Zivmode</div><div class="conv2-comp-title">保暖厚底系絨拖鞋</div><div class="conv2-comp-feat">厚底設計・系絨材質・室內防滑・NT$520</div></div>
+    <a class="conv2-comp-ext" href="https://www.zivmode.com/" target="_blank">${extIco}</a>
+  </div>
+  <div class="conv2-comp-item conv2-comp-item--rank">
+    <span class="conv2-comp-rank">4</span>
+    <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">貝柔</div><div class="conv2-comp-title">系絨毛保暖拖鞋</div><div class="conv2-comp-feat">系絨材質・保暖功能・柔軟底部・NT$299</div></div>
+    <a class="conv2-comp-ext" href="https://www.parkcat.com.tw/" target="_blank">${extIco}</a>
+  </div>
+  <div class="conv2-comp-item conv2-comp-item--rank">
+    <span class="conv2-comp-rank">5</span>
+    <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">ZARA</div><div class="conv2-comp-title">動物臉家居鞋 - 黑豆色</div><div class="conv2-comp-feat">系絨多層・動物臉設計・家居穿著・NT$890</div></div>
+    <a class="conv2-comp-ext" href="https://www.zara.com/tw/" target="_blank">${extIco}</a>
+  </div>
+  <div class="conv2-comp-item conv2-comp-item--rank conv2-comp-item--fn">
+    <span class="conv2-comp-rank conv2-comp-rank--fn">f</span>
+    <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">iSlippers</div><div class="conv2-comp-title">輕活系列前頭系絨家居鞋</div><div class="conv2-comp-feat">前頭設計・系絨材質・輕量化・NT$420</div></div>
+    <a class="conv2-comp-ext" href="https://24h.pchome.com.tw/" target="_blank">${extIco}</a>
+  </div>
 </div>` });
-      conv2ShowReport('初步分析', 5);
       c2Scroll();
     }, 1000);
     return;
   }
-  c2Push({ msg: '商品特徵已確認，DeepAgent 開始深度搜索⋯' });
-  c2Push({ msg: `<div class="conv2-search-card">
-  <div class="conv2-ss conv2-ss--done">SearchStrategist 產生深度搜索任務</div>
-  <div class="conv2-ss conv2-ss--done">GoogleSearchEngine 搜索並過濾關鍵字</div>
-  <div class="conv2-ss conv2-ss--active">ImageSimilarityFilter 圖片相似度篩選中</div>
-  <div class="conv2-ss conv2-ss--wait">篩選完成，產出備選競品清單</div>
-</div>` });
+  // deep mode: 開啟步驟設定懸浮面板
+  c2Push({ msg: '商品特徵已確認，請在下方面板完成深度分析設定。' });
   c2Scroll();
-  setTimeout(() => {
-    c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，以下已預選 4 個，請確認後產出報告：` });
-    c2Push({ msg: `<div class="conv2-comp-list">
-  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">1</span><span class="conv2-comp-name">日陞威 系泰迪絨拖</span><span class="conv2-comp-price">NT$590</span></div>
-  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">2</span><span class="conv2-comp-name">Paidal 萌系嬰兒棉拖鞋</span><span class="conv2-comp-price">NT$599</span></div>
-  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">3</span><span class="conv2-comp-name">ZARA CAPYFUN 室內拖鞋</span><span class="conv2-comp-price">NT$890</span></div>
-  <div class="conv2-comp-item conv2-comp-item--sel"><span class="conv2-comp-rank">4</span><span class="conv2-comp-name">貝柔 系絨毛保暖拖鞋</span><span class="conv2-comp-price">NT$299</span></div>
-  <div class="conv2-comp-actions"><button class="conv2-action-btn" data-action="confirm-comps">確認競品，產出報告 →</button></div>
-</div>` });
-    c2Scroll();
-  }, 1800);
+  conv2CurStep.value = 1;
+  conv2StepFpVisible.value = true;
+  conv2ShowStepPill.value = true;
 }
 
-function conv2ConfirmComps() {
-  c2Push({ forUser: true, msg: '確認以上 4 個競品，請生成分析報告。' });
-  c2Push({ msg: `已確認 4 個競品，開始生成報告⋯<div class="conv2-search-card" style="margin-top:8px">
-  <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取競品頁面資料</div>
-  <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對與評分中</div>
-  <div class="conv2-ss conv2-ss--wait">ReportGenerator 產出 HTML 報告</div>
-</div>` });
-  c2Scroll();
-  setTimeout(() => { conv2ShowReport('深度分析', 4); c2Scroll(); }, 2200);
-}
 
 function conv2SubmitUrls() {
   c2Push({ forUser: true, msg: '提供 3 個競品網址：<br>1. shopee.tw — 日陞威 系泰迪絨拖<br>2. paidal.com.tw — 萌系嬰兒棉拖鞋<br>3. zara.com/tw — CAPYFUN 室內拖鞋' });
@@ -699,17 +1018,15 @@ function conv2SubmitUrls() {
 
 function conv2ShowReport(mode: string, count: number) {
   c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。' });
-  c2Push({ finishResponse: true, msg: `<div class="conv2-report-card">
-  <div class="conv2-report-header">
-    <div class="conv2-report-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-    <div><div class="conv2-report-title">競品分析報告</div><div class="conv2-report-sub">competitor_analysis_report.html</div></div>
+  c2Push({ finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">competitor_analysis_report.html</div>
+    <div class="file-size">${mode} · ${count} 個競品</div>
   </div>
-  <div class="conv2-report-meta">
-    <div class="conv2-report-meta-item"><div class="conv2-report-meta-k">分析模式</div><div class="conv2-report-meta-v">${mode}</div></div>
-    <div class="conv2-report-meta-item"><div class="conv2-report-meta-k">競品數量</div><div class="conv2-report-meta-v">${count} 個</div></div>
-    <div class="conv2-report-meta-item"><div class="conv2-report-meta-k">生成日期</div><div class="conv2-report-meta-v">2026/4/1</div></div>
-  </div>
-  <div class="conv2-report-actions"><button class="conv2-action-btn">下載分析報告</button></div>
+  <button class="file-more-btn">
+    <i class="material-symbols-outlined">download</i>
+  </button>
 </div>` });
 }
 // -------- end Conversation 2 流程 --------
@@ -717,6 +1034,35 @@ function conv2ShowReport(mode: string, count: number) {
 const testMsgs = computed(() =>
   currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value
 );
+
+function resetConversation() {
+  if (currentConversationId.value === 'conv2') {
+    conv2IdCounter = 2;
+    conv2Mode.value = '';
+    conv2Title.value = '';
+    conv2Msgs.value = [];
+    conv2UploadFpVisible.value = false;
+    conv2ShowUploadPill.value = false;
+    conv2UploadDesc.value = DEMO_DESC;
+    conv2StepFpVisible.value = false;
+    conv2ShowStepPill.value = false;
+    conv2CurStep.value = 1;
+    conv2S1Cat.value = '室內拖鞋';
+    conv2S1Custom.value = '';
+    conv2S2Brand.value = 'UGG';
+    conv2S2Price.value = 'NT$5,980';
+    conv2S2Name.value = "Women's Elea Pooch Slip-on";
+    conv2S2Desc.value = DEMO_DESC;
+    conv2S3Err.value = '';
+    conv2S3Features.value.forEach(f => { f.sel = f.key === 'material' || f.key === 'design'; });
+    conv2S4Scope.value = 'tw';
+    conv2S4Domain.value = '';
+    conv2S5SelComps.value = new Set();
+    conv2S5Err.value = '';
+    conv2HoverComp.value = null;
+  }
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
 
 // degub 相關
 const { debugCount, lookDebug } = storeToRefs(aiviewerStore);

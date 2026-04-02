@@ -2,118 +2,133 @@
   <div class="KnowledgeBase views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
+      <!-- 頁面標題與快速操作 -->
       <div class="views-page-header">
-        <h3>
-          知識庫管理
-          <div class="secondary-box">{{ teamName }}</div>
-        </h3>
+        <div class="page-title-group">
+          <h3>
+            知識庫管理
+            <div class="secondary-box">{{ teamName }}</div>
+          </h3>
+          <span class="ml-3 fc-grey-1 fs-14">管理產品知識條目及其版本演進</span>
+        </div>
         <div class="header-right-box">
           <div class="search-box">
             <i class="material-symbols-outlined">search</i>
-            <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋知識條目" />
+            <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋條目標題、內容或標籤" />
           </div>
-          <button class="custom-btn custom-main-btn" @click="addEntry">
-            <i class="material-symbols-outlined">add</i>
-            新增條目
+          <button class="custom-btn custom-main-btn" @click="createNewKnowledge">
+            <i class="material-symbols-outlined">add_circle</i>
+            新增知識條目
           </button>
         </div>
       </div>
 
-      <!-- 統計卡片 -->
+      <!-- 統計概覽 (實時反應 Store 狀態) -->
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-icon" style="background: var(--color-main-4)">
-            <i class="material-symbols-outlined" style="color: var(--color-main-1)">menu_book</i>
+          <div class="stat-icon stat-icon--main">
+            <i class="material-symbols-outlined">description</i>
           </div>
           <div>
-            <div class="stat-number">{{ knowledgeList.length }}</div>
+            <div class="stat-number">{{ stats.total }}</div>
             <div class="stat-label">總條目數</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon stat-icon--green">
-            <i class="material-symbols-outlined">check_circle</i>
+            <i class="material-symbols-outlined">verified</i>
           </div>
           <div>
-            <div class="stat-number">{{ publishedCount }}</div>
-            <div class="stat-label">已發布</div>
+            <div class="stat-number">{{ stats.published }}</div>
+            <div class="stat-label">已發布版本</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon stat-icon--yellow">
-            <i class="material-symbols-outlined">edit_note</i>
+            <i class="material-symbols-outlined">drafts</i>
           </div>
           <div>
-            <div class="stat-number">{{ draftCount }}</div>
-            <div class="stat-label">草稿</div>
+            <div class="stat-number">{{ stats.draft }}</div>
+            <div class="stat-label">編輯中草稿</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon stat-icon--orange">
-            <i class="material-symbols-outlined">pending</i>
+            <i class="material-symbols-outlined">pending_actions</i>
           </div>
           <div>
-            <div class="stat-number">{{ pendingCount }}</div>
-            <div class="stat-label">待審核</div>
+            <div class="stat-number">{{ stats.reviewing }}</div>
+            <div class="stat-label">版本審核中</div>
           </div>
         </div>
       </div>
 
-      <!-- 過濾列 -->
+      <!-- 篩選列 -->
       <div class="filter-row">
-        <compDropDown
-          :options="categoryOptions"
-          :show-search="false"
-          :showClearTriggerIcon="false"
-          :default-value="''"
-          :width="'160px'"
-          placeholder="所有分類"
-          @select="(item) => { filterCategory = item.value; }"
-        />
-        <compDropDown
-          class="ml-2"
-          :options="statusOptions"
-          :show-search="false"
-          :showClearTriggerIcon="false"
-          :default-value="''"
-          :width="'140px'"
-          placeholder="所有狀態"
-          @select="(item) => { filterStatus = item.value; }"
-        />
+        <div class="filter-left">
+          <compTabs
+            v-model="filterCategory"
+            :tabs="[
+              { label: '全部', value: '' },
+              { label: '商務規則', value: '商務規則' },
+              { label: '系統文件', value: '系統文件' },
+              { label: '客服知識', value: '客服知識' },
+            ]"
+          />
+        </div>
+        <div class="filter-right">
+          <compDropDown
+            :options="[
+              { name: '所有狀態', value: '' },
+              { name: '已發布', value: 'PUBLISHED' },
+              { name: '審核中', value: 'REVIEWING' },
+              { name: '草稿', value: 'DRAFT' },
+              { name: '已退回', value: 'REJECTED' },
+            ]"
+            :show-search="false"
+            :showClearTriggerIcon="false"
+            :default-value="''"
+            :width="'140px'"
+            class="w-100"
+            placeholder="篩選狀態"
+            @select="(item: any) => { filterStatus = String(item.value); }"
+          />
+        </div>
       </div>
 
-      <!-- 查無資料 -->
-      <div class="p-5 mt-4 text-center fc-grey-1" v-if="displayList.length === 0">
-        目前沒有知識條目
-      </div>
-
-      <!-- 表格 -->
+      <!-- 知識列表表格 -->
       <div class="table-box mt-2" v-if="displayList.length">
         <table class="custom-table">
           <thead>
             <tr>
-              <th>標題</th>
+              <th>知識條目</th>
               <th width="120">分類</th>
-              <th>標籤</th>
-              <th width="90">狀態</th>
-              <th width="160">最後更新</th>
+              <th width="100">目前版本</th>
+              <th width="120">狀態</th>
+              <th width="160">最後更動</th>
               <th width="60"></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, i) in displayList" :key="item.id"
-              @mouseleave="item.showMoreOption = false">
+            <tr v-for="item in displayList" :key="item.id" @mouseleave="activeMenuId = ''">
               <td>
-                <div class="entry-title">{{ item.title }}</div>
-                <div class="entry-id">ID: {{ item.id }}</div>
+                <div class="d-flex align-items-center">
+                  <div class="knowledge-icon mr-3">
+                    <i class="material-symbols-outlined">menu_book</i>
+                  </div>
+                  <div>
+                    <div class="entry-title cursor-pointer" @click="goToDetail(item.id)">{{ item.title }}</div>
+                    <div class="entry-id">{{ item.id }}</div>
+                  </div>
+                </div>
               </td>
               <td>
                 <span class="category-tag">{{ item.category }}</span>
               </td>
               <td>
-                <div class="tags-box">
-                  <span class="tag-chip" v-for="tag in item.tags" :key="tag">{{ tag }}</span>
-                </div>
+                <span class="version-badge" :class="{ major: item.currentVersion.endsWith('.0') }">
+                  {{ item.currentVersion }}
+                </span>
               </td>
               <td>
                 <span :class="['status-badge', `status-badge--${item.status}`]">
@@ -122,20 +137,32 @@
                 </span>
               </td>
               <td class="fc-grey-1">
-                <div>{{ formatDate(item.lastModify) }}</div>
-                <div class="entry-author">{{ item.editorName }}</div>
+                <div class="fs-13">{{ item.lastUpdateTime }}</div>
+                <div class="fs-12">{{ item.lastUpdateBy }}</div>
               </td>
               <td>
-                <div class="d-flex">
-                  <i class="material-symbols-outlined material-fill more-btn"
-                    @click.stop="item.showMoreOption = true">more_horiz</i>
+                <div class="d-flex align-items-center">
+                  <i class="material-symbols-outlined more-btn"
+                    @click.stop="activeMenuId = item.id">more_horiz</i>
                 </div>
-                <div :class="['next-option-box', { show: item.showMoreOption }]" @click.stop>
-                  <div class="option-item" @click="editEntry(item)">編輯</div>
-                  <div class="option-item" @click="togglePublish(item)">
-                    {{ item.status === 'published' ? '取消發布' : '發布' }}
+                <!-- 操作選單 -->
+                <div :class="['next-option-box', { show: activeMenuId === item.id }]" @click.stop>
+                  <div class="option-item" @click="goToDetail(item.id)">
+                    <i class="material-symbols-outlined">visibility</i>
+                    查看詳情
                   </div>
-                  <div class="option-item option-item--danger" @click="deleteEntry(item)">刪除</div>
+                  <div class="option-item" @click="handleEditAction(item)">
+                    <i class="material-symbols-outlined">edit</i>
+                    {{ item.status === 'PUBLISHED' ? '建立新版本' : '繼續編輯' }}
+                  </div>
+                  <div class="option-item divider" @click="openHistory(item.id)">
+                    <i class="material-symbols-outlined">history</i>
+                    版本紀錄
+                  </div>
+                  <div class="option-item option-item--danger" @click="deleteItem(item.id)">
+                    <i class="material-symbols-outlined">delete</i>
+                    刪除
+                  </div>
                 </div>
               </td>
             </tr>
@@ -143,272 +170,197 @@
         </table>
       </div>
 
+      <!-- 查無資料 -->
+      <div class="p-5 mt-4 text-center fc-grey-1" v-else>目前沒有符合條件的知識條目</div>
+
       <!-- 分頁 -->
-      <compPagination class="mt-3" v-if="filteredList.length"
+      <compPagination class="mt-4"
         :pageNo="pageNo"
         :numberOfRowsPerPage="numberOfRowsPerPage"
         :totalRows="filteredList.length"
-        @change="onPaginationChange"
+        @change="(p: any) => { pageNo = p.pageNo; }"
       />
 
     </div>
+
+    <VersionHistoryDrawer 
+      ref="historyDrawer"
+      v-model="isHistoryOpen"
+      :knowledgeId="selectedId"
+      @compare="handleOpenCompare"
+      @restore="handleOpenRestore"
+    />
+
+    <!-- 比較視窗 -->
+    <VersionCompareModal
+      v-model="isCompareOpen"
+      :knowledgeId="selectedId"
+      :v1Id="v1Id"
+      :v2Id="v2Id"
+    />
+
+    <!-- 還原確認 -->
+    <RestoreVersionModal
+      v-model="isRestoreOpen"
+      :versionNumber="versionToRestore?.versionNumber || ''"
+      @confirm="confirmRestore"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router';
+import { ref, computed, watch, reactive } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
+import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import compTabs from '@/components/compTabs/compTabs.vue';
 import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import compPagination from '@/components/compPagination/compPagination.vue';
-import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
 import popDialog from '@/services/popDialog';
 
+// 功能元件
+import VersionHistoryDrawer from '@/components/Knowledge/VersionHistoryDrawer.vue';
+import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
+import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue';
+
 const route = useRoute();
+const router = useRouter();
 const rootStore = useRootStore();
+const knowledgeStore = useKnowledgeStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
 
-const teamName = ref(route.query.teamName);
-watch(() => route.query, (newQuery) => {
-  teamName.value = newQuery.teamName;
-});
+const teamName = ref(String(route.query.teamName || '預設團隊'));
+watch(() => route.query, (q) => teamName.value = String(q.teamName || '預設團隊'));
 
+// --- 狀態與過濾 ---
 const searchText = ref('');
 const filterCategory = ref('');
 const filterStatus = ref('');
-
-const categoryOptions = [
-  { name: '所有分類', value: '' },
-  { name: '產品知識', value: '產品知識' },
-  { name: '售後服務', value: '售後服務' },
-  { name: '退換貨政策', value: '退換貨政策' },
-  { name: '門市作業', value: '門市作業' },
-  { name: '促銷活動', value: '促銷活動' },
-];
-
-const statusOptions = [
-  { name: '所有狀態', value: '' },
-  { name: '已發布', value: 'published' },
-  { name: '草稿', value: 'draft' },
-  { name: '待審核', value: 'pending' },
-];
+const activeMenuId = ref('');
 
 const statusLabelMap: Record<string, string> = {
-  published: '已發布',
-  draft: '草稿',
-  pending: '待審核',
+  PUBLISHED: '已發布',
+  REVIEWING: '審核中',
+  DRAFT:     '草稿',
+  REJECTED:  '已退回',
 };
 
 const statusIconMap: Record<string, string> = {
-  published: 'check_circle',
-  draft: 'edit_note',
-  pending: 'pending',
+  PUBLISHED: 'verified',
+  REVIEWING: 'pending_actions',
+  DRAFT:     'edit_note',
+  REJECTED:  'error',
 };
 
-type KnowledgeStatus = 'published' | 'draft' | 'pending';
-
-interface KnowledgeEntry {
-  showMoreOption: boolean;
-  id: string;
-  title: string;
-  category: string;
-  tags: string[];
-  status: KnowledgeStatus;
-  editorName: string;
-  lastModify: string;
-}
-
-const knowledgeList = ref<KnowledgeEntry[]>([
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0001',
-    title: '產品保固政策說明',
-    category: '售後服務',
-    tags: ['保固', '維修', '政策'],
-    status: 'published',
-    editorName: 'Lucas',
-    lastModify: '2026-03-20 14:30:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0002',
-    title: '退換貨流程與注意事項',
-    category: '退換貨政策',
-    tags: ['退貨', '換貨', '流程'],
-    status: 'published',
-    editorName: 'Emily',
-    lastModify: '2026-03-18 09:15:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0003',
-    title: '2026春季新品規格說明',
-    category: '產品知識',
-    tags: ['新品', '規格', 'Spring 2026'],
-    status: 'published',
-    editorName: 'Lucas',
-    lastModify: '2026-03-15 11:00:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0004',
-    title: '門市 POS 系統操作手冊',
-    category: '門市作業',
-    tags: ['POS', '作業流程', '門市'],
-    status: 'published',
-    editorName: 'Kevin',
-    lastModify: '2026-03-10 16:45:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0005',
-    title: '會員點數兌換辦法',
-    category: '促銷活動',
-    tags: ['會員', '點數', '兌換'],
-    status: 'published',
-    editorName: 'Emily',
-    lastModify: '2026-03-08 10:30:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0006',
-    title: '電商平台訂單異常處理 SOP',
-    category: '門市作業',
-    tags: ['訂單', '異常', 'SOP', '電商'],
-    status: 'pending',
-    editorName: 'Kevin',
-    lastModify: '2026-03-25 13:20:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0007',
-    title: '跑鞋選購指南（2026版）',
-    category: '產品知識',
-    tags: ['跑鞋', '選購', '指南'],
-    status: 'pending',
-    editorName: 'Lucas',
-    lastModify: '2026-03-28 17:00:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0008',
-    title: '夏季促銷活動說明草案',
-    category: '促銷活動',
-    tags: ['促銷', '夏季', '草案'],
-    status: 'draft',
-    editorName: 'Emily',
-    lastModify: '2026-03-30 09:00:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0009',
-    title: '客戶常見問題 FAQ',
-    category: '售後服務',
-    tags: ['FAQ', '客服', '常見問題'],
-    status: 'draft',
-    editorName: 'Kevin',
-    lastModify: '2026-03-29 15:10:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0010',
-    title: '商品尺寸對照表',
-    category: '產品知識',
-    tags: ['尺寸', '對照表'],
-    status: 'published',
-    editorName: 'Lucas',
-    lastModify: '2026-03-05 14:00:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0011',
-    title: '門市庫存盤點作業規範',
-    category: '門市作業',
-    tags: ['庫存', '盤點', '規範'],
-    status: 'published',
-    editorName: 'Kevin',
-    lastModify: '2026-02-28 10:00:00',
-  },
-  {
-    showMoreOption: false,
-    id: 'KNW-2024-0012',
-    title: '線上下單退款時效說明',
-    category: '退換貨政策',
-    tags: ['退款', '時效', '線上'],
-    status: 'draft',
-    editorName: 'Emily',
-    lastModify: '2026-03-31 08:30:00',
-  },
-]);
-
-const publishedCount = computed(() => knowledgeList.value.filter(i => i.status === 'published').length);
-const draftCount = computed(() => knowledgeList.value.filter(i => i.status === 'draft').length);
-const pendingCount = computed(() => knowledgeList.value.filter(i => i.status === 'pending').length);
-
-const pageNo = ref(1);
-const numberOfRowsPerPage = ref(10);
+const stats = computed(() => {
+  const list = knowledgeStore.knowledgeList;
+  return {
+    total:     list.length,
+    published: list.filter(k => k.status === 'PUBLISHED').length,
+    draft:     list.filter(k => k.status === 'DRAFT').length,
+    reviewing: list.filter(k => k.status === 'REVIEWING').length,
+  };
+});
 
 const filteredList = computed(() => {
-  let list = knowledgeList.value;
+  let list = [...knowledgeStore.knowledgeList];
   if (searchText.value.trim()) {
     const kw = searchText.value.toLowerCase();
-    list = list.filter(item =>
-      item.title.toLowerCase().includes(kw) ||
-      item.tags.some(t => t.toLowerCase().includes(kw))
-    );
+    list = list.filter(k => k.title.toLowerCase().includes(kw));
   }
   if (filterCategory.value) {
-    list = list.filter(item => item.category === filterCategory.value);
+    list = list.filter(k => k.category === filterCategory.value);
   }
   if (filterStatus.value) {
-    list = list.filter(item => item.status === filterStatus.value);
+    list = list.filter(k => k.status === filterStatus.value);
   }
   return list;
 });
 
-watch([searchText, filterCategory, filterStatus], () => {
-  pageNo.value = 1;
-});
-
+// --- 分頁 ---
+const pageNo = ref(1);
+const numberOfRowsPerPage = ref(10);
 const displayList = computed(() => {
   const start = (pageNo.value - 1) * numberOfRowsPerPage.value;
   return filteredList.value.slice(start, start + numberOfRowsPerPage.value);
 });
 
-function onPaginationChange(payload: PaginationChangePayload) {
-  pageNo.value = payload.pageNo;
+// --- 操作邏輯 ---
+function goToDetail(id: string) {
+  router.push({ name: 'KnowledgeDetail', params: { id } });
 }
 
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+function handleEditAction(item: any) {
+  if (item.status === 'PUBLISHED') {
+    // 觸發建立新版本 Modal (待實作)
+    console.log('跳轉至詳情頁以建立新版本');
+    goToDetail(item.id);
+  } else {
+    // 尋找該項目的草稿版 ID 並跳轉編輯器
+    const draft = item.versions.find((v: any) => v.status === 'DRAFT' || v.status === 'REJECTED');
+    if (draft) {
+      router.push({ name: 'KnowledgeEditor', params: { knowledgeId: item.id, versionId: draft.id } });
+    }
+  }
 }
 
-function addEntry() {
-  console.log('TODO... 新增知識條目');
+const historyDrawer = ref();
+const isHistoryOpen = ref(false);
+const selectedId = ref('');
+
+function openHistory(id: string) {
+  selectedId.value = id;
+  isHistoryOpen.value = true;
 }
 
-function editEntry(item: KnowledgeEntry) {
-  item.showMoreOption = false;
-  console.log('TODO... 編輯知識條目', item.id);
+// --- 比較邏輯 ---
+const isCompareOpen = ref(false);
+const v1Id = ref('');
+const v2Id = ref('');
+function handleOpenCompare(knowledgeId: string, versionId: string) {
+  const k = knowledgeStore.getKnowledgeById(knowledgeId);
+  if (!k) return;
+  const idx = k.versions.findIndex(v => v.id === versionId);
+  if (idx > 0) {
+    v1Id.value = k.versions[idx - 1].id; // 與前一版比
+    v2Id.value = versionId;
+    isCompareOpen.value = true;
+  } else {
+    popDialog.alert('這是第一個版本，無前版可比較。');
+  }
 }
 
-function togglePublish(item: KnowledgeEntry) {
-  item.showMoreOption = false;
-  item.status = item.status === 'published' ? 'draft' : 'published';
+// --- 還原邏輯 ---
+const isRestoreOpen = ref(false);
+const versionToRestore = ref<any>(null);
+function handleOpenRestore(knowledgeId: string, versionId: string) {
+  const k = knowledgeStore.getKnowledgeById(knowledgeId);
+  versionToRestore.value = k?.versions.find(v => v.id === versionId);
+  isRestoreOpen.value = true;
 }
 
-function deleteEntry(item: KnowledgeEntry) {
-  item.showMoreOption = false;
-  popDialog.confirm(`
-    <div class="d-flex flex-justify-center flex-column text-center">
-      <div class="fs-22 mb-1 fw-600">確定刪除嗎？</div>
-      <div class="fs-16">刪除後將無法復原。</div>
-    </div>
-  `,
-  () => {
-    knowledgeList.value = knowledgeList.value.filter(r => r.id !== item.id);
+function confirmRestore(note: string) {
+  const newDraftId = knowledgeStore.restoreToDraft(selectedId.value, versionToRestore.value.id, note);
+  if (newDraftId) {
+    isRestoreOpen.value = false;
+    isHistoryOpen.value = false;
+    router.push({ 
+      name: 'KnowledgeEditor', 
+      params: { knowledgeId: selectedId.value, versionId: newDraftId } 
+    }).then(() => {
+      popDialog.alert('已建立還原草稿！');
+    });
+  }
+}
+
+function createNewKnowledge() {
+  popDialog.alert('功能開發中：將導向至空白條目編輯器');
+}
+
+function deleteItem(id: string) {
+  popDialog.confirm('確定要刪除此知識條目嗎？這將會刪除所有版本紀錄且無法復原。', () => {
+    knowledgeStore.knowledgeList = knowledgeStore.knowledgeList.filter(k => k.id !== id);
   });
 }
 </script>

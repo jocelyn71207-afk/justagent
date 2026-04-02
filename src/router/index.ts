@@ -64,6 +64,18 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/KnowledgeBase.vue'),
       },
       {
+        path: '/view/KnowledgeDetail/:id',
+        name: 'KnowledgeDetail',
+        component: () => import('@/views/KnowledgeDetail.vue'),
+        props: true,
+      },
+      {
+        path: '/view/KnowledgeEditor/:knowledgeId/:versionId',
+        name: 'KnowledgeEditor',
+        component: () => import('@/views/KnowledgeEditor.vue'),
+        props: true,
+      },
+      {
         path: '/view/Explore',
         name: 'Explore',
         component: () => import('@/views/Explore.vue'),

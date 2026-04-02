@@ -161,6 +161,12 @@
 
     </div>
   </div>
+
+  <CreateKnowledgeWizardModal
+    v-model="isWizardOpen"
+    :file="wizardFile"
+    @confirm="handleWizardConfirm"
+  />
 </template>
 
 <script setup lang="ts">
@@ -175,6 +181,16 @@ import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import compPagination from '@/components/compPagination/compPagination.vue';
 import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
 import popDialog from '@/services/popDialog';
+import { useRouter } from 'vue-router';
+import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWizardModal.vue';
+
+const router = useRouter();
+const knowledgeStore = useKnowledgeStore();
+
+// 知識建立精靈
+const isWizardOpen = ref(false);
+const wizardFile = ref<{ id: string; fileName: string; fileType: string } | null>(null);
 
 // 檔案類型圖示 mapping
 import pdfIcon from '@/assets/fileTypeIcon/pdf.png';
@@ -329,11 +345,23 @@ function saveModifyFileName() {
   // 重新撈取列表資料...
 }
 
-// 建立為知識內容
+// 建立為知識內容：開啟精靈
 function createKnowledge(item: any) {
   item.showMoreOption = false;
-  // TODO... 導向知識庫管理並帶入來源檔案資訊
-  console.log('TODO... 建立為知識內容', item);
+  wizardFile.value = { id: item.id, fileName: item.fileName, fileType: item.fileType };
+  isWizardOpen.value = true;
+}
+
+// 精靈完成後：建立草稿並跳轉至編輯器
+function handleWizardConfirm(data: { template: string; content: string }) {
+  if (!wizardFile.value) return;
+  const { knowledgeId, versionId } = knowledgeStore.createFromFile({
+    fileId: wizardFile.value.id,
+    fileName: wizardFile.value.fileName,
+    template: data.template,
+    content: data.content,
+  });
+  router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } });
 }
 
 // 刪除資源

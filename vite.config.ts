@@ -26,7 +26,7 @@ function rewritePublicLibPaths(base: string): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const isDevMode = env.VITE_DEV_MODE === 'true'
-  const base = '/aiviews/'
+  const base = '/justagent/'
 
   return {
     plugins: [

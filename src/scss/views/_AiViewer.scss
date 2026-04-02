@@ -291,6 +291,13 @@
       font-size: 11px;
       color: var(--color-text-alpha50);
       padding: 6px 20px 12px;
+      .ai-disclaimer-reset {
+        margin-left: 6px;
+        color: var(--color-text-alpha40);
+        text-decoration: underline;
+        cursor: pointer;
+        &:hover { color: var(--color-text-alpha70); }
+      }
     }
     // user 輸入大區域
     .AiViewrUserInputArea {
@@ -2088,9 +2095,9 @@
 
 .conv2-comp-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 8px;
   border-radius: 6px;
   font-size: 12px;
 
@@ -2110,10 +2117,32 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-top: 2px;
     &--fn { background: #fffbeb; color: #92400e; border-color: rgba(146,64,14,.28); }
   }
+  // 新格式：body 包含 brand / title / feat
+  .conv2-comp-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .conv2-comp-brand-lbl { font-size: 10px; color: var(--color-text-alpha50); }
+  .conv2-comp-title { font-size: 12px; font-weight: 500; }
+  .conv2-comp-feat { font-size: 11px; color: var(--color-text-alpha60); line-height: 1.4; }
+  .conv2-comp-ext {
+    color: var(--color-text-alpha40);
+    text-decoration: none;
+    flex-shrink: 0;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    &:hover { color: var(--color-text); }
+  }
+  // 舊格式相容
   .conv2-comp-name { flex: 1; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .conv2-comp-price { font-size: 11px; color: var(--color-text-alpha50); }
+  .conv2-comp-price { font-size: 11px; color: var(--color-text-alpha50); flex-shrink: 0; }
 }
 
 .conv2-url-card {
@@ -2179,6 +2208,275 @@
 
   .conv2-report-actions { padding: 10px 14px; }
 }
+
+// ─── Conv2 Floating Panels ───────────────────────────────────────────────────
+.conv2-fp {
+  width: 100%;
+  margin-bottom: 8px;
+  background: var(--color-background);
+  border: 0.5px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 0 -2px 16px rgba(0,0,0,.1);
+
+  // override parent .AiViewrUserInputArea button styles
+  button {
+    width: auto !important;
+    height: auto !important;
+    display: inline-flex !important;
+    border-radius: 6px !important;
+  }
+
+  .conv2-fp-top {
+    padding: 9px 12px;
+    border-bottom: 0.5px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .conv2-fp-title { font-size: 12px; font-weight: 500; }
+    .conv2-fp-close-btn {
+      width: 22px !important;
+      height: 22px !important;
+      border: 0.5px solid var(--color-border) !important;
+      border-radius: 50% !important;
+      padding: 0 !important;
+      background: transparent !important;
+      i { font-size: 14px !important; }
+      &:hover { background: var(--color-background-1) !important; }
+    }
+  }
+
+  .conv2-fp-body {
+    padding: 12px;
+    max-height: 340px;
+    overflow-y: auto;
+    @include use-scroll-bar(var(--color-scrollbar));
+  }
+
+  // ── Upload panel ──
+  .conv2-up-panel {
+    display: flex;
+    gap: 12px;
+  }
+  .conv2-up-img-box {
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 0.5px solid var(--color-border);
+    background: var(--color-background-1);
+    img { width: 100%; height: 100%; object-fit: contain; padding: 6px; display: block; }
+  }
+  .conv2-up-desc-box {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .conv2-up-lbl { font-size: 11px; font-weight: 500; }
+  .conv2-up-hint { font-size: 10px; color: var(--color-text-alpha50); }
+  .conv2-up-ta {
+    flex: 1;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--color-text);
+    border: 0.5px solid var(--color-border);
+    border-radius: 7px;
+    padding: 7px 10px;
+    background: var(--color-background-1);
+    line-height: 1.6;
+    min-height: 64px;
+    &:focus { border-color: rgba(29,78,216,.4); }
+  }
+  .conv2-up-status {
+    font-size: 11px;
+    color: var(--color-text-alpha50);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    &--ready { color: #166534; }
+  }
+
+  // ── Step tracker ──
+  .conv2-step-track-wrap { display: flex; align-items: center; gap: 7px; overflow: hidden; }
+  .conv2-step-track { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  .conv2-sd {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 9px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    border: 0.5px solid var(--color-border);
+    color: var(--color-text-alpha40);
+    background: var(--color-background-1);
+    flex-shrink: 0;
+    &--done { background: #f0fdf4; border-color: rgba(22,101,52,.28); color: #166534; }
+    &--active { background: #eff6ff; border-color: rgba(29,78,216,.28); color: #1d4ed8; }
+  }
+  .conv2-sl { width: 8px; height: 0.5px; background: var(--color-border); flex-shrink: 0; }
+  .conv2-step-title { font-size: 11px; color: var(--color-text-alpha50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  // ── Step content ──
+  .conv2-info-note {
+    font-size: 11px;
+    background: #f0fdf4; color: #166534;
+    border: 0.5px solid rgba(22,101,52,.28);
+    border-radius: 6px; padding: 5px 9px; margin-bottom: 8px;
+  }
+  .conv2-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .conv2-chip {
+    padding: 4px 10px; border-radius: 20px;
+    border: 0.5px solid var(--color-border);
+    font-size: 12px; cursor: pointer; user-select: none;
+    color: var(--color-text-alpha50);
+    &.sel { border-color: rgba(29,78,216,.28); background: #eff6ff; color: #1d4ed8; }
+  }
+  .conv2-fg { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 7px; }
+  .conv2-fl { font-size: 11px; color: var(--color-text-alpha50); margin-bottom: 2px; }
+  .conv2-fi {
+    border: 0.5px solid var(--color-border);
+    border-radius: 6px; padding: 5px 9px;
+    font-size: 12px; color: var(--color-text);
+    background: var(--color-background);
+    outline: none; font-family: inherit;
+    &--full { width: 100%; }
+    &--ta { resize: none; line-height: 1.5; }
+    &:focus { border-color: rgba(29,78,216,.28); }
+  }
+  .conv2-pdesc { font-size: 12px; color: var(--color-text-alpha50); margin-bottom: 8px; }
+  .conv2-feat-item {
+    display: flex; align-items: flex-start; gap: 7px;
+    padding: 7px 9px; border-radius: 7px;
+    border: 0.5px solid var(--color-border);
+    cursor: pointer; user-select: none; margin-bottom: 4px;
+    &.sel { border-color: rgba(29,78,216,.28); background: #eff6ff; .conv2-ft { color: #1d4ed8; } }
+  }
+  .conv2-fcb {
+    width: 12px; height: 12px;
+    border: 0.5px solid var(--color-border);
+    border-radius: 3px; margin-top: 2px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .conv2-ft { font-size: 12px; font-weight: 500; }
+  .conv2-fd { font-size: 11px; color: var(--color-text-alpha50); margin-top: 1px; }
+  .conv2-err { font-size: 11px; color: #dc2626; margin-top: 4px; min-height: 13px; }
+  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: #fffbeb; color: #92400e; }
+  .conv2-review-grid {
+    background: var(--color-background-1); border-radius: 7px; padding: 9px 11px;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .conv2-rv-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; padding: 4px 0;
+    border-bottom: 0.5px solid var(--color-border);
+    &:last-child { border: none; }
+    .conv2-rv-k { color: var(--color-text-alpha50); }
+    .conv2-rv-v { font-weight: 500; }
+  }
+
+  // ── Step 5: Competitor layout ──
+  .conv2-comp-layout-fp { display: flex; gap: 10px; height: 200px; margin-bottom: 4px; }
+  .conv2-comp-list-fp {
+    width: 190px; flex-shrink: 0;
+    overflow-y: auto;
+    border: 0.5px solid var(--color-border);
+    border-radius: 8px;
+    @include use-scroll-bar(var(--color-scrollbar));
+  }
+  .conv2-ci-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 8px; cursor: pointer; user-select: none;
+    border-bottom: 0.5px solid var(--color-border);
+    &:last-child { border: none; }
+    &:hover { background: var(--color-background-1); }
+    &.sel { background: #eff6ff; .conv2-ci-nm { color: #1d4ed8; } }
+    &.blocked { opacity: .35; pointer-events: none; }
+  }
+  .conv2-ci-ic {
+    width: 22px; height: 22px; border-radius: 4px;
+    background: var(--color-background-1);
+    border: 0.5px solid var(--color-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; flex-shrink: 0;
+  }
+  .conv2-ci-info { flex: 1; min-width: 0; }
+  .conv2-ci-nm { font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv2-ci-mt { font-size: 10px; color: var(--color-text-alpha50); }
+  .conv2-ci-chk { width: 12px; height: 12px; flex-shrink: 0; accent-color: #1d4ed8; }
+  .conv2-prev-col-fp {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+    border: 0.5px solid var(--color-border); border-radius: 8px; overflow: hidden;
+  }
+  .conv2-prev-img-area-fp {
+    flex: 1; background: var(--color-background-1);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .conv2-prev-ph-fp {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--color-text-alpha40); text-align: center; font-size: 10px;
+    i { font-size: 22px; }
+  }
+  .conv2-prev-info-fp { padding: 6px 9px; border-top: 0.5px solid var(--color-border); }
+  .conv2-prev-nm-fp { font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  // ── Buttons ──
+  .conv2-fp-btn-row { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .conv2-fp-submit-btn,
+  .conv2-fp-btn {
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px; font-weight: 500;
+    background: var(--color-text);
+    color: var(--color-background);
+    border: none; cursor: pointer;
+    white-space: nowrap;
+    &--green { background: #166534; }
+    &:disabled { opacity: 0.45; cursor: default; }
+    &:hover:not(:disabled) { opacity: 0.85; }
+  }
+  .conv2-fp-sec-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--color-text);
+    border: 0.5px solid var(--color-border);
+    background: transparent; cursor: pointer;
+    white-space: nowrap;
+    &:hover { background: var(--color-background-1); }
+  }
+}
+
+// Pills inside input row
+.conv2-pill-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  width: 100%;
+}
+.conv2-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--color-background-1);
+  border: 0.5px solid var(--color-border);
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  &:hover { background: var(--color-background-2); }
+  &--collapsed { opacity: 0.6; }
+  .conv2-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 @keyframes aiThinking {
   0% {
