@@ -39,6 +39,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   display: none;
+  flex-direction: column;
   position: relative;
   box-shadow: 0 3px 6px rgba($black, 0.22) !important;
   &.modalList {
@@ -67,6 +68,10 @@
   }
   // 套件按鈕的容器
   .swal2-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
     margin-right: 0 !important;
     margin-left: 0 !important;
   }
@@ -76,11 +81,11 @@
     border-radius: 8px !important;
     font-size: 18px !important;
     font-weight: 400 !important;
-    margin: 30px 5px 0 !important;
-    padding: 5px 5px 5px 5px !important;
+    margin: 20px 0 0 !important;
+    padding: 8px 16px !important;
     box-shadow: none !important;
     outline: 0 none !important;
-    min-width: 40%;
+    min-width: 120px;
     &.active {
       box-shadow: none !important;
       &:focus {
@@ -145,9 +150,9 @@
     }
   }
   &.pop_dialog {
-    max-width: 400px !important;
+    max-width: 440px !important;
     .swal2-content {
-      padding-top: 20px !important;
+      padding: 0 !important;
     }
   }
   &.loading_hint {
@@ -247,13 +252,13 @@
   }
 
   &.badge--ai {
-    background: rgba(138, 63, 252, 0.10);
-    color: #7c3aed;
+    background: $color-badge-ai-bg;
+    color: $color-badge-ai-text;
   }
 
   &.badge--raw {
-    background: rgba(30, 136, 229, 0.10);
-    color: #1565c0;
+    background: $color-badge-raw-bg;
+    color: $color-badge-raw-text;
   }
 }
 
@@ -268,23 +273,28 @@
   font-weight: 500;
 
   &--uploading {
-    background: rgba(30, 136, 229, 0.10);
-    color: #1565c0;
+    background: $color-status-uploading-bg;
+    color: $color-status-uploading-text;
   }
   &--parsing {
-    background: rgba(251, 192, 0, 0.15);
-    color: #b07d00;
+    background: $color-status-parsing-bg;
+    color: $color-status-parsing-text;
   }
   &--stored {
-    background: rgba(2, 195, 0, 0.10);
-    color: #02a100;
+    background: $color-status-stored-bg;
+    color: $color-status-stored-text;
   }
   &--saved {
-    background: rgba(0, 150, 136, 0.10);
-    color: #00695c;
+    background: $color-status-saved-bg;
+    color: $color-status-saved-text;
   }
   &--failed {
-    background: rgba(229, 57, 53, 0.10);
-    color: #c62828;
+    background: $color-status-failed-bg;
+    color: $color-status-failed-text;
   }
+}
+
+// ── 必填標記 ─────────────────────────────────────────
+.required-mark {
+  color: $color-danger;
 }

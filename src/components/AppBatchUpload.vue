@@ -100,6 +100,9 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRootStore } from '@/stores/rootStore';
+import { useResourceStore } from '@/stores/resourceStore';
+import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import type { ResourceFile } from '@/stores/resourceStore';
 import popDialog from '@/services/popDialog';
 import {
   formatFileSize,
@@ -132,6 +135,8 @@ const aiviewerStore = useAiviewerStore();
 const { getBlockTypeByFileMime, useIconFileTypes } = aiviewerStore;
 
 const rootStore = useRootStore();
+const resourceStore = useResourceStore();
+const knowledgeStore = useKnowledgeStore();
 const { isShowBatchUpload, isBatchUploading, isBatchUploadSuccess } = storeToRefs(rootStore);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -224,6 +229,75 @@ function onRemoveChoiceFile(index: number) {
   }
 }
 
+// 上傳完成後：比對同名檔案，決定更新版本或新增
+const FILE_TYPE_MAP: Record<string, ResourceFile['fileType']> = {
+  IMAGE: 'IMAGE', PDF: 'PDF', EXCEL: 'EXCEL', PPT: 'PPT',
+  TXT: 'TXT', MARKDOWN: 'MD', WORD: 'WORD', HTML: 'HTML',
+};
+
+function buildNewResourceEntry(item: ChoicedFileItem): Omit<ResourceFile, 'version' | 'showMoreOption'> {
+  return {
+    id: `res-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
+    fileName: item.file.name,
+    fileUrl: '',
+    fileType: FILE_TYPE_MAP[item.fileType] ?? 'OTHER',
+    processType: isParseable(item.fileType) ? 'AI_PARSED' : 'RAW',
+    status: 'saved',
+    creatorType: 'USER',
+    ownerId: 'user1',
+    ownerName: 'Current User',
+    lastModify: new Date().toISOString().replace('T', ' ').slice(0, 16),
+  };
+}
+
+function handlePostUpload() {
+  const duplicates: Array<{ item: ChoicedFileItem; existing: ResourceFile }> = [];
+  const newFiles: ChoicedFileItem[] = [];
+
+  for (const item of choicedFiles.value) {
+    const existing = resourceStore.resourceList.find(f => f.fileName === item.file.name) ?? null;
+    if (existing) {
+      duplicates.push({ item, existing });
+    } else {
+      newFiles.push(item);
+    }
+  }
+
+  // 非重複的直接新增
+  for (const item of newFiles) {
+    resourceStore.addFile(buildNewResourceEntry(item));
+  }
+
+  if (duplicates.length === 0) return;
+
+  const nameList = duplicates.map(d => `<strong>「${d.item.file.name}」</strong>`).join('<br>');
+  popDialog.confirm(
+    `<div class="text-center">
+      <div class="fs-18 fw-600 mb-2">偵測到相似的既有檔案</div>
+      <div class="fs-14 mb-3">以下檔案與共用檔案管理中的既有檔案同名：<br>${nameList}</div>
+      <div class="fs-14 fc-grey-1">是否視為新版本，更新舊的檔案？<br><span class="fs-12">選擇「保留兩者」則另存為獨立新檔案。</span></div>
+    </div>`,
+    '更新舊檔案',
+    '保留兩者',
+    () => {
+      // 確認：更新版本 + 標記 stale
+      for (const { item, existing } of duplicates) {
+        const updated = resourceStore.uploadNewVersion(existing.id);
+        if (updated) {
+          knowledgeStore.markFileStale(existing.id, updated.version);
+        }
+      }
+      popDialog.toast('已更新為新版本，請至知識庫確認受影響的條目', 2500);
+    },
+    () => {
+      // 取消：另存為新檔案
+      for (const { item } of duplicates) {
+        resourceStore.addFile(buildNewResourceEntry(item));
+      }
+    }
+  );
+}
+
 // 開始上傳檔案
 const totalSuccess = ref(0); // 模擬上傳進度的狀態，實際上應該是透過 ajax 上傳的回調來更新這個狀態
 let mockTimers = [] as number[]; // 模擬上傳進度的計時器 ID 陣列
@@ -244,6 +318,7 @@ function onStartUpload() {
             if (choicedFiles.value.every(f => f.uploadPercent >= 100)) {
               isBatchUploading.value = false;
               isBatchUploadSuccess.value = true;
+              handlePostUpload();
             }
             return;
           }

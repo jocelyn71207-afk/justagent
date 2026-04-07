@@ -1809,25 +1809,39 @@
     }
   }
 
+  .file-more-wrap {
+    position: relative;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
   .file-more-btn {
-    font-size: 20px;
-    padding: 2px;
-    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: none;
+    border-radius: 6px;
     cursor: pointer;
-    &:hover,
-    &.active {
-      background-color: var(--color-background-2-alpha20);
-    }
+    color: var(--color-text-alpha50);
+    .material-symbols-outlined { font-size: 20px; }
+    &:hover { background-color: var(--color-background-1); color: var(--color-text); }
   }
 
   .more-options-box {
     position: absolute;
     right: 0;
-    top: 40px;
+    top: calc(100% + 4px);
     display: none;
-    &.show {
-      display: block;
-    }
+    min-width: 140px;
+    &.show { display: block; }
+  }
+
+  .file-menu-delete {
+    color: var(--color-danger, #dc2626);
   }
 }
 
@@ -1877,7 +1891,7 @@
       width: fit-content;
       max-width: 80%;
       flex: unset;
-      font-size: 15px;
+      font-size: 14px;
     }
   }
 
@@ -1914,6 +1928,209 @@
         cursor: pointer;
       }
     }
+  }
+}
+
+// 翻譯確認卡片（使用者訊息泡泡內）
+.translation-confirm-card {
+  min-width: 240px;
+
+  .tc-file-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  .tc-file-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .tc-file-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tc-file-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .tc-file-meta {
+    font-size: 12px;
+    color: var(--color-text-alpha50);
+    margin-top: 2px;
+  }
+
+  .tc-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--color-text-alpha20, rgba(0,0,0,0.12));
+    cursor: pointer;
+    flex-shrink: 0;
+    color: var(--color-text);
+    .material-symbols-outlined { font-size: 14px; }
+    &:hover { background-color: var(--color-text-alpha40, rgba(0,0,0,0.22)); }
+  }
+
+  .tc-dl-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-text-alpha50);
+    flex-shrink: 0;
+    .material-symbols-outlined { font-size: 20px; }
+    &:hover { background-color: var(--color-background-1); color: var(--color-text); }
+  }
+
+  .tc-divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin-bottom: 10px;
+  }
+
+  .tc-info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .tc-info-label {
+    color: var(--color-text-alpha50);
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+
+  .tc-info-value {
+    font-weight: 500;
+    word-break: break-all;
+  }
+
+  .tc-btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .tc-btn {
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    &:hover { opacity: 0.82; }
+
+    &--primary {
+      background-color: var(--color-primary, #2563eb);
+      color: #fff;
+    }
+
+    &--secondary {
+      background-color: var(--color-background);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+      &:disabled {
+        opacity: 0.38;
+        cursor: not-allowed;
+        &:hover { opacity: 0.38; }
+      }
+    }
+
+    &--primary.is-confirmed {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      opacity: 1;
+      cursor: default;
+      .material-symbols-outlined { font-size: 15px; }
+    }
+  }
+}
+
+// 翻譯完成檔案下載清單（AI 訊息泡泡內）
+.tc-download-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tc-download-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border-1-alpha50);
+  border-radius: 12px;
+
+  .tc-dl-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .tc-dl-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tc-dl-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .tc-dl-meta {
+    font-size: 12px;
+    color: var(--color-text-alpha50);
+    margin-top: 2px;
+  }
+
+  .tc-dl-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-text-alpha50);
+    flex-shrink: 0;
+    .material-symbols-outlined { font-size: 20px; }
+    &:hover { background-color: var(--color-background-1); color: var(--color-text); }
   }
 }
 
@@ -2164,6 +2381,99 @@
     .conv2-url-text { font-size: 12px; color: var(--color-text-alpha70); }
   }
   .conv2-url-actions { padding-top: 10px; display: flex; justify-content: flex-end; }
+}
+
+// 直接生成報告面板 - 方法選擇列表
+.conv2-direct-method-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.conv2-direct-method-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.12s;
+  &:last-child { border-bottom: none; }
+  &:hover { background-color: var(--color-background-1); }
+  .conv2-direct-method-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+  .conv2-direct-method-info { flex: 1; }
+  .conv2-direct-method-title { font-size: 13px; font-weight: 500; }
+  .conv2-direct-method-desc { font-size: 11px; color: var(--color-text-alpha50); margin-top: 2px; }
+}
+
+// 直接生成報告面板 - 競品網址示範列表
+.conv2-url-demo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 10px;
+  background: var(--color-background-1);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+.conv2-url-demo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-alpha70);
+  .conv2-url-num { font-size: 11px; color: var(--color-text-alpha40); width: 14px; text-align: right; flex-shrink: 0; }
+}
+
+// 初步分析結果後的繼續操作列
+.conv2-next-action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  .conv2-fp-sec-btn, .conv2-action-btn { flex: 1; }
+}
+
+// @知識庫引用 chip（inline 使用）
+.conv2-kb-ref {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  white-space: nowrap;
+}
+
+// 貨號輸入示範卡片
+.conv2-sku-card {
+  margin-top: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--color-background);
+
+  .conv2-sku-input-demo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--color-background-1);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+  }
+
+  .conv2-sku-value {
+    font-size: 13px;
+    font-weight: 500;
+    font-family: monospace;
+    color: var(--color-text);
+  }
 }
 
 .conv2-report-card {
@@ -2456,8 +2766,33 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 6px;
   width: 100%;
+}
+.conv2-leave-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.conv2-leave-btn {
+  // 覆蓋父層 AiViewrUserInputArea button 的固定尺寸
+  width: auto !important;
+  height: auto !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px !important;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: inherit;
+  background: none;
+  border: 0.5px solid var(--color-border) !important;
+  color: var(--color-text-alpha50);
+  cursor: pointer;
+  white-space: nowrap;
+  .material-symbols-outlined { font-size: 14px !important; }
+  &:hover { background: var(--color-background-1) !important; color: var(--color-text); }
 }
 .conv2-pill {
   display: inline-flex;

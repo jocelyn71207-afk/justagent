@@ -21,7 +21,7 @@
           <!-- 更多用戶選項選單 -->
           <div class="more-userOption-box next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
             <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
-            <div class="option-item">登出</div>
+            <div class="option-item" @click="handleLogout">登出</div>
           </div>
         </div>
         <!-- TODO... 第一階段先沒有小鈴噹 -->
@@ -142,17 +142,23 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { handleContentWheel, initClickOutsideListener } from '@/utils/utils';
 
 const route = useRoute();
+const router = useRouter();
 
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, appSearchKeyword, testGroups } = storeToRefs(rootStore);
 
 const moreUserOptionsBox = ref<HTMLElement | null>(null);
 const isOpenUserOptionsBox = ref(false);
+
+const handleLogout = () => {
+  isOpenUserOptionsBox.value = false;
+  router.push('/');
+};
 
 const isMobileMenuOpen = ref(false);
 const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };

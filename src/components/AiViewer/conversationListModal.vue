@@ -9,11 +9,11 @@
 
       <ul class="conversation-list">
         <li :class="{ active: currentConversationId === 'conv1' }" @click="switchConversation('conv1')">
-          <span>2026 年度銷售數據挖掘計畫</span>
+          <span>2026商品文件翻譯</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
         <li :class="{ active: currentConversationId === 'conv2' }" @click="switchConversation('conv2')">
-          <span>競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋</span>
+          <span>未命名對話</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
       </ul>

@@ -59,7 +59,7 @@ a {
   border-color: var(--color-border-alpha50);
   background-color: var(--color-background-1-alpha50);
 }
-input.custom-input {
+.custom-input {
   border-radius: $radius;
   border: 1px solid var(--color-border);
   background-color: var(--color-background);
@@ -87,6 +87,7 @@ input.custom-input {
   // range 樣式
   &[type="range"] {
     -webkit-appearance: none; /* 隱藏默認樣式 */
+    appearance: none;
     padding: 0;
     // width: 100%; /* 滑動條寬度 */
     height: 10px; /* 滑動條高度 */
@@ -143,6 +144,7 @@ input.custom-input {
 
 select.custom-select {
   -webkit-appearance: none;
+  appearance: none;
   border-radius: $radius;
   border: 1px solid var(--color-border);
   background-image: url($select_triangle);
@@ -190,7 +192,7 @@ select.custom-select {
   }
 }
 
-textarea.custom-textarea {
+.custom-textarea {
   padding: 4px 7px;
   border-radius: $radius;
   border: 1px solid var(--color-border);

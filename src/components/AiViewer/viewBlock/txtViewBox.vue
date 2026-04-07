@@ -106,6 +106,10 @@
   }
 
   onMounted(() => {
+    if (props.source.data?.content) {
+      txtContent.value = props.source.data.content;
+      return;
+    }
     fetchFileUrl();
   });
 </script>

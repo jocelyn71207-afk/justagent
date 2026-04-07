@@ -103,9 +103,10 @@
               <label class="field-label">分類</label>
               <compDropDown
                 :options="[
-                  { name: '商務規則', value: '商務規則' },
+                  { name: '商品文件', value: '商品文件' },
                   { name: '系統文件', value: '系統文件' },
                   { name: '客服知識', value: '客服知識' },
+                  { name: '規則說明', value: '規則說明' },
                 ]"
                 :show-search="false"
                 :default-value="formData.category"
@@ -139,11 +140,11 @@
                 <div
                   class="source-file-item"
                   v-for="file in formData.sourceFiles"
-                  :key="file"
+                  :key="file.fileId"
                 >
                   <i class="material-symbols-outlined fs-16">description</i>
-                  <span class="flex-1 fs-13">{{ file }}</span>
-                  <i class="material-symbols-outlined fs-16 cursor-pointer fc-grey-1" @click="removeSourceFile(file)">close</i>
+                  <span class="flex-1 fs-13">{{ file.fileName }}</span>
+                  <i class="material-symbols-outlined fs-16 cursor-pointer fc-grey-1" @click="removeSourceFile(file.fileId)">close</i>
                 </div>
               </div>
               <button class="custom-btn w-100 mt-2" @click="popDialog.alert('功能開發中：將開啟共用檔案管理選擇器')">
@@ -232,6 +233,7 @@
 import { ref, computed, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import type { SourceFileRef } from '@/stores/knowledgeStore';
 import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import SubmitReviewModal from '@/components/Knowledge/SubmitReviewModal.vue';
 import popDialog from '@/services/popDialog';
@@ -259,7 +261,7 @@ const formData = reactive({
   category: '',
   tags: [] as string[],
   visibility: 'ALL' as 'ALL' | 'TEAM' | 'MANAGERS',
-  sourceFiles: [] as string[],
+  sourceFiles: [] as SourceFileRef[],
   updateNote: '',
 });
 
@@ -289,8 +291,8 @@ function handleBackspaceTag() {
   }
 }
 
-function removeSourceFile(file: string) {
-  formData.sourceFiles = formData.sourceFiles.filter(f => f !== file);
+function removeSourceFile(fileId: string) {
+  formData.sourceFiles = formData.sourceFiles.filter(f => f.fileId !== fileId);
 }
 
 onMounted(() => {

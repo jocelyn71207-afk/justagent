@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
+
+// 來源檔案參照：記錄關聯時的版本號，以便偵測更新
+export interface SourceFileRef {
+  fileId: string;
+  fileName: string;
+  linkedVersion: number; // 建立/上次同步時的檔案版本號
+}
 
 export interface KnowledgeVersion {
   id: string;
@@ -15,7 +22,7 @@ export interface KnowledgeVersion {
   lastUpdateBy: string;
   lastUpdateTime: string;
   updateNote: string; // 本次更新說明
-  sourceFiles?: string[]; // 關聯來源檔案 ID
+  sourceFiles?: SourceFileRef[]; // 關聯來源檔案（含版本追蹤）
 }
 
 export interface KnowledgeItem {
@@ -27,6 +34,8 @@ export interface KnowledgeItem {
   lastUpdateTime: string;
   lastUpdateBy: string;
   versions: KnowledgeVersion[];
+  sourceStale?: boolean;       // 有來源檔案已更新，尚未處理
+  staleSourceFileIds?: string[]; // 哪些來源檔案觸發了 stale
 }
 
 export const useKnowledgeStore = defineStore('knowledge', () => {
@@ -34,11 +43,11 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   const knowledgeList = ref<KnowledgeItem[]>([
     {
       id: 'k1',
-      title: '會員等級規則設定',
-      category: '商務規則',
+      title: '2025產品總表-Q3',
+      category: '商品文件',
       currentVersion: 'v1.2',
       status: 'PUBLISHED',
-      lastUpdateTime: '2026-03-15 10:30',
+      lastUpdateTime: '2025-08-13 10:30',
       lastUpdateBy: 'Lucas',
       versions: [
         {
@@ -46,13 +55,13 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           knowledgeId: 'k1',
           versionNumber: 'v1.0',
           status: 'HISTORY',
-          title: '會員等級規則設定',
-          summary: '初始版本會員規則',
+          title: '2025產品總表-Q1',
+          summary: '2025延續品',
           content: '這是 v1.0 的內容...',
-          category: '商務規則',
-          tags: ['會員', '等級'],
+          category: '商品文件',
+          tags: ['產品'],
           lastUpdateBy: 'Admin',
-          lastUpdateTime: '2026-01-01 09:00',
+          lastUpdateTime: '2025-01-01 09:00',
           updateNote: '初始建立',
         },
         {
@@ -60,28 +69,29 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           knowledgeId: 'k1',
           versionNumber: 'v1.1',
           status: 'HISTORY',
-          title: '會員等級規則設定',
-          summary: '調整積分權重',
+          title: '2025產品總表-Q2',
+          summary: '新增Q2選品資料',
           content: '這是 v1.1 的內容...',
-          category: '商務規則',
-          tags: ['會員', '等級'],
+          category: '商品文件',
+          tags: ['產品'],
           lastUpdateBy: 'Admin',
-          lastUpdateTime: '2026-02-01 14:00',
-          updateNote: '優化積分計算邏輯',
+          lastUpdateTime: '2025-03-01 14:00',
+          updateNote: '新增Q2選品資料(含延續款調整）',
         },
         {
           id: 'v1.2',
           knowledgeId: 'k1',
           versionNumber: 'v1.2',
           status: 'PUBLISHED',
-          title: '會員等級規則設定',
-          summary: '目前正式版的會員等級定義',
-          content: '### 會員等級說明\n1. 普通會員：註冊即享\n2. 黃金會員：消費滿 1000\n3. 鑽石會員：消費滿 5000',
-          category: '商務規則',
-          tags: ['會員', '等級', '正式版'],
+          title: '2025產品總表-Q3',
+          summary: '新增Q3選品資料',
+          content: '## Teva 鞋款庫存資料\n\n| Model | SC | 年份 | 系列 | 類別 | 子類 | 鞋型 | 價格 | 銷售日期 | 銷售量 | ... |\n|-------|----|------|------|------|------|------|------|----------|--------|-----|\n| TV4038BKBR | TV | 4038BKBR | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110722 | 234 |\n| TV4038BNGC | TV | 4038BNGC | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110824 | 252 |\n| TV4045LURK | TV | 4045LURK | 2011F | Forge Pro eVent Ws | Performance | Trail | Performance Shoe | 4980 | 20110816 | 144 |',
+          category: '商品文件',
+          tags: ['產品'],
           lastUpdateBy: 'Lucas',
-          lastUpdateTime: '2026-03-15 10:30',
-          updateNote: '發布 2026 第一季規則',
+          lastUpdateTime: '2026-08-13 10:30',
+          updateNote: '更新為 Teva 鞋款庫存資料',
+          sourceFiles: [{ fileId: 'res3', fileName: 'Teva2025商品總表.xlsx', linkedVersion: 1 }],
         }
       ]
     },
@@ -261,13 +271,76 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         lastUpdateBy: 'AI 生成',
         lastUpdateTime: now,
         updateNote: `從共用檔案「${params.fileName}」建立，使用模板：${params.template}`,
-        sourceFiles: [params.fileId],
+        sourceFiles: [{ fileId: params.fileId, fileName: params.fileName, linkedVersion: 1 }],
       }],
     };
 
     knowledgeList.value.unshift(newKnowledge);
     return { knowledgeId: newId, versionId: draftId };
   };
+
+  // 來源檔案更新後，將關聯此檔案的所有知識條目標記為 stale
+  function markFileStale(fileId: string, newVersion: number) {
+    for (const k of knowledgeList.value) {
+      const activeVersion = k.versions.find(v => v.status === 'PUBLISHED' || v.status === 'REVIEWING' || v.status === 'DRAFT');
+      if (!activeVersion?.sourceFiles) continue;
+      const isLinked = activeVersion.sourceFiles.some(
+        ref => ref.fileId === fileId && ref.linkedVersion < newVersion
+      );
+      if (isLinked) {
+        k.sourceStale = true;
+        k.staleSourceFileIds = [...(k.staleSourceFileIds ?? []).filter(id => id !== fileId), fileId];
+      }
+    }
+  }
+
+  // 建立來源更新草稿（AI 根據新版檔案產生）
+  function createDraftFromSourceUpdate(
+    knowledgeId: string,
+    getFile: (id: string) => { version: number; fileName: string } | null
+  ): string | undefined {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+
+    const base = k.versions.find(v => v.status === 'PUBLISHED') ?? k.versions[k.versions.length - 1];
+    const [major, minor] = base.versionNumber.replace('v', '').split('.').map(Number);
+    const newNum = `v${major}.${minor + 1}`;
+
+    // 更新 sourceFiles 的 linkedVersion 到最新
+    const updatedSourceFiles = (base.sourceFiles ?? []).map(ref => {
+      const file = getFile(ref.fileId);
+      return file ? { ...ref, linkedVersion: file.version } : ref;
+    });
+
+    const staleFileNames = (k.staleSourceFileIds ?? [])
+      .map(id => getFile(id)?.fileName ?? id)
+      .join('、');
+
+    const newVersion: KnowledgeVersion = {
+      ...JSON.parse(JSON.stringify(base)),
+      id: `${newNum}-source-update-${Date.now()}`,
+      versionNumber: newNum,
+      status: 'DRAFT',
+      updateNote: `根據來源檔案更新（${staleFileNames}）由 AI 自動建立草稿`,
+      lastUpdateBy: 'AI 生成',
+      lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      sourceFiles: updatedSourceFiles,
+    };
+
+    k.versions.push(newVersion);
+    k.status = 'DRAFT';
+    k.sourceStale = false;
+    k.staleSourceFileIds = [];
+    return newVersion.id;
+  }
+
+  // 稍後處理：清除 stale 標記（不建立草稿）
+  function dismissSourceStale(knowledgeId: string) {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    k.sourceStale = false;
+    k.staleSourceFileIds = [];
+  }
 
   return {
     knowledgeList,
@@ -277,6 +350,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     createFromFile,
     saveDraft,
     submitForReview,
-    restoreToDraft
+    restoreToDraft,
+    markFileStale,
+    createDraftFromSourceUpdate,
+    dismissSourceStale,
   };
 });

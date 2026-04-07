@@ -18,7 +18,8 @@
 
     <div class="list-scroll-box">
       <oneFileItem class="one-file-item"
-        v-for="(item, index) in 100" :key="index" />
+        v-for="(item, index) in projectFiles" :key="index"
+        :fileInfo="item" />
     </div>
   </div>
 </template>
@@ -33,7 +34,7 @@ import oneFileItem from '@/components/AiViewer/oneFileItem.vue';
 import {initClickOutsideListener } from "@/utils/utils";
 
 const aiviewerStore = useAiviewerStore();
-const { aiViewerBlocks, isShowFileListView } = storeToRefs(aiviewerStore);
+const { aiViewerBlocks, isShowFileListView, projectFiles } = storeToRefs(aiviewerStore);
 
 const showSortOptionsBox = ref(false);
 const sortOptionsBox = ref<HTMLElement | null>(null);

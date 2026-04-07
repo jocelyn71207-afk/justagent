@@ -98,19 +98,19 @@
 
         <!-- 關聯附件區 -->
         <div class="mt-5 pt-4 border-top">
-          <h6 class="mb-3 d-flex align-items-center fw-600">
-            <i class="material-symbols-outlined mr-2">attachment</i>
+          <h6 class="fs-16 mb-3 d-flex align-items-center fw-600">
+            <i class="material-symbols-outlined mr-2" style="display: inline-flex; vertical-align: middle;">attachment</i>
             關聯附件與來源檔案
           </h6>
           <div class="d-flex flex-wrap gap-2" v-if="versionToShow.sourceFiles?.length">
             <div
               v-for="file in versionToShow.sourceFiles"
-              :key="file"
-              class="category-tag d-flex align-items-center px-3 py-2 cursor-pointer"
+              :key="file.fileId"
+              class="category-tag d-flex align-items-center px-3 py-2 cursor-pointer fs-14"
               style="border-radius: 8px;"
             >
               <i class="material-symbols-outlined fs-16 mr-2">description</i>
-              {{ file }}
+              {{ file.fileName }}
             </div>
           </div>
           <div class="fc-grey-1 fs-13" v-else>尚未關聯任何來源檔案</div>

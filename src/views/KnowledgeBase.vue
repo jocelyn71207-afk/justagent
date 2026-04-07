@@ -70,9 +70,10 @@
             v-model="filterCategory"
             :tabs="[
               { label: '全部', value: '' },
-              { label: '商務規則', value: '商務規則' },
+              { label: '商品文件', value: '商品文件' },
               { label: '系統文件', value: '系統文件' },
               { label: '客服知識', value: '客服知識' },
+              { label: '規則說明', value: '規則說明' },
             ]"
           />
         </div>
@@ -117,7 +118,17 @@
                     <i class="material-symbols-outlined">menu_book</i>
                   </div>
                   <div>
-                    <div class="entry-title cursor-pointer" @click="goToDetail(item.id)">{{ item.title }}</div>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="entry-title cursor-pointer" @click="goToDetail(item.id)">{{ item.title }}</div>
+                      <span
+                        v-if="item.sourceStale"
+                        class="source-stale-badge"
+                        @click.stop="openSourceUpdateModal(item)"
+                      >
+                        <i class="material-symbols-outlined">update</i>
+                        來源已更新
+                      </span>
+                    </div>
                     <div class="entry-id">{{ item.id }}</div>
                   </div>
                 </div>
@@ -205,6 +216,12 @@
       :versionNumber="versionToRestore?.versionNumber || ''"
       @confirm="confirmRestore"
     />
+
+    <!-- 來源更新通知 -->
+    <SourceUpdateModal
+      v-model="isSourceUpdateModalOpen"
+      :file-id="sourceUpdateFileId"
+    />
   </div>
 </template>
 
@@ -223,6 +240,7 @@ import popDialog from '@/services/popDialog';
 import VersionHistoryDrawer from '@/components/Knowledge/VersionHistoryDrawer.vue';
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
 import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue';
+import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -303,6 +321,17 @@ function handleEditAction(item: any) {
       router.push({ name: 'KnowledgeEditor', params: { knowledgeId: item.id, versionId: draft.id } });
     }
   }
+}
+
+// 來源更新 Modal
+const isSourceUpdateModalOpen = ref(false);
+const sourceUpdateFileId = ref('');
+
+function openSourceUpdateModal(item: any) {
+  const staleFileId = item.staleSourceFileIds?.[0];
+  if (!staleFileId) return;
+  sourceUpdateFileId.value = staleFileId;
+  isSourceUpdateModalOpen.value = true;
 }
 
 const historyDrawer = ref();

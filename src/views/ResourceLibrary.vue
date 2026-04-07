@@ -167,12 +167,17 @@
     :file="wizardFile"
     @confirm="handleWizardConfirm"
   />
+
+  <SourceUpdateModal
+    v-model="isSourceUpdateModalOpen"
+    :file-id="sourceUpdateFileId"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import type { Ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import compTabs from '@/components/compTabs/compTabs.vue';
@@ -181,16 +186,22 @@ import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import compPagination from '@/components/compPagination/compPagination.vue';
 import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
 import popDialog from '@/services/popDialog';
-import { useRouter } from 'vue-router';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import { useResourceStore } from '@/stores/resourceStore';
 import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWizardModal.vue';
+import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
 
 const router = useRouter();
 const knowledgeStore = useKnowledgeStore();
+const resourceStore = useResourceStore();
 
 // 知識建立精靈
 const isWizardOpen = ref(false);
 const wizardFile = ref<{ id: string; fileName: string; fileType: string } | null>(null);
+
+// 來源更新 Modal
+const isSourceUpdateModalOpen = ref(false);
+const sourceUpdateFileId = ref('');
 
 // 檔案類型圖示 mapping
 import pdfIcon from '@/assets/fileTypeIcon/pdf.png';
@@ -209,7 +220,6 @@ const openBatchUploadFn = rootStore.openBatchUploadFn;
 
 const teamId = ref(route.query.teamId);
 const teamName = ref(route.query.teamName);
-// route改變時更新teamId和teamName
 watch(() => route.query, (newQuery) => {
   teamId.value = newQuery.teamId;
   teamName.value = newQuery.teamName;
@@ -235,76 +245,50 @@ const statusLabel: Record<string, string> = {
 // 過濾條件
 const filterTypeValue = ref('') as Ref<string | number>;
 
-// 資源列表  TODO... 這裡的資料結構只是測試用，之後要改成後端吐的格式
-const resourceList = ref([
-  { showMoreOption: false, id: 'res1',  fileName: '26W產品特色簡報.pptx',           fileUrl: '',                                        fileType: 'PPT',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res2',  fileName: '25W產品銷售DM.pdf',               fileUrl: '',                                        fileType: 'PDF',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res3',  fileName: 'Teva202502庫存資料.xlsx',         fileUrl: '',                                        fileType: 'EXCEL', processType: 'AI_PARSED', status: 'stored',    creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res4',  fileName: '25W產品特色搭配建議.pdf',         fileUrl: '',                                        fileType: 'PDF',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res5',  fileName: '競品戶外涼鞋分析報告.html',       fileUrl: '',                                        fileType: 'HTML',  processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res6',  fileName: 'DM設計用背景圖（清晨）.png',      fileUrl: 'https://picsum.photos/410/240.webp?random=10', fileType: 'IMAGE', processType: 'RAW',  status: 'saved',     creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res7',  fileName: 'DM設計用背景圖（山景）.png',      fileUrl: 'https://picsum.photos/410/240.webp?random=11', fileType: 'IMAGE', processType: 'RAW',  status: 'saved', creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res8',  fileName: '特殊材質名稱轉換清單.md',         fileUrl: '',                                        fileType: 'MD',    processType: 'AI_PARSED', status: 'parsing',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res9',  fileName: '特殊材質名稱轉換清單(新）.txt',   fileUrl: '',                                        fileType: 'TXT',   processType: 'RAW',       status: 'saved',     creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res10', fileName: '26W電商上架資訊包含SEO.docx',     fileUrl: '',                                        fileType: 'WORD',  processType: 'RAW',       status: 'saved',    creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res11', fileName: '官網新用戶消費傾向分析.chart',    fileUrl: '',                                        fileType: 'CHART', processType: 'RAW',       status: 'saved',     creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-  { showMoreOption: false, id: 'res12', fileName: 'unknown.xyz',                    fileUrl: '',                                        fileType: 'OTHER', processType: 'RAW',       status: 'saved',     creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-]);
+// 資源列表來自 resourceStore
+const resourceList = computed(() => resourceStore.resourceList);
 
 // 頁碼相關
 const pageNo = ref(1);
 const numberOfRowsPerPage = ref(10);
 
-// 過濾後的完整列表（供 pagination 計算 totalRows）
+// 過濾後的完整列表
 const filteredList = computed(() => {
-  let list = resourceList.value;
+  let list = resourceList.value as any[];
   if (filterValue.value !== 'ALL') {
-    list = list.filter((item: any) => item.processType === filterValue.value);
+    list = list.filter(item => item.processType === filterValue.value);
   }
   if (filterTypeValue.value) {
-    list = list.filter((item: any) => item.fileType === filterTypeValue.value);
+    list = list.filter(item => item.fileType === filterTypeValue.value);
   }
   return list;
 });
 
-// 篩選條件變動時重置頁碼
 watch([filterValue, filterTypeValue], () => {
   pageNo.value = 1;
 });
 
-// 依分頁截取當頁資料
 const displayList = computed(() => {
   const start = (pageNo.value - 1) * numberOfRowsPerPage.value;
   return filteredList.value.slice(start, start + numberOfRowsPerPage.value);
 });
 
-// 分頁變更時同步更新頁碼與每頁筆數
 function onPaginationChange(payload: PaginationChangePayload) {
   pageNo.value = payload.pageNo;
-  // numberOfRowsPerPage.value = payload.numberOfRowsPerPage;
 }
 
-// 判斷是否為圖片類型 (對應 FileType 的 'IMAGE')
 function isImageType(fileType: string) {
   return fileType.toUpperCase() === 'IMAGE';
 }
 
-// 取得檔案類型圖示 (使用 FileType 定義: 'IMAGE'|'MD'|'HTML'|'TXT'|'PDF'|'EXCEL'|'CHART'|'PPT'|'WORD'|'OTHER')
 function getFileTypeIcon(fileType: string) {
   const map: Record<string, string> = {
-    PDF: pdfIcon,
-    PPT: pptIcon,
-    EXCEL: excelIcon,
-    HTML: htmlIcon,
-    MD: mdIcon,
-    WORD: wordIcon,
-    TXT: txtIcon,
-    CHART: chartIcon,
+    PDF: pdfIcon, PPT: pptIcon, EXCEL: excelIcon, HTML: htmlIcon,
+    MD: mdIcon, WORD: wordIcon, TXT: txtIcon, CHART: chartIcon,
   };
   return map[fileType.toUpperCase()] || txtIcon;
 }
 
-// 格式化日期字串為 "YYYY年MM月DD日 HH:mm" 格式
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -314,35 +298,29 @@ function formatDate(dateStr: string) {
 const nowModifyItem = ref(null as any);
 function editFileName(item: any) {
   item.showMoreOption = false;
-  console.log('TODO... 編輯檔案名稱', item);
-  nowModifyItem.value = { ...item }; // 開一個新的物件來綁定輸入框，避免直接修改到列表資料
-  nowModifyItem.value.catch = JSON.parse(JSON.stringify(item)); // 深拷貝，確保內部物件也被複製
-  // 編輯狀態下自動聚焦並將游標移到文字最後
+  nowModifyItem.value = { ...item };
+  nowModifyItem.value.catch = JSON.parse(JSON.stringify(item));
   nextTick(() => {
     const inputEl = document.getElementById('mofidyInput' + item.id) as HTMLInputElement;
     if (inputEl) {
       inputEl.focus();
-      // 將游標移到文字最後
       const length = inputEl.value.length;
       inputEl.setSelectionRange(length, length);
     }
   });
 }
 function saveModifyFileName() {
-  // 檢查名稱是否有修改，且不為空
   if (!nowModifyItem.value.fileName.trim()) {
     popDialog.alert('檔案名稱不能為空');
     nowModifyItem.value = null;
     return;
   }
   if (nowModifyItem.value.fileName === nowModifyItem.value.catch.fileName) {
-    nowModifyItem.value = null; // 沒有修改，直接退出編輯狀態
+    nowModifyItem.value = null;
     return;
   }
-  // TODO... ajax
   console.log('TODO...儲存檔案名稱', nowModifyItem.value.fileName);
   nowModifyItem.value = null;
-  // 重新撈取列表資料...
 }
 
 // 建立為知識內容：開啟精靈
@@ -352,7 +330,6 @@ function createKnowledge(item: any) {
   isWizardOpen.value = true;
 }
 
-// 精靈完成後：建立草稿並跳轉至編輯器
 function handleWizardConfirm(data: { template: string; content: string }) {
   if (!wizardFile.value) return;
   const { knowledgeId, versionId } = knowledgeStore.createFromFile({
@@ -374,7 +351,7 @@ function deleteResource(item: any) {
     </div>
   `,
   () => {
-    resourceList.value = resourceList.value.filter(r => r.id !== item.id);
+    resourceStore.deleteFile(item.id);
   });
 }
 </script>

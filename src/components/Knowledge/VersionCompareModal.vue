@@ -5,8 +5,8 @@
       @click.self="$emit('update:modelValue', false)"
     >
       <div
-        class="swal2-popup swal2-modal swal2-show pop_dialog"
-        style="display: flex; width: 1020px; max-width: 96vw; height: 88vh;"
+        class="swal2-popup swal2-modal swal2-show"
+        style="display: flex; width: 1200px; max-width: 96vw; height: 85vh; padding: 32px;"
       >
         <div class="swal2-content text-left h-100 d-flex flex-column w-100">
 

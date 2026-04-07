@@ -21,8 +21,19 @@
         />
       </div>
 
+      <!-- 搜尋快捷 chips -->
+      <div class="search-chips">
+        <span class="chip">內容創作</span>
+        <span class="chip">財務分析</span>
+        <span class="chip">會議記錄</span>
+        <span class="chip">HR 行政</span>
+        <span class="chip">設計輔助</span>
+      </div>
+
       <!-- Hero Banner -->
       <div class="explore-hero">
+        <div class="hero-deco hero-deco--tl"></div>
+        <div class="hero-deco hero-deco--br"></div>
         <div class="hero-left">
           <div class="hero-mascot">
             <div class="hero-mascot-inner"></div>
@@ -105,6 +116,9 @@
             class="rec-card"
             @click="openModal(agent)"
           >
+            <div class="rec-icon">
+              <i class="material-symbols-outlined">{{ agent.icon }}</i>
+            </div>
             <div class="rec-card-top">
               <span class="rec-card-name">{{ agent.name }}</span>
               <span v-if="agent.badge" class="rec-card-tag" :style="{ background: agent.bgColor, color: agent.accentColor }">

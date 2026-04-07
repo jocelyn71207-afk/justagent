@@ -10,7 +10,7 @@
 
           <!-- 版本類型選擇 -->
           <div class="mb-4">
-            <label class="field-label">版本升級類型 <span style="color: #e53935;">*</span></label>
+            <label class="field-label">版本升級類型 <span class="required-mark">*</span></label>
             <div class="d-flex gap-3 mt-2">
               <div
                 class="KnowledgeBase version-type-btn flex-1"
@@ -33,7 +33,7 @@
 
           <!-- 更新說明 -->
           <div class="mb-4">
-            <label class="field-label">本次更新說明 <span style="color: #e53935;">*</span></label>
+            <label class="field-label">本次更新說明 <span class="required-mark">*</span></label>
             <textarea
               class="custom-input w-100 mt-2"
               rows="3"

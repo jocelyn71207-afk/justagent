@@ -24,12 +24,12 @@ $grey-font: #232735; // 文字
 $grey-shadow: #29323c; // 陰影
 
 // Main
-$color_main_1: #3eb5cc; // 產品主色 (預設justka use)
-$color_main_2: #22c2d3;
-$color_main_3: #76cbdd;
-$color_main_4: #ceecf2;
-$color_main_5: #e9f9fb;
-$color_main_6: #ecfbff;
+$color_main_1: #16a34a; // 產品主色 (預設justka use)
+$color_main_2: #15803d;
+$color_main_3: #22c55e;
+$color_main_4: #bbf7d0;
+$color_main_5: #dcfce7;
+$color_main_6: #f0fdf4;
 
 // 灰色
 $color_grey_1: #8b90a0;
@@ -123,3 +123,40 @@ $select_triangle: "data:image/gif;base64,R0lGODlhZABCAPMAAJ+ruqWxv7K8yLnBzL/H0cX
 
 // 導角
 $radius: 8px;
+
+// ── Badge / Status 色彩 ──────────────────────────────
+// Process type badge
+$color-badge-ai-bg: rgba(138, 63, 252, 0.10);
+$color-badge-ai-text: #7c3aed;
+$color-badge-raw-bg: rgba(30, 136, 229, 0.10);
+$color-badge-raw-text: #1565c0;
+
+// File status badge
+$color-status-uploading-bg: rgba(30, 136, 229, 0.10);
+$color-status-uploading-text: #1565c0;
+$color-status-parsing-bg: rgba(251, 192, 0, 0.15);
+$color-status-parsing-text: #b07d00;
+$color-status-stored-bg: rgba(2, 195, 0, 0.10);
+$color-status-stored-text: #02a100;
+$color-status-saved-bg: rgba(0, 150, 136, 0.10);
+$color-status-saved-text: #00695c;
+$color-status-failed-bg: rgba(229, 57, 53, 0.10);
+$color-status-failed-text: #c62828;
+
+// Danger / Error
+$color-danger: #e53935;
+
+// ── Explore 頁面 Purple Accent ───────────────────────
+$color-explore-accent-light: #EEEDFE;   // 淺紫背景
+$color-explore-accent-mid: #7F77DD;     // 中紫
+$color-explore-accent-hover: #CECBF6;  // Hover 紫
+$color-explore-accent-text: #534AB7;   // 紫色文字
+$color-explore-accent-dark: #3C3489;   // 深紫文字
+
+// Explore agent badge
+$color-badge-new-bg: #EAF3DE;
+$color-badge-new-text: #3B6D11;
+$color-badge-hot-bg: #FAEEDA;
+$color-badge-hot-text: #854F0B;
+$color-badge-sat-bg: #E1F5EE;
+$color-badge-sat-text: #0F6E56;

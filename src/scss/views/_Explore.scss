@@ -61,7 +61,7 @@
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: #EEEDFE;
+      background: $color-explore-accent-light;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -71,7 +71,7 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #7F77DD;
+        background: $color-explore-accent-mid;
       }
     }
 
@@ -95,7 +95,7 @@
 
     .hero-cta {
       flex-shrink: 0;
-      background: #EEEDFE;
+      background: $color-explore-accent-light;
       border-radius: 12px;
       padding: 12px 16px;
       width: 188px;
@@ -103,13 +103,13 @@
       transition: background 0.15s;
 
       &:hover {
-        background: #CECBF6;
+        background: $color-explore-accent-hover;
       }
 
       .hero-cta-label {
         font-size: 10px;
         font-weight: 600;
-        color: #534AB7;
+        color: $color-explore-accent-text;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 4px;
@@ -118,13 +118,13 @@
       .hero-cta-name {
         font-size: 13px;
         font-weight: 600;
-        color: #3C3489;
+        color: $color-explore-accent-dark;
         margin-bottom: 3px;
       }
 
       .hero-cta-desc {
         font-size: 11px;
-        color: #534AB7;
+        color: $color-explore-accent-text;
         line-height: 1.45;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -135,7 +135,7 @@
       .hero-cta-link {
         font-size: 11px;
         font-weight: 600;
-        color: #534AB7;
+        color: $color-explore-accent-text;
         margin-top: 8px;
       }
     }
@@ -216,18 +216,18 @@
       border-radius: 20px;
 
       &--new {
-        background: #EAF3DE;
-        color: #3B6D11;
+        background: $color-badge-new-bg;
+        color: $color-badge-new-text;
       }
 
       &--hot {
-        background: #FAEEDA;
-        color: #854F0B;
+        background: $color-badge-hot-bg;
+        color: $color-badge-hot-text;
       }
 
       &--sat {
-        background: #E1F5EE;
-        color: #0F6E56;
+        background: $color-badge-sat-bg;
+        color: $color-badge-sat-text;
       }
     }
 
@@ -275,13 +275,13 @@
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background: #3C3489;
+        background: $color-explore-accent-dark;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 10px;
         font-weight: 600;
-        color: #EEEDFE;
+        color: $color-explore-accent-light;
         flex-shrink: 0;
       }
 
@@ -388,13 +388,14 @@
       font-size: 14px;
       color: var(--color-text-alpha70);
       line-height: 1.65;
-      margin-bottom: 14px;
+      margin-bottom: 20px;
     }
 
     .explore-modal-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
+      margin-bottom: 24px; // 增加與下方按鈕的距離
 
       .explore-modal-tag {
         padding: 4px 10px;

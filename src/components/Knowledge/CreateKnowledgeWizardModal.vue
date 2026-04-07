@@ -1,186 +1,199 @@
 <template>
-  <div v-if="modelValue" class="modal-root">
-    <div class="swal2-container swal2-center swal2-backdrop-show" @click.self="handleClose">
-      <div class="swal2-popup swal2-modal swal2-show knowledge-wizard-dialog" style="display: flex;">
-        <div class="swal2-content text-left w-100">
-
-          <!-- 步驟指示器 -->
-          <div class="wizard-header">
-            <h4 class="fw-700 mb-0">建立知識條目</h4>
-            <div class="wizard-steps">
-              <template v-for="(label, i) in stepLabels" :key="i">
-                <div class="wizard-step-item">
-                  <div :class="['wizard-step-dot', { 'is-active': currentStep >= i + 1, 'is-done': currentStep > i + 1 }]">
-                    <i v-if="currentStep > i + 1" class="material-symbols-outlined">check</i>
-                    <span v-else>{{ i + 1 }}</span>
-                  </div>
-                  <span :class="['wizard-step-label', { 'is-active': currentStep >= i + 1 }]">{{ label }}</span>
-                </div>
-                <div v-if="i < stepLabels.length - 1" class="wizard-step-connector"></div>
-              </template>
+  <compModal
+    class="CreateKnowledgeWizardModal"
+    v-model="isOpenModal"
+    :width="660"
+    :showClose="!isGenerating && !isChecking"
+  >
+    <template #title>
+      <div class="wizard-header-box">
+        <h4 class="wizard-modal-title">建立知識條目</h4>
+        <div class="wizard-steps">
+          <template v-for="(label, i) in stepLabels" :key="i">
+            <div :class="['wizard-step-item', { 'is-active': currentStep >= i + 1 }]">
+              <div :class="['wizard-step-dot', { 'is-done': currentStep > i + 1, 'is-active': currentStep === i + 1 }]">
+                <i v-if="currentStep > i + 1" class="material-symbols-outlined">check</i>
+                <span v-else>{{ i + 1 }}</span>
+              </div>
+              <span class="wizard-step-label">{{ label }}</span>
             </div>
+            <div v-if="i < stepLabels.length - 1" class="wizard-step-connector"></div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <div class="wizard-modal-body">
+      <!-- 來源檔案資訊列 -->
+      <div class="wizard-file-info">
+        <div class="file-icon-box">
+          <i class="material-symbols-outlined">{{ fileTypeIcon }}</i>
+        </div>
+        <div class="file-text-content">
+          <span class="file-label">來源檔案</span>
+          <span class="file-name">{{ file?.fileName }}</span>
+        </div>
+      </div>
+
+      <!-- ── Step 1：相似性檢查 ── -->
+      <div v-if="currentStep === 1" class="wizard-step-content">
+        <div v-if="isChecking" class="wizard-state-center">
+          <div class="ai-pulse-icon">
+            <i class="material-symbols-outlined">manage_search</i>
           </div>
-
-          <!-- 來源檔案資訊列 -->
-          <div class="wizard-file-info">
-            <i class="material-symbols-outlined">{{ fileTypeIcon }}</i>
-            <span>來源檔案：<strong>{{ file?.fileName }}</strong></span>
-          </div>
-
-          <!-- ── Step 1：相似性檢查 ── -->
-          <div v-if="currentStep === 1" class="wizard-step-content">
-            <div v-if="isChecking" class="wizard-state-center">
-              <div class="ai-pulse-icon">
-                <i class="material-symbols-outlined">manage_search</i>
-              </div>
-              <div class="fw-600 fs-15 mt-3">正在掃描相似知識條目...</div>
-              <div class="fc-grey-1 fs-13 mt-1">系統正在比對知識庫中的現有條目</div>
-            </div>
-
-            <div v-else>
-              <!-- 有相似項目 -->
-              <template v-if="similarItems.length">
-                <div class="check-result-banner check-result-banner--warning">
-                  <i class="material-symbols-outlined">warning</i>
-                  <div>
-                    <div class="fw-600">發現 {{ similarItems.length }} 個可能相關的現有條目</div>
-                    <div class="fs-13 mt-1">您仍可繼續建立新的知識條目，或選擇編輯現有條目。</div>
-                  </div>
-                </div>
-                <div class="similar-item-card" v-for="item in similarItems" :key="item.id">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="knowledge-icon KnowledgeBase">
-                      <i class="material-symbols-outlined">menu_book</i>
-                    </div>
-                    <div>
-                      <div class="fw-600 fs-14">{{ item.title }}</div>
-                      <div class="fc-grey-1 fs-12 mt-1">分類：{{ item.category || '未分類' }}　版本：{{ item.currentVersion }}</div>
-                    </div>
-                  </div>
-                  <span :class="['KnowledgeBase status-badge', `status-badge--${item.status}`]">
-                    {{ statusLabelMap[item.status] }}
-                  </span>
-                </div>
-              </template>
-
-              <!-- 無相似項目 -->
-              <div v-else class="check-result-banner check-result-banner--success">
-                <i class="material-symbols-outlined">check_circle</i>
-                <div>
-                  <div class="fw-600">未發現重複條目</div>
-                  <div class="fs-13 mt-1">知識庫中沒有與此檔案相似的現有條目，可以直接建立。</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── Step 2：模板選擇 ── -->
-          <div v-if="currentStep === 2" class="wizard-step-content">
-            <div class="fs-14 fc-grey-1 mb-4">
-              選擇最符合此知識條目用途的模板，AI 將據此產出對應格式的初稿。
-            </div>
-            <div class="template-grid">
-              <div
-                v-for="tpl in templates"
-                :key="tpl.value"
-                :class="['template-card', { 'is-active': selectedTemplate === tpl.value }]"
-                @click="selectedTemplate = tpl.value"
-              >
-                <div class="template-card-icon">
-                  <i class="material-symbols-outlined">{{ tpl.icon }}</i>
-                </div>
-                <div class="template-card-title">{{ tpl.label }}</div>
-                <div class="template-card-desc">{{ tpl.desc }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── Step 3：AI 初稿生成 ── -->
-          <div v-if="currentStep === 3" class="wizard-step-content">
-            <!-- 生成中 -->
-            <div v-if="isGenerating" class="wizard-state-center">
-              <div class="ai-pulse-icon ai-pulse-icon--generating">
-                <i class="material-symbols-outlined">auto_awesome</i>
-              </div>
-              <div class="fw-600 fs-15 mt-3">AI 正在根據檔案內容產出初稿...</div>
-              <div class="fc-grey-1 fs-13 mt-1">使用模板：{{ selectedTemplateLabel }}，請稍候</div>
-              <div class="ai-progress-track mt-4">
-                <div class="ai-progress-fill" :style="{ width: generateProgress + '%' }"></div>
-              </div>
-              <div class="fc-grey-1 fs-12 mt-2">{{ generateProgress }}%</div>
-            </div>
-
-            <!-- 生成完成 -->
-            <div v-else class="ai-preview-box">
-              <div class="ai-preview-header">
-                <div class="d-flex align-items-center gap-2">
-                  <i class="material-symbols-outlined" style="color: var(--color-main);">auto_awesome</i>
-                  <span class="fw-700 fs-14">AI 初稿已生成</span>
-                  <span class="wizard-template-badge">{{ selectedTemplateLabel }}</span>
-                </div>
-                <span class="fc-grey-1 fs-12">進入編輯器後可修改所有內容</span>
-              </div>
-              <div class="ai-preview-content">
-                <div class="ai-preview-title">{{ previewTitle }}</div>
-                <pre class="ai-preview-body">{{ generatedContent }}</pre>
-              </div>
-            </div>
-          </div>
-
+          <div class="status-title">正在掃描相似知識條目...</div>
+          <div class="status-desc">系統正在比對知識庫中的現有條目，確保內容不重複</div>
         </div>
 
-        <!-- ── 底部操作按鈕 ── -->
-        <div class="swal2-actions w-100 mt-2" style="flex-wrap: wrap; gap: 8px;">
-          <button class="swal2-cancel swal2-styled" @click="handleClose" style="margin: 0 !important;">取消</button>
+        <div v-else>
+          <!-- 有相似項目 -->
+          <template v-if="similarItems.length">
+            <div class="check-result-banner check-result-banner--warning">
+              <i class="material-symbols-outlined">warning</i>
+              <div class="banner-text">
+                <div class="banner-title">發現 {{ similarItems.length }} 個可能相關的現有條目</div>
+                <div class="banner-desc">建議先檢查現有內容，您仍可繼續建立新條目或選擇編輯舊有條目。</div>
+              </div>
+            </div>
+            <div class="similar-items-list">
+              <div class="similar-item-card" v-for="item in similarItems" :key="item.id">
+                <div class="item-main">
+                  <div class="item-icon">
+                    <i class="material-symbols-outlined">menu_book</i>
+                  </div>
+                  <div class="item-info">
+                    <div class="item-title">{{ item.title }}</div>
+                    <div class="item-meta">分類：{{ item.category || '未分類' }} · 版本：{{ item.currentVersion }}</div>
+                  </div>
+                </div>
+                <span :class="['status-badge', `status-badge--${item.status}`]">
+                  {{ statusLabelMap[item.status] }}
+                </span>
+              </div>
+            </div>
+          </template>
 
+          <!-- 無相似項目 -->
+          <div v-else class="check-result-banner check-result-banner--success">
+            <i class="material-symbols-outlined">check_circle</i>
+            <div class="banner-text">
+              <div class="banner-title">未發現重複條目</div>
+              <div class="banner-desc">知識庫中目前沒有與此檔案內容相似的條目，您可以放心地開始建立。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 2：模板選擇 ── -->
+      <div v-if="currentStep === 2" class="wizard-step-content">
+        <div class="step-guide-text">
+          選擇最符合此知識條目用途的模板，AI 將據此產出對應格式的初稿。
+        </div>
+        <div class="template-grid">
+          <div
+            v-for="tpl in templates"
+            :key="tpl.value"
+            :class="['template-card', { 'is-active': selectedTemplate === tpl.value }]"
+            @click="selectedTemplate = tpl.value"
+          >
+            <div class="template-card-icon">
+              <i class="material-symbols-outlined">{{ tpl.icon }}</i>
+            </div>
+            <div class="template-card-content">
+              <div class="template-card-title">{{ tpl.label }}</div>
+              <div class="template-card-desc">{{ tpl.desc }}</div>
+            </div>
+            <div class="template-card-check" v-if="selectedTemplate === tpl.value">
+              <i class="material-symbols-outlined">check_circle</i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 3：AI 初稿生成 ── -->
+      <div v-if="currentStep === 3" class="wizard-step-content">
+        <!-- 生成中 -->
+        <div v-if="isGenerating" class="wizard-state-center">
+          <div class="ai-pulse-icon ai-pulse-icon--generating">
+            <i class="material-symbols-outlined">auto_awesome</i>
+          </div>
+          <div class="status-title">AI 正在根據檔案內容產出初稿...</div>
+          <div class="status-desc">選用模板：{{ selectedTemplateLabel }}</div>
+          <div class="ai-progress-container mt-4">
+            <div class="ai-progress-track">
+              <div class="ai-progress-fill" :style="{ width: generateProgress + '%' }"></div>
+            </div>
+            <div class="progress-text">{{ generateProgress }}%</div>
+          </div>
+        </div>
+
+        <!-- 生成完成 -->
+        <div v-else class="ai-preview-container">
+          <div class="ai-preview-header">
+            <div class="header-left">
+              <i class="material-symbols-outlined title-icon">auto_awesome</i>
+              <span class="header-title">AI 初稿預覽</span>
+              <span class="template-badge">{{ selectedTemplateLabel }}</span>
+            </div>
+            <span class="header-hint">進入編輯器後可進行細部修改</span>
+          </div>
+          <div class="ai-preview-body">
+            <div class="preview-title">{{ previewTitle }}</div>
+            <div class="preview-scroll-area">
+              <pre class="preview-text">{{ generatedContent }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="wizard-footer-actions">
+        <button class="custom-btn" @click="handleClose">取消</button>
+
+        <div class="action-right">
           <!-- Step 1 -->
           <button
             v-if="currentStep === 1"
-            class="swal2-confirm swal2-styled btn-secondary"
+            class="custom-btn custom-main-btn"
             :disabled="isChecking"
             @click="goToStep2"
-            style="margin: 0 !important;"
           >
-            繼續建立知識
+            繼續建立知識 <i class="material-symbols-outlined fs-18 ml-1">arrow_forward</i>
           </button>
 
           <!-- Step 2 -->
           <template v-if="currentStep === 2">
-            <button class="swal2-cancel swal2-styled" @click="currentStep = 1" style="margin: 0 !important;">
-              上一步
-            </button>
+            <button class="custom-btn mr-2" @click="currentStep = 1">上一步</button>
             <button
-              class="swal2-confirm swal2-styled btn-secondary"
+              class="custom-btn custom-main-btn"
               :disabled="!selectedTemplate"
               @click="goToStep3"
-              style="margin: 0 !important;"
             >
-              開始 AI 生成
+              開始 AI 生成 <i class="material-symbols-outlined fs-18 ml-1">bolt</i>
             </button>
           </template>
 
           <!-- Step 3 -->
           <template v-if="currentStep === 3 && !isGenerating">
-            <button class="swal2-cancel swal2-styled" @click="currentStep = 2" style="margin: 0 !important;">
-              重新選擇模板
-            </button>
+            <button class="custom-btn mr-2" @click="currentStep = 2">重新選擇模板</button>
             <button
-              class="swal2-confirm swal2-styled btn-secondary"
+              class="custom-btn custom-main-btn"
               @click="handleConfirm"
-              style="margin: 0 !important;"
             >
-              進入編輯器
+              進入編輯器 <i class="material-symbols-outlined fs-18 ml-1">edit_square</i>
             </button>
           </template>
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </compModal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import compModal from '@/components/compModal/compModal.vue';
 
 interface FileItem {
   id: string;
@@ -197,6 +210,11 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
   (e: 'confirm', data: { template: string; content: string }): void;
 }>();
+
+const isOpenModal = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val)
+});
 
 const knowledgeStore = useKnowledgeStore();
 

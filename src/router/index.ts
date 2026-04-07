@@ -2,14 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useRootStore } from '@/stores/rootStore'
 
-import AppEntrance from '../views/AppEntrance.vue'
+
 
 export const routes: RouteRecordRaw[] = [
   {
-    path: '/', // App入口,也是解析登入者資料頁
+    path: '/',
+    name: 'Login',
+    component: () => import('../views/LoginView.vue'),
+  },
+  {
+    path: '/entrance', // 移到這邊
     name: 'AppEntrance',
-
-    component: AppEntrance,
+    component: () => import('../views/AppEntrance.vue'),
   },
   {
     path: '/view',

@@ -48,7 +48,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   const supportedImgFileTypes = imgFileTypes;
 
   // 各檔案 mime type 類型對應的圖示
-  const useIconFileTypes: any = {
+  const useIconFileTypes = ref<any>({
     // pdf
     PDF: pdfIcon,
     'application/pdf': pdfIcon,
@@ -84,7 +84,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': wordIcon,
     'application/vnd.ms-word.document.macroEnabled.12': wordIcon,
     'application/vnd.ms-word.template.macroEnabled.12': wordIcon,
-  };
+  });
   // 各檔案 mime type 類型對應的 BlockType
   function getBlockTypeByFileMime(fileMime: string): BlockType {
     console.log('getBlockTypeByFileMime >>> ', fileMime);
@@ -140,8 +140,58 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   // 目前選中的對話 ID
   const currentConversationId = ref('conv1') as Ref<string>;
 
+  // 專案檔案清單資料
+  const projectFiles = ref([
+    { name: 'AW26 Product Descriptions_翻譯.xlsx', fileType: 'EXCEL', size: 2834016 },
+    { name: 'AW26 Product Descriptions.xlsx', fileType: 'EXCEL', size: 2834016 },
+    { name: 'AW26 Product Descriptions_trade_mark.txt', fileType: 'TXT', size: 133 },
+  ]);
+
   // 使用者畫布中的區塊  TODO... 之後再定義 interface
-  const aiViewerBlocks = ref([]) as Ref<any[]>;
+  const INITIAL_BLOCKS = [
+    {
+      id: 'init-txt-aw26',
+      x: centerSpaceX,
+      y: centerSpaceY,
+      width: 500,
+      height: 300,
+      blockName: 'AW26 Product Descriptions_trade_mark.txt',
+      z: 1,
+      data: {
+        blockType: 'TXT',
+        data: {
+          content: 'HYPER-COMF®\nSpider Rubber®\nFuseLock™\nGORE TEX\nVibram\nCordura\nREPREVE®\nMAX-COMF®\nHYPER-COMF®\nSpider Rubber®\nGORE-TEX\nVibram®',
+        }
+      }
+    },
+    {
+      id: 'init-excel-aw26-orig',
+      x: centerSpaceX,
+      y: centerSpaceY + 340,
+      width: 780,
+      height: 420,
+      blockName: 'AW26 Product Descriptions.xlsx',
+      z: 2,
+      data: {
+        blockType: 'EXCEL',
+        data: { fileUrl: `${import.meta.env.BASE_URL}AW26%20Product%20Descriptions.xlsx` }
+      }
+    },
+    {
+      id: 'init-excel-aw26-trans',
+      x: centerSpaceX + 820,
+      y: centerSpaceY + 340,
+      width: 780,
+      height: 420,
+      blockName: 'AW26 Product Descriptions_翻譯.xlsx',
+      z: 3,
+      data: {
+        blockType: 'EXCEL',
+        data: { fileUrl: `${import.meta.env.BASE_URL}AW26%20Product%20Descriptions_%E7%BF%BB%E8%AD%AF.xlsx` }
+      }
+    },
+  ];
+  const aiViewerBlocks = ref([...INITIAL_BLOCKS]) as Ref<any[]>;
   // 目前選中的內容區塊 ID
   const nowChoiceAiViewerId = ref('') as Ref<string>;
   // 是否為多選模式
@@ -197,6 +247,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
 
     // 先取得當前可視範圍
     const stage = mainStage.value;                // konva.js 主場景物件
+    if (!stage) return tempBlock;
     const scale = stage.scaleX();                 // 目前縮放比例
     const visibleWidth = stage.width() / scale;   // 可視寬度
     const visibleHeight = stage.height() / scale; // 可視高度
@@ -272,7 +323,13 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
       'mdA', 'mdB',
       'imgA', 'imgB'
     ];
-    if (testIds.includes(userInputModal.value.msg)) {
+
+    // 新增: 判斷是否為檔案名稱 (結尾為常見副檔名)
+    const fileExts = ['.xlsx', '.xls', '.pdf', '.txt', '.md', '.png', '.jpg', '.html', '.docx', '.pptx'];
+    const msg = userInputModal.value.msg.trim();
+    const hasFileExt = fileExts.some(ext => msg.toLowerCase().endsWith(ext));
+
+    if (testIds.includes(msg) || hasFileExt) {
       testCreatMsg();
       return;
     }
@@ -352,8 +409,8 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
         // TODO... interface 之後再定義
         let temp: AiViewerBlock = {
           id: 'msg-' + index + Date.now(),
-          x: centerSpaceX * (index + 1) - mainStage.value.x(),
-          y: centerSpaceY * (index + 1) - mainStage.value.y(),
+          x: centerSpaceX * (index + 1) - (mainStage.value?.x() ?? 0),
+          y: centerSpaceY * (index + 1) - (mainStage.value?.y() ?? 0),
           width: 200,
           height: 200,
           blockName: 'new block',
@@ -368,8 +425,8 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     // 先假設是一般文字發話
     let temp: AiViewerBlock = {
       id: 'msg-' + Date.now(),
-      x: centerSpaceX - mainStage.value.x(),
-      y: centerSpaceY - mainStage.value.y(),
+      x: centerSpaceX - (mainStage.value?.x() ?? 0),
+      y: centerSpaceY - (mainStage.value?.y() ?? 0),
       width: 200,
       height: 200,
       blockName: 'new block',
@@ -399,8 +456,8 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
       temp.id + '_copy_' + Date.now();
 
     if (!notCalcPos) {
-      temp.x = centerSpaceX - mainStage.value.x();
-      temp.y = centerSpaceY - mainStage.value.y();
+      temp.x = centerSpaceX - (mainStage.value?.x() ?? 0);
+      temp.y = centerSpaceY - (mainStage.value?.y() ?? 0);
     }
 
     temp.z = calcNextZindex();
@@ -860,7 +917,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     }
   };
   function testCreatMsg() {
-    const testId = userInputModal.value.msg;
+    const testId = userInputModal.value.msg.trim();
     console.log('testCreatMsg testId=', testId);
     if (!testId) return;
     if (aiViewerBlocks.value.find((item: any) => item.id === testId)) return; // 不可重複
@@ -890,15 +947,45 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     H = (testId === 'mdA' || testId === 'mdB') ? 300 : H;
 
     // 造假資料
-    const temp: any = testMap[testId] || null;
+    let temp: any = testMap[testId] || null;
+
+    // 如果 testMap 沒有，但訊息看起來像檔案，則建立動態資料 (抓取 public/ 下的檔案)
+    if (!temp) {
+      const lowerId = testId.toLowerCase();
+      if (lowerId.endsWith('.xlsx') || lowerId.endsWith('.xls')) {
+        temp = {
+          blockType: 'EXCEL',
+          options: testExcelOptions,
+          data: { fileUrl: '/' + testId }
+        }
+        W = 800; H = 400;
+      } else if (lowerId.endsWith('.pdf')) {
+        temp = { blockType: 'PDF', data: { fileUrl: '/' + testId } }
+        W = 800; H = 450;
+      } else if (lowerId.endsWith('.txt')) {
+        temp = { blockType: 'TXT', data: { fileUrl: '/' + testId } }
+        W = 500; H = 300;
+      } else if (lowerId.endsWith('.md')) {
+        temp = { blockType: 'MD', data: { fileUrl: '/' + testId } }
+        W = 500; H = 300;
+      } else if (lowerId.endsWith('.png') || lowerId.endsWith('.jpg') || lowerId.endsWith('.jpeg')) {
+        temp = { blockType: 'IMAGE', data: { fileUrl: '/' + testId } }
+      } else if (lowerId.endsWith('.html')) {
+        temp = { blockType: 'HTML', data: { fileUrl: '/' + testId } }
+        W = 640; H = 480;
+      }
+    }
+
     console.log('testCreatMsg temp=', temp);
+    if (!temp) return; // 如果還是沒有，就不處理
+
     let tempMsg: AiViewerBlock = {
       id: testId,
-      x: centerSpaceX - mainStage.value.x(),
-      y: centerSpaceY - mainStage.value.y(),
+      x: centerSpaceX - (mainStage.value?.x() ?? 0),
+      y: centerSpaceY - (mainStage.value?.y() ?? 0),
       width: W,
       height: H,
-      blockName: 'new block',
+      blockName: testId,
       z: calcNextZindex(),
       data: temp
     };
@@ -908,6 +995,22 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     // 加入畫布
     aiViewerBlocks.value.push(tempMsg);
   }
+  // 報告生成後自動加入畫布
+  function addReportBlock(fileUrl: string, blockName: string) {
+    let temp: any = {
+      id: 'report-' + Date.now(),
+      x: centerSpaceX - (mainStage.value?.x() ?? 0),
+      y: centerSpaceY - (mainStage.value?.y() ?? 0),
+      width: 640,
+      height: 480,
+      blockName,
+      z: calcNextZindex(),
+      data: { blockType: 'HTML', data: { fileUrl } }
+    };
+    temp = checkCreatePos(temp);
+    aiViewerBlocks.value.push(temp);
+  }
+
   // TODO... 開發測試用 end
 
 
@@ -920,7 +1023,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     isShowBlockListView.value = false;
     isShowFileListView.value = false;
     isOpenConversationListModal .value = false;
-    aiViewerBlocks.value = [];
+    aiViewerBlocks.value = [...INITIAL_BLOCKS];
     nowChoiceAiViewerId.value = '';
     isMultiChoiceAiViewerMode.value = false;
     nowMultiChoiceAiViewerIds.value = [];
@@ -951,6 +1054,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     isShowFileListView,
     isOpenConversationListModal,
     currentConversationId,
+    projectFiles,
     aiViewerBlocks,
     nowChoiceAiViewerId,
     isMultiChoiceAiViewerMode,
@@ -968,6 +1072,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     pasteBlock,
     deleteBlock,
     renameBlock,
+    addReportBlock,
 
     resetAiViewerState,
   }

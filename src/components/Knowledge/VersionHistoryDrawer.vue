@@ -17,14 +17,22 @@
         <i class="material-symbols-outlined cursor-pointer" @click="$emit('update:modelValue', false)">close</i>
       </div>
 
-      <div class="drawer-body p-4" v-if="knowledge">
-        <div class="fs-13 fc-grey-1 mb-4">
-          <span class="fw-600">{{ knowledge.title }}</span>
-          <span class="ml-2 fc-grey-1">（{{ knowledge.id }}）</span>
+      <div class="drawer-body p-0" v-if="knowledge">
+        <!-- 知識項目標題卡片 -->
+        <div class="KnowledgeBase p-4 bgc-main-6 border-bottom mb-2">
+          <div class="d-flex align-items-center mb-1">
+            <i class="material-symbols-outlined fs-20 fc-main-1 mr-2">library_books</i>
+            <span class="fs-12 fw-700 fc-grey-1 uppercase letter-spacing-1">所屬知識條目</span>
+          </div>
+          <div class="pl-7">
+            <div class="fs-18 fw-700 fc-main-1 line-height-14">{{ knowledge.title }}</div>
+            <div class="fs-12 fc-grey-1 mt-1 font-monospace">ID: {{ knowledge.id }}</div>
+          </div>
         </div>
 
-        <div
-          v-for="v in [...knowledge.versions].reverse()"
+        <div class="p-4 pt-2">
+          <div
+            v-for="v in [...knowledge.versions].reverse()"
           :key="v.id"
           class="history-item"
           :class="{ 'is-published': v.status === 'PUBLISHED' }"
@@ -84,6 +92,7 @@
           <div class="history-note" v-if="v.updateNote">{{ v.updateNote }}</div>
         </div>
       </div>
+    </div>
 
       <div class="p-5 text-center fc-grey-1" v-else>查無版本資料</div>
     </div>
