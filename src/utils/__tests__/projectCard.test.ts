@@ -14,6 +14,9 @@ describe('barHeight', () => {
   it('所有值相同時全部回傳 80', () => {
     expect(barHeight(5, [5, 5, 5])).toBe(80);
   });
+  it('空陣列回傳 4', () => {
+    expect(barHeight(5, [])).toBe(4);
+  });
 });
 
 describe('weekLabel', () => {

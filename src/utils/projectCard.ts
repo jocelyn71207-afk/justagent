@@ -12,7 +12,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
  */
 export function barHeight(count: number, arr: number[]): number {
   const max = Math.max(...arr);
-  if (max === 0) return 4;
+  if (arr.length === 0 || max === 0) return 4;
   return Math.max(4, Math.round((count / max) * 80));
 }
 
