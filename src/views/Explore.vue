@@ -1,5 +1,13 @@
 <template>
   <div class="Explore views-page" v-show="!isEnterAppSearchPage">
+    <!-- 彩色光球背景層 -->
+    <div class="explore-bg">
+      <div class="explore-bg__blob explore-bg__blob--1"></div>
+      <div class="explore-bg__blob explore-bg__blob--2"></div>
+      <div class="explore-bg__blob explore-bg__blob--3"></div>
+      <div class="explore-bg__blob explore-bg__blob--4"></div>
+      <div class="explore-bg__blob explore-bg__blob--5"></div>
+    </div>
     <div class="views-page-content-box">
 
       <!-- 搜尋列 -->
@@ -119,18 +127,20 @@
     :closeOnMask="true"
   >
     <template v-if="selectedAgent">
-      <div class="explore-modal-content">
-        <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
-          <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
-        </div>
-        <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
-        <div class="explore-modal-tags">
-          <span v-for="tag in selectedAgent.tags" :key="tag" class="explore-modal-tag">{{ tag }}</span>
+      <div class="Explore explore-modal-box">
+        <div class="explore-modal-content">
+          <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
+          </div>
+          <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
+          <div class="explore-modal-tags">
+            <span v-for="tag in selectedAgent.tags" :key="tag" class="explore-modal-tag">{{ tag }}</span>
+          </div>
         </div>
       </div>
     </template>
     <template #footer>
-      <div class="explore-modal-footer">
+      <div class="Explore explore-modal-footer">
         <button class="custom-btn custom-main-btn" @click="useAgent">立即使用此 Agent</button>
         <button class="custom-btn" @click="isModalOpen = false">取消</button>
       </div>
