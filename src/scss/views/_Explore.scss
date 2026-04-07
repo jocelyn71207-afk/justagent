@@ -1,25 +1,125 @@
-.Explore {
+// ── Explore 頁面 Liquid Glass 設計 ───────────────────────────────────────────
 
+// 背景漸層底色
+.Explore.views-page {
+  background: linear-gradient(145deg, #4ade80 0%, #22c55e 35%, #06b6d4 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+// 彩色光球層
+.explore-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  .explore-bg__blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+  }
+
+  &__blob--1 {
+    width: 520px;
+    height: 520px;
+    background: #4ade80;
+    top: -120px;
+    left: -100px;
+    opacity: 0.75;
+    animation: blobFloat 9s ease-in-out infinite;
+  }
+
+  &__blob--2 {
+    width: 440px;
+    height: 440px;
+    background: #0891b2;
+    top: -80px;
+    right: -80px;
+    opacity: 0.65;
+    animation: blobFloat 11s ease-in-out infinite reverse;
+  }
+
+  &__blob--3 {
+    width: 380px;
+    height: 380px;
+    background: #65a30d;
+    bottom: 60px;
+    left: 30%;
+    opacity: 0.55;
+    animation: blobFloat 13s ease-in-out infinite;
+  }
+
+  &__blob--4 {
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.9);
+    top: 35%;
+    left: 42%;
+    opacity: 0.5;
+    animation: blobFloat 8s ease-in-out infinite reverse;
+  }
+
+  &__blob--5 {
+    width: 340px;
+    height: 340px;
+    background: #22d3ee;
+    bottom: -60px;
+    right: 60px;
+    opacity: 0.6;
+    animation: blobFloat 10s ease-in-out infinite;
+  }
+}
+
+@keyframes blobFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-18px); }
+}
+
+// 白底大板（覆蓋原本的 views-page-content-box）
+.Explore .views-page-content-box {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px !important;
+  padding: 24px !important;
+  box-shadow:
+    0 12px 48px rgba(0, 60, 20, 0.18),
+    0 2px 0 rgba(255, 255, 255, 0.9) inset;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+}
+
+.Explore {
   // ── 搜尋列 ──────────────────────────────────────
   .explore-search-bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(32px) saturate(1.6);
+    -webkit-backdrop-filter: blur(32px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    border-left-color: rgba(255, 255, 255, 0.70);
+    border-radius: 18px;
     padding: 10px 16px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     cursor: text;
-    transition: border-color 0.15s;
+    box-shadow:
+      0 4px 20px rgba(0, 60, 20, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.9) inset;
+    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
     &:focus-within {
-      border-color: var(--color-border-1);
+      background: rgba(255, 255, 255, 0.60);
+      border-top-color: rgba(255, 255, 255, 1);
     }
 
     i {
       font-size: 18px;
-      color: var(--color-text-alpha50);
+      color: rgba(0, 50, 30, 0.62);
       flex-shrink: 0;
     }
 
@@ -28,26 +128,88 @@
       border: none;
       outline: none;
       font-size: 14px;
-      color: var(--color-text);
+      color: #0a2e18;
       background: transparent;
 
       &::placeholder {
-        color: var(--color-text-alpha30);
+        color: rgba(0, 50, 30, 0.45);
+      }
+    }
+  }
+
+  // 搜尋快捷 chips
+  .search-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+
+    .chip {
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-top-color: rgba(255, 255, 255, 0.9);
+      color: rgba(0, 50, 30, 0.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
+      transition: all 0.16s;
+      white-space: nowrap;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.72);
+        color: #0a2e18;
+        transform: translateY(-1px);
       }
     }
   }
 
   // ── Hero Banner ──────────────────────────────────
   .explore-hero {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 16px;
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(32px) saturate(1.6);
+    -webkit-backdrop-filter: blur(32px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    border-left-color: rgba(255, 255, 255, 0.70);
+    border-radius: 18px;
     padding: 20px 24px;
     margin-bottom: 28px;
     min-width: 0;
+    overflow: hidden;
+    box-shadow:
+      0 4px 20px rgba(0, 60, 20, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.9) inset;
+
+    // 裝飾光暈偽元素
+    .hero-deco {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+
+      &--tl {
+        width: 160px;
+        height: 160px;
+        background: radial-gradient(circle, rgba(74,222,128,0.35) 0%, transparent 70%);
+        top: -50px;
+        left: -30px;
+      }
+
+      &--br {
+        width: 130px;
+        height: 130px;
+        background: radial-gradient(circle, rgba(6,182,212,0.30) 0%, transparent 70%);
+        bottom: -40px;
+        right: 180px;
+      }
+    }
 
     .hero-left {
       flex: 1;
@@ -55,28 +217,37 @@
       align-items: center;
       gap: 14px;
       min-width: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .hero-mascot {
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: $color-explore-accent-light;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-top-color: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
 
       .hero-mascot-inner {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: $color-explore-accent-mid;
+        background: linear-gradient(135deg, #22c55e, #06b6d4);
       }
     }
 
     .hero-text {
       min-width: 0;
+      position: relative;
+      z-index: 1;
 
       h2 {
         font-size: 15px;
@@ -85,31 +256,48 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: #0a2e18;
       }
 
       p {
         font-size: 12px;
-        color: var(--color-text-alpha50);
+        color: rgba(10, 46, 24, 0.52);
       }
     }
 
     .hero-cta {
       flex-shrink: 0;
-      background: $color-explore-accent-light;
-      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.52);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-top-color: rgba(255, 255, 255, 0.95);
+      border-left-color: rgba(255, 255, 255, 0.72);
+      border-radius: 14px;
       padding: 12px 16px;
       width: 188px;
       cursor: pointer;
-      transition: background 0.15s;
+      box-shadow:
+        0 3px 14px rgba(0, 60, 20, 0.07),
+        0 1px 0 rgba(255, 255, 255, 0.85) inset;
+      transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+      position: relative;
+      z-index: 1;
 
       &:hover {
-        background: $color-explore-accent-hover;
+        background: rgba(255, 255, 255, 0.70);
+        border-top-color: rgba(255, 255, 255, 1);
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 10px 28px rgba(0, 60, 20, 0.10), 0 1px 0 rgba(255, 255, 255, 1) inset;
       }
 
       .hero-cta-label {
         font-size: 10px;
         font-weight: 600;
-        color: $color-explore-accent-text;
+        background: linear-gradient(90deg, #16a34a, #0891b2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 4px;
@@ -118,13 +306,13 @@
       .hero-cta-name {
         font-size: 13px;
         font-weight: 600;
-        color: $color-explore-accent-dark;
+        color: #0a2e18;
         margin-bottom: 3px;
       }
 
       .hero-cta-desc {
         font-size: 11px;
-        color: $color-explore-accent-text;
+        color: rgba(10, 46, 24, 0.52);
         line-height: 1.45;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -135,7 +323,10 @@
       .hero-cta-link {
         font-size: 11px;
         font-weight: 600;
-        color: $color-explore-accent-text;
+        background: linear-gradient(90deg, #16a34a, #0891b2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-top: 8px;
       }
     }
@@ -151,16 +342,17 @@
     h3 {
       font-size: 14px;
       font-weight: 600;
+      color: #0a2e18;
     }
 
     .see-all {
       font-size: 12px;
-      color: var(--color-text-alpha50);
+      color: #16a34a;
       cursor: pointer;
       transition: color 0.15s;
 
       &:hover {
-        color: var(--color-text);
+        color: #0a2e18;
       }
     }
   }
@@ -177,30 +369,64 @@
 
   .agent-card {
     position: relative;
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.50);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
     padding: 16px;
     cursor: pointer;
-    transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+    box-shadow:
+      0 3px 14px rgba(0, 60, 20, 0.07),
+      0 1px 0 rgba(255, 255, 255, 0.85) inset;
+    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
     &:hover {
-      border-color: var(--color-border-1);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      background: rgba(255, 255, 255, 0.68);
+      border-top-color: rgba(255, 255, 255, 1);
+      transform: translateY(-4px) scale(1.015);
+      box-shadow:
+        0 12px 32px rgba(0, 60, 20, 0.12),
+        0 1px 0 rgba(255, 255, 255, 1) inset;
+    }
+
+    // 排名 badge 依父卡片位置區分（使用熱度榜用）
+    &:nth-child(1) .rank-badge {
+      background: linear-gradient(135deg, #f59e0b, #fcd34d);
+      color: #78350f;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.40);
+    }
+
+    &:nth-child(2) .rank-badge {
+      background: linear-gradient(135deg, #94a3b8, #e2e8f0);
+      color: #374151;
+      box-shadow: 0 2px 6px rgba(148, 163, 184, 0.35);
+    }
+
+    &:nth-child(3) .rank-badge {
+      background: linear-gradient(135deg, #b87333, #d4956c);
+      color: #fff8f0;
+      box-shadow: 0 2px 6px rgba(184, 115, 51, 0.35);
+    }
+
+    &:nth-child(n+4) .rank-badge {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.40);
+      border-top-color: rgba(255, 255, 255, 0.88);
+      color: rgba(0, 50, 30, 0.62);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
     }
 
     .rank-badge {
       position: absolute;
       top: 12px;
       right: 12px;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      background: var(--color-text);
-      color: var(--color-background);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -214,34 +440,34 @@
       font-weight: 600;
       padding: 3px 8px;
       border-radius: 20px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.40);
+      border-top-color: rgba(255, 255, 255, 0.90);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
 
-      &--new {
-        background: $color-badge-new-bg;
-        color: $color-badge-new-text;
-      }
-
-      &--hot {
-        background: $color-badge-hot-bg;
-        color: $color-badge-hot-text;
-      }
-
-      &--sat {
-        background: $color-badge-sat-bg;
-        color: $color-badge-sat-text;
-      }
+      &--new { color: #3B6D11; }
+      &--hot { color: #854F0B; }
+      &--sat { color: #0F6E56; }
     }
 
     .agent-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.40);
+      border-top-color: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
 
       i {
-        font-size: 20px;
+        font-size: 22px;
+        color: rgba(0, 50, 30, 0.62);
       }
     }
 
@@ -249,21 +475,29 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 5px;
+      color: #0a2e18;
     }
 
     p {
       font-size: 11px;
-      color: var(--color-text-alpha50);
+      color: rgba(10, 46, 24, 0.52);
       line-height: 1.55;
     }
   }
 
   // ── 個人化推薦 ────────────────────────────────────
   .recs-box {
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(32px) saturate(1.6);
+    -webkit-backdrop-filter: blur(32px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    border-left-color: rgba(255, 255, 255, 0.70);
+    border-radius: 18px;
     padding: 22px 26px;
+    box-shadow:
+      0 4px 20px rgba(0, 60, 20, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.9) inset;
 
     .recs-header {
       display: flex;
@@ -275,19 +509,21 @@
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background: $color-explore-accent-dark;
+        background: linear-gradient(135deg, #22c55e, #06b6d4);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 10px;
         font-weight: 600;
-        color: $color-explore-accent-light;
+        color: #fff;
         flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35);
       }
 
       .recs-title {
         font-size: 13px;
         font-weight: 600;
+        color: #0a2e18;
       }
     }
 
@@ -302,21 +538,29 @@
         border-radius: 20px;
         font-size: 12px;
         cursor: pointer;
-        border: 1px solid var(--color-border);
-        color: var(--color-text-alpha50);
-        background: var(--color-background-1);
-        transition: all 0.15s;
+        background: rgba(255, 255, 255, 0.50);
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        border-top-color: rgba(255, 255, 255, 0.88);
+        color: rgba(0, 50, 30, 0.62);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+        transition: all 0.16s;
         white-space: nowrap;
 
         &:hover {
-          border-color: var(--color-border-1);
-          color: var(--color-text);
+          background: rgba(255, 255, 255, 0.68);
+          color: #0a2e18;
         }
 
         &.active {
-          background: var(--color-text);
-          color: var(--color-background);
-          border-color: var(--color-text);
+          background: rgba(255, 255, 255, 0.75);
+          border-top-color: rgba(255, 255, 255, 1);
+          color: #0a2e18;
+          font-weight: 600;
+          box-shadow:
+            0 2px 8px rgba(0, 60, 20, 0.08),
+            0 1px 0 rgba(255, 255, 255, 0.9) inset;
         }
       }
     }
@@ -328,16 +572,47 @@
     }
 
     .rec-card {
-      background: var(--color-background-1);
-      border: 1px solid transparent;
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.50);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-top-color: rgba(255, 255, 255, 0.95);
+      border-radius: 14px;
       padding: 14px;
       cursor: pointer;
-      transition: all 0.15s;
+      box-shadow:
+        0 3px 14px rgba(0, 60, 20, 0.07),
+        0 1px 0 rgba(255, 255, 255, 0.85) inset;
+      transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
       &:hover {
-        background: var(--color-background);
-        border-color: var(--color-border);
+        background: rgba(255, 255, 255, 0.68);
+        border-top-color: rgba(255, 255, 255, 1);
+        transform: translateY(-4px) scale(1.015);
+        box-shadow:
+          0 12px 32px rgba(0, 60, 20, 0.12),
+          0 1px 0 rgba(255, 255, 255, 1) inset;
+      }
+
+      .rec-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        background: rgba(255, 255, 255, 0.52);
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        border-top-color: rgba(255, 255, 255, 0.90);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+
+        i {
+          font-size: 16px;
+          color: rgba(0, 50, 30, 0.62);
+        }
       }
 
       .rec-card-top {
@@ -349,6 +624,7 @@
         .rec-card-name {
           font-size: 13px;
           font-weight: 600;
+          color: #0a2e18;
         }
 
         .rec-card-tag {
@@ -357,12 +633,16 @@
           border-radius: 20px;
           font-weight: 600;
           flex-shrink: 0;
+          background: rgba(255, 255, 255, 0.52);
+          border: 1px solid rgba(255, 255, 255, 0.40);
+          border-top-color: rgba(255, 255, 255, 0.90);
+          color: rgba(0, 50, 30, 0.62);
         }
       }
 
       .rec-card-desc {
         font-size: 11px;
-        color: var(--color-text-alpha50);
+        color: rgba(10, 46, 24, 0.52);
         line-height: 1.55;
       }
     }
@@ -395,7 +675,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 24px; // 增加與下方按鈕的距離
+      margin-bottom: 24px;
 
       .explore-modal-tag {
         padding: 4px 10px;
