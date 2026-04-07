@@ -8,6 +8,13 @@ export interface SourceFileRef {
   linkedVersion: number; // 建立/上次同步時的檔案版本號
 }
 
+export interface ReviewRecord {
+  action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN'
+  by: string
+  time: string
+  note?: string
+}
+
 export interface KnowledgeVersion {
   id: string;
   knowledgeId: string;
@@ -23,6 +30,11 @@ export interface KnowledgeVersion {
   lastUpdateTime: string;
   updateNote: string; // 本次更新說明
   sourceFiles?: SourceFileRef[]; // 關聯來源檔案（含版本追蹤）
+  reviewNote?: string
+  reviewedBy?: string
+  reviewedTime?: string
+  reviewFeedback?: string
+  reviewHistory?: ReviewRecord[]
 }
 
 export interface KnowledgeItem {
@@ -200,12 +212,21 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   // 送審
   const submitForReview = (knowledgeId: string, versionId: string, reviewerId: string, note: string) => {
-    console.log('送審給:', reviewerId, '備註:', note);
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
     if (v && (v.status === 'DRAFT' || v.status === 'REJECTED')) {
       v.status = 'REVIEWING';
+      v.reviewNote = note;
+      v.reviewHistory = [
+        ...(v.reviewHistory ?? []),
+        {
+          action: 'SUBMITTED',
+          by: reviewerId,
+          time: new Date().toISOString().replace('T', ' ').slice(0, 16),
+          note,
+        },
+      ];
       k.status = 'REVIEWING';
     }
   };
@@ -235,6 +256,67 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.versions.push(newVersion);
     k.status = 'DRAFT';
     return newVersion.id;
+  };
+
+  const approveVersion = (knowledgeId: string, versionId: string) => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    const v = k.versions.find(ver => ver.id === versionId);
+    if (!v || v.status !== 'REVIEWING') return;
+
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    // Previous PUBLISHED version becomes HISTORY
+    for (const ver of k.versions) {
+      if (ver.status === 'PUBLISHED') ver.status = 'HISTORY';
+    }
+
+    v.status = 'PUBLISHED';
+    v.reviewedBy = 'Current User';
+    v.reviewedTime = now;
+    v.reviewHistory = [
+      ...(v.reviewHistory ?? []),
+      { action: 'APPROVED', by: 'Current User', time: now },
+    ];
+
+    k.status = 'PUBLISHED';
+    k.currentVersion = v.versionNumber;
+    k.lastUpdateTime = now;
+  };
+
+  const rejectVersion = (knowledgeId: string, versionId: string, feedback?: string) => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    const v = k.versions.find(ver => ver.id === versionId);
+    if (!v || v.status !== 'REVIEWING') return;
+
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    v.status = 'REJECTED';
+    v.reviewFeedback = feedback;
+    v.reviewHistory = [
+      ...(v.reviewHistory ?? []),
+      { action: 'REJECTED', by: 'Current User', time: now, note: feedback },
+    ];
+
+    k.status = 'REJECTED';
+  };
+
+  const withdrawReview = (knowledgeId: string, versionId: string) => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    const v = k.versions.find(ver => ver.id === versionId);
+    if (!v || v.status !== 'REVIEWING') return;
+
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    v.status = 'DRAFT';
+    v.reviewHistory = [
+      ...(v.reviewHistory ?? []),
+      { action: 'WITHDRAWN', by: 'Current User', time: now },
+    ];
+
+    k.status = 'DRAFT';
   };
 
   // 從共用檔案建立新的知識條目草稿
@@ -351,6 +433,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     saveDraft,
     submitForReview,
     restoreToDraft,
+    approveVersion,
+    rejectVersion,
+    withdrawReview,
     markFileStale,
     createDraftFromSourceUpdate,
     dismissSourceStale,
