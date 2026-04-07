@@ -265,6 +265,14 @@ function getProjectList() {
       name: '企業A'
     },
     lastModify: '2026-03-05 12:00:00',
+    isHovered: false,
+    status: 'active',
+    collaborators: [
+      { userId: 'user1', name: 'Lucas' },
+      { userId: 'user2', name: '滷卡酥' },
+      { userId: 'user3', name: '小烏龜' },
+    ],
+    weeklyUsage: [5, 12, 8, 20, 15, 3, 18],
   },
   {
     showMoreOption: false,
@@ -282,6 +290,14 @@ function getProjectList() {
       name: '企業A'
     },
     lastModify: '2026-03-05 12:05:00',
+    isHovered: false,
+    status: 'review',
+    collaborators: [
+      { userId: 'user1', name: 'Lucas' },
+      { userId: 'user2', name: '滷卡酥' },
+      { userId: 'user3', name: '小烏龜' },
+    ],
+    weeklyUsage: [5, 12, 8, 20, 15, 3, 18],
   },
   {
     showMoreOption: false,
@@ -299,6 +315,14 @@ function getProjectList() {
       name: '企業A'
     },
     lastModify: '2026-03-04 12:00:00',
+    isHovered: false,
+    status: 'done',
+    collaborators: [
+      { userId: 'user1', name: 'Lucas' },
+      { userId: 'user2', name: '滷卡酥' },
+      { userId: 'user3', name: '小烏龜' },
+    ],
+    weeklyUsage: [5, 12, 8, 20, 15, 3, 18],
   },
   {
     showMoreOption: false,
@@ -316,6 +340,14 @@ function getProjectList() {
       name: '企業A'
     },
     lastModify: '2026-03-04 23:59:00',
+    isHovered: false,
+    status: 'active',
+    collaborators: [
+      { userId: 'user1', name: 'Lucas' },
+      { userId: 'user2', name: '滷卡酥' },
+      { userId: 'user3', name: '小烏龜' },
+    ],
+    weeklyUsage: [5, 12, 8, 20, 15, 3, 18],
   },
   {
     showMoreOption: false,
@@ -333,6 +365,12 @@ function getProjectList() {
       name: '企業A'
     },
     lastModify: '2024-06-04 12:30:00',
+    isHovered: false,
+    status: 'pending',
+    collaborators: [
+      { userId: 'user1', name: 'Lucas' },
+    ],
+    weeklyUsage: [5, 12, 8, 20, 15, 3, 18],
   },
   {
     showMoreOption: false,
@@ -350,6 +388,12 @@ function getProjectList() {
       name: '企業A'
     },
     lastModify: '2024-06-04 13:30:00',
+    isHovered: false,
+    status: 'pending',
+    collaborators: [
+      { userId: 'user1', name: 'Lucas' },
+    ],
+    weeklyUsage: [5, 12, 8, 20, 15, 3, 18],
   }];
 
   if (props.mode === 'recent') {
