@@ -10,11 +10,11 @@
     <!-- Drawer 面板 -->
     <div class="KnowledgeBase drawer-panel" :class="{ open: modelValue }">
       <div class="drawer-header p-4 d-flex justify-content-between align-items-center">
-        <h5 class="fw-700 mb-0 d-flex align-items-center">
+        <h5 class="drawer-title fw-700 mb-0 d-flex align-items-center">
           <i class="material-symbols-outlined mr-2">history</i>
-          版本紀錄
+          <span>版本紀錄</span>
         </h5>
-        <i class="material-symbols-outlined cursor-pointer" @click="$emit('update:modelValue', false)">close</i>
+        <i class="material-symbols-outlined cursor-pointer fc-grey-1 hover-main transition-all" @click="$emit('update:modelValue', false)">close</i>
       </div>
 
       <div class="drawer-body p-0" v-if="knowledge">
@@ -90,6 +90,23 @@
           </div>
 
           <div class="history-note" v-if="v.updateNote">{{ v.updateNote }}</div>
+
+          <!-- 稽核紀錄時間軸 -->
+          <div class="review-timeline" v-if="v.reviewHistory?.length">
+            <div
+              class="review-timeline-item"
+              v-for="(record, ri) in v.reviewHistory"
+              :key="ri"
+            >
+              <div :class="['review-timeline-dot', `review-timeline-dot--${record.action.toLowerCase()}`]"></div>
+              <div class="review-timeline-content">
+                <span class="review-timeline-action">{{ reviewActionLabel[record.action] }}</span>
+                <span class="review-timeline-by">{{ record.by }}</span>
+                <span class="review-timeline-time">{{ record.time }}</span>
+                <div class="review-timeline-note" v-if="record.note">{{ record.note }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -129,6 +146,13 @@ const statusLabelMap: Record<string, string> = {
   REJECTED:  '已退回',
 };
 
+const reviewActionLabel: Record<string, string> = {
+  SUBMITTED: '送出審核',
+  APPROVED:  '審核通過',
+  REJECTED:  '審核退回',
+  WITHDRAWN: '撤回審核',
+};
+
 const openMenuId = ref('');
 
 function toggleMenu(id: string) {
@@ -150,6 +174,7 @@ function handleView(v: KnowledgeVersion) {
 function handleCompare(id: string) {
   emit('compare', props.knowledgeId, id);
   openMenuId.value = '';
+  emit('update:modelValue', false);
 }
 
 function handleRestore(id: string) {
