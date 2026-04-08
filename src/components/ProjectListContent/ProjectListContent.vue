@@ -53,7 +53,7 @@
         <i :class="['material-symbols-outlined favorite-btn', {
           'material-fill': i === 0,
           'active': i === 0
-        }]">star</i>
+        }]" @click.stop>star</i>
 
         <!-- 圖片（預設顯示） -->
         <div class="img-box" v-show="!item.isHovered">
@@ -202,7 +202,6 @@ import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import popDialog from '@/services/popDialog';
 import { formatTimeToDisplay } from '@/utils/utils';
 import { barHeight, weekLabel, statusLabel } from '@/utils/projectCard';
-import type { ProjectStatus } from '@/utils/projectCard';
 
 const props = defineProps<{
   title: string
