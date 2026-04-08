@@ -44,32 +44,74 @@
     <!-- 卡片樣式列表 -->
     <div class="card-list-box mt-2" v-if="projectListMode === 'card' && projectList.length">
       <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
-        @mouseleave="item.showMoreOption = false;">
+        @click="gotoAiViewer(item)"
+        @mouseenter="item.isHovered = true"
+        @mouseleave="item.isHovered = false; item.showMoreOption = false">
+
         <!-- 只有 recent 才要出現 -->
         <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
         <i :class="['material-symbols-outlined favorite-btn', {
           'material-fill': i === 0,
           'active': i === 0
         }]">star</i>
-        <div class="img-box">
-          <img :src="item.imgSrc" alt="" @click="gotoAiViewer(item)">
+
+        <!-- 圖片（預設顯示） -->
+        <div class="img-box" v-show="!item.isHovered">
+          <img :src="item.imgSrc" alt="">
+          <div class="img-collab">
+            <div class="avatar-group">
+              <div
+                class="avatar-sm"
+                v-for="(c, ci) in item.collaborators.slice(0, 3)"
+                :key="ci"
+                :style="{ backgroundColor: avatarColor(ci) }"
+              >
+                {{ c.name.slice(0, 1) }}
+              </div>
+            </div>
+            <span class="collab-count">{{ item.collaborators.length }} 人</span>
+          </div>
         </div>
+
+        <!-- 長條圖（hover 時顯示） -->
+        <div class="chart-box" v-show="item.isHovered">
+          <span class="chart-title">近一週使用次數</span>
+          <div class="chart-bars">
+            <div class="bar-wrap" v-for="(count, di) in item.weeklyUsage" :key="di">
+              <span class="bar-count">{{ count }}</span>
+              <div class="bar" :style="{ height: barHeight(count, item.weeklyUsage) + 'px' }"></div>
+              <span class="bar-label">{{ weekLabel(di) }}</span>
+            </div>
+          </div>
+        </div>
+
         <div class="footer-box">
           <div class="info-box">
             <div class="project-name">{{ item.name }}</div>
-            <div class="lastModify">編輯於 {{ formatTimeToDisplay(item.lastModify) }}</div>
+            <div class="status-row">
+              <span :class="['status-badge', `status-${item.status}`]">
+                {{ statusLabel(item.status) }}
+              </span>
+            </div>
+            <div class="lastModify">
+              <template v-if="!item.isHovered">
+                編輯於 {{ formatTimeToDisplay(item.lastModify) }}
+              </template>
+              <template v-else>
+                近一週共 {{ item.weeklyUsage.reduce((a: number, b: number) => a + b, 0) }} 次
+              </template>
+            </div>
           </div>
           <div class="owner-box" v-tooltip="item.owner.uaerName">
             {{ item.owner.uaerName.slice(0,1) }}
           </div>
 
-          <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = true">more_horiz</i>
+          <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
           <!-- 更多選項小介面 -->
-          <div :class="['next-option-box', {'show': item.showMoreOption}]">
-            <div class="option-item" @click="deleteProject(item)">刪除</div>
-            <div class="option-item" @click="openProjectSettingModal(item)">專案設定</div>
+          <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+            <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
+            <div class="option-item" @click.stop="openProjectSettingModal(item)">專案設定</div>
           </div>
-
         </div>
       </div>
     </div>
@@ -159,6 +201,8 @@ import ProjectSettingModal from "@/components/AiViewer/ProjectSettingModal.vue";
 import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import popDialog from '@/services/popDialog';
 import { formatTimeToDisplay } from '@/utils/utils';
+import { barHeight, weekLabel, statusLabel } from '@/utils/projectCard';
+import type { ProjectStatus } from '@/utils/projectCard';
 
 const props = defineProps<{
   title: string
@@ -221,6 +265,11 @@ function openProjectSettingModal(modifyProject: any, isCreate = false, createTea
   console.log('open project setting modal, item = ', modifyProject);
   currentModifyProjectId.value = modifyProject.id;
   isOpenProjectSettingModal.value = true;
+}
+
+const AVATAR_COLORS = ['#7c6aff', '#f472b6', '#34d399', '#fb923c', '#60a5fa'];
+function avatarColor(index: number): string {
+  return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
 
 const LinkToAiViewer = ref<{ $el: HTMLElement } | null>(null);
