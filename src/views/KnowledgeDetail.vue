@@ -26,15 +26,17 @@
             <i class="material-symbols-outlined">add_box</i>
             建立新版本
           </button>
-          <!-- 審核中：提示撤回（placeholder） -->
-          <button
-            v-else-if="knowledge.status === 'REVIEWING'"
-            class="custom-btn ml-2"
-            @click="popDialog.alert('撤回功能開發中')"
-          >
-            <i class="material-symbols-outlined">undo</i>
-            撤回審核
-          </button>
+          <!-- 審核中 -->
+          <template v-else-if="knowledge.status === 'REVIEWING'">
+            <button class="custom-btn ml-2" @click="handleWithdraw">
+              <i class="material-symbols-outlined">undo</i>
+              撤回審核
+            </button>
+            <button class="custom-btn custom-main-btn ml-2" @click="isReviewDrawerOpen = true">
+              <i class="material-symbols-outlined">rate_review</i>
+              開始審核
+            </button>
+          </template>
           <!-- 草稿 / 已退回：繼續編輯 -->
           <button
             v-else-if="knowledge.status === 'DRAFT' || knowledge.status === 'REJECTED'"
@@ -153,6 +155,13 @@
       :versionNumber="versionToRestoreNum"
       @confirm="confirmRestore"
     />
+
+    <!-- 審核 Drawer -->
+    <ReviewDrawer
+      v-model="isReviewDrawerOpen"
+      :knowledgeId="props.id"
+      :versionId="reviewVersionId"
+    />
   </div>
 </template>
 
@@ -165,6 +174,7 @@ import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue';
 import VersionHistoryDrawer from '@/components/Knowledge/VersionHistoryDrawer.vue';
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
 import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue';
+import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue';
 
 const props = defineProps<{ id: string }>();
 
@@ -196,6 +206,13 @@ const statusIconMap: Record<string, string> = {
   REJECTED:  'error',
 };
 
+// ── 審核 Drawer ──
+const isReviewDrawerOpen = ref(false);
+
+const reviewVersionId = computed(() => {
+  return knowledge.value?.versions.find(v => v.status === 'REVIEWING')?.id ?? '';
+});
+
 // ── 建立新版本 ──
 const isCreateModalOpen = ref(false);
 
@@ -204,6 +221,16 @@ function handleCreateVersion(data: { type: 'MINOR' | 'MAJOR', note: string }) {
   if (newVersionId) {
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId: props.id, versionId: newVersionId } });
   }
+}
+
+// ── 撤回審核 ──
+function handleWithdraw() {
+  const v = knowledge.value?.versions.find(ver => ver.status === 'REVIEWING');
+  if (!v) return;
+  popDialog.confirm('確定要撤回此審核申請嗎？版本將退回為草稿狀態。', () => {
+    knowledgeStore.withdrawReview(props.id, v.id);
+    popDialog.toast('已撤回審核，可繼續編輯草稿', 2000);
+  });
 }
 
 // ── 繼續編輯草稿 ──
