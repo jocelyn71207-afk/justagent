@@ -1,16 +1,41 @@
+<!-- App.vue -->
 <template>
+  <div
+    class="app-progress-bar"
+    :style="{ width: progress + '%', opacity: showProgress ? 1 : 0 }"
+  ></div>
   <RouterView />
+  <AppDevToggle />
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { RouterView } from 'vue-router'
+import { ref, onMounted } from 'vue';
+import { RouterView, useRouter } from 'vue-router';
+import AppDevToggle from '@/components/AppDevToggle.vue';
 
-window.debug = {}; // DEBUG 用
+const router = useRouter();
+const progress = ref(0);
+const showProgress = ref(false);
+let t1: ReturnType<typeof setTimeout>;
+let t2: ReturnType<typeof setTimeout>;
+
+router.beforeEach(() => {
+  clearTimeout(t1); clearTimeout(t2);
+  showProgress.value = true;
+  progress.value = 20;
+  t1 = setTimeout(() => { progress.value = 60; }, 150);
+  t2 = setTimeout(() => { progress.value = 80; }, 400);
+});
+
+router.afterEach(() => {
+  clearTimeout(t1); clearTimeout(t2);
+  progress.value = 100;
+  setTimeout(() => { showProgress.value = false; progress.value = 0; }, 300);
+});
+
+(window as any).debug = {};
 
 onMounted(async () => {
-  // 等待 Material Symbols Rounded 字型載入，避免 icon 一開始顯示為文字造成破版
-  // 最多等待 3 秒，超時後無論如何都顯示畫面，防止 Google Fonts 失敗時白畫面卡死
   const timeout = new Promise<void>(resolve => setTimeout(resolve, 3000));
   await Promise.race([
     document.fonts.load('1em "Material Symbols Rounded"'),

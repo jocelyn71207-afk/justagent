@@ -589,3 +589,15 @@
     }
   }
 }
+
+// ── Router progress bar ──
+.app-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--color-main);
+  z-index: 9998;
+  transition: width 0.25s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
