@@ -1,6 +1,12 @@
 <template>
   <div class="KnowledgeBase KnowledgeDetail views-page">
-    <div class="views-page-content-box" v-if="knowledge">
+    <AppSkeleton v-if="isLoading" type="detail" class="p-4" />
+    <AppErrorState
+      v-else-if="hasError"
+      :message="apiErrorMessage"
+      @retry="retry"
+    />
+    <div class="views-page-content-box" v-else-if="knowledge">
 
       <!-- 頂部導航與標題 -->
       <div class="views-page-header">
@@ -175,13 +181,24 @@ import VersionHistoryDrawer from '@/components/Knowledge/VersionHistoryDrawer.vu
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
 import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue';
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import { useApiCall } from '@/composables/useApiCall';
 
 const props = defineProps<{ id: string }>();
 
 const router = useRouter();
 const knowledgeStore = useKnowledgeStore();
 
-const knowledge = computed(() => knowledgeStore.getKnowledgeById(props.id));
+const {
+  data: knowledgeData,
+  isLoading,
+  hasError,
+  errorMessage: apiErrorMessage,
+  retry,
+} = useApiCall(() => knowledgeStore.getKnowledgeById(props.id));
+
+const knowledge = computed(() => knowledgeData.value ?? null);
 
 // 詳情頁預設顯示「已發布」版本；若無則顯示最後一個版本
 const versionToShow = computed(() => {
