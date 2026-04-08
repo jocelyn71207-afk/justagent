@@ -19,8 +19,16 @@
         <i class="material-symbols-outlined cursor-pointer fc-grey-1" @click="close">close</i>
       </div>
 
+      <AppSkeleton v-if="drawerLoading" type="card" />
+      <AppErrorState
+        v-else-if="drawerError"
+        :message="drawerErrorMsg"
+        :inline="true"
+        @retry="drawerRetry"
+      />
+
       <!-- Body -->
-      <div class="drawer-body" v-if="knowledge && version">
+      <div class="drawer-body" v-else-if="knowledge && version">
 
         <!-- 條目 + 版本資訊 -->
         <div class="review-info-section">
@@ -95,7 +103,7 @@
       <div class="p-5 text-center fc-grey-1" v-else>找不到審核資料</div>
 
       <!-- Footer -->
-      <div class="review-footer" v-if="knowledge && version">
+      <div class="review-footer" v-else-if="knowledge && version">
         <button class="custom-btn review-footer__reject" @click="handleReject">
           <i class="material-symbols-outlined">undo</i>
           退回
@@ -123,6 +131,9 @@ import { ref, computed } from 'vue';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
 import popDialog from '@/services/popDialog';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import { useApiCall } from '@/composables/useApiCall';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -137,6 +148,12 @@ const emit = defineEmits<{
 }>();
 
 const knowledgeStore = useKnowledgeStore();
+const {
+  isLoading: drawerLoading,
+  hasError: drawerError,
+  errorMessage: drawerErrorMsg,
+  retry: drawerRetry,
+} = useApiCall(() => knowledgeStore.getKnowledgeById(props.knowledgeId));
 
 const knowledge = computed(() => knowledgeStore.getKnowledgeById(props.knowledgeId));
 const version = computed(() => knowledgeStore.getVersionById(props.knowledgeId, props.versionId));

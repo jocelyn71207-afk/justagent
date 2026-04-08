@@ -17,7 +17,15 @@
         <i class="material-symbols-outlined cursor-pointer fc-grey-1 hover-main transition-all" @click="$emit('update:modelValue', false)">close</i>
       </div>
 
-      <div class="drawer-body p-0" v-if="knowledge">
+      <AppSkeleton v-if="drawerLoading" type="card" />
+      <AppErrorState
+        v-else-if="drawerError"
+        :message="drawerErrorMsg"
+        :inline="true"
+        @retry="drawerRetry"
+      />
+
+      <div class="drawer-body p-0" v-else-if="knowledge">
         <!-- 知識項目標題卡片 -->
         <div class="KnowledgeBase p-4 bgc-main-6 border-bottom mb-2">
           <div class="d-flex align-items-center mb-1">
@@ -122,6 +130,9 @@ import { useRouter } from 'vue-router';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import type { KnowledgeVersion } from '@/stores/knowledgeStore';
 import popDialog from '@/services/popDialog';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import { useApiCall } from '@/composables/useApiCall';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -136,7 +147,14 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const knowledgeStore = useKnowledgeStore();
-const knowledge = computed(() => knowledgeStore.getKnowledgeById(props.knowledgeId));
+const {
+  data: knowledgeData,
+  isLoading: drawerLoading,
+  hasError: drawerError,
+  errorMessage: drawerErrorMsg,
+  retry: drawerRetry,
+} = useApiCall(() => knowledgeStore.getKnowledgeById(props.knowledgeId));
+const knowledge = computed(() => knowledgeData.value ?? null);
 
 const statusLabelMap: Record<string, string> = {
   PUBLISHED: '正式發布',
