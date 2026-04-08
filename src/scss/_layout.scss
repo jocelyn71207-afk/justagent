@@ -198,7 +198,19 @@
             align-items: center;
             justify-content: center;
             margin-left: -6px;
+            position: relative;
             &:first-child { margin-left: 0; }
+            &.avatar-owner {
+              border-color: $color_yellow_2;
+            }
+            .owner-crown {
+              position: absolute;
+              top: -10px;
+              left: 50%;
+              transform: translateX(-50%);
+              font-size: 10px;
+              line-height: 1;
+            }
           }
           .collab-count {
             font-size: 11px;

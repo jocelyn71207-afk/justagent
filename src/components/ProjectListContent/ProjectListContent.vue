@@ -61,12 +61,13 @@
           <div class="img-collab">
             <div class="avatar-group">
               <div
-                class="avatar-sm"
+                :class="['avatar-sm', { 'avatar-owner': ci === 0 }]"
                 v-for="(c, ci) in item.collaborators.slice(0, 3)"
                 :key="ci"
                 :style="{ backgroundColor: avatarColor(ci) }"
               >
                 {{ c.name.slice(0, 1) }}
+                <span v-if="ci === 0" class="owner-crown">👑</span>
               </div>
             </div>
             <span class="collab-count">{{ item.collaborators.length }} 人</span>
@@ -102,10 +103,6 @@
               </template>
             </div>
           </div>
-          <div class="owner-box" v-tooltip="item.owner.uaerName">
-            {{ item.owner.uaerName.slice(0,1) }}
-          </div>
-
           <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
           <!-- 更多選項小介面 -->
           <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
