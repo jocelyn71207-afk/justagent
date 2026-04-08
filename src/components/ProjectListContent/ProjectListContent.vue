@@ -21,159 +21,161 @@
       :tabs="agentTabs"
     />
 
-    <!-- 排序條件 -->
-    <div class="d-flex flex-justify-end" v-if="projectList.length">
-      <compDropDown
-        :options="[
-          { name: '時間排序 新 → 舊', value: 'desc' },
-          { name: '時間排序 舊 → 新', value: 'asc' },
-        ]"
-        :show-search="false"
-        :showClearTriggerIcon="false"
-        :default-value="'desc'"
-        :width="'190px'"
-        :indent="'10px'"
-        placeholder="依時間排序"
-        @select="(item) => {
-          sortValue = item.value;
-          sortFn();
-        }"
-      />
-    </div>
+    <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
+    <AppErrorState v-else-if="hasError" :message="apiErrorMessage" @retry="retry" />
+    <template v-else>
 
-    <!-- 卡片樣式列表 -->
-    <div class="card-list-box mt-2" v-if="projectListMode === 'card' && projectList.length">
-      <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
-        @click="gotoAiViewer(item)"
-        @mouseenter="item.isHovered = true"
-        @mouseleave="item.isHovered = false; item.showMoreOption = false">
+      <!-- 排序條件 -->
+      <div class="d-flex flex-justify-end" v-if="projectList.length">
+        <compDropDown
+          :options="[
+            { name: '時間排序 新 → 舊', value: 'desc' },
+            { name: '時間排序 舊 → 新', value: 'asc' },
+          ]"
+          :show-search="false"
+          :showClearTriggerIcon="false"
+          :default-value="'desc'"
+          :width="'190px'"
+          :indent="'10px'"
+          placeholder="依時間排序"
+          @select="(item) => {
+            sortValue = item.value;
+            sortFn();
+          }"
+        />
+      </div>
 
-        <!-- 只有 recent 才要出現 -->
-        <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
-        <i :class="['material-symbols-outlined favorite-btn', {
-          'material-fill': i === 0,
-          'active': i === 0
-        }]" @click.stop>star</i>
+      <!-- 卡片樣式列表 -->
+      <div class="card-list-box mt-2" v-if="projectListMode === 'card' && projectList.length">
+        <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
+          @click="gotoAiViewer(item)"
+          @mouseenter="item.isHovered = true"
+          @mouseleave="item.isHovered = false; item.showMoreOption = false">
 
-        <!-- 圖片（預設顯示） -->
-        <div class="img-box" v-show="!item.isHovered">
-          <img :src="item.imgSrc" alt="">
-          <div class="img-collab">
-            <div class="avatar-group">
-              <div
-                :class="['avatar-sm', { 'avatar-owner': ci === 0 }]"
-                v-for="(c, ci) in item.collaborators.slice(0, 3)"
-                :key="ci"
-                :style="{ backgroundColor: avatarColor(ci) }"
-              >
-                {{ c.name.slice(0, 1) }}
-                <span v-if="ci === 0" class="owner-crown">👑</span>
+          <!-- 只有 recent 才要出現 -->
+          <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
+          <i :class="['material-symbols-outlined favorite-btn', {
+            'material-fill': i === 0,
+            'active': i === 0
+          }]" @click.stop>star</i>
+
+          <!-- 圖片（預設顯示） -->
+          <div class="img-box" v-show="!item.isHovered">
+            <img :src="item.imgSrc" alt="">
+            <div class="img-collab">
+              <div class="avatar-group">
+                <div
+                  :class="['avatar-sm', { 'avatar-owner': ci === 0 }]"
+                  v-for="(c, ci) in item.collaborators.slice(0, 3)"
+                  :key="ci"
+                  :style="{ backgroundColor: avatarColor(ci) }"
+                >
+                  {{ c.name.slice(0, 1) }}
+                  <span v-if="ci === 0" class="owner-crown">👑</span>
+                </div>
+              </div>
+              <span class="collab-count">{{ item.collaborators.length }} 人</span>
+            </div>
+          </div>
+
+          <!-- 長條圖（hover 時顯示） -->
+          <div class="chart-box" v-show="item.isHovered">
+            <span class="chart-title">近一週使用次數</span>
+            <div class="chart-bars">
+              <div class="bar-wrap" v-for="(count, di) in item.weeklyUsage" :key="di">
+                <span class="bar-count">{{ count }}</span>
+                <div class="bar" :style="{ height: barHeight(count, item.weeklyUsage) + 'px' }"></div>
+                <span class="bar-label">{{ weekLabel(di) }}</span>
               </div>
             </div>
-            <span class="collab-count">{{ item.collaborators.length }} 人</span>
           </div>
-        </div>
 
-        <!-- 長條圖（hover 時顯示） -->
-        <div class="chart-box" v-show="item.isHovered">
-          <span class="chart-title">近一週使用次數</span>
-          <div class="chart-bars">
-            <div class="bar-wrap" v-for="(count, di) in item.weeklyUsage" :key="di">
-              <span class="bar-count">{{ count }}</span>
-              <div class="bar" :style="{ height: barHeight(count, item.weeklyUsage) + 'px' }"></div>
-              <span class="bar-label">{{ weekLabel(di) }}</span>
+          <div class="footer-box">
+            <div class="info-box">
+              <div class="project-name">{{ item.name }}</div>
+              <div class="status-row">
+                <span :class="['status-badge', `status-${item.status}`]">
+                  {{ statusLabel(item.status) }}
+                </span>
+              </div>
+              <div class="lastModify">
+                <template v-if="!item.isHovered">
+                  編輯於 {{ formatTimeToDisplay(item.lastModify) }}
+                </template>
+                <template v-else>
+                  近一週共 {{ item.weeklyUsage.reduce((a: number, b: number) => a + b, 0) }} 次
+                </template>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div class="footer-box">
-          <div class="info-box">
-            <div class="project-name">{{ item.name }}</div>
-            <div class="status-row">
-              <span :class="['status-badge', `status-${item.status}`]">
-                {{ statusLabel(item.status) }}
-              </span>
+            <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
+            <!-- 更多選項小介面 -->
+            <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+              <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
+              <div class="option-item" @click.stop="openProjectSettingModal(item)">專案設定</div>
             </div>
-            <div class="lastModify">
-              <template v-if="!item.isHovered">
-                編輯於 {{ formatTimeToDisplay(item.lastModify) }}
-              </template>
-              <template v-else>
-                近一週共 {{ item.weeklyUsage.reduce((a: number, b: number) => a + b, 0) }} 次
-              </template>
-            </div>
-          </div>
-          <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
-          <!-- 更多選項小介面 -->
-          <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
-            <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
-            <div class="option-item" @click.stop="openProjectSettingModal(item)">專案設定</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 表格樣式列表 -->
-    <div class="table-list-box project-list mt-2" v-if="projectListMode === 'list' && projectList.length">
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>專案名稱</th>
-            <th v-if="mode === 'recent'">所屬團隊</th>
-            <th width="130">最後編輯時間</th>
-            <th width="100"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, i) in displayProjectList" :key="'list' + i"
-            @mouseleave="item.showMoreOption = false;"
-            @click="gotoAiViewer(item)">
-            <td>
-              <i :class="['material-symbols-outlined favorite-btn', {
-                'material-fill': i === 0,
-                'active': i === 0
-              }]">star</i>
+      <!-- 表格樣式列表 -->
+      <div class="table-list-box project-list mt-2" v-if="projectListMode === 'list' && projectList.length">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>專案名稱</th>
+              <th v-if="mode === 'recent'">所屬團隊</th>
+              <th width="130">最後編輯時間</th>
+              <th width="100"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, i) in displayProjectList" :key="'list' + i"
+              @mouseleave="item.showMoreOption = false;"
+              @click="gotoAiViewer(item)">
+              <td>
+                <i :class="['material-symbols-outlined favorite-btn', {
+                  'material-fill': i === 0,
+                  'active': i === 0
+                }]">star</i>
 
-              <div class="img-box">
-                <img :src="item.imgSrc" alt="">
-              </div>
-
-              {{ item.name }}
-            </td>
-            <td v-if="mode === 'recent'">{{ item.team.name }}</td>
-            <td class="fc-grey-1">{{ formatTimeToDisplay(item.lastModify) }}</td>
-            <td>
-              <div class="d-flex">
-                <div class="owner-box" v-tooltip="item.owner.uaerName">
-                  {{ item.owner.uaerName.slice(0,1) }}
+                <div class="img-box">
+                  <img :src="item.imgSrc" alt="">
                 </div>
-                <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
-              </div>
-              <!-- 更多選項小介面 -->
-              <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
-                <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
-                <div class="option-item" @click.stop="openProjectSettingModal(item)">專案設定</div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
 
-    <!-- mode 為 recent 沒有任何專案時 -->
-    <div class="p-5 mt-4 text-center fc-grey-1" v-if="mode === 'recent' && !projectList.length">
-      <div class="fs-16 mt-1">最近沒有使用的專案</div>
-    </div>
+                {{ item.name }}
+              </td>
+              <td v-if="mode === 'recent'">{{ item.team.name }}</td>
+              <td class="fc-grey-1">{{ formatTimeToDisplay(item.lastModify) }}</td>
+              <td>
+                <div class="d-flex">
+                  <div class="owner-box" v-tooltip="item.owner.uaerName">
+                    {{ item.owner.uaerName.slice(0,1) }}
+                  </div>
+                  <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
+                </div>
+                <!-- 更多選項小介面 -->
+                <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+                  <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
+                  <div class="option-item" @click.stop="openProjectSettingModal(item)">專案設定</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <!-- mode 為 team 沒有任何專案時 -->
-    <div class="empty-box" v-if="mode === 'team' && !projectList.length" @click="openProjectSettingModal(null, true, teamId as string)">
-      <i class="material-symbols-outlined">add</i>
-    </div>
-    <div class="fs-14 fc-grey-1 mt-1" v-if="mode === 'team' && !projectList.length">建立新專案</div>
+      <!-- mode 為 recent 沒有任何專案時 -->
+      <div class="p-5 mt-4 text-center fc-grey-1" v-if="mode === 'recent' && !projectList.length">
+        <div class="fs-16 mt-1">最近沒有使用的專案</div>
+      </div>
 
-    <!-- 隱藏按鈕: 作為 click 進入專案頁用 (會這樣做是因為方便_blank) -->
-    <RouterLink :to="{ name: 'AiViewer', query: { id: LinkToProjectId } }" style="visibility: hidden;"
-      target="_blank" ref="LinkToAiViewer">AiViewer</RouterLink>
+      <!-- mode 為 team 沒有任何專案時 -->
+      <div class="empty-box" v-if="mode === 'team' && !projectList.length" @click="openProjectSettingModal(null, true, teamId as string)">
+        <i class="material-symbols-outlined">add</i>
+      </div>
+      <div class="fs-14 fc-grey-1 mt-1" v-if="mode === 'team' && !projectList.length">建立新專案</div>
+
+    </template>
 
   </div>
 
@@ -189,7 +191,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, watch } from 'vue';
 import type { Ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRootStore } from '@/stores/rootStore';
 import compTabs from '@/components/compTabs/compTabs.vue';
@@ -199,6 +201,9 @@ import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import popDialog from '@/services/popDialog';
 import { formatTimeToDisplay } from '@/utils/utils';
 import { barHeight, weekLabel, statusLabel } from '@/utils/projectCard';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import { useApiCall } from '@/composables/useApiCall';
 
 const props = defineProps<{
   title: string
@@ -231,9 +236,17 @@ function sortFn() {
 // 專案列表  TODO... 這裡的資料結構只是測試用，之後要改成後端吐的格式
 const projectList = ref([]) as any;
 
+const {
+  data: projectListData,
+  isLoading,
+  hasError,
+  errorMessage: apiErrorMessage,
+  retry,
+} = useApiCall(() => projectList.value);
+
 // 過濾後要呈現的專案列表
 const displayProjectList = computed(() => {
-  let list = projectList.value;
+  let list = (projectListData.value ?? []) as any[];
   if (props.teamId) {
     list = list.filter(item => item.team.id === props.teamId);
   }
@@ -268,14 +281,10 @@ function avatarColor(index: number): string {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
 
-const LinkToAiViewer = ref<{ $el: HTMLElement } | null>(null);
-const LinkToProjectId = ref('');
+const router = useRouter();
 function gotoAiViewer(item: any) {
-  console.log('go to AiViewer, item = ', item);
-  LinkToProjectId.value = item.id;
-  nextTick(() => {
-    LinkToAiViewer.value?.$el.click();
-  });
+  const { href } = router.resolve({ name: 'AiViewer', query: { id: item.id } });
+  window.open(href, '_blank', 'noopener');
 }
 
 function deleteProject(item: any) {

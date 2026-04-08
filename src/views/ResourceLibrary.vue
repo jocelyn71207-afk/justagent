@@ -47,117 +47,123 @@
         </div>
       </div>
 
-      <!-- 查無資料 -->
-      <div class="p-5 mt-4 text-center fc-grey-1" v-if="displayList.length === 0">目前沒有資源</div>
+      <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
+      <AppErrorState v-else-if="hasError" :message="apiErrorMessage" @retry="retry" />
+      <template v-else>
 
-      <!-- 卡片樣式列表 -->
-      <div class="card-list-box mt-2" v-if="viewMode === 'card' && displayList.length">
-        <div class="one-card-box file-card" v-for="(item, i) in displayList" :key="'card' + i"
-          @mouseleave="item.showMoreOption = false">
+        <!-- 查無資料 -->
+        <div class="p-5 mt-4 text-center fc-grey-1" v-if="displayList.length === 0">目前沒有資源</div>
 
-          <!-- 卡片 header: 檔案名稱 + more button -->
-          <div class="card-header-box">
-            <div class="file-name">
-              <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
-              <input class="custom-input mofidyInput w-100" v-else-if="nowModifyItem.id === item.id"
-                :id="'mofidyInput'+item.id"
-                v-model="nowModifyItem.fileName"
-                @blur="saveModifyFileName()" />
-            </div>
-            <div class="more-menu-wrap" @click.stop>
-              <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = !item.showMoreOption">more_horiz</i>
-              <div :class="['next-option-box', { show: item.showMoreOption }]">
-                <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
-                <div class="option-item">下載檔案</div>
-                <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
-                <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
-              </div>
-            </div>
-          </div>
+        <!-- 卡片樣式列表 -->
+        <div class="card-list-box mt-2" v-if="viewMode === 'card' && displayList.length">
+          <div class="one-card-box file-card" v-for="(item, i) in displayList" :key="'card' + i"
+            @mouseleave="item.showMoreOption = false">
 
-          <!-- 卡片 body: 圖片預覽 or OTHER icon or 檔案圖示 -->
-          <div class="card-body-box">
-            <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="" class="preview-img">
-            <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-              class="material-symbols-outlined other-file-icon">question_mark</i>
-            <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
-          </div>
-
-          <!-- 卡片 footer: 狀態 + 時間 -->
-          <div class="card-footer-box">
-            <span :class="['status-badge', `status-badge--${item.status}`]">{{ statusLabel[item.status] }}</span>
-            <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 表格樣式列表 -->
-      <div class="table-list-box file-list mt-2" v-if="viewMode === 'list' && displayList.length">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>檔案名稱</th>
-              <th width="90">檔案格式</th>
-              <th width="130">處理方式</th>
-              <th width="110">狀態</th>
-              <th>最後更新時間</th>
-              <th width="60"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, i) in displayList" :key="'list' + i"
-              @mouseleave="item.showMoreOption = false;">
-              <td>
-                <div class="file-icon-box">
-                  <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
-                  <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                    class="material-symbols-outlined other-file-icon">question_mark</i>
-                  <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
-                </div>
+            <!-- 卡片 header: 檔案名稱 + more button -->
+            <div class="card-header-box">
+              <div class="file-name">
                 <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
-                <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
+                <input class="custom-input mofidyInput w-100" v-else-if="nowModifyItem.id === item.id"
                   :id="'mofidyInput'+item.id"
                   v-model="nowModifyItem.fileName"
                   @blur="saveModifyFileName()" />
-              </td>
-              <td class="fc-grey-1">{{ item.fileType }}</td>
-              <td>
-                <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
-                  <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
-                  {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
-                </span>
-              </td>
-              <td>
-                <span :class="['status-badge', `status-badge--${item.status}`]">
-                  {{ statusLabel[item.status] }}
-                </span>
-              </td>
-              <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
-              <td>
-                <div class="d-flex">
-                  <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
-                </div>
-                <!-- 更多選項小介面 -->
-                <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+              </div>
+              <div class="more-menu-wrap" @click.stop>
+                <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = !item.showMoreOption">more_horiz</i>
+                <div :class="['next-option-box', { show: item.showMoreOption }]">
                   <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
                   <div class="option-item">下載檔案</div>
                   <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
                   <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </div>
+            </div>
 
-      <!-- 分頁 -->
-      <compPagination class="mt-3" v-if="filteredList.length"
-        :pageNo="pageNo"
-        :numberOfRowsPerPage="numberOfRowsPerPage"
-        :totalRows="filteredList.length"
-        @change="onPaginationChange"
-      />
+            <!-- 卡片 body: 圖片預覽 or OTHER icon or 檔案圖示 -->
+            <div class="card-body-box">
+              <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="" class="preview-img">
+              <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
+                class="material-symbols-outlined other-file-icon">question_mark</i>
+              <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
+            </div>
+
+            <!-- 卡片 footer: 狀態 + 時間 -->
+            <div class="card-footer-box">
+              <span :class="['status-badge', `status-badge--${item.status}`]">{{ statusLabel[item.status] }}</span>
+              <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 表格樣式列表 -->
+        <div class="table-list-box file-list mt-2" v-if="viewMode === 'list' && displayList.length">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>檔案名稱</th>
+                <th width="90">檔案格式</th>
+                <th width="130">處理方式</th>
+                <th width="110">狀態</th>
+                <th>最後更新時間</th>
+                <th width="60"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, i) in displayList" :key="'list' + i"
+                @mouseleave="item.showMoreOption = false;">
+                <td>
+                  <div class="file-icon-box">
+                    <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
+                    <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
+                      class="material-symbols-outlined other-file-icon">question_mark</i>
+                    <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
+                  </div>
+                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
+                  <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
+                    :id="'mofidyInput'+item.id"
+                    v-model="nowModifyItem.fileName"
+                    @blur="saveModifyFileName()" />
+                </td>
+                <td class="fc-grey-1">{{ item.fileType }}</td>
+                <td>
+                  <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
+                    <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
+                    {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="['status-badge', `status-badge--${item.status}`]">
+                    {{ statusLabel[item.status] }}
+                  </span>
+                </td>
+                <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
+                <td>
+                  <div class="d-flex">
+                    <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
+                  </div>
+                  <!-- 更多選項小介面 -->
+                  <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+                    <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
+                    <div class="option-item">下載檔案</div>
+                    <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
+                    <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分頁 -->
+        <compPagination class="mt-3" v-if="filteredList.length"
+          :pageNo="pageNo"
+          :numberOfRowsPerPage="numberOfRowsPerPage"
+          :totalRows="filteredList.length"
+          @change="onPaginationChange"
+        />
+
+      </template>
 
     </div>
   </div>
@@ -190,10 +196,21 @@ import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import { useResourceStore } from '@/stores/resourceStore';
 import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWizardModal.vue';
 import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import { useApiCall } from '@/composables/useApiCall';
 
 const router = useRouter();
 const knowledgeStore = useKnowledgeStore();
 const resourceStore = useResourceStore();
+
+const {
+  data: resourceListData,
+  isLoading,
+  hasError,
+  errorMessage: apiErrorMessage,
+  retry,
+} = useApiCall(() => resourceStore.resourceList);
 
 // 知識建立精靈
 const isWizardOpen = ref(false);
@@ -245,8 +262,8 @@ const statusLabel: Record<string, string> = {
 // 過濾條件
 const filterTypeValue = ref('') as Ref<string | number>;
 
-// 資源列表來自 resourceStore
-const resourceList = computed(() => resourceStore.resourceList);
+// 資源列表來自 resourceStore (透過 useApiCall 管理 loading/error 狀態)
+const resourceList = computed(() => resourceListData.value ?? []);
 
 // 頁碼相關
 const pageNo = ref(1);
