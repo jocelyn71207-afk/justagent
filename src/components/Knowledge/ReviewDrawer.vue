@@ -103,7 +103,7 @@
       <div class="p-5 text-center fc-grey-1" v-else>找不到審核資料</div>
 
       <!-- Footer -->
-      <div class="review-footer" v-else-if="knowledge && version">
+      <div class="review-footer" v-if="knowledge && version && !drawerLoading && !drawerError">
         <button class="custom-btn review-footer__reject" @click="handleReject">
           <i class="material-symbols-outlined">undo</i>
           退回
