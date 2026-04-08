@@ -9,7 +9,7 @@
             知識庫管理
             <div class="secondary-box">{{ teamName }}</div>
           </h3>
-          <span class="ml-3 fc-grey-1 fs-14">管理產品知識條目及其版本演進</span>
+          <i class="material-symbols-outlined fc-grey-1 fs-18 ml-2" v-tooltip="'管理產品知識條目及其版本演進'" style="cursor: default;">info</i>
         </div>
         <div class="header-right-box">
           <div class="search-box">
@@ -22,6 +22,14 @@
           </button>
         </div>
       </div>
+
+      <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
+      <AppErrorState
+        v-else-if="hasError"
+        :message="apiErrorMessage"
+        @retry="retry"
+      />
+      <template v-else>
 
       <!-- 統計概覽 (實時反應 Store 狀態) -->
       <div class="stats-row">
@@ -200,6 +208,8 @@
         @change="(p: any) => { pageNo = p.pageNo; }"
       />
 
+      </template>
+
     </div>
 
     <VersionHistoryDrawer 
@@ -256,12 +266,23 @@ import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
 import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue';
 import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import { useApiCall } from '@/composables/useApiCall';
 
 const route = useRoute();
 const router = useRouter();
 const rootStore = useRootStore();
 const knowledgeStore = useKnowledgeStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
+
+const {
+  data: knowledgeListData,
+  isLoading,
+  hasError,
+  errorMessage: apiErrorMessage,
+  retry,
+} = useApiCall(() => knowledgeStore.knowledgeList);
 
 const teamName = ref(String(route.query.teamName || '預設團隊'));
 watch(() => route.query, (q) => teamName.value = String(q.teamName || '預設團隊'));
@@ -287,7 +308,7 @@ const statusIconMap: Record<string, string> = {
 };
 
 const stats = computed(() => {
-  const list = knowledgeStore.knowledgeList;
+  const list = knowledgeListData.value ?? [];
   return {
     total:     list.length,
     published: list.filter(k => k.status === 'PUBLISHED').length,
@@ -297,7 +318,7 @@ const stats = computed(() => {
 });
 
 const filteredList = computed(() => {
-  let list = [...knowledgeStore.knowledgeList];
+  let list = [...(knowledgeListData.value ?? [])];
   if (searchText.value.trim()) {
     const kw = searchText.value.toLowerCase();
     list = list.filter(k => k.title.toLowerCase().includes(kw));
