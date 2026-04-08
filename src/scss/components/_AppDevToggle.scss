@@ -1,0 +1,84 @@
+// src/scss/components/_AppDevToggle.scss
+
+.app-dev-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+
+  .dev-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-main);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+
+    &:hover { transform: scale(1.08); }
+
+    .material-symbols-outlined { font-size: 20px; }
+  }
+
+  .dev-toggle-panel {
+    background: var(--color-background);
+    border: 1px solid var(--color-border-1-alpha50);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    width: 240px;
+    overflow: hidden;
+  }
+
+  .dev-toggle-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--color-background-1);
+    border-bottom: 1px solid var(--color-border-1-alpha30);
+    color: var(--color-text);
+  }
+
+  .dev-toggle-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border-1-alpha20);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  .dev-toggle-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-alpha40);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .dev-toggle-radio-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .dev-toggle-radio {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--color-text);
+    cursor: pointer;
+
+    input[type='radio'] { cursor: pointer; accent-color: var(--color-main); }
+  }
+}
