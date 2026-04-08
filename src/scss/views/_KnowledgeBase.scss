@@ -988,11 +988,21 @@
   }
 
   // ── 差異圖例 ──
+  .diff-legends {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .diff-legend {
+    display: inline-flex;
+    align-items: center;
     font-size: 12px;
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 6px;
+    line-height: 1;
+    white-space: nowrap;
 
     &--added {
       background: rgba(2, 195, 0, 0.10);
@@ -1260,6 +1270,26 @@
   .drawer-header {
     border-bottom: 1px solid var(--color-border-1-alpha50);
     flex-shrink: 0;
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px !important; // 增加水平間距
+    background: #fff;
+    border-radius: 16px 0 0 0;
+
+    .drawer-title {
+      font-size: 18px;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      i {
+        font-size: 24px;
+        color: var(--color-main);
+      }
+    }
   }
 
   .drawer-body {
@@ -1380,9 +1410,183 @@
       font-size: 16px;
       line-height: 1.8;
       color: var(--color-text-alpha90);
-      
+
       p { margin-bottom: 1.5em; }
       h3 { margin: 1.5em 0 0.8em; }
     }
+  }
+
+  // ── ReviewDrawer 審核抽屜 ──
+  .review-drawer-panel {
+    width: 520px;
+    right: -520px;
+
+    &.open { right: 0; }
+  }
+
+  .review-info-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-1-alpha30);
+    background: var(--color-background-1);
+  }
+
+  .review-meta-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .review-submit-info {
+    background: var(--color-background);
+    border: 1px solid var(--color-border-1-alpha30);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+
+  .review-submit-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-alpha40);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .review-submit-note {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text-alpha80);
+  }
+
+  .review-summary-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-1-alpha30);
+  }
+
+  .review-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-alpha60);
+    margin-bottom: 12px;
+  }
+
+  .review-summary-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .review-summary-item {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+    align-items: baseline;
+  }
+
+  .review-summary-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-alpha40);
+    width: 40px;
+    flex-shrink: 0;
+  }
+
+  .review-summary-value {
+    color: var(--color-text);
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .review-actions-section {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--color-border-1-alpha30);
+  }
+
+  .review-feedback-section {
+    padding: 20px 24px;
+    flex: 1;
+  }
+
+  .review-footer {
+    border-top: 1px solid var(--color-border-1-alpha50);
+    padding: 16px 24px;
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--color-background);
+
+    &__reject {
+      flex: 0 0 auto;
+    }
+
+    &__approve {
+      flex: 1;
+    }
+  }
+
+  // ── 版本紀錄內的稽核時間軸 ──
+  .review-timeline {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: var(--color-background-1);
+    border-radius: 8px;
+    border: 1px solid var(--color-border-1-alpha20);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .review-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .review-timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+
+    &--submitted  { background: #1565c0; }
+    &--approved   { background: #02a100; }
+    &--rejected   { background: #c62828; }
+    &--withdrawn  { background: var(--color-text-alpha40); }
+  }
+
+  .review-timeline-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .review-timeline-action {
+    font-weight: 700;
+    color: var(--color-text-alpha80);
+  }
+
+  .review-timeline-by {
+    color: var(--color-text-alpha50);
+    &::before { content: '·'; margin-right: 6px; }
+  }
+
+  .review-timeline-time {
+    color: var(--color-text-alpha40);
+    font-size: 11px;
+  }
+
+  .review-timeline-note {
+    width: 100%;
+    font-size: 12px;
+    color: var(--color-text-alpha60);
+    margin-top: 2px;
+    padding: 4px 8px;
+    background: var(--color-background);
+    border-radius: 4px;
+    border-left: 2px solid var(--color-border-1-alpha50);
   }
 }
