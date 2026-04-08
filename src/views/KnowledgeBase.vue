@@ -52,7 +52,7 @@
             <div class="stat-label">編輯中草稿</div>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor: pointer;" @click="filterStatus = 'REVIEWING'">
           <div class="stat-icon stat-icon--orange">
             <i class="material-symbols-outlined">pending_actions</i>
           </div>
@@ -166,6 +166,14 @@
                     <i class="material-symbols-outlined">edit</i>
                     {{ item.status === 'PUBLISHED' ? '建立新版本' : '繼續編輯' }}
                   </div>
+                  <div
+                    v-if="item.status === 'REVIEWING'"
+                    class="option-item"
+                    @click="openReviewDrawer(item)"
+                  >
+                    <i class="material-symbols-outlined">rate_review</i>
+                    審核
+                  </div>
                   <div class="option-item divider" @click="openHistory(item.id)">
                     <i class="material-symbols-outlined">history</i>
                     版本紀錄
@@ -222,6 +230,12 @@
       v-model="isSourceUpdateModalOpen"
       :file-id="sourceUpdateFileId"
     />
+
+    <ReviewDrawer
+      v-model="isReviewDrawerOpen"
+      :knowledgeId="reviewKnowledgeId"
+      :versionId="reviewVersionId"
+    />
   </div>
 </template>
 
@@ -241,6 +255,7 @@ import VersionHistoryDrawer from '@/components/Knowledge/VersionHistoryDrawer.vu
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
 import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue';
 import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
+import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -321,6 +336,20 @@ function handleEditAction(item: any) {
       router.push({ name: 'KnowledgeEditor', params: { knowledgeId: item.id, versionId: draft.id } });
     }
   }
+}
+
+// 審核 Drawer
+const isReviewDrawerOpen = ref(false);
+const reviewKnowledgeId = ref('');
+const reviewVersionId = ref('');
+
+function openReviewDrawer(item: any) {
+  const reviewingVersion = item.versions.find((v: any) => v.status === 'REVIEWING');
+  if (!reviewingVersion) return;
+  reviewKnowledgeId.value = item.id;
+  reviewVersionId.value = reviewingVersion.id;
+  activeMenuId.value = '';
+  isReviewDrawerOpen.value = true;
 }
 
 // 來源更新 Modal
