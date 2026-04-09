@@ -8,18 +8,22 @@
         class="swal2-popup swal2-modal swal2-show"
         style="display: flex; width: 1200px; max-width: 96vw; height: 85vh; padding: 32px;"
       >
-        <div class="swal2-content text-left h-100 d-flex flex-column w-100">
+        <div class="swal2-content text-left h-100 d-flex flex-column w-100" style="position: relative;">
+
+          <!-- 關閉按鈕（右上角） -->
+          <button class="icon-btn" style="position: absolute; top: 0; right: 0;" @click="$emit('update:modelValue', false)">
+            <i class="material-symbols-outlined">close</i>
+          </button>
 
           <!-- 標題列 -->
-          <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-4" style="padding-right: 36px;">
             <h4 class="fw-700 m-0 d-flex align-items-center">
               <i class="material-symbols-outlined mr-2">difference</i>
               版本差異比較
             </h4>
-            <div class="d-flex align-items-center gap-3">
+            <div class="diff-legends">
               <span class="diff-legend diff-legend--added">新增</span>
               <span class="diff-legend diff-legend--removed">刪除</span>
-              <i class="material-symbols-outlined cursor-pointer ml-2" @click="$emit('update:modelValue', false)">close</i>
             </div>
           </div>
 

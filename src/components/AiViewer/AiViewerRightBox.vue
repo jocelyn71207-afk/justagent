@@ -439,7 +439,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
@@ -462,7 +462,7 @@ const aiviewerStore = useAiviewerStore();
 const { nowChoiceAiViewerId, copyAiViewerBlock, isStopCopyPasteAiViewerBlock, isMultiChoiceAiViewerMode, nowMultiChoiceAiViewerIds, isShowFileListView } = storeToRefs(aiviewerStore);
 const { fullAiViewerBlockId, isAspectRatioMode } = storeToRefs(aiviewerStore);
 const { aiViewerBlocks } = storeToRefs(aiviewerStore);
-const { sendUserInput, addReportBlock } = aiviewerStore;
+const { sendUserInput, addReportBlock, addChartBlock } = aiviewerStore;
 const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
 const conv2Title = ref('');
@@ -731,12 +731,12 @@ const conv1Msgs = ref([
   {
     id: 'id_1',
     forUser: true,
-    msg: '請幫我翻譯文件',
+    msg: '我有一份 AW26 的英文商品文件，需要翻成繁體中文，可以幫我處理嗎？',
   },
-  // 2. AI 一次詢問所有需要的資訊
+  // 2. AI 熱情確認，一次詢問必要資訊
   {
     id: 'id_2',
-    msg: '好的，請幫我確認以下資訊：<br>1. 需翻譯的檔案<br>2. 翻譯的範圍<br>3. 翻譯的語言',
+    msg: '當然可以！🙌 幫我確認幾個細節，就可以馬上開始：<br><br>📄 <strong>翻譯文件</strong>：請上傳或指定 Excel 檔案<br>📌 <strong>翻譯範圍</strong>：全文 or 特定工作表 / 欄位？<br>🌐 <strong>目標語言</strong>：繁體中文、簡體、日文……？<br><br>確認後我會立刻開工 💪',
   },
   // 3. 使用者以確認卡片樣式回覆（confirmed=true 代表已點擊「開始翻譯」）
   {
@@ -745,40 +745,185 @@ const conv1Msgs = ref([
     cardType: 'translationConfirm',
     confirmed: true,
     file: 'AW26 Product Descriptions.xlsx',
-    fileSize: 2834016, // 依照實際檔案大小 2.7MB 左右
+    fileSize: 2834016,
     range: 'Line Sheet - Teva Footwear Fal/Features and Benefits (Product Bullets)',
     lang: '繁體中文',
     msg: '',
   },
-  // 4. AI 摘要確認並說明步驟
+  // 4. AI 確認並說明進度
   {
     id: 'id_4',
-    msg: '您希望翻譯的文件資訊如下，接下來，我將按照以下步驟進行：<br>1. 載入翻譯 Excel 文件的專業流程說明。<br>2. 閱讀流程內容，了解需要處理的資訊和步驟。<br>3. 根據流程說明和您確認必要的資訊。<br>4. 最後調用翻譯工具進行翻譯。<br><br>現在，我將開始載入相關的專業流程說明，請稍等。',
+    msg: '收到！✅ 檔案已讀取，開始處理囉～<br><br>我會依照以下順序進行：<br>① 載入產品文件翻譯的專業流程規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式，輸出對齊版本<br><br>稍等一下，馬上好 ⚡',
   },
   // 5. AI 翻譯完成（含下載檔案卡片）
   {
     id: 'id_5',
     finishResponse: true,
     cardType: 'translationComplete',
-    msg: '翻譯完成！如果還有其他文件要翻，隨時告訴我 😊',
+    msg: '✅ 翻譯完成！共處理 <strong>143 個產品欄位</strong>，品牌術語保留原文並附對照表。<br>另外幫你標出了 <strong>12 個商標詞</strong>，整理在 .txt 檔供你核對。',
     files: [
       { name: 'AW26 Product Descriptions_翻譯.xlsx', type: 'XLSX', size: 2834016 },
       { name: 'AW26 Product Descriptions_trade_mark.txt', type: 'TXT', size: 133 },
     ],
   },
-  // 6. 使用者追問
+  // 6. 使用者追問日文
   {
     id: 'id_6',
     forUser: true,
-    msg: '可以幫我把同一份檔案也翻成日文嗎？',
+    msg: '很好！同一份檔案可以也翻成日文嗎？',
   },
-  // 7. AI 正在思考
+  // 7. AI 回覆日文翻譯完成
   {
     id: 'id_7',
-    isThinking: true,
-    msg: 'AI 正在思考中...',
+    finishResponse: false,
+    cardType: 'translationComplete',
+    msg: '🇯🇵 日文版翻譯完成！同樣處理了 <strong>143 個欄位</strong>，針對日本市場慣用的敬語語氣做了調整，請確認風格是否符合需求。',
+    files: [
+      { name: 'AW26 Product Descriptions_日本語.xlsx', type: 'XLSX', size: 2901234 },
+    ],
+  },
+  // 8. 使用者追問 Hurricane Trailsetter 銷售數據
+  {
+    id: 'id_8',
+    forUser: true,
+    msg: '幫我從這份文件裡抓出 Hurricane Trailsetter 系列的所有鞋款，順便給我歷年銷售數據跟今年的預測',
+  },
+  // 9. AI 回覆：Hurricane Trailsetter 銷售數據（附 HTML 報告到畫布）
+  {
+    id: 'id_9',
+    finishResponse: true,
+    cardType: 'translationComplete',
+    msg: '📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>（Sandal 男女 + Mid 男女），2022 年起連續三年成長 20%+。<br>完整數據與 2026 預測報告已加到右側畫布，點一下就能展開看。',
+    files: [
+      { name: 'hurricane_trailsetter_sales_report.html', type: 'HTML', size: 6800 },
+    ],
   },
 ]) as Ref<any[]>;
+
+// 在頁面初始化時，將 Hurricane 報告加入畫布，並監聽 iframe chip 點擊
+function c1PushThinkingThenReply(
+  thinkingDelay: number,
+  replyMsg: string,
+  files: { name: string; type: string; size: number }[],
+  reportUrl: string,
+  reportName: string,
+) {
+  const thinkingId = 'thinking-' + Date.now();
+  conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+  setTimeout(() => {
+    const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+    if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+    conv1Msgs.value.push({
+      id: 'ai-reply-' + Date.now(),
+      finishResponse: true,
+      cardType: 'translationComplete',
+      msg: replyMsg,
+      files,
+    });
+    try { addReportBlock(reportUrl, reportName); } catch (e) { /* ignore */ }
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, thinkingDelay);
+}
+
+function handleHurricaneChipMsg(event: MessageEvent) {
+  if (event.data?.type !== 'hurricane-chip-click') return;
+  const msg = event.data.msg as string;
+  if (!msg) return;
+
+  conv1Msgs.value.push({ id: 'chip-user-' + Date.now(), forUser: true, msg });
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+
+  if (msg.includes('圖表')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+
+      // 圖表 1：年度銷售量 bar
+      try {
+        addChartBlock({
+          chart: 'bar',
+          title: 'Hurricane Trailsetter 年度銷售量（台灣）',
+          y_axis: { title: '銷售量（雙）' },
+          data: {
+            labels: ['2022', '2023', '2024', '2025', '2026F'],
+            values: [{ '銷售量（雙）': [1240, 1580, 1920, 2310, 2775] }],
+          },
+        }, '年度銷售量.chart');
+      } catch (e) { /* ignore */ }
+
+      // 圖表 2：年成長率 line
+      try {
+        addChartBlock({
+          chart: 'line',
+          title: 'Hurricane Trailsetter 年成長率趨勢',
+          y_axis: { title: '成長率 (%)' },
+          data: {
+            labels: ['2023', '2024', '2025', '2026F'],
+            values: [{ '年成長率 (%)': [27.4, 21.5, 20.3, 20.0] }],
+          },
+        }, '年成長率趨勢.chart');
+      } catch (e) { /* ignore */ }
+
+      // 圖表 3：各鞋款銷售量 bar
+      try {
+        addChartBlock({
+          chart: 'bar',
+          title: '各鞋款銷售量拆分（台灣）',
+          data: {
+            labels: ['2022', '2023', '2024', '2025'],
+            values: [
+              { 'Sandal 女款': [434, 553, 672, 809] },
+              { 'Sandal 男款': [310, 395, 480, 578] },
+              { 'Mid 男款': [248, 316, 384, 462] },
+              { 'Mid 女款': [248, 316, 384, 461] },
+            ],
+          },
+        }, '各鞋款銷售量.chart');
+      } catch (e) { /* ignore */ }
+
+      conv1Msgs.value.push({
+        id: 'ai-charts-' + Date.now(),
+        finishResponse: true,
+        msg: '📊 已幫你產出 <strong>3 張銷售分析圖表</strong>，已加到右側畫布：<br>・年度銷售量（長條圖）<br>・年成長率趨勢（折線圖）<br>・各鞋款銷售拆分（堆疊長條圖）<br><br>可直接在畫布上調整大小、截圖使用。',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 2200);
+  } else if (msg.includes('行銷策略')) {
+    c1PushThinkingThenReply(
+      1800,
+      '已根據 2022–2025 銷售數據分析完成，以下是 Hurricane Trailsetter 系列的 AW26 行銷策略報告，請查閱。',
+      [{ name: 'hurricane_trailsetter_marketing_strategy.html', type: 'HTML', size: 13208 }],
+      '/justagent/hurricane_trailsetter_marketing_strategy.html',
+      'hurricane_trailsetter_marketing_strategy.html',
+    );
+  } else if (msg.includes('用戶畫像')) {
+    c1PushThinkingThenReply(
+      2000,
+      '已完成目標客群分析，以下是 Hurricane Trailsetter 系列的用戶畫像報告，請查閱。',
+      [{ name: 'hurricane_trailsetter_user_persona.html', type: 'HTML', size: 30725 }],
+      '/justagent/hurricane_trailsetter_user_persona.html',
+      'hurricane_trailsetter_user_persona.html',
+    );
+  }
+}
+
+onMounted(() => {
+  try {
+    addReportBlock(
+      '/justagent/hurricane_trailsetter_sales_report.html',
+      'hurricane_trailsetter_sales_report.html'
+    );
+  } catch (e) { /* canvas 尚未初始化時略過 */ }
+  window.addEventListener('message', handleHurricaneChipMsg);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleHurricaneChipMsg);
+});
 
 // -------- Conversation 2 流程 --------
 const DEMO_IMG = 'https://d12ro2iv4p7r0b.cloudfront.net/media/catalog/product/u/g/ug1183390sndc-1.jpg';

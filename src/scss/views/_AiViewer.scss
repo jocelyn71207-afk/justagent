@@ -2045,8 +2045,20 @@
     &:hover { opacity: 0.82; }
 
     &--primary {
-      background-color: var(--color-primary, #2563eb);
+      background: linear-gradient(135deg, $color_main_1, $color_main_3);
       color: #fff;
+      box-shadow: 0 3px 10px rgba($color_main_1, 0.2);
+      transition: all 0.2s ease;
+
+      &:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba($color_main_1, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
     }
 
     &--secondary {
@@ -2268,6 +2280,146 @@
   border: 1px solid var(--color-border);
   color: var(--color-text-alpha70);
 }
+
+// ── Hurricane / 銷售數據結果卡 ──────────────────────────────
+.hurricane-result {
+  font-size: 13px;
+
+  .hr-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-text-alpha40);
+    margin: 14px 0 7px;
+    &:first-child { margin-top: 0; }
+  }
+
+  // 找到的鞋款列表
+  .hr-model-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+  .hr-model-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    .hr-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .hr-name { flex: 1; color: var(--color-text); font-weight: 500; }
+    .hr-sku { font-size: 11px; color: var(--color-text-alpha40); font-family: monospace; }
+    .hr-tag {
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px; border-radius: 4px;
+      &.tag-m { background: rgba(79,127,255,0.12); color: #4f7fff; }
+      &.tag-w { background: rgba(236,72,153,0.12); color: #ec4899; }
+    }
+  }
+
+  // 歷年銷售表格
+  .hr-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2px;
+    th {
+      text-align: left;
+      padding: 6px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--color-text-alpha40);
+      border-bottom: 1px solid var(--color-border);
+      &:not(:first-child) { text-align: right; }
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-alpha70);
+      &:not(:first-child) { text-align: right; }
+    }
+    tr:last-child td { border-bottom: none; }
+    .yr { font-weight: 600; color: var(--color-text-alpha50); }
+    .rev { font-size: 11px; color: var(--color-text-alpha50); }
+    .grow { font-size: 11px; font-weight: 600; color: #16a34a; }
+  }
+
+  // 2026 預測卡
+  .hr-forecast {
+    margin-top: 6px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(79,127,255,0.07) 0%, rgba(168,85,247,0.05) 100%);
+    border: 1px solid rgba(79,127,255,0.2);
+    border-radius: 10px;
+
+    .hrf-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      .hrf-year { font-size: 18px; font-weight: 800; color: #4f7fff; }
+      .hrf-badge {
+        font-size: 10px; font-weight: 700;
+        background: rgba(79,127,255,0.12); color: #4f7fff;
+        padding: 2px 8px; border-radius: 20px;
+      }
+    }
+    .hrf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .hrf-item {
+      padding: 8px 10px;
+      background: var(--color-background-1);
+      border-radius: 8px;
+      .hrf-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-alpha40); margin-bottom: 3px; }
+      .hrf-val { font-size: 14px; font-weight: 700; color: var(--color-text); }
+      .hrf-sub { font-size: 10px; color: var(--color-text-alpha40); margin-top: 1px; }
+    }
+    .hrf-bar-wrap {
+      margin-bottom: 10px;
+      .hrf-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-alpha40); margin-bottom: 4px; }
+      .hrf-bar-track { height: 3px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+      .hrf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #4f7fff, #a855f7); width: 82%; }
+    }
+    .hrf-drivers {
+      display: flex; flex-direction: column; gap: 4px;
+      .hrf-driver {
+        display: flex; align-items: flex-start; gap: 6px;
+        font-size: 11px; color: var(--color-text-alpha60);
+        &::before { content: '·'; color: #4f7fff; font-weight: 700; flex-shrink: 0; margin-top: -1px; }
+      }
+    }
+  }
+
+  // 追問快捷鍵
+  .hr-followup {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+    .hr-chip {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-alpha60);
+      background: var(--color-background);
+      cursor: pointer;
+      &:hover { border-color: #4f7fff; color: #4f7fff; }
+    }
+  }
+}
+// ──────────────────────────────────────────────────────────
 
 .conv2-search-card {
   display: flex;

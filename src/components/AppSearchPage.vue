@@ -94,10 +94,6 @@
 
     </div>
 
-    <!-- 隱藏按鈕: 作為 click 進入專案頁用 (會這樣做是因為方便_blank) -->
-    <RouterLink :to="{ name: 'AiViewer', query: { id: LinkToProjectId } }" style="visibility: hidden;"
-      target="_blank" ref="LinkToAiViewer">AiViewer</RouterLink>
-
   </div>
 </template>
 
@@ -106,6 +102,7 @@ import { ref, watch, computed, onMounted, nextTick } from 'vue'
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRootStore } from '@/stores/rootStore';
+import { useRouter } from 'vue-router';
 import compListCardSwitch from '@/components/compListCardSwitch/compListCardSwitch.vue';
 import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import popDialog from '@/services/popDialog';
@@ -223,16 +220,10 @@ onMounted(() => {
   sendSearch();
 });
 
-const LinkToAiViewer = ref<InstanceType<typeof RouterLink> | null>(null);
-const LinkToProjectId = ref('');
-// click 專案卡片要進入的頁面
+const router = useRouter();
 function gotoAiViewer(item: any) {
-  console.log('go to AiViewer, item = ', item);
-  LinkToProjectId.value = item.id;
-
-  nextTick(() => {
-    LinkToAiViewer.value?.$el.click();
-  });
+  const { href } = router.resolve({ name: 'AiViewer', query: { id: item.id } });
+  window.open(href, '_blank', 'noopener');
 }
 
 </script>

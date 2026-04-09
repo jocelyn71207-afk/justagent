@@ -1011,6 +1011,22 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     aiViewerBlocks.value.push(temp);
   }
 
+  // 圖表生成後自動加入畫布
+  function addChartBlock(chartData: any, blockName: string) {
+    let temp: any = {
+      id: 'chart-' + Date.now(),
+      x: centerSpaceX - (mainStage.value?.x() ?? 0),
+      y: centerSpaceY - (mainStage.value?.y() ?? 0),
+      width: 600,
+      height: 400,
+      blockName,
+      z: calcNextZindex(),
+      data: { blockType: 'CHART', data: chartData }
+    };
+    temp = checkCreatePos(temp);
+    aiViewerBlocks.value.push(temp);
+  }
+
   // TODO... 開發測試用 end
 
 
@@ -1073,6 +1089,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     deleteBlock,
     renameBlock,
     addReportBlock,
+    addChartBlock,
 
     resetAiViewerState,
   }

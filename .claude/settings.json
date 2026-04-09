@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npx getdesign@latest add wise)",
+      "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/**)",
+      "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/**)",
+      "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite branch --show-current)"
+    ]
+  }
+}

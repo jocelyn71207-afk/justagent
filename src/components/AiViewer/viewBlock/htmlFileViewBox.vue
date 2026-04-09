@@ -9,7 +9,7 @@
   </div>
 
   <div class="htmlFileViewBox" v-show="!isloading && !isFailure" :id="'viewBox'+props.id">
-    <iframe ref="iframeRef" title="" sandbox="allow-popups allow-scripts"
+    <iframe ref="iframeRef" title="" sandbox="allow-popups allow-scripts allow-same-origin"
       :src="props.source.data.fileUrl"></iframe>
   </div>
 </template>

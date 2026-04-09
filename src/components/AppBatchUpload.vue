@@ -85,8 +85,9 @@
             <div class="percent-circle" :style="{ '--progress': item.uploadPercent + '%' }" v-show="item.uploadPercent < 100"></div>
             <i class="material-symbols-outlined ok" v-show="item.uploadPercent >= 100">check</i>
             <i :class="['material-symbols-outlined delete-btn', {
-              'disabled': item.uploadPercent >= 100,
-            }]" v-tooltip="(item.uploadPercent >= 100) ? '上傳完成無法取消' : '取消上傳'">delete</i>
+              'disabled': item.uploadStatus === 'done',
+            }]" v-tooltip="item.uploadStatus === 'done' ? '上傳完成無法取消' : '取消上傳'"
+            @click="item.uploadStatus !== 'done' && item.abortController?.abort()">delete</i>
           </div>
         </div>
       </div>
@@ -97,12 +98,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRootStore } from '@/stores/rootStore';
 import { useResourceStore } from '@/stores/resourceStore';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import type { ResourceFile } from '@/stores/resourceStore';
+import httpService from '@/services/http';
 import popDialog from '@/services/popDialog';
 import {
   formatFileSize,
@@ -122,6 +125,9 @@ interface ChoicedFileItem {
   fileType: FileType;
   preview: string | null;
   uploadPercent: number;
+  attachmentId: string | null;
+  uploadStatus: 'idle' | 'uploading' | 'done' | 'error';
+  abortController: AbortController | null;
 }
 
 const supportedFileTypes = [...imgFileTypes, ...pdfFileTypes, ...excelFileTypes, ...pptFileTypes, ...txtFileTypes, ...markdownFileTypes];
@@ -205,7 +211,7 @@ function handleAccessoryFileSelect(files: File[], isMoreChoice = false) {
     const preview = imgFileTypes.includes(fileMime)
       ? URL.createObjectURL(file)
       : (useIconFileTypes[fileMime] || null);
-    return { file, fileType, preview, uploadPercent: 0 };
+    return { file, fileType, preview, uploadPercent: 0, attachmentId: null, uploadStatus: 'idle', abortController: null };
   });
 
   if (isMoreChoice) {
@@ -299,35 +305,78 @@ function handlePostUpload() {
 }
 
 // 開始上傳檔案
-const totalSuccess = ref(0); // 模擬上傳進度的狀態，實際上應該是透過 ajax 上傳的回調來更新這個狀態
-let mockTimers = [] as number[]; // 模擬上傳進度的計時器 ID 陣列
+const totalSuccess = ref(0);
+
+async function uploadOneFile(item: ChoicedFileItem) {
+  // Step 1: 建立 attachment，取得上傳 URL
+  let attachmentId: string;
+  let uploadUrl: string;
+  try {
+    const res = await httpService.post<{ id: string; uploadUrl: string }>('/b/attachment/create', {
+      fileName: item.file.name,
+      fileType: item.fileType,
+    });
+    attachmentId = res.data.id;
+    uploadUrl = res.data.uploadUrl;
+    item.attachmentId = attachmentId;
+  } catch {
+    item.uploadStatus = 'error';
+    return;
+  }
+
+  // Step 2: 直接 PUT 上傳至 S3（不走 http.ts，避免帶 auth header）
+  const controller = new AbortController();
+  item.abortController = controller;
+  item.uploadStatus = 'uploading';
+
+  const doUpload = async (url: string) => {
+    await axios.put(url, item.file, {
+      signal: controller.signal,
+      headers: { 'Content-Type': item.file.type || 'application/octet-stream' },
+      onUploadProgress: (e) => {
+        if (e.total) {
+          item.uploadPercent = Math.round((e.loaded / e.total) * 100);
+        }
+      },
+    });
+  };
+
+  try {
+    await doUpload(uploadUrl);
+  } catch (err: any) {
+    if (err?.code === 'ERR_CANCELED') {
+      item.uploadStatus = 'error';
+      return;
+    }
+    // Step 3: 失敗時取得新的上傳 URL 重試一次
+    try {
+      const retryRes = await httpService.get<{ uploadUrl: string }>(
+        `/b/attachment/getUploadUrl?attachmentId=${attachmentId}`
+      );
+      item.abortController = new AbortController();
+      await doUpload(retryRes.data.uploadUrl);
+    } catch {
+      item.uploadStatus = 'error';
+      return;
+    }
+  }
+
+  item.uploadPercent = 100;
+  item.uploadStatus = 'done';
+  item.abortController = null;
+  totalSuccess.value += 1;
+
+  if (choicedFiles.value.every(f => f.uploadStatus === 'done' || f.uploadStatus === 'error')) {
+    isBatchUploading.value = false;
+    isBatchUploadSuccess.value = true;
+    handlePostUpload();
+  }
+}
+
 function onStartUpload() {
   isBatchUploading.value = true;
   isBatchUploadSuccess.value = false;
-
-  // 模擬 ajax 上傳：每個檔案依序用 setInterval 推進進度
-  choicedFiles.value.forEach((item, index) => {
-    const delay = index * 300; // 每個檔案錯開 300ms 開始
-    mockTimers.push(
-      setTimeout(() => {
-        const timer = setInterval(() => {
-          if (item.uploadPercent >= 100) {
-            clearInterval(timer);
-            totalSuccess.value += 1;
-            // 全部完成
-            if (choicedFiles.value.every(f => f.uploadPercent >= 100)) {
-              isBatchUploading.value = false;
-              isBatchUploadSuccess.value = true;
-              handlePostUpload();
-            }
-            return;
-          }
-          item.uploadPercent = Math.min(item.uploadPercent + 5, 100);
-        }, 100);
-        mockTimers.push(timer);
-      }, delay)
-    );
-  });
+  choicedFiles.value.forEach(item => uploadOneFile(item));
 }
 
 // 控制右下角上傳中面板的顯示
@@ -342,12 +391,7 @@ function checkToCloseBatchUpload() {
         <div class="fs-14">檔案仍在上傳中，關閉後將會終止上傳，確定要關閉嗎？</div>
       </div>
     `, () => {
-      // TODO... 移除正在上傳的檔案的上傳任務
-      mockTimers.forEach((timer) => {
-        clearTimeout(timer);
-        clearInterval(timer);
-      });
-      mockTimers = [];
+      choicedFiles.value.forEach(item => item.abortController?.abort());
 
       setTimeout(() => {
         closeBatchUpload();
