@@ -1,94 +1,18 @@
-// ── Explore 頁面 Liquid Glass 設計 ───────────────────────────────────────────
+// ── Explore 頁面 Wise 設計系統 ─────────────────────────────────────────────────
 
-// 背景漸層底色
 .Explore.views-page {
-  background: linear-gradient(145deg, #4ade80 0%, #22c55e 35%, #06b6d4 100%) !important;
+  background: #f2f4f0;
   position: relative;
-  overflow: hidden;
 }
 
-// 彩色光球層
-.explore-bg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-
-  &__blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-  }
-
-  &__blob--1 {
-    width: 520px;
-    height: 520px;
-    background: #4ade80;
-    top: -120px;
-    left: -100px;
-    opacity: 0.75;
-    animation: blobFloat 9s ease-in-out infinite;
-  }
-
-  &__blob--2 {
-    width: 440px;
-    height: 440px;
-    background: #0891b2;
-    top: -80px;
-    right: -80px;
-    opacity: 0.65;
-    animation: blobFloat 11s ease-in-out infinite reverse;
-  }
-
-  &__blob--3 {
-    width: 380px;
-    height: 380px;
-    background: #65a30d;
-    bottom: 60px;
-    left: 30%;
-    opacity: 0.55;
-    animation: blobFloat 13s ease-in-out infinite;
-  }
-
-  &__blob--4 {
-    width: 300px;
-    height: 300px;
-    background: rgba(255, 255, 255, 0.9);
-    top: 35%;
-    left: 42%;
-    opacity: 0.5;
-    animation: blobFloat 8s ease-in-out infinite reverse;
-  }
-
-  &__blob--5 {
-    width: 340px;
-    height: 340px;
-    background: #22d3ee;
-    bottom: -60px;
-    right: 60px;
-    opacity: 0.6;
-    animation: blobFloat 10s ease-in-out infinite;
-  }
-}
-
-@keyframes blobFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-18px); }
-}
-
-// 白底大板（覆蓋原本的 views-page-content-box）
 .Explore .views-page-content-box {
   position: relative;
-  z-index: 1;
-  background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow:
-    0 12px 48px rgba(0, 60, 20, 0.18),
-    0 2px 0 rgba(255, 255, 255, 0.9) inset;
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: #f2f4f0 !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
 }
 
 .Explore {
@@ -97,29 +21,22 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(32px) saturate(1.6);
-    -webkit-backdrop-filter: blur(32px) saturate(1.6);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-top-color: rgba(255, 255, 255, 0.95);
-    border-left-color: rgba(255, 255, 255, 0.70);
-    border-radius: 18px;
-    padding: 10px 16px;
-    margin-bottom: 10px;
+    background: #ffffff;
+    border: 1px solid rgba(14, 15, 12, 0.12);
+    border-radius: 9999px;
+    padding: 11px 20px;
+    margin-bottom: 12px;
+    box-shadow: rgba(14, 15, 12, 0.06) 0px 2px 8px;
     cursor: text;
-    box-shadow:
-      0 4px 20px rgba(0, 60, 20, 0.08),
-      0 1px 0 rgba(255, 255, 255, 0.9) inset;
-    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+    transition: box-shadow 0.18s;
 
     &:focus-within {
-      background: rgba(255, 255, 255, 0.60);
-      border-top-color: rgba(255, 255, 255, 1);
+      box-shadow: rgba(14, 15, 12, 0.12) 0px 0px 0px 2px;
     }
 
     i {
       font-size: 18px;
-      color: rgba(0, 50, 30, 0.62);
+      color: #868685;
       flex-shrink: 0;
     }
 
@@ -127,12 +44,15 @@
       flex: 1;
       border: none;
       outline: none;
-      font-size: 14px;
-      color: #0a2e18;
+      font-size: 15px;
+      font-weight: 600;
+      color: #0e0f0c;
       background: transparent;
+      font-feature-settings: "calt";
 
       &::placeholder {
-        color: rgba(0, 50, 30, 0.45);
+        color: #868685;
+        font-weight: 400;
       }
     }
   }
@@ -142,192 +62,131 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
 
     .chip {
-      padding: 4px 14px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 5px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(22, 51, 0, 0.07);
+      color: #0e0f0c;
       cursor: pointer;
-      background: rgba(255, 255, 255, 0.52);
-      border: 1px solid rgba(255, 255, 255, 0.38);
-      border-top-color: rgba(255, 255, 255, 0.9);
-      color: rgba(0, 50, 30, 0.62);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
+      border: 1px solid transparent;
       transition: all 0.16s;
       white-space: nowrap;
+      font-feature-settings: "calt";
 
       &:hover {
-        background: rgba(255, 255, 255, 0.72);
-        color: #0a2e18;
-        transform: translateY(-1px);
+        background: rgba(22, 51, 0, 0.12);
+        transform: scale(1.04);
       }
     }
   }
 
   // ── Hero Banner ──────────────────────────────────
   .explore-hero {
-    position: relative;
     display: flex;
     align-items: center;
-    gap: 16px;
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(32px) saturate(1.6);
-    -webkit-backdrop-filter: blur(32px) saturate(1.6);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-top-color: rgba(255, 255, 255, 0.95);
-    border-left-color: rgba(255, 255, 255, 0.70);
-    border-radius: 18px;
-    padding: 20px 24px;
-    margin-bottom: 28px;
-    min-width: 0;
-    overflow: hidden;
-    box-shadow:
-      0 4px 20px rgba(0, 60, 20, 0.08),
-      0 1px 0 rgba(255, 255, 255, 0.9) inset;
-
-    // 裝飾光暈偽元素
-    .hero-deco {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-
-      &--tl {
-        width: 160px;
-        height: 160px;
-        background: radial-gradient(circle, rgba(74,222,128,0.35) 0%, transparent 70%);
-        top: -50px;
-        left: -30px;
-      }
-
-      &--br {
-        width: 130px;
-        height: 130px;
-        background: radial-gradient(circle, rgba(6,182,212,0.30) 0%, transparent 70%);
-        bottom: -40px;
-        right: 180px;
-      }
-    }
+    justify-content: space-between;
+    gap: 24px;
+    background: #ffffff;
+    border-top: 4px solid #9fe870;
+    border-left: 1px solid rgba(14, 15, 12, 0.10);
+    border-right: 1px solid rgba(14, 15, 12, 0.10);
+    border-bottom: 1px solid rgba(14, 15, 12, 0.10);
+    border-radius: 20px;
+    padding: 26px 28px;
+    margin-bottom: 36px;
 
     .hero-left {
       flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 14px;
       min-width: 0;
-      position: relative;
-      z-index: 1;
     }
 
-    .hero-mascot {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.52);
-      border: 1px solid rgba(255, 255, 255, 0.38);
-      border-top-color: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
-
-      .hero-mascot-inner {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #22c55e, #06b6d4);
-      }
+    .hero-eyebrow-pill {
+      display: inline-flex;
+      background: #0e0f0c;
+      color: #9fe870;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
     }
 
-    .hero-text {
-      min-width: 0;
-      position: relative;
-      z-index: 1;
+    h2 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #0e0f0c;
+      line-height: 1.15;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+      font-feature-settings: "calt";
+    }
 
-      h2 {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: #0a2e18;
-      }
-
-      p {
-        font-size: 12px;
-        color: rgba(10, 46, 24, 0.52);
-      }
+    p {
+      font-size: 13px;
+      font-weight: 600;
+      color: #868685;
     }
 
     .hero-cta {
       flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.52);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.38);
-      border-top-color: rgba(255, 255, 255, 0.95);
-      border-left-color: rgba(255, 255, 255, 0.72);
-      border-radius: 14px;
-      padding: 12px 16px;
-      width: 188px;
+      background: #9fe870;
+      border-radius: 16px;
+      padding: 16px 18px;
+      width: 185px;
       cursor: pointer;
-      box-shadow:
-        0 3px 14px rgba(0, 60, 20, 0.07),
-        0 1px 0 rgba(255, 255, 255, 0.85) inset;
-      transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
-      position: relative;
-      z-index: 1;
+      transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.70);
-        border-top-color: rgba(255, 255, 255, 1);
-        transform: translateY(-3px) scale(1.01);
-        box-shadow: 0 10px 28px rgba(0, 60, 20, 0.10), 0 1px 0 rgba(255, 255, 255, 1) inset;
+        transform: scale(1.05);
       }
 
       .hero-cta-label {
         font-size: 10px;
         font-weight: 600;
-        background: linear-gradient(90deg, #16a34a, #0891b2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: rgba(22, 51, 0, 0.6);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        letter-spacing: 0.8px;
+        margin-bottom: 5px;
       }
 
       .hero-cta-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: #0a2e18;
-        margin-bottom: 3px;
+        font-size: 14px;
+        font-weight: 900;
+        color: #163300;
+        margin-bottom: 5px;
+        line-height: 1.1;
       }
 
       .hero-cta-desc {
         font-size: 11px;
-        color: rgba(10, 46, 24, 0.52);
-        line-height: 1.45;
+        color: rgba(22, 51, 0, 0.65);
+        line-height: 1.5;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        margin-bottom: 12px;
       }
 
       .hero-cta-link {
-        font-size: 11px;
+        display: inline-flex;
+        background: #163300;
+        color: #9fe870;
+        font-size: 12px;
         font-weight: 600;
-        background: linear-gradient(90deg, #16a34a, #0891b2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-top: 8px;
+        padding: 5px 14px;
+        border-radius: 9999px;
+        transition: transform 0.18s cubic-bezier(0.34, 1.4, 0.64, 1);
+
+        &:hover {
+          transform: scale(1.06);
+        }
       }
     }
   }
@@ -335,24 +194,26 @@
   // ── Section Header ────────────────────────────────
   .section-header {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 
     h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #0a2e18;
+      font-size: 20px;
+      font-weight: 900;
+      color: #0e0f0c;
+      letter-spacing: -0.5px;
     }
 
     .see-all {
-      font-size: 12px;
-      color: #16a34a;
+      font-size: 13px;
+      font-weight: 600;
+      color: #868685;
       cursor: pointer;
       transition: color 0.15s;
 
       &:hover {
-        color: #0a2e18;
+        color: #0e0f0c;
       }
     }
   }
@@ -369,161 +230,138 @@
 
   .agent-card {
     position: relative;
-    background: rgba(255, 255, 255, 0.50);
-    backdrop-filter: blur(24px) saturate(1.5);
-    -webkit-backdrop-filter: blur(24px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-top-color: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
-    padding: 16px;
+    background: #ffffff;
+    border: 1px solid rgba(14, 15, 12, 0.12);
+    border-radius: 20px;
+    padding: 18px;
     cursor: pointer;
-    box-shadow:
-      0 3px 14px rgba(0, 60, 20, 0.07),
-      0 1px 0 rgba(255, 255, 255, 0.85) inset;
     transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.68);
-      border-top-color: rgba(255, 255, 255, 1);
-      transform: translateY(-4px) scale(1.015);
-      box-shadow:
-        0 12px 32px rgba(0, 60, 20, 0.12),
-        0 1px 0 rgba(255, 255, 255, 1) inset;
-    }
-
-    // 排名 badge 依父卡片位置區分（使用熱度榜用）
-    &:nth-child(1) .rank-badge {
-      background: linear-gradient(135deg, #f59e0b, #fcd34d);
-      color: #78350f;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.40);
-    }
-
-    &:nth-child(2) .rank-badge {
-      background: linear-gradient(135deg, #94a3b8, #e2e8f0);
-      color: #374151;
-      box-shadow: 0 2px 6px rgba(148, 163, 184, 0.35);
-    }
-
-    &:nth-child(3) .rank-badge {
-      background: linear-gradient(135deg, #b87333, #d4956c);
-      color: #fff8f0;
-      box-shadow: 0 2px 6px rgba(184, 115, 51, 0.35);
-    }
-
-    &:nth-child(n+4) .rank-badge {
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.40);
-      border-top-color: rgba(255, 255, 255, 0.88);
-      color: rgba(0, 50, 30, 0.62);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: rgba(14, 15, 12, 0.12) 0px 12px 32px;
+      border-color: rgba(14, 15, 12, 0.20);
     }
 
     .rank-badge {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 22px;
-      height: 22px;
+      top: 14px;
+      right: 14px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
+    &:nth-child(1) .rank-badge {
+      background: #9fe870;
+      color: #163300;
+    }
+
+    &:nth-child(2) .rank-badge {
+      background: #e8ebe6;
+      color: #454745;
+    }
+
+    &:nth-child(3) .rank-badge {
+      background: #f5dfc0;
+      color: #854f0b;
+    }
+
+    &:nth-child(n+4) .rank-badge {
+      background: #e8ebe6;
+      color: #454745;
+    }
+
     .agent-badge {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 14px;
+      right: 14px;
       font-size: 10px;
       font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.40);
-      border-top-color: rgba(255, 255, 255, 0.90);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+      padding: 3px 9px;
+      border-radius: 9999px;
 
-      &--new { color: #3B6D11; }
-      &--hot { color: #854F0B; }
-      &--sat { color: #0F6E56; }
+      &--new {
+        background: #e2f6d5;
+        color: #163300;
+      }
+
+      &--hot {
+        background: #faeeda;
+        color: #854f0b;
+      }
+
+      &--sat {
+        background: #e2f6d5;
+        color: #0f6e56;
+      }
     }
 
     .agent-icon {
       width: 44px;
       height: 44px;
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 10px;
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.40);
-      border-top-color: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
+      margin-bottom: 12px;
+      border: 1px solid rgba(14, 15, 12, 0.08);
 
       i {
         font-size: 22px;
-        color: rgba(0, 50, 30, 0.62);
       }
     }
 
     h4 {
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0e0f0c;
       margin-bottom: 5px;
-      color: #0a2e18;
     }
 
     p {
-      font-size: 11px;
-      color: rgba(10, 46, 24, 0.52);
+      font-size: 12px;
+      color: #868685;
       line-height: 1.55;
     }
   }
 
   // ── 個人化推薦 ────────────────────────────────────
   .recs-box {
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(32px) saturate(1.6);
-    -webkit-backdrop-filter: blur(32px) saturate(1.6);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-top-color: rgba(255, 255, 255, 0.95);
-    border-left-color: rgba(255, 255, 255, 0.70);
-    border-radius: 18px;
-    padding: 22px 26px;
-    box-shadow:
-      0 4px 20px rgba(0, 60, 20, 0.08),
-      0 1px 0 rgba(255, 255, 255, 0.9) inset;
+    background: #ffffff;
+    border: 1px solid rgba(14, 15, 12, 0.12);
+    border-radius: 30px;
+    padding: 28px 32px;
 
     .recs-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 12px;
+      margin-bottom: 18px;
 
       .recs-avatar {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #22c55e, #06b6d4);
+        background: #9fe870;
+        color: #163300;
+        font-size: 13px;
+        font-weight: 900;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 10px;
-        font-weight: 600;
-        color: #fff;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35);
       }
 
       .recs-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #0a2e18;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0e0f0c;
       }
     }
 
@@ -531,36 +369,29 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
 
       .recs-chip {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
+        padding: 5px 16px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        background: rgba(22, 51, 0, 0.06);
+        color: #454745;
         cursor: pointer;
-        background: rgba(255, 255, 255, 0.50);
-        border: 1px solid rgba(255, 255, 255, 0.38);
-        border-top-color: rgba(255, 255, 255, 0.88);
-        color: rgba(0, 50, 30, 0.62);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+        border: 1px solid transparent;
         transition: all 0.16s;
         white-space: nowrap;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.68);
-          color: #0a2e18;
+          background: rgba(22, 51, 0, 0.10);
+          color: #0e0f0c;
         }
 
         &.active {
-          background: rgba(255, 255, 255, 0.75);
-          border-top-color: rgba(255, 255, 255, 1);
-          color: #0a2e18;
-          font-weight: 600;
-          box-shadow:
-            0 2px 8px rgba(0, 60, 20, 0.08),
-            0 1px 0 rgba(255, 255, 255, 0.9) inset;
+          background: #9fe870;
+          color: #163300;
+          transform: scale(1.04);
         }
       }
     }
@@ -572,46 +403,33 @@
     }
 
     .rec-card {
-      background: rgba(255, 255, 255, 0.50);
-      backdrop-filter: blur(24px) saturate(1.5);
-      -webkit-backdrop-filter: blur(24px) saturate(1.5);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-top-color: rgba(255, 255, 255, 0.95);
-      border-radius: 14px;
-      padding: 14px;
+      background: #f2f4f0;
+      border: 1px solid rgba(14, 15, 12, 0.08);
+      border-radius: 16px;
+      padding: 16px;
       cursor: pointer;
-      box-shadow:
-        0 3px 14px rgba(0, 60, 20, 0.07),
-        0 1px 0 rgba(255, 255, 255, 0.85) inset;
       transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.68);
-        border-top-color: rgba(255, 255, 255, 1);
-        transform: translateY(-4px) scale(1.015);
-        box-shadow:
-          0 12px 32px rgba(0, 60, 20, 0.12),
-          0 1px 0 rgba(255, 255, 255, 1) inset;
+        background: #e8ebe6;
+        transform: translateY(-3px) scale(1.015);
+        box-shadow: rgba(14, 15, 12, 0.08) 0px 8px 20px;
       }
 
       .rec-icon {
         width: 32px;
         height: 32px;
         border-radius: 8px;
+        background: rgba(14, 15, 12, 0.06);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 8px;
-        background: rgba(255, 255, 255, 0.52);
-        border: 1px solid rgba(255, 255, 255, 0.38);
-        border-top-color: rgba(255, 255, 255, 0.90);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+        margin-bottom: 10px;
+        border: 1px solid rgba(14, 15, 12, 0.08);
 
         i {
           font-size: 16px;
-          color: rgba(0, 50, 30, 0.62);
+          color: #454745;
         }
       }
 
@@ -619,36 +437,34 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 7px;
+        margin-bottom: 6px;
 
         .rec-card-name {
           font-size: 13px;
-          font-weight: 600;
-          color: #0a2e18;
+          font-weight: 700;
+          color: #0e0f0c;
         }
 
         .rec-card-tag {
           font-size: 10px;
-          padding: 2px 7px;
-          border-radius: 20px;
           font-weight: 600;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          background: #e2f6d5;
+          color: #163300;
           flex-shrink: 0;
-          background: rgba(255, 255, 255, 0.52);
-          border: 1px solid rgba(255, 255, 255, 0.40);
-          border-top-color: rgba(255, 255, 255, 0.90);
-          color: rgba(0, 50, 30, 0.62);
         }
       }
 
       .rec-card-desc {
-        font-size: 11px;
-        color: rgba(10, 46, 24, 0.52);
+        font-size: 12px;
+        color: #868685;
         line-height: 1.55;
       }
     }
   }
 
-  // ── Modal 內容 ────────────────────────────────────
+  // ── Modal 內容（保留原樣）────────────────────────────────────────────────────
   .explore-modal-content {
     .explore-modal-icon {
       width: 52px;
