@@ -1,13 +1,5 @@
 <template>
   <div class="Explore views-page" v-show="!isEnterAppSearchPage">
-    <!-- 彩色光球背景層 -->
-    <div class="explore-bg">
-      <div class="explore-bg__blob explore-bg__blob--1"></div>
-      <div class="explore-bg__blob explore-bg__blob--2"></div>
-      <div class="explore-bg__blob explore-bg__blob--3"></div>
-      <div class="explore-bg__blob explore-bg__blob--4"></div>
-      <div class="explore-bg__blob explore-bg__blob--5"></div>
-    </div>
     <div class="views-page-content-box">
 
       <!-- 搜尋列 -->
@@ -32,16 +24,10 @@
 
       <!-- Hero Banner -->
       <div class="explore-hero">
-        <div class="hero-deco hero-deco--tl"></div>
-        <div class="hero-deco hero-deco--br"></div>
         <div class="hero-left">
-          <div class="hero-mascot">
-            <div class="hero-mascot-inner"></div>
-          </div>
-          <div class="hero-text">
-            <h2>今天想讓 Agent 助理幫你做什麼？</h2>
-            <p>發掘最強大工作效率，選擇最適合的 AI 助理</p>
-          </div>
+          <div class="hero-eyebrow-pill">AI Agent 平台</div>
+          <h2>今天想讓 Agent 助理幫你做什麼？</h2>
+          <p>發掘最強大工作效率，選擇最適合的 AI 助理</p>
         </div>
         <div class="hero-cta" @click="openModal(featuredAgent)">
           <div class="hero-cta-label">由我推薦</div>
@@ -121,7 +107,7 @@
             </div>
             <div class="rec-card-top">
               <span class="rec-card-name">{{ agent.name }}</span>
-              <span v-if="agent.badge" class="rec-card-tag" :style="{ background: agent.bgColor, color: agent.accentColor }">
+              <span v-if="agent.badge" class="rec-card-tag">
                 {{ agent.badge.label }}
               </span>
             </div>
