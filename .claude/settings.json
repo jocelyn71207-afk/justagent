@@ -6,7 +6,11 @@
       "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/**)",
       "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/**)",
       "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
-      "Bash(git -C /Users/jocelyn/Desktop/demosite branch --show-current)"
+      "Bash(git -C /Users/jocelyn/Desktop/demosite branch --show-current)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite log --oneline 37cc9f6..HEAD)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite add src/scss/base/_theme.scss src/scss/views/_Explore.scss)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite commit -m ':*)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite diff --stat 37cc9f6..HEAD)"
     ]
   }
 }

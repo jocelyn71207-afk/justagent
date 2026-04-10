@@ -10,27 +10,27 @@
     align-items: center;
     gap: 6px;
     padding: 10px 18px;
-    border-radius: 24px;
+    border-radius: 9999px;
     border: none;
-    background-color: $color_main_1;
-    color: $white;
+    background: var(--color-wise-green);
+    color: var(--color-wise-dark-green);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba($color_main_1, 0.4);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: rgba(22, 51, 0, 0.18) 0px 4px 16px;
+    transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.15s ease;
 
     i {
       font-size: 18px;
     }
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba($color_main_1, 0.5);
+      transform: scale(1.04);
+      box-shadow: rgba(22, 51, 0, 0.24) 0px 6px 20px;
     }
 
     &:active {
-      transform: translateY(0);
+      transform: scale(0.98);
     }
   }
 
@@ -48,7 +48,7 @@
 
   .setting-divider {
     border: none;
-    border-top: 1px solid var(--color-border-1-alpha50);
+    border-top: 1px solid rgba(14, 15, 12, 0.08);
     margin: 0;
   }
 
@@ -93,9 +93,9 @@
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background-color: var(--color-background-2-alpha10);
-    border: 1px solid var(--color-border-1-alpha50);
-    border-radius: 8px;
+    background-color: var(--color-wise-bg);
+    border: 1px solid rgba(14, 15, 12, 0.10);
+    border-radius: 12px;
     user-select: none;
 
     span {
@@ -104,16 +104,17 @@
 
     i {
       font-size: 24px;
-      color: var(--color-text-alpha50);
+      color: var(--color-wise-warm-dark);
     }
 
     i.edit-btn {
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 2px;
 
       &:hover {
-        background-color: var(--color-background-2-alpha20);
+        background-color: var(--color-wise-surface);
+        color: var(--color-wise-black);
       }
     }
   }
@@ -134,7 +135,7 @@
     align-items: flex-start;
     gap: 6px;
     font-size: 14px;
-    color: var(--color-text-alpha50);
+    color: var(--color-wise-gray);
     margin-bottom: 14px;
 
     i {
@@ -146,15 +147,15 @@
 
   .admin-table-box {
     border-radius: 12px;
-    border: 1px solid var(--color-border-1-alpha50);
-    background-color: var(--color-background-2-alpha10);
+    border: 1px solid rgba(14, 15, 12, 0.10);
+    background-color: var(--color-wise-bg);
 
     .custom-table {
       border-radius: 12px;
 
       th,
       td {
-        border-color: var(--color-border-1-alpha50);
+        border-color: rgba(14, 15, 12, 0.08);
       }
 
       .col-action {
@@ -164,20 +165,21 @@
 
     .owner-icon {
       font-size: 16px;
-      color: var(--color-text-alpha50);
+      color: var(--color-wise-gray);
       vertical-align: middle;
       margin-right: 4px;
     }
 
     .delete-btn {
       font-size: 24px;
-      color: var(--color-text-alpha50);
+      color: var(--color-wise-gray);
       cursor: pointer;
       border-radius: 4px;
       padding: 2px;
 
       &:hover {
-        background-color: var(--color-background-2-alpha20);
+        background-color: var(--color-wise-surface);
+        color: var(--color-wise-black);
       }
     }
   }
@@ -199,12 +201,12 @@
     display: inline-flex;
     align-items: center;
     padding: 3px 10px;
-    border-radius: 20px;
+    border-radius: 9999px;
     font-size: 13px;
-    font-weight: 500;
-    background-color: var(--color-background-1);
-    border: 1px solid var(--color-border-1-alpha50);
-    color: var(--color-text-alpha70);
+    font-weight: 600;
+    background-color: var(--color-wise-bg);
+    border: 1px solid rgba(14, 15, 12, 0.12);
+    color: var(--color-wise-warm-dark);
   }
 
   .company-settings,
@@ -216,9 +218,9 @@
   }
 
   .info-card {
-    border: 1px solid var(--color-border-1-alpha50);
-    border-radius: 14px;
-    background-color: var(--color-background-1);
+    border: 1px solid rgba(14, 15, 12, 0.10);
+    border-radius: 16px;
+    background-color: var(--color-wise-card);
     overflow: hidden;
   }
 
@@ -227,7 +229,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 18px 24px;
-    border-bottom: 1px solid var(--color-border-1-alpha50);
+    border-bottom: 1px solid rgba(14, 15, 12, 0.08);
     gap: 16px;
 
     &.no-border {
@@ -244,14 +246,14 @@
 
   .info-row-icon {
     font-size: 20px;
-    color: var(--color-heading);
+    color: var(--color-wise-black);
     flex-shrink: 0;
   }
 
   .info-row-label {
     font-size: 15px;
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--color-wise-black);
   }
 
   .info-row-right {
@@ -263,37 +265,37 @@
 
   .info-row-value {
     font-size: 14px;
-    color: var(--color-text-alpha70);
+    color: var(--color-wise-warm-dark);
   }
 
   .type-tag {
     font-size: 13px;
     padding: 3px 12px;
-    border-radius: 20px;
-    background-color: var(--color-background-2-alpha10);
-    border: 1px solid var(--color-border-1-alpha50);
-    color: var(--color-text-alpha70);
+    border-radius: 9999px;
+    background-color: var(--color-wise-bg);
+    border: 1px solid rgba(14, 15, 12, 0.10);
+    color: var(--color-wise-warm-dark);
   }
 
   .plan-badge {
     font-size: 13px;
     font-weight: 600;
     padding: 4px 12px;
-    border-radius: 20px;
-    background-color: var(--color-heading);
-    color: $white;
+    border-radius: 9999px;
+    background-color: var(--color-wise-black);
+    color: var(--color-wise-green);
     letter-spacing: 0.3px;
   }
 
   .plan-expire {
     font-size: 13px;
-    color: var(--color-text-alpha50);
+    color: var(--color-wise-gray);
   }
 
   .settings-block {
-    border: 1px solid var(--color-border-1-alpha50);
-    border-radius: 14px;
-    background-color: var(--color-background-1);
+    border: 1px solid rgba(14, 15, 12, 0.10);
+    border-radius: 16px;
+    background-color: var(--color-wise-card);
     padding: 20px 24px;
   }
 
@@ -310,27 +312,27 @@
 
   .settings-block-icon {
     font-size: 22px;
-    color: var(--color-heading);
+    color: var(--color-wise-black);
   }
 
   .settings-block-title {
     font-size: 16px;
     font-weight: 700;
-    color: var(--color-text);
+    color: var(--color-wise-black);
   }
 
   .agent-icon-bg {
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background-color: $color_main_4;
+    background-color: var(--color-wise-mint);
     display: flex;
     align-items: center;
     justify-content: center;
 
     i {
       font-size: 26px;
-      color: $color_main_1;
+      color: var(--color-wise-dark-green);
     }
   }
 
@@ -339,19 +341,20 @@
     flex-direction: column;
     min-width: 110px;
     padding: 20px 24px;
-    background-color: var(--color-background);
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    background-color: var(--color-wise-bg);
+    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
     &:hover {
-      border-color: var(--color-heading);
-      box-shadow: 0 2px 12px var(--color-shadow);
+      border-color: rgba(14, 15, 12, 0.20);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: rgba(14, 15, 12, 0.08) 0px 8px 20px;
     }
 
     span {
       min-width: unset;
       font-size: 13px;
       font-weight: 500;
-      color: var(--color-text-alpha70);
+      color: var(--color-wise-warm-dark);
     }
   }
 
@@ -371,51 +374,51 @@
     font-size: 13px;
     font-weight: 700;
     flex-shrink: 0;
-    background-color: var(--color-background-2-alpha10);
-    border: 1px solid var(--color-border-1-alpha50);
-    color: var(--color-text-alpha70);
+    background-color: var(--color-wise-bg);
+    border: 1px solid rgba(14, 15, 12, 0.12);
+    color: var(--color-wise-warm-dark);
 
     &.is-owner {
-      background-color: $color_main_4;
-      border-color: $color_main_3;
-      color: $color_main_1;
+      background-color: var(--color-wise-mint);
+      border-color: var(--color-wise-green);
+      color: var(--color-wise-dark-green);
     }
   }
 
   .settings-block .owner-icon {
     font-size: 15px;
-    color: $color_main_1;
+    color: var(--color-wise-green);
     vertical-align: unset;
     margin-right: 0;
   }
 
   .settings-block .delete-btn {
     font-size: 20px;
-    color: var(--color-text-alpha50);
+    color: var(--color-wise-gray);
     cursor: pointer;
     border-radius: 6px;
     padding: 3px;
     background-color: transparent;
 
     &:hover {
-      background-color: var(--color-background-2-alpha20);
-      color: var(--color-text);
+      background-color: var(--color-wise-surface);
+      color: var(--color-wise-black);
     }
   }
 
   // 新版 team-card（覆蓋舊版規則）
   .team-settings .team-card {
     min-width: 200px;
-    background-color: var(--color-background);
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    background-color: var(--color-wise-bg);
+    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 
     span {
       min-width: unset;
     }
 
     &:hover {
-      border-color: var(--color-border-1);
-      box-shadow: 0 2px 8px var(--color-shadow);
+      border-color: rgba(14, 15, 12, 0.20);
+      box-shadow: rgba(14, 15, 12, 0.08) 0px 6px 16px;
 
       .team-card-actions {
         opacity: 1;
@@ -425,7 +428,7 @@
 
   .team-card-icon {
     font-size: 20px;
-    color: var(--color-heading);
+    color: var(--color-wise-black);
     flex-shrink: 0;
   }
 
@@ -433,6 +436,7 @@
     font-size: 14px;
     font-weight: 500;
     flex: 1;
+    color: var(--color-wise-black);
   }
 
   .team-card-actions {
@@ -444,14 +448,14 @@
 
     .edit-btn {
       font-size: 18px;
-      color: var(--color-text-alpha50);
+      color: var(--color-wise-gray);
       cursor: pointer;
       border-radius: 6px;
       padding: 3px;
 
       &:hover {
-        background-color: var(--color-background-2-alpha20);
-        color: var(--color-text);
+        background-color: var(--color-wise-surface);
+        color: var(--color-wise-black);
       }
     }
   }

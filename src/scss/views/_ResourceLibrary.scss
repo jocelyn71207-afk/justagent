@@ -17,4 +17,37 @@
   .mofidyInput {
     min-width: 200px;
   }
+
+  // ── 檔案狀態 badge（Wise 配色覆蓋）──────────────────────────────
+  .status-badge {
+    font-weight: 600;
+    border-radius: 9999px;
+
+    &--stored {
+      background: var(--color-wise-mint);
+      color: var(--color-wise-dark-green);
+    }
+
+    &--saved {
+      background: var(--color-wise-mint);
+      color: var(--color-wise-dark-green);
+    }
+  }
+
+  // ── 處理方式 badge（Wise 配色覆蓋）──────────────────────────────
+  .process-type-badge {
+    border-radius: 9999px;
+    font-weight: 600;
+
+    &.badge--ai {
+      background: var(--color-wise-mint);
+      color: var(--color-wise-dark-green);
+    }
+
+    &.badge--raw {
+      background: var(--color-wise-bg);
+      color: var(--color-wise-warm-dark);
+      border: 1px solid rgba(14, 15, 12, 0.10);
+    }
+  }
 }

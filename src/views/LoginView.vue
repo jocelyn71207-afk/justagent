@@ -88,8 +88,6 @@ const handleLogin = () => {
 </script>
 
 <style scoped lang="scss">
-@use "@/scss/base/_variables.scss" as *;
-
 .login-wrapper {
   min-height: 100vh;
   width: 100%;
@@ -97,55 +95,30 @@ const handleLogin = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
+  background: var(--color-wise-bg);
   font-family: 'Microsoft JhengHei', sans-serif;
-  
-  // Vibrant Linear Gradient Background with Smooth Animation
-  background: linear-gradient(135deg, #4ade80, #22c55e, #06b6d4, #22c55e);
-  background-size: 400% 400%;
-  animation: gradient-flow 15s ease infinite;
-  background-attachment: fixed;
-}
-
-@keyframes gradient-flow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes rotate-bg {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .login-card {
-  position: relative;
-  z-index: 1;
   width: 100%;
   max-width: 440px;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: var(--color-wise-card);
+  border: 1px solid rgba(14, 15, 12, 0.12);
   border-radius: 28px;
   padding: 40px;
-  box-shadow: 0 12px 48px rgba(0, 60, 20, 0.18), 0 2px 0 rgba(255, 255, 255, 0.9) inset;
+  box-shadow: rgba(14, 15, 12, 0.06) 0px 8px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  color: #333;
 }
 
 .login-logo {
   display: flex;
   justify-content: center;
-  margin-bottom: 2px;
-  
+
   img {
     height: 36px;
-    // Removed brightening filters to ensure contrast on white background
-    filter: brightness(0.2); // Making it a sharp dark grey/black for contrast
+    filter: brightness(0.2);
   }
 }
 
@@ -155,11 +128,11 @@ const handleLogin = () => {
     font-size: 26px;
     font-weight: 700;
     margin-bottom: 8px;
-    color: #1a1a1a;
+    color: var(--color-wise-black);
   }
   p {
     font-size: 14px;
-    opacity: 0.8;
+    color: var(--color-wise-gray);
   }
 }
 
@@ -175,19 +148,19 @@ const handleLogin = () => {
   justify-content: center;
   gap: 10px;
   height: 48px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  color: #495057;
+  background: var(--color-wise-card);
+  border: 1px solid rgba(14, 15, 12, 0.12);
+  border-radius: 9999px;
+  color: var(--color-wise-black);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--color-wise-surface);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: rgba(14, 15, 12, 0.06) 0px 4px 12px;
   }
 
   svg {
@@ -199,15 +172,15 @@ const handleLogin = () => {
   display: flex;
   align-items: center;
   text-align: center;
-  color: #adb5bd;
+  color: var(--color-wise-gray);
   font-size: 12px;
-  
+
   &::before, &::after {
     content: '';
     flex: 1;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid rgba(14, 15, 12, 0.10);
   }
-  
+
   span {
     padding: 0 12px;
   }
@@ -223,44 +196,44 @@ const handleLogin = () => {
   position: relative;
   display: flex;
   align-items: center;
-  
+
   .material-symbols-rounded {
     position: absolute;
     left: 16px;
-    color: #adb5bd;
+    color: var(--color-wise-gray);
     font-size: 20px;
     font-family: 'Material Symbols Rounded';
   }
-  
+
   input {
     width: 100%;
     height: 48px;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 12px;
+    background: var(--color-wise-bg);
+    border: 1px solid rgba(14, 15, 12, 0.12);
+    border-radius: 9999px;
     padding: 0 48px;
-    color: #495057;
+    color: var(--color-wise-black);
     font-size: 15px;
     transition: all 0.2s ease;
-    
+
     &::placeholder {
-      color: #adb5bd;
+      color: var(--color-wise-gray);
     }
-    
+
     &:focus {
       outline: none;
-      background: rgba(255, 255, 255, 0.8);
-      border-color: $color_main_1;
-      box-shadow: 0 0 0 4px rgba($color_main_1, 0.1);
+      background: var(--color-wise-card);
+      border-color: var(--color-wise-green);
+      box-shadow: 0 0 0 3px rgba(159, 232, 112, 0.2);
     }
   }
-  
+
   .visibility-toggle {
     left: auto;
     right: 16px;
     cursor: pointer;
     &:hover {
-      color: $color_main_1;
+      color: var(--color-wise-dark-green);
     }
   }
 }
@@ -270,7 +243,7 @@ const handleLogin = () => {
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
-  color: #6c757d;
+  color: var(--color-wise-gray);
 }
 
 .remember-me {
@@ -279,20 +252,20 @@ const handleLogin = () => {
   gap: 8px;
   cursor: pointer;
   transition: color 0.2s;
-  
+
   &:hover {
-    color: #1a1a1a;
+    color: var(--color-wise-black);
   }
-  
+
   input {
     width: 16px;
     height: 16px;
-    accent-color: $color_main_1;
+    accent-color: var(--color-wise-green);
   }
 }
 
 .forgot-password {
-  color: $color_main_1;
+  color: var(--color-wise-dark-green);
   font-weight: 500;
   text-decoration: none;
   &:hover {
@@ -302,33 +275,33 @@ const handleLogin = () => {
 
 .login-submit-btn {
   height: 52px;
-  background: $color_main_1;
+  background: var(--color-wise-green);
   border: none;
-  border-radius: 12px;
-  color: #fff;
+  border-radius: 9999px;
+  color: var(--color-wise-dark-green);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
   margin-top: 8px;
-  
+
   &:hover {
-    background: $color_main_3;
-    box-shadow: 0 4px 15px rgba($color_main_1, 0.4);
-    transform: translateY(-2px);
+    transform: scale(1.02);
+    box-shadow: rgba(22, 51, 0, 0.18) 0px 8px 20px;
   }
-  
+
   &:active {
-    transform: translateY(0);
+    transform: scale(0.99);
   }
 }
 
 .login-footer {
   text-align: center;
   font-size: 14px;
-  color: #6c757d;
+  color: var(--color-wise-gray);
+
   .create-account {
-    color: $color_main_1;
+    color: var(--color-wise-dark-green);
     font-weight: 600;
     text-decoration: none;
     &:hover {
@@ -339,41 +312,39 @@ const handleLogin = () => {
 
 .company-info {
   margin-top: 40px;
-  z-index: 1;
   text-align: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-wise-gray);
   font-size: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
+
   .footer-links {
     display: flex;
     justify-content: center;
     gap: 12px;
     align-items: center;
-    
+
     a {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--color-wise-gray);
       text-decoration: none;
       &:hover {
-        color: #fff;
+        color: var(--color-wise-black);
       }
     }
-    
+
     .sep {
       opacity: 0.3;
     }
   }
 }
 
-// Media Queries
 @media (max-width: 480px) {
   .login-card {
     max-width: 90%;
     padding: 30px 20px;
   }
-  
+
   .social-login {
     grid-template-columns: 1fr;
   }

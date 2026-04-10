@@ -137,6 +137,13 @@
     &.project-card {
       position: relative;
       cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+      border: 1px solid rgba(14, 15, 12, 0.08);
+      &:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: rgba(14, 15, 12, 0.10) 0px 12px 32px;
+        border-color: rgba(14, 15, 12, 0.16);
+      }
       .team-name-box {
         position: absolute;
         left: 10px;
@@ -253,7 +260,7 @@
         .bar {
           width: 100%;
           border-radius: 4px 4px 0 0;
-          background: $color_main_1;
+          background: var(--color-wise-green);
           min-height: 4px;
         }
         .bar-label { font-size: 9px; color: var(--color-text-alpha50); }
