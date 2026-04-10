@@ -1168,7 +1168,18 @@ function conv2SelectMode(mode: string) {
     return;
   }
 
-  // init / deep: 開啟上傳懸浮面板
+  if (mode === 'deep') {
+    setTimeout(() => {
+      c2Push({ msg: '好的！請在下方面板完成深度分析設定。' });
+      c2Scroll();
+      conv2CurStep.value = 1;
+      conv2StepFpVisible.value = true;
+      conv2ShowStepPill.value = true;
+    }, 400);
+    return;
+  }
+
+  // init: 開啟上傳懸浮面板
   setTimeout(() => {
     c2Push({ msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請在下方面板上傳商品資訊。` });
     c2Scroll();
