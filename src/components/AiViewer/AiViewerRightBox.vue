@@ -954,10 +954,6 @@ const conv2StepFpVisible = ref(false);
 const conv2ShowStepPill = ref(false); // pill 是否顯示
 const conv2CurStep = ref<number | string>(1);
 
-// 任一 fp 面板開啟中（隱藏輸入框用）
-const conv2AnyFpOpen = computed(() =>
-  currentConversationId.value === 'conv2' && (conv2UploadFpVisible.value || conv2StepFpVisible.value)
-);
 // fp 互動模式中（有 pill 顯示，或流程已啟動）：完全隱藏原始輸入列
 const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
@@ -979,7 +975,7 @@ function isConv2StepDone(key: number | string) {
   return ki < ci;
 }
 function conv2GoStep(n: number | string) {
-  if (conv2CurStep.value === 2) conv2S2Err.value = '';
+  if (n === 2) conv2S2Err.value = '';
   conv2CurStep.value = n;
 }
 function conv2GoStep2to3() {
@@ -1280,12 +1276,6 @@ function conv2ConfirmProduct() {
     }, 1000);
     return;
   }
-  // deep mode: 開啟步驟設定懸浮面板
-  c2Push({ msg: '商品特徵已確認，請在下方面板完成深度分析設定。' });
-  c2Scroll();
-  conv2CurStep.value = 1;
-  conv2StepFpVisible.value = true;
-  conv2ShowStepPill.value = true;
 }
 
 
@@ -1425,6 +1415,7 @@ function resetConversation() {
     conv2S2Price.value = 'NT$5,980';
     conv2S2Name.value = "Women's Elea Pooch Slip-on";
     conv2S2Desc.value = DEMO_DESC;
+    conv2S2Err.value = '';
     conv2S3Err.value = '';
     conv2S3Features.value.forEach(f => { f.sel = f.key === 'material' || f.key === 'design'; });
     conv2S4Scope.value = 'tw';
