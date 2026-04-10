@@ -168,21 +168,8 @@
           </button>
         </div>
         <div class="conv2-fp-body">
-          <!-- Step 1: 商品類別 -->
+          <!-- Step 1: 商品資訊 -->
           <div v-show="conv2CurStep === 1">
-            <div class="conv2-info-note">✦ AI 從圖片識別商品，可調整</div>
-            <div class="conv2-chips">
-              <div v-for="c in ['室內拖鞋','毛絨拖鞋','動物臉拖鞋','家居鞋']" :key="c"
-                :class="['conv2-chip', {sel: conv2S1Cat === c && !conv2S1Custom}]"
-                @click.stop="conv2S1Cat = c; conv2S1Custom = ''">{{ c }}</div>
-            </div>
-            <input class="conv2-fi conv2-fi--full" v-model="conv2S1Custom" placeholder="找不到，自行輸入…" @click.stop style="margin-top:4px" />
-            <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep(2)">確認 →</button>
-            </div>
-          </div>
-          <!-- Step 2: 商品資訊 -->
-          <div v-show="conv2CurStep === 2">
             <div class="conv2-info-note">✦ 圖片選填；商品名稱與描述為必填</div>
             <div class="conv2-up-img-box" style="margin-bottom:10px">
               <img :src="DEMO_IMG" />
@@ -195,8 +182,21 @@
             <div><div class="conv2-fl">商品描述 <span style="color:var(--color-error,#dc2626)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop></textarea></div>
             <div class="conv2-err">{{ conv2S2Err }}</div>
             <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep1to2()">確認 →</button>
+            </div>
+          </div>
+          <!-- Step 2: 商品類別 -->
+          <div v-show="conv2CurStep === 2">
+            <div class="conv2-info-note">✦ AI 從圖片識別商品，可調整</div>
+            <div class="conv2-chips">
+              <div v-for="c in ['室內拖鞋','毛絨拖鞋','動物臉拖鞋','家居鞋']" :key="c"
+                :class="['conv2-chip', {sel: conv2S1Cat === c && !conv2S1Custom}]"
+                @click.stop="conv2S1Cat = c; conv2S1Custom = ''">{{ c }}</div>
+            </div>
+            <input class="conv2-fi conv2-fi--full" v-model="conv2S1Custom" placeholder="找不到，自行輸入…" @click.stop style="margin-top:4px" />
+            <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)">← 返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep2to3()">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認 →</button>
             </div>
           </div>
           <!-- Step 3: 分析特徵 -->
@@ -960,7 +960,7 @@ const conv2FpActive = computed(() =>
 );
 
 const conv2StepTitleMap: Record<string, string> = {
-  '1': '商品類別確認', '2': '商品資訊確認',
+  '1': '商品資訊確認', '2': '商品類別確認',
   '3': '選擇分析特徵', '4': '設定搜索範圍',
   '45': '確認設定內容', '5': '確認競品',
 };
@@ -975,16 +975,16 @@ function isConv2StepDone(key: number | string) {
   return ki < ci;
 }
 function conv2GoStep(n: number | string) {
-  if (n === 2) conv2S2Err.value = '';
+  if (n === 1) conv2S2Err.value = '';
   conv2CurStep.value = n;
 }
-function conv2GoStep2to3() {
+function conv2GoStep1to2() {
   if (!conv2S2Name.value.trim() || !conv2S2Desc.value.trim()) {
     conv2S2Err.value = '商品名稱與描述為必填';
     return;
   }
   conv2S2Err.value = '';
-  conv2GoStep(3);
+  conv2GoStep(2);
 }
 
 // Step 1
