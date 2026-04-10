@@ -975,6 +975,14 @@ function isConv2StepDone(key: number | string) {
   return ki < ci;
 }
 function conv2GoStep(n: number | string) { conv2CurStep.value = n; }
+function conv2GoStep2to3() {
+  if (!conv2S2Name.value.trim() || !conv2S2Desc.value.trim()) {
+    conv2S2Err.value = '商品名稱與描述為必填';
+    return;
+  }
+  conv2S2Err.value = '';
+  conv2GoStep(3);
+}
 
 // Step 1
 const conv2S1Cat = ref('室內拖鞋');
@@ -984,6 +992,7 @@ const conv2S2Brand = ref('UGG');
 const conv2S2Price = ref('NT$5,980');
 const conv2S2Name = ref("Women's Elea Pooch Slip-on");
 const conv2S2Desc = ref(DEMO_DESC);
+const conv2S2Err = ref('');
 // Step 3
 const conv2S3Err = ref('');
 const conv2S3Features = ref([
