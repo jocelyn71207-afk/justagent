@@ -183,16 +183,20 @@
           </div>
           <!-- Step 2: 商品資訊 -->
           <div v-show="conv2CurStep === 2">
-            <div class="conv2-info-note">✦ AI 從圖片與描述自動帶入，非必填</div>
+            <div class="conv2-info-note">✦ 圖片選填；商品名稱與描述為必填</div>
+            <div class="conv2-up-img-box" style="margin-bottom:10px">
+              <img :src="DEMO_IMG" />
+            </div>
             <div class="conv2-fg">
               <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop /></div>
               <div><div class="conv2-fl">定價 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Price" @click.stop /></div>
             </div>
-            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop /></div>
-            <div><div class="conv2-fl">商品描述 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop></textarea></div>
+            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--color-error,#dc2626)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop /></div>
+            <div><div class="conv2-fl">商品描述 <span style="color:var(--color-error,#dc2626)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop></textarea></div>
+            <div class="conv2-err">{{ conv2S2Err }}</div>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)">← 返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep2to3()">確認 →</button>
             </div>
           </div>
           <!-- Step 3: 分析特徵 -->
@@ -974,7 +978,10 @@ function isConv2StepDone(key: number | string) {
   const ki = conv2StepOrder.indexOf(key);
   return ki < ci;
 }
-function conv2GoStep(n: number | string) { conv2CurStep.value = n; }
+function conv2GoStep(n: number | string) {
+  if (conv2CurStep.value === 2) conv2S2Err.value = '';
+  conv2CurStep.value = n;
+}
 function conv2GoStep2to3() {
   if (!conv2S2Name.value.trim() || !conv2S2Desc.value.trim()) {
     conv2S2Err.value = '商品名稱與描述為必填';
