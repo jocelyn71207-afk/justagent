@@ -30,7 +30,7 @@
         pointer-events: none;
 
         &--urgent  { background: $color-danger; }
-        &--warning { background: #f59e0b; }
+        &--warning { background: $color-warning-amber; color: #7a4400; }
         &--normal  { background: rgba(0, 0, 0, 0.38); }
       }
     }

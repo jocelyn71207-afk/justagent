@@ -33,7 +33,7 @@
           <div class="img-box">
             <img :src="item.imgSrc" alt="">
             <div :class="['expiry-badge', `expiry-badge--${expiryUrgency(item.remainingDays)}`]">
-              剩 {{ calcRemainingDays(item.remainingDays) }} 天
+              {{ calcRemainingDays(item.remainingDays) === 0 ? '已過期' : `剩 ${calcRemainingDays(item.remainingDays)} 天` }}
             </div>
           </div>
           <div class="footer-box">

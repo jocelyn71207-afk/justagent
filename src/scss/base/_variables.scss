@@ -23,6 +23,11 @@ $grey-border: #d3d4d8; // 邊框
 $grey-font: #232735; // 文字
 $grey-shadow: #29323c; // 陰影
 
+// Wise 設計系統
+$color-wise-green: #9fe870; // Wise 主色 lime green（用於 rgba() SCSS 函式）
+$color-wise-dark-green: #163300; // Wise 深綠（文字）
+$color-wise-mint-rgb: 226, 246, 213; // Wise mint（用於 rgba）
+
 // Main
 $color_main_1: #16a34a; // 產品主色 (預設justka use)
 $color_main_2: #15803d;
@@ -48,6 +53,7 @@ $color_red_2: #dd4839;
 // Yellow
 $color_yellow_1: #fcfdcf;
 $color_yellow_2: #fbc000;
+$color-warning-amber: #f59e0b;  // 警示琥珀色（到期標籤 warning 狀態）
 
 // 瀏覽器 淺色主題語意色彩  (注意: 這幾個變數不應該在其他地方直接使用，其他地方請使用 _html.scss 內的CSS 變數)
 $color-background-light: $white; // 主背景顏色
