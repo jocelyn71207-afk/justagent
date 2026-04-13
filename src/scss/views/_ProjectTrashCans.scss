@@ -13,6 +13,26 @@
         filter: grayscale(1);
         opacity: 0.55;
       }
+
+      // ── 右上到期標籤 ───────────────────────────
+      .expiry-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border-radius: 20px;
+        padding: 3px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+        letter-spacing: 0.02em;
+        z-index: 2;
+        pointer-events: none;
+
+        &--urgent  { background: $color-danger; }
+        &--warning { background: #f59e0b; }
+        &--normal  { background: rgba(0, 0, 0, 0.38); }
+      }
     }
   }
 }

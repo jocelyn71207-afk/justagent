@@ -32,6 +32,9 @@
           @mouseleave="item.showMoreOption = false;">
           <div class="img-box">
             <img :src="item.imgSrc" alt="">
+            <div :class="['expiry-badge', `expiry-badge--${expiryUrgency(item.remainingDays)}`]">
+              剩 {{ calcRemainingDays(item.remainingDays) }} 天
+            </div>
           </div>
           <div class="footer-box">
             <div class="info-box">
@@ -131,6 +134,14 @@ function calcRemainingDays(dateStr: string): number {
   const expireTime = new Date(dateStr).getTime();
   const now = Date.now();
   return Math.max(0, Math.ceil((expireTime - now) / (1000 * 60 * 60 * 24)));
+}
+
+// 依剩餘天數回傳顏色等級
+function expiryUrgency(dateStr: string): 'urgent' | 'warning' | 'normal' {
+  const days = calcRemainingDays(dateStr);
+  if (days <= 3) return 'urgent';
+  if (days <= 7) return 'warning';
+  return 'normal';
 }
 
 // 取得垃圾桶專案清單
