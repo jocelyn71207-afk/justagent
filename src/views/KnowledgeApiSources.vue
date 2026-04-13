@@ -151,12 +151,15 @@ function handleSave(payload: Omit<ApiSource, 'id' | 'lastSyncAt' | 'lastSyncStat
 
 async function handleSync(id: string) {
   syncingId.value = id;
-  await knowledgeStore.triggerSync(id);
-  syncingId.value = null;
+  try {
+    await knowledgeStore.triggerSync(id);
+  } finally {
+    syncingId.value = null;
+  }
 
   const source = apiSources.value.find(s => s.id === id);
   if (source?.lastSyncStatus === 'SUCCESS') {
-    popDialog.alert(`同步成功，已建立 ${source.lastSyncCount} 筆草稿知識條目`);
+    popDialog.alert(`同步成功，已建立 ${source?.lastSyncCount ?? 0} 筆草稿知識條目`);
   } else {
     popDialog.alert(`同步失敗：${source?.lastSyncError ?? '未知錯誤'}`);
   }
