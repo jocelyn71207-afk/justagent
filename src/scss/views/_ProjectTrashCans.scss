@@ -52,5 +52,75 @@
         &--normal  { background: rgba($black, 0.38); }
       }
     }
+
+    // ── 危險選項（永久刪除）──────────────────────
+    .next-option-box .option-item.danger {
+      color: $color-danger;
+
+      &:hover {
+        background-color: rgba($color-danger, 0.08);
+      }
+    }
+  }
+
+  // ── Info 橫幅 ──────────────────────────────────
+  .trash-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: #78350f;
+    margin-bottom: 20px;
+    line-height: 1.5;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+  }
+
+  // ── 空狀態 ────────────────────────────────────
+  .trash-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 12px;
+
+    .empty-icon-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--color-background-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .material-symbols-outlined {
+        font-size: 34px;
+        color: var(--color-text-alpha50);
+      }
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-alpha50);
+    }
+
+    .empty-sub {
+      font-size: 13px;
+      color: var(--color-text-alpha30);
+    }
   }
 }
