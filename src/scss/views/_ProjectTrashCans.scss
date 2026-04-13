@@ -1,5 +1,23 @@
+@use '../base/variables' as *;
+
 .ProjectTrashCans {
-  .card-list-box .one-card-box.project-card .img-box img {
+  // ── 卡片整體 ─────────────────────────────────────
+  .card-list-box .one-card-box.project-card {
     cursor: default;
+
+    &:hover {
+      transform: translateY(-2px) scale(1.005);
+    }
+
+    // ── 圖片灰階 ─────────────────────────────────
+    .img-box {
+      position: relative;
+
+      img {
+        filter: grayscale(1);
+        opacity: 0.55;
+        cursor: default;
+      }
+    }
   }
 }
