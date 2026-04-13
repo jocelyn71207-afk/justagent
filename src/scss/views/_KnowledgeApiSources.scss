@@ -65,7 +65,7 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: var(--color-main-alpha10);
+    background: var(--color-wise-mint);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,7 +73,7 @@
 
     i {
       font-size: 22px;
-      color: var(--color-main);
+      color: var(--color-wise-dark-green);
     }
   }
 
@@ -124,8 +124,8 @@
 
     i { font-size: 14px; }
 
-    &--success { color: var(--color-green); }
-    &--failed { color: var(--color-red); }
+    &--success { color: var(--color-wise-badge-sat-text); }
+    &--failed { color: #e53935; }
     &--none { color: var(--color-text-alpha40); }
 
     .sync-error-text {
@@ -178,10 +178,10 @@
 
     &.is-enabled {
       .toggle-track {
-        background: var(--color-main);
+        background: var(--color-wise-green);
         .toggle-thumb { left: 19px; }
       }
-      .toggle-label { color: var(--color-main); }
+      .toggle-label { color: var(--color-wise-dark-green); }
     }
   }
 
@@ -216,8 +216,8 @@
 
     &--danger:hover {
       background: rgba(220, 38, 38, 0.08);
-      color: var(--color-red);
-      border-color: var(--color-red);
+      color: #e53935;
+      border-color: #e53935;
     }
   }
 
@@ -268,13 +268,13 @@
     font-weight: 600;
     color: var(--color-text);
 
-    .required { color: var(--color-red); margin-left: 2px; }
+    .required { color: #e53935; margin-left: 2px; }
     .form-hint { font-weight: 400; color: var(--color-text-alpha60); }
   }
 
   .form-error {
     font-size: 12px;
-    color: var(--color-red);
+    color: #e53935;
   }
 
   .form-hint-text {
@@ -300,8 +300,8 @@
       transition: all 0.15s ease;
 
       &.is-active {
-        background: var(--color-main);
-        border-color: var(--color-main);
+        background: var(--color-wise-green);
+        border-color: var(--color-wise-dark-green);
         color: #fff;
       }
     }
@@ -340,7 +340,7 @@
 
     &:hover {
       background: var(--color-background-1);
-      color: var(--color-red);
+      color: #e53935;
     }
   }
 
@@ -400,9 +400,9 @@
       i { font-size: 18px; }
 
       &.is-active {
-        border-color: var(--color-main);
-        background: var(--color-main-alpha10);
-        color: var(--color-main);
+        border-color: var(--color-wise-dark-green);
+        background: var(--color-wise-mint);
+        color: var(--color-wise-dark-green);
       }
 
       &:hover:not(.is-active) {
@@ -415,5 +415,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+    width: 100%;
+    margin-top: 12px;
   }
 }

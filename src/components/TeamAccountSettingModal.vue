@@ -93,7 +93,7 @@
         </template>
         <!-- 新增模式 footer -->
         <template v-else>
-          <button class="custom-btn" @click="close">取消</button>
+          <button class="custom-btn" @click="() => close()">取消</button>
           <button class="custom-btn custom-main-btn"
             :disabled="!isInviteValid"
             @click="saveCreate">新增</button>

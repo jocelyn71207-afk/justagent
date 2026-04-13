@@ -2,295 +2,157 @@
   <div class="CompanyTeamSettings views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
-      <!-- 設計切換按鈕 -->
-      <button class="design-toggle-btn" @click="isNewDesign = !isNewDesign">
-        <i class="material-symbols-outlined">{{ isNewDesign ? 'undo' : 'auto_awesome' }}</i>
-        {{ isNewDesign ? '舊版設計' : '新版設計' }}
-      </button>
-
-      <!-- ========== 新版設計 ========== -->
-      <template v-if="isNewDesign">
-
-        <div class="views-page-header">
-          <div class="d-flex flex-align-center">
-            <div class="page-title-group">
-              <h3>企業/團隊設定</h3>
-              <span class="company-name-badge">公司名稱</span>
-            </div>
-            <compSwitch v-model="isCompanyTab" :options="switchOptions" />
+      <div class="views-page-header">
+        <div class="d-flex flex-align-center">
+          <div class="page-title-group">
+            <h3>企業/團隊設定</h3>
+            <span class="company-name-badge">公司名稱</span>
           </div>
-          <button class="custom-btn custom-main-btn" v-if="!isCompanyTab" @click="openTeamModal('create')">
-            <i class="material-symbols-outlined">add</i>
-            新增團隊
-          </button>
+          <compSwitch v-model="isCompanyTab" :options="switchOptions" />
         </div>
+        <button class="custom-btn custom-main-btn" v-if="!isCompanyTab" @click="openTeamModal('create')">
+          <i class="material-symbols-outlined">add</i>
+          新增團隊
+        </button>
+      </div>
 
-        <!-- 企業 tab -->
-        <div v-if="isCompanyTab" class="company-settings">
+      <!-- 企業 tab -->
+      <div v-if="isCompanyTab" class="company-settings">
 
-          <div class="info-card">
-            <div class="info-row">
-              <div class="info-row-left">
-                <span class="material-symbols-outlined info-row-icon">domain</span>
-                <span class="info-row-label">企業類型</span>
-              </div>
-              <div class="info-row-right">
-                <span class="info-row-value">零售</span>
-                <a href="#" class="setting-link">
-                  更改請聯絡客服
-                  <i class="material-symbols-outlined">chevron_right</i>
-                </a>
-              </div>
+        <div class="info-card">
+          <div class="info-row">
+            <div class="info-row-left">
+              <span class="material-symbols-outlined info-row-icon">domain</span>
+              <span class="info-row-label">企業類型</span>
             </div>
-            <div class="info-row">
-              <div class="info-row-left">
-                <span class="material-symbols-outlined info-row-icon">groups</span>
-                <span class="info-row-label">團隊類型</span>
-              </div>
-              <div class="info-row-right">
-                <span class="type-tag">實體門市</span>
-                <span class="type-tag">電子商務</span>
-              </div>
-            </div>
-            <div class="info-row no-border">
-              <div class="info-row-left">
-                <span class="material-symbols-outlined info-row-icon">workspace_premium</span>
-                <span class="info-row-label">使用方案</span>
-              </div>
-              <div class="info-row-right">
-                <span class="plan-badge">標準版</span>
-                <span class="plan-expire">到期日 2026.08.09</span>
-              </div>
+            <div class="info-row-right">
+              <span class="info-row-value">零售</span>
+              <a href="#" class="setting-link">
+                更改請聯絡客服
+                <i class="material-symbols-outlined">chevron_right</i>
+              </a>
             </div>
           </div>
-
-          <div class="settings-block">
-            <div class="settings-block-header">
-              <span class="material-symbols-outlined settings-block-icon">smart_toy</span>
-              <span class="settings-block-title">現有 Agent</span>
+          <div class="info-row">
+            <div class="info-row-left">
+              <span class="material-symbols-outlined info-row-icon">groups</span>
+              <span class="info-row-label">團隊類型</span>
             </div>
-            <div class="agent-list">
-              <div class="agent-card" v-for="agent in agentList" :key="agent.id">
-                <div class="agent-icon-bg">
-                  <i class="material-symbols-outlined">{{ agent.icon }}</i>
-                </div>
-                <span>{{ agent.name }}</span>
-              </div>
+            <div class="info-row-right">
+              <span class="type-tag">實體門市</span>
+              <span class="type-tag">電子商務</span>
             </div>
           </div>
-
-          <div class="settings-block">
-            <div class="settings-block-header">
-              <span class="material-symbols-outlined settings-block-icon">admin_panel_settings</span>
-              <span class="settings-block-title">平台管理者</span>
-              <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
-                <i class="material-symbols-outlined">add</i>
-                新增平台管理者
-              </button>
+          <div class="info-row no-border">
+            <div class="info-row-left">
+              <span class="material-symbols-outlined info-row-icon">workspace_premium</span>
+              <span class="info-row-label">使用方案</span>
             </div>
-            <div class="setting-description">
-              <i class="material-symbols-outlined">info</i>
-              企業擁有者擁有最高權限並綁定付費帳戶；管理員享有完全相同權限但無法轉移擁有權，可自由管理團隊成員。
-            </div>
-            <div class="admin-table-box">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>名稱</th>
-                    <th>郵件</th>
-                    <th>最後活動時間</th>
-                    <th class="col-action"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="admin in adminList" :key="admin.id">
-                    <td>
-                      <div class="admin-name-cell">
-                        <div class="admin-avatar" :class="{ 'is-owner': admin.isOwner }">
-                          {{ admin.name.charAt(0) }}
-                        </div>
-                        <span>{{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}</span>
-                        <i v-if="admin.isOwner" class="material-symbols-outlined owner-icon">diamond</i>
-                      </div>
-                    </td>
-                    <td>{{ admin.email }}</td>
-                    <td class="fc-grey-1">{{ formatTimeToDisplay(admin.lastActive) }}</td>
-                    <td>
-                      <i v-if="!admin.isOwner" class="material-symbols-outlined delete-btn"
-                        @click="deleteAdmin(admin)">delete</i>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 團隊 tab -->
-        <div v-if="!isCompanyTab" class="team-settings">
-          <div class="settings-block">
-            <div class="settings-block-header">
-              <span class="material-symbols-outlined settings-block-icon">store</span>
-              <span class="settings-block-title">實體門市</span>
-            </div>
-            <div class="team-list">
-              <div class="team-card" v-for="item in [1,2]" :key="'testA'+item">
-                <span class="material-symbols-outlined team-card-icon">meeting_room</span>
-                <span class="team-card-name">團隊名稱{{ item }}</span>
-                <div class="team-card-actions">
-                  <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
-                  <i class="material-symbols-outlined edit-btn">delete</i>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="settings-block">
-            <div class="settings-block-header">
-              <span class="material-symbols-outlined settings-block-icon">shopping_cart</span>
-              <span class="settings-block-title">電子商務</span>
-            </div>
-            <div class="team-list">
-              <div class="team-card" v-for="item in [1,2]" :key="'testB'+item">
-                <span class="material-symbols-outlined team-card-icon">storefront</span>
-                <span class="team-card-name">團隊名稱{{ item }}</span>
-                <div class="team-card-actions">
-                  <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
-                  <i class="material-symbols-outlined edit-btn">delete</i>
-                </div>
-              </div>
+            <div class="info-row-right">
+              <span class="plan-badge">標準版</span>
+              <span class="plan-expire">到期日 2026.08.09</span>
             </div>
           </div>
         </div>
 
-      </template>
-
-      <!-- ========== 舊版設計 ========== -->
-      <template v-else>
-
-        <div class="views-page-header">
-          <div class="d-flex flex-align-start">
-            <h3>
-              企業/團隊設定
-              <div class="secondary-box">公司名稱</div>
-            </h3>
-            <compSwitch v-model="isCompanyTab" :options="switchOptions" />
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">smart_toy</span>
+            <span class="settings-block-title">現有 Agent</span>
           </div>
-          <button class="custom-btn custom-main-btn" v-if="!isCompanyTab" @click="openTeamModal('create')">
-            <i class="material-symbols-outlined">add</i>
-            新增團隊
-          </button>
-        </div>
-
-        <!-- 企業 tab -->
-        <div v-if="isCompanyTab">
-
-          <section class="setting-section">
-            <div class="setting-label">企業類型</div>
-            <div class="setting-value">零售</div>
-            <a href="#" class="setting-link">
-              更改請聯絡客服
-              <i class="material-symbols-outlined">chevron_right</i>
-            </a>
-          </section>
-
-          <hr class="setting-divider" />
-
-          <section class="setting-section">
-            <div class="setting-label">團隊類型</div>
-            <div class="setting-value">實體門市</div>
-            <div class="setting-value">電子商務</div>
-          </section>
-
-          <hr class="setting-divider" />
-
-          <section class="setting-section">
-            <div class="setting-label">使用方案</div>
-            <div class="setting-value">標準版</div>
-            <div class="setting-value">2026.08.09 到期</div>
-          </section>
-
-          <hr class="setting-divider" />
-
-          <section class="setting-section">
-            <div class="setting-label">現有Agent</div>
-            <div class="agent-list">
-              <div class="agent-card" v-for="agent in agentList" :key="agent.id">
+          <div class="agent-list">
+            <div class="agent-card" v-for="agent in agentList" :key="agent.id">
+              <div class="agent-icon-bg">
                 <i class="material-symbols-outlined">{{ agent.icon }}</i>
-                <span>{{ agent.name }}</span>
               </div>
+              <span>{{ agent.name }}</span>
             </div>
-          </section>
+          </div>
+        </div>
 
-          <hr class="setting-divider" />
-
-          <section class="setting-section">
-            <div class="admin-header">
-              <div class="setting-label">平台管理者</div>
-              <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
-                <i class="material-symbols-outlined">add</i>
-                新增平台管理者
-              </button>
-            </div>
-            <div class="setting-description">
-              <i class="material-symbols-outlined fs-19">info</i>
-              企業擁有者擁有最高權限並綁定付費帳戶；管理員享有完全相同權限但無法轉移擁有權，可自由管理團隊成員。
-            </div>
-            <div class="admin-table-box">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>名稱</th>
-                    <th>郵件</th>
-                    <th>最後活動時間</th>
-                    <th class="col-action"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="admin in adminList" :key="admin.id">
-                    <td>
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">admin_panel_settings</span>
+            <span class="settings-block-title">平台管理者</span>
+            <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
+              <i class="material-symbols-outlined">add</i>
+              新增平台管理者
+            </button>
+          </div>
+          <div class="setting-description">
+            <i class="material-symbols-outlined">info</i>
+            企業擁有者擁有最高權限並綁定付費帳戶；管理員享有完全相同權限但無法轉移擁有權，可自由管理團隊成員。
+          </div>
+          <div class="admin-table-box">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>名稱</th>
+                  <th>郵件</th>
+                  <th>最後活動時間</th>
+                  <th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="admin in adminList" :key="admin.id">
+                  <td>
+                    <div class="admin-name-cell">
+                      <div class="admin-avatar" :class="{ 'is-owner': admin.isOwner }">
+                        {{ admin.name.charAt(0) }}
+                      </div>
+                      <span>{{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}</span>
                       <i v-if="admin.isOwner" class="material-symbols-outlined owner-icon">diamond</i>
-                      {{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}
-                    </td>
-                    <td>{{ admin.email }}</td>
-                    <td class="fc-grey-1">{{ formatTimeToDisplay(admin.lastActive) }}</td>
-                    <td>
-                      <i v-if="!admin.isOwner" class="material-symbols-outlined delete-btn"
-                        @click="deleteAdmin(admin)">delete</i>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
+                    </div>
+                  </td>
+                  <td>{{ admin.email }}</td>
+                  <td class="fc-grey-1">{{ formatTimeToDisplay(admin.lastActive) }}</td>
+                  <td>
+                    <i v-if="!admin.isOwner" class="material-symbols-outlined delete-btn"
+                      @click="deleteAdmin(admin)">delete</i>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- 團隊 tab -->
-        <div v-if="!isCompanyTab">
-          <section class="setting-section">
-            <div class="setting-label">實體門市</div>
-            <div class="team-list">
-              <div class="team-card" v-for="item in [1,2]" :key="'testA'+item">
-                <span>團隊名稱{{ item }}</span>
-                <i class="material-symbols-outlined edit-btn">delete</i>
-                <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
-              </div>
-            </div>
-          </section>
-          <section class="setting-section">
-            <div class="setting-label">電子商務</div>
-            <div class="team-list">
-              <div class="team-card" v-for="item in [1,2]" :key="'testB'+item">
-                <span>團隊名稱{{ item }}</span>
-                <i class="material-symbols-outlined edit-btn">delete</i>
-                <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
-              </div>
-            </div>
-          </section>
-        </div>
+      </div>
 
-      </template>
+      <!-- 團隊 tab -->
+      <div v-if="!isCompanyTab" class="team-settings">
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">store</span>
+            <span class="settings-block-title">實體門市</span>
+          </div>
+          <div class="team-list">
+            <div class="team-card" v-for="item in [1,2]" :key="'testA'+item">
+              <span class="material-symbols-outlined team-card-icon">meeting_room</span>
+              <span class="team-card-name">團隊名稱{{ item }}</span>
+              <div class="team-card-actions">
+                <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
+                <i class="material-symbols-outlined edit-btn">delete</i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">shopping_cart</span>
+            <span class="settings-block-title">電子商務</span>
+          </div>
+          <div class="team-list">
+            <div class="team-card" v-for="item in [1,2]" :key="'testB'+item">
+              <span class="material-symbols-outlined team-card-icon">storefront</span>
+              <span class="team-card-name">團隊名稱{{ item }}</span>
+              <div class="team-card-actions">
+                <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
+                <i class="material-symbols-outlined edit-btn">delete</i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -312,8 +174,6 @@ import AddPlatformAdminModal from '@/components/AddPlatformAdminModal.vue';
 
 const rootStore = useRootStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
-
-const isNewDesign = ref(false);
 
 const isTeamSettingModalOpen = ref(false);
 const isAddPlatformAdminModalOpen = ref(false);

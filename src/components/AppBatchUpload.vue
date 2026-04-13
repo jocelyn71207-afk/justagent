@@ -307,6 +307,14 @@ function handlePostUpload() {
 // 開始上傳檔案
 const totalSuccess = ref(0);
 
+function checkBatchCompletion() {
+  if (choicedFiles.value.every(f => f.uploadStatus === 'done' || f.uploadStatus === 'error')) {
+    isBatchUploading.value = false;
+    isBatchUploadSuccess.value = true;
+    handlePostUpload();
+  }
+}
+
 async function uploadOneFile(item: ChoicedFileItem) {
   // Step 1: 建立 attachment，取得上傳 URL
   let attachmentId: string;
@@ -321,6 +329,7 @@ async function uploadOneFile(item: ChoicedFileItem) {
     item.attachmentId = attachmentId;
   } catch {
     item.uploadStatus = 'error';
+    checkBatchCompletion();
     return;
   }
 
@@ -346,6 +355,7 @@ async function uploadOneFile(item: ChoicedFileItem) {
   } catch (err: any) {
     if (err?.code === 'ERR_CANCELED') {
       item.uploadStatus = 'error';
+      checkBatchCompletion();
       return;
     }
     // Step 3: 失敗時取得新的上傳 URL 重試一次
@@ -357,6 +367,7 @@ async function uploadOneFile(item: ChoicedFileItem) {
       await doUpload(retryRes.data.uploadUrl);
     } catch {
       item.uploadStatus = 'error';
+      checkBatchCompletion();
       return;
     }
   }
@@ -365,12 +376,7 @@ async function uploadOneFile(item: ChoicedFileItem) {
   item.uploadStatus = 'done';
   item.abortController = null;
   totalSuccess.value += 1;
-
-  if (choicedFiles.value.every(f => f.uploadStatus === 'done' || f.uploadStatus === 'error')) {
-    isBatchUploading.value = false;
-    isBatchUploadSuccess.value = true;
-    handlePostUpload();
-  }
+  checkBatchCompletion();
 }
 
 function onStartUpload() {

@@ -227,9 +227,9 @@ const sortValue = ref('desc') as Ref<string | number>;
 // 清單排序 (目前先只有時間排序, 之後如果有其他排序條件再加在裡面)
 function sortFn() {
   if (sortValue.value === '' || sortValue.value === 'desc') {
-    projectList.value.sort((a, b) => new Date(b.lastModify).getTime() - new Date(a.lastModify).getTime());
+    projectList.value.sort((a: any, b: any) => new Date(b.lastModify).getTime() - new Date(a.lastModify).getTime());
   } else if (sortValue.value === 'asc') {
-    projectList.value.sort((a, b) => new Date(a.lastModify).getTime() - new Date(b.lastModify).getTime());
+    projectList.value.sort((a: any, b: any) => new Date(a.lastModify).getTime() - new Date(b.lastModify).getTime());
   }
 }
 
@@ -297,7 +297,7 @@ function deleteProject(item: any) {
   `,
   () => {
     console.log('yes....');
-    projectList.value = projectList.value.filter(project => project.id !== item.id);
+    projectList.value = projectList.value.filter((project: any) => project.id !== item.id);
   });
 }
 

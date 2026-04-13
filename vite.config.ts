@@ -47,9 +47,7 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0', // 允許外部訪問
       port: 8087,
       strictPort: true, // 若端口被佔用則直接退出
-      allowedHosts: [
-        '2943-61-216-61-42.ngrok-free.app', // 允許 ngrok 訪問 (每次都需手動更換)
-      ]
+      allowedHosts: true, // 允許所有 ngrok / tunnel 訪問
     }
   }
 })

@@ -42,7 +42,7 @@
   .views-page {
     flex: 1;
     padding: 46px;
-    background-color: var(--color-background-1);
+    background-color: var(--color-wise-bg);
     // max-width: 100%;
     // min-width: 600px;
     width: calc(100vw - #{$menuWidth});
@@ -87,7 +87,7 @@
   .AppSearchPage {
     flex: 1;
     padding: 46px;
-    background-color: var(--color-background-1);
+    background-color: var(--color-wise-bg);
     width: calc(100vw - #{$menuWidth});
     overflow: auto;
     @include no-scroll-bar();

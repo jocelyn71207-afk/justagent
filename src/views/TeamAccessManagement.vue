@@ -2,157 +2,80 @@
   <div class="TeamAccessManagement views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
-      <!-- 設計切換按鈕 -->
-      <button class="design-toggle-btn" @click="isNewDesign = !isNewDesign">
-        <i class="material-symbols-outlined">{{ isNewDesign ? 'undo' : 'auto_awesome' }}</i>
-        {{ isNewDesign ? '舊版設計' : '新版設計' }}
-      </button>
-
-      <!-- ========== 新版設計 ========== -->
-      <template v-if="isNewDesign">
-
-        <div class="views-page-header">
-          <div class="page-title-group">
-            <h3>權限管理</h3>
-            <span class="team-name-badge">{{ teamName }}</span>
-          </div>
-          <div class="header-right-box">
-            <div class="search-box">
-              <i class="material-symbols-outlined">search</i>
-              <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋成員名稱、郵件、職位" />
-            </div>
-            <button class="custom-btn custom-main-btn" @click="addMember">
-              <i class="material-symbols-outlined">person_add</i>
-              新增協作帳號
-            </button>
-          </div>
+      <div class="views-page-header">
+        <div class="page-title-group">
+          <h3>權限管理</h3>
+          <span class="team-name-badge">{{ teamName }}</span>
         </div>
-
-        <!-- 角色統計概覽 -->
-        <div class="stats-bar">
-          <div class="stat-item" v-for="stat in roleStats" :key="stat.role">
-            <span class="stat-dot" :class="getRoleClass(stat.role)"></span>
-            <span class="stat-label">{{ stat.role }}</span>
-            <span class="stat-count">{{ stat.count }}</span>
+        <div class="header-right-box">
+          <div class="search-box">
+            <i class="material-symbols-outlined">search</i>
+            <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋成員名稱、郵件、職位" />
           </div>
+          <button class="custom-btn custom-main-btn" @click="addMember">
+            <i class="material-symbols-outlined">person_add</i>
+            新增協作帳號
+          </button>
         </div>
+      </div>
 
-        <!-- 新版表格 -->
-        <div class="table-box new-table-box">
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th width="200">名稱</th>
-                <th>郵件</th>
-                <th width="130">
-                  <span class="sort-btn" @click="toggleSort">
-                    職位
-                    <i class="material-symbols-outlined">arrow_downward</i>
-                  </span>
-                </th>
-                <th width="140">最後登入時間</th>
-                <th width="100" class="col-action"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="member in filteredList" :key="member.id">
-                <td>
-                  <div class="member-cell">
-                    <div class="member-avatar" :class="getRoleClass(member.role)">
-                      {{ member.name.charAt(0) }}
-                    </div>
-                    <span>{{ member.name }}</span>
+      <!-- 角色統計概覽 -->
+      <div class="stats-bar">
+        <div class="stat-item" v-for="stat in roleStats" :key="stat.role">
+          <span class="stat-dot" :class="getRoleClass(stat.role)"></span>
+          <span class="stat-label">{{ stat.role }}</span>
+          <span class="stat-count">{{ stat.count }}</span>
+        </div>
+      </div>
+
+      <div class="table-box new-table-box">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th width="200">名稱</th>
+              <th>郵件</th>
+              <th width="130">
+                <span class="sort-btn" @click="toggleSort">
+                  職位
+                  <i class="material-symbols-outlined">arrow_downward</i>
+                </span>
+              </th>
+              <th width="140">最後登入時間</th>
+              <th width="100" class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="member in filteredList" :key="member.id">
+              <td>
+                <div class="member-cell">
+                  <div class="member-avatar" :class="getRoleClass(member.role)">
+                    {{ member.name.charAt(0) }}
                   </div>
-                </td>
-                <td class="fc-grey-1">{{ member.email }}</td>
-                <td>
-                  <span class="role-badge" :class="getRoleClass(member.role)">{{ member.role }}</span>
-                </td>
-                <td class="fc-grey-1">{{ formatTimeToDisplay(member.lastLogin) }}</td>
-                <td class="col-action">
-                  <template v-if="member.role !== '企業擁有者' && member.role !== '平台管理者'">
-                    <i class="material-symbols-outlined action-btn" @click="deleteMember(member)">delete</i>
-                    <i class="material-symbols-outlined action-btn" @click="editMember(member)">edit</i>
-                  </template>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <span>{{ member.name }}</span>
+                </div>
+              </td>
+              <td class="fc-grey-1">{{ member.email }}</td>
+              <td>
+                <span class="role-badge" :class="getRoleClass(member.role)">{{ member.role }}</span>
+              </td>
+              <td class="fc-grey-1">{{ formatTimeToDisplay(member.lastLogin) }}</td>
+              <td class="col-action">
+                <template v-if="member.role !== '企業擁有者' && member.role !== '平台管理者'">
+                  <i class="material-symbols-outlined action-btn" @click="deleteMember(member)">delete</i>
+                  <i class="material-symbols-outlined action-btn" @click="editMember(member)">edit</i>
+                </template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <compPagination class="mt-5"
-          :pageNo="pagination.pageNo"
-          :numberOfRowsPerPage="pagination.numberOfRowsPerPage"
-          :totalRows="filteredList.length"
-          @change="(payload: PaginationChangePayload) => { pagination.pageNo = payload.pageNo; }"
-        />
-
-      </template>
-
-      <!-- ========== 舊版設計 ========== -->
-      <template v-else>
-
-        <div class="views-page-header">
-          <h3>
-            權限管理
-            <div class="secondary-box">{{ teamName }}</div>
-          </h3>
-          <div class="header-right-box">
-            <div class="search-box">
-              <i class="material-symbols-outlined">search</i>
-              <input class="custom-input" type="text" v-model="searchText" placeholder="提示文字" />
-            </div>
-            <button class="custom-btn custom-main-btn" @click="addMember">
-              <i class="material-symbols-outlined">add</i>
-              新增協作帳號
-            </button>
-          </div>
-        </div>
-
-        <div class="table-box">
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th width="180">名稱</th>
-                <th>郵件</th>
-                <th width="120">
-                  <span class="sort-btn" @click="toggleSort">
-                    職位
-                    <i class="material-symbols-outlined">arrow_downward</i>
-                  </span>
-                </th>
-                <th width="120">最後登入時間</th>
-                <th width="100" class="col-action"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="member in filteredList" :key="member.id">
-                <td>
-                  <i v-if="member.role === '企業擁有者'" class="material-symbols-outlined owner-icon">diamond</i>
-                  {{ member.name }}
-                </td>
-                <td>{{ member.email }}</td>
-                <td>{{ member.role }}</td>
-                <td>{{ formatTimeToDisplay(member.lastLogin) }}</td>
-                <td class="col-action">
-                  <template v-if="member.role !== '企業擁有者' && member.role !== '平台管理者'">
-                    <i class="material-symbols-outlined action-btn" @click="deleteMember(member)">delete</i>
-                    <i class="material-symbols-outlined action-btn ml-1" @click="editMember(member)">edit</i>
-                  </template>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <compPagination class="mt-5"
-          :pageNo="pagination.pageNo"
-          :numberOfRowsPerPage="pagination.numberOfRowsPerPage"
-          :totalRows="filteredList.length"
-          @change="(payload: PaginationChangePayload) => { pagination.pageNo = payload.pageNo; }"
-        />
-
-      </template>
+      <compPagination class="mt-5"
+        :pageNo="pagination.pageNo"
+        :numberOfRowsPerPage="pagination.numberOfRowsPerPage"
+        :totalRows="filteredList.length"
+        @change="(payload: PaginationChangePayload) => { pagination.pageNo = payload.pageNo; }"
+      />
 
       <!-- 新增/編輯 協作帳號 modal -->
       <TeamAccountSettingModal
@@ -183,8 +106,6 @@ import TeamAccountSettingModal from '@/components/TeamAccountSettingModal.vue';
 const route = useRoute();
 const rootStore = useRootStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
-
-const isNewDesign = ref(false);
 
 const teamId = ref(route.query.teamId);
 const teamName = ref(route.query.teamName);

@@ -53,16 +53,16 @@
         i { font-size: 16px; font-weight: 900; }
 
         &.is-active {
-          background: var(--color-main);
-          border-color: var(--color-main);
-          color: #fff;
-          box-shadow: 0 0 0 4px rgba($color-wise-green, 0.15);
+          background: var(--color-wise-green);
+          border-color: var(--color-wise-green);
+          color: var(--color-wise-dark-green);
+          box-shadow: 0 0 0 4px rgba($color-wise-green, 0.20);
         }
 
         &.is-done {
-          background: #E8F5E9;
-          border-color: #4CAF50;
-          color: #2E7D32;
+          background: var(--color-wise-mint);
+          border-color: var(--color-wise-green);
+          color: var(--color-wise-dark-green);
         }
       }
 
@@ -88,6 +88,11 @@
       background: var(--color-border-1-alpha30);
       margin: 0 12px;
       min-width: 20px;
+      transition: background 0.3s ease;
+
+      &.is-done {
+        background: var(--color-wise-green);
+      }
     }
   }
 

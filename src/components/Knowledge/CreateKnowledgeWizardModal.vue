@@ -17,7 +17,7 @@
               </div>
               <span class="wizard-step-label">{{ label }}</span>
             </div>
-            <div v-if="i < stepLabels.length - 1" class="wizard-step-connector"></div>
+            <div v-if="i < stepLabels.length - 1" :class="['wizard-step-connector', { 'is-done': currentStep > i + 1 }]"></div>
           </template>
         </div>
       </div>
@@ -170,7 +170,7 @@
               :disabled="!selectedTemplate"
               @click="goToStep3"
             >
-              開始 AI 生成 <i class="material-symbols-outlined fs-18 ml-1">bolt</i>
+              確定
             </button>
           </template>
 

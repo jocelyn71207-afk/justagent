@@ -130,8 +130,8 @@
       background-color: $color_main_2;
     }
     &:active {
-      border-right-color: $color_main_1;
-      background-color: $color_main_1;
+      border-right-color: var(--color-wise-dark-green);
+      background-color: var(--color-wise-dark-green);
     }
   }
   // 左右側邊欄
@@ -600,7 +600,7 @@
           background-color: var(--color-background-2-alpha20);
         }
         &.active {
-          background-color: $color_main_4;
+          background-color: var(--color-wise-mint);
           color: $black;
         }
         .item-header {
@@ -815,8 +815,8 @@
   &.AiViewer {
     // 中間主要區塊給予內陰影和邊框提示
     .center-box {
-      box-shadow: inset 0 0 8px rgba($color_main_1, 1);
-      border: 0px solid rgba($color_main_1, 0.8);
+      box-shadow: inset 0 0 8px rgba($color-wise-green, 1);
+      border: 0px solid rgba($color-wise-green, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -826,7 +826,7 @@
         text-align: center;
         font-size: 12px;
         color: #fff;
-        background-color: rgba($color_main_1, 0.7);
+        background-color: rgba($color-wise-green, 0.7);
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(2px);
         position: absolute;
@@ -984,7 +984,7 @@
       align-items: center;
       justify-content: center;
       > i.active {
-        color: $color_main_1;
+        color: var(--color-wise-dark-green);
       }
     }
     .multi-choice-btn-box {
@@ -1374,7 +1374,7 @@
         border-bottom-color: $color-main-1;
       }
       span {
-        color: $color_main_1;
+        color: var(--color-wise-dark-green);
       }
     }
 
@@ -2045,15 +2045,15 @@
     &:hover { opacity: 0.82; }
 
     &--primary {
-      background: linear-gradient(135deg, $color_main_1, $color_main_3);
+      background: var(--color-wise-green);
       color: #fff;
-      box-shadow: 0 3px 10px rgba($color_main_1, 0.2);
+      box-shadow: 0 3px 10px rgba($color-wise-green, 0.2);
       transition: all 0.2s ease;
 
       &:hover {
         opacity: 0.9;
         transform: translateY(-1px);
-        box-shadow: 0 5px 15px rgba($color_main_1, 0.3);
+        box-shadow: 0 5px 15px rgba($color-wise-green, 0.3);
       }
 
       &:active {
@@ -2973,7 +2973,7 @@
   20% {
     opacity: 1;
     transform: rotate(180deg) scale(1.2);
-    color: $color_main_1;
+    color: var(--color-wise-dark-green);
   }
   100% {
     opacity: 0.1;

@@ -44,7 +44,7 @@
       cursor: not-allowed;
     }
     &:focus-visible {
-      outline: 2px solid $color_main_1;
+      outline: 2px solid var(--color-wise-green);
       outline-offset: 2px;
     }
   }
