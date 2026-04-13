@@ -56,7 +56,7 @@
           background: var(--color-main);
           border-color: var(--color-main);
           color: #fff;
-          box-shadow: 0 0 0 4px rgba($color_main_1, 0.15);
+          box-shadow: 0 0 0 4px rgba($color-wise-green, 0.15);
         }
 
         &.is-done {
@@ -173,7 +173,7 @@
       height: 72px;
       margin-bottom: 20px;
       border-radius: 50%;
-      background: rgba($color_main_1, 0.08);
+      background: rgba($color-wise-green, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -304,8 +304,8 @@
 
     &.is-active {
       border-color: var(--color-main);
-      background: rgba($color_main_1, 0.04);
-      box-shadow: 0 8px 24px rgba($color_main_1, 0.08);
+      background: rgba($color-wise-green, 0.04);
+      box-shadow: 0 8px 24px rgba($color-wise-green, 0.08);
 
       .template-card-icon i { color: var(--color-main); transform: scale(1.1); }
       .template-card-title { color: var(--color-main); }
@@ -344,7 +344,7 @@
 
     .ai-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, $color_main_1, #7c3aed);
+      background: linear-gradient(90deg, var(--color-wise-green), #7c3aed);
       transition: width 0.3s ease;
       min-width: 0;
     }
@@ -431,9 +431,9 @@
 }
 
 @keyframes ai-pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba($color_main_1, 0.2); }
-  50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba($color_main_1, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba($color_main_1, 0); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba($color-wise-green, 0.2); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba($color-wise-green, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba($color-wise-green, 0); }
 }
 
 @keyframes ai-pulse-purple {
@@ -656,8 +656,8 @@
   .knowledge-icon {
     width: 36px;
     height: 36px;
-    background: rgba($color_main_1, 0.10);
-    color: $color_main_1;
+    background: rgba($color-wise-green, 0.10);
+    color: var(--color-wise-dark-green);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -714,8 +714,8 @@
       i { font-size: 24px; }
 
       &--main {
-        background: rgba($color_main_1, 0.12);
-        i { color: $color_main_1; }
+        background: rgba($color-wise-green, 0.12);
+        i { color: var(--color-wise-dark-green); }
       }
       &--green {
         background: rgba(2, 195, 0, 0.12);
@@ -859,9 +859,9 @@
       font-size: 11px;
       padding: 1px 7px;
       border-radius: 20px;
-      background: rgba($color_main_1, 0.08);
-      color: $color_main_1;
-      border: 1px solid rgba($color_main_1, 0.1);
+      background: rgba($color-wise-green, 0.08);
+      color: var(--color-wise-dark-green);
+      border: 1px solid rgba($color-wise-green, 0.1);
     }
 
     .more-btn {
@@ -1098,7 +1098,7 @@
     transition: all 0.2s ease;
     
     &:hover {
-      border-color: $color_main_1;
+      border-color: var(--color-wise-dark-green);
       transform: translateX(4px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     }
@@ -1199,8 +1199,8 @@
       font-weight: 700;
       padding: 2px 8px;
       border-radius: 4px;
-      background: rgba($color_main_1, 0.12);
-      color: $color_main_1;
+      background: rgba($color-wise-green, 0.12);
+      color: var(--color-wise-dark-green);
     }
   }
 
@@ -1308,16 +1308,16 @@
     background: var(--color-background-1);
 
     &:hover {
-      border-color: $color_main_1;
-      background: rgba($color_main_1, 0.03);
+      border-color: var(--color-wise-dark-green);
+      background: rgba($color-wise-green, 0.03);
     }
 
     &.active {
-      border-color: $color_main_1;
-      background: rgba($color_main_1, 0.06);
-      color: darken($color_main_1, 10%);
+      border-color: var(--color-wise-dark-green);
+      background: rgba($color-wise-green, 0.06);
+      color: var(--color-wise-dark-green);
 
-      .version-type-title { color: $color_main_1; }
+      .version-type-title { color: var(--color-wise-dark-green); }
     }
 
     .version-type-title {
@@ -1346,7 +1346,7 @@
     transition: border-color 0.2s;
 
     &:focus-within {
-      border-color: $color_main_1;
+      border-color: var(--color-wise-dark-green);
       background: var(--color-background);
     }
 
@@ -1356,11 +1356,11 @@
       gap: 4px;
       padding: 2px 8px 2px 10px;
       border-radius: 20px;
-      background: rgba($color_main_1, 0.10);
-      color: $color_main_1;
+      background: rgba($color-wise-green, 0.10);
+      color: var(--color-wise-dark-green);
       font-size: 12px;
       font-weight: 600;
-      border: 1px solid rgba($color_main_1, 0.15);
+      border: 1px solid rgba($color-wise-green, 0.15);
 
       i {
         font-size: 14px;
@@ -1588,5 +1588,23 @@
     background: var(--color-background);
     border-radius: 4px;
     border-left: 2px solid var(--color-border-1-alpha50);
+  }
+}
+
+// ── 新增知識條目下拉選單 ──
+.add-knowledge-dropdown {
+  position: relative;
+
+  .add-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 160px;
+    z-index: 20;
+  }
+
+  .rotate-180 {
+    transform: rotate(180deg);
+    transition: transform 0.2s ease;
   }
 }

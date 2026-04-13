@@ -16,10 +16,23 @@
             <i class="material-symbols-outlined">search</i>
             <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋條目標題、內容或標籤" />
           </div>
-          <button class="custom-btn custom-main-btn" @click="createNewKnowledge">
-            <i class="material-symbols-outlined">add_circle</i>
-            新增知識條目
-          </button>
+          <div class="add-knowledge-dropdown" ref="addDropdownRef">
+            <button class="custom-btn custom-main-btn" @click="showAddDropdown = !showAddDropdown">
+              <i class="material-symbols-outlined">add_circle</i>
+              新增知識條目
+              <i class="material-symbols-outlined fs-18 ml-1" :class="{ 'rotate-180': showAddDropdown }">expand_more</i>
+            </button>
+            <div v-show="showAddDropdown" class="next-option-box add-dropdown-menu">
+              <div class="option-item" @click="createNewKnowledge">
+                <i class="material-symbols-outlined">upload_file</i>
+                上傳文件
+              </div>
+              <div class="option-item" @click="goToApiSources">
+                <i class="material-symbols-outlined">api</i>
+                API 來源管理
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -250,7 +263,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive } from 'vue';
+import { ref, computed, watch, reactive, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
@@ -272,6 +285,26 @@ import { useApiCall } from '@/composables/useApiCall';
 
 const route = useRoute();
 const router = useRouter();
+
+// 新增知識條目下拉
+const showAddDropdown = ref(false);
+const addDropdownRef = ref<HTMLElement | null>(null);
+
+function goToApiSources() {
+  showAddDropdown.value = false;
+  router.push({ name: 'KnowledgeApiSources' });
+}
+
+// 點外部關閉下拉
+function handleOutsideClick(e: MouseEvent) {
+  if (addDropdownRef.value && !addDropdownRef.value.contains(e.target as Node)) {
+    showAddDropdown.value = false;
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleOutsideClick));
+onUnmounted(() => document.removeEventListener('click', handleOutsideClick));
+
 const rootStore = useRootStore();
 const knowledgeStore = useKnowledgeStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
