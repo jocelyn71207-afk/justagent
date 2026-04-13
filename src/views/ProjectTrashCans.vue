@@ -32,6 +32,7 @@
           @mouseleave="item.showMoreOption = false;">
           <div class="img-box">
             <img :src="item.imgSrc" alt="">
+            <i class="material-symbols-outlined trash-icon-overlay">delete</i>
             <div :class="['expiry-badge', `expiry-badge--${expiryUrgency(item.remainingDays)}`]">
               {{ calcRemainingDays(item.remainingDays) === 0 ? '已過期' : `剩 ${calcRemainingDays(item.remainingDays)} 天` }}
             </div>

@@ -14,6 +14,24 @@
         opacity: 0.55;
       }
 
+      // ── 左上垃圾桶角標 ─────────────────────────
+      .trash-icon-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.30);
+        border-radius: 8px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #fff;
+        z-index: 2;
+        pointer-events: none;
+      }
+
       // ── 右上到期標籤 ───────────────────────────
       .expiry-badge {
         position: absolute;
