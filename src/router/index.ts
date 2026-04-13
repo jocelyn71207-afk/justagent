@@ -80,6 +80,11 @@ export const routes: RouteRecordRaw[] = [
         props: true,
       },
       {
+        path: '/view/KnowledgeApiSources',
+        name: 'KnowledgeApiSources',
+        component: () => import('@/views/KnowledgeApiSources.vue'),
+      },
+      {
         path: '/view/Explore',
         name: 'Explore',
         component: () => import('@/views/Explore.vue'),
