@@ -1,6 +1,28 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
+export interface ApiSourceHeader {
+  key: string;
+  value: string;
+}
+
+export interface ApiSource {
+  id: string;
+  name: string;
+  url: string;
+  method: 'GET' | 'POST';
+  headers: ApiSourceHeader[];
+  body: string;
+  titleField: string;
+  contentField: string;
+  schedule: 'MANUAL' | 'DAILY' | 'WEEKLY';
+  enabled: boolean;
+  lastSyncAt: string | null;
+  lastSyncStatus: 'SUCCESS' | 'FAILED' | null;
+  lastSyncCount: number;
+  lastSyncError: string | null;
+}
+
 // 來源檔案參照：記錄關聯時的版本號，以便偵測更新
 export interface SourceFileRef {
   fileId: string;
@@ -157,6 +179,41 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         }
       ]
     }
+  ]);
+
+  const apiSources = ref<ApiSource[]>([
+    {
+      id: 'api-1',
+      name: '商品目錄 API',
+      url: 'https://api.example.com/products',
+      method: 'GET',
+      headers: [{ key: 'Authorization', value: 'Bearer demo-token' }],
+      body: '',
+      titleField: 'productName',
+      contentField: 'description',
+      schedule: 'DAILY',
+      enabled: true,
+      lastSyncAt: '2026-04-12 09:00',
+      lastSyncStatus: 'SUCCESS',
+      lastSyncCount: 5,
+      lastSyncError: null,
+    },
+    {
+      id: 'api-2',
+      name: '庫存狀態 API',
+      url: 'https://erp.internal/inventory',
+      method: 'POST',
+      headers: [{ key: 'X-API-Key', value: 'erp-key-456' }],
+      body: '{"storeId": "TW001"}',
+      titleField: 'itemName',
+      contentField: 'stockInfo',
+      schedule: 'MANUAL',
+      enabled: false,
+      lastSyncAt: '2026-04-10 14:30',
+      lastSyncStatus: 'FAILED',
+      lastSyncCount: 0,
+      lastSyncError: '連線逾時：無法連接至 erp.internal',
+    },
   ]);
 
   // --- Actions ---
@@ -424,6 +481,91 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.staleSourceFileIds = [];
   }
 
+  // ── API 來源 CRUD ──
+  function createApiSource(payload: Omit<ApiSource, 'id' | 'lastSyncAt' | 'lastSyncStatus' | 'lastSyncCount' | 'lastSyncError'>) {
+    const newSource: ApiSource = {
+      ...payload,
+      id: `api-${Date.now()}`,
+      lastSyncAt: null,
+      lastSyncStatus: null,
+      lastSyncCount: 0,
+      lastSyncError: null,
+    };
+    apiSources.value.unshift(newSource);
+    return newSource.id;
+  }
+
+  function updateApiSource(id: string, payload: Partial<Omit<ApiSource, 'id' | 'lastSyncAt' | 'lastSyncStatus' | 'lastSyncCount' | 'lastSyncError'>>) {
+    const source = apiSources.value.find(s => s.id === id);
+    if (source) Object.assign(source, payload);
+  }
+
+  function deleteApiSource(id: string) {
+    apiSources.value = apiSources.value.filter(s => s.id !== id);
+  }
+
+  function toggleApiSourceEnabled(id: string) {
+    const source = apiSources.value.find(s => s.id === id);
+    if (source) source.enabled = !source.enabled;
+  }
+
+  // 模擬同步
+  function triggerSync(id: string): Promise<void> {
+    const source = apiSources.value.find(s => s.id === id);
+    if (!source) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const success = Math.random() > 0.2;
+        const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+        if (success) {
+          const count = Math.floor(Math.random() * 8) + 1;
+          source.lastSyncStatus = 'SUCCESS';
+          source.lastSyncAt = now;
+          source.lastSyncCount = count;
+          source.lastSyncError = null;
+
+          // 建立草稿知識條目
+          for (let i = 0; i < count; i++) {
+            const newId = `k-api-${Date.now()}-${i}`;
+            const draftId = `v1.0-draft-${Date.now()}-${i}`;
+            knowledgeList.value.unshift({
+              id: newId,
+              title: `[API] ${source.name} — 條目 ${i + 1}`,
+              category: '',
+              currentVersion: 'v1.0',
+              status: 'DRAFT',
+              lastUpdateTime: now,
+              lastUpdateBy: `API 同步（${source.name}）`,
+              versions: [{
+                id: draftId,
+                knowledgeId: newId,
+                versionNumber: 'v1.0',
+                status: 'DRAFT',
+                title: `[API] ${source.name} — 條目 ${i + 1}`,
+                summary: `由 API 來源「${source.name}」同步建立`,
+                content: `來源 API：${source.url}\n欄位對應：標題=${source.titleField}，內容=${source.contentField}\n\n（此為示範草稿，實際內容由 API 回傳資料填入）`,
+                category: '',
+                tags: [],
+                lastUpdateBy: `API 同步`,
+                lastUpdateTime: now,
+                updateNote: `由 API 來源「${source.name}」自動同步建立`,
+              }],
+            });
+          }
+        } else {
+          source.lastSyncStatus = 'FAILED';
+          source.lastSyncAt = now;
+          source.lastSyncCount = 0;
+          source.lastSyncError = '連線失敗：API 回應狀態 503';
+        }
+
+        resolve();
+      }, 2000);
+    });
+  }
+
   return {
     knowledgeList,
     getKnowledgeById,
@@ -439,5 +581,11 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     markFileStale,
     createDraftFromSourceUpdate,
     dismissSourceStale,
+    apiSources,
+    createApiSource,
+    updateApiSource,
+    deleteApiSource,
+    toggleApiSourceEnabled,
+    triggerSync,
   };
 });
