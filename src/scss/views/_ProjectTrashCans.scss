@@ -9,9 +9,12 @@
 
     // ── 圖片灰階 ─────────────────────────────────
     .img-box {
+      position: relative;
+
       img {
         filter: grayscale(1);
         opacity: 0.55;
+        cursor: default;
       }
 
       // ── 左上垃圾桶角標 ─────────────────────────
@@ -48,7 +51,7 @@
         pointer-events: none;
 
         &--urgent  { background: $color-danger; }
-        &--warning { background: $color-warning-amber; color: #7a4400; }
+        &--warning { background: $color-warning-amber; color: $color-warning-text-dark; }
         &--normal  { background: rgba($black, 0.38); }
       }
     }
@@ -68,12 +71,12 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: #fffbeb;
-    border: 1px solid #fcd34d;
+    background: $color-warning-bg;
+    border: 1px solid $color-warning-border;
     border-radius: 10px;
     padding: 11px 14px;
     font-size: 14px;
-    color: #78350f;
+    color: $color-warning-text;
     margin-bottom: 20px;
     line-height: 1.5;
 

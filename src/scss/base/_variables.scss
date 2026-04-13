@@ -54,6 +54,10 @@ $color_red_2: #dd4839;
 $color_yellow_1: #fcfdcf;
 $color_yellow_2: #fbc000;
 $color-warning-amber: #f59e0b;  // 警示琥珀色（到期標籤 warning 狀態）
+$color-warning-bg: #fffbeb;        // 警示背景（Info 橫幅）
+$color-warning-border: #fcd34d;    // 警示邊框（Info 橫幅）
+$color-warning-text: #78350f;      // 警示文字（Info 橫幅）
+$color-warning-text-dark: #7a4400; // 警示文字深色（到期標籤 warning 文字）
 
 // 瀏覽器 淺色主題語意色彩  (注意: 這幾個變數不應該在其他地方直接使用，其他地方請使用 _html.scss 內的CSS 變數)
 $color-background-light: $white; // 主背景顏色
