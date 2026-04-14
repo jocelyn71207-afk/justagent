@@ -117,12 +117,13 @@
       </div>
 
       <!-- 表格樣式列表 -->
-      <div class="table-list-box project-list mt-2" v-if="projectListMode === 'list' && projectList.length">
+      <div class="table-list-box mt-2" v-if="projectListMode === 'list' && projectList.length">
         <table class="custom-table">
           <thead>
             <tr>
               <th>專案名稱</th>
               <th v-if="mode === 'recent'">所屬團隊</th>
+              <th>狀態</th>
               <th width="130">最後編輯時間</th>
               <th width="100"></th>
             </tr>
@@ -132,27 +133,32 @@
               @mouseleave="item.showMoreOption = false;"
               @click="gotoAiViewer(item)">
               <td>
-                <i :class="['material-symbols-outlined favorite-btn', {
-                  'material-fill': i === 0,
-                  'active': i === 0
-                }]">star</i>
-
-                <div class="img-box">
-                  <img :src="item.imgSrc" alt="">
+                <div class="d-flex flex-align-center" style="gap: 10px">
+                  <i :class="['material-symbols-outlined favorite-btn', {
+                    'material-fill': i === 0,
+                    'active': i === 0
+                  }]">star</i>
+                  <img :src="item.imgSrc" alt="" class="td-thumb">
+                  <span style="font-weight: 600">{{ item.name }}</span>
                 </div>
-
-                {{ item.name }}
               </td>
               <td v-if="mode === 'recent'">{{ item.team.name }}</td>
-              <td class="fc-grey-1">{{ formatTimeToDisplay(item.lastModify) }}</td>
               <td>
-                <div class="d-flex">
-                  <div class="owner-box" v-tooltip="item.owner.uaerName">
+                <span :class="['status-badge', `status-${item.status}`]">
+                  {{ statusLabel(item.status) }}
+                </span>
+              </td>
+              <td style="color: var(--color-wise-gray); font-size: 12px">
+                {{ formatTimeToDisplay(item.lastModify) }}
+              </td>
+              <td>
+                <div class="d-flex flex-align-center" style="gap: 8px">
+                  <div class="owner-box" v-tooltip="item.owner.uaerName"
+                    :style="{ backgroundColor: avatarColor(0) }">
                     {{ item.owner.uaerName.slice(0,1) }}
                   </div>
-                  <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
+                  <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
                 </div>
-                <!-- 更多選項小介面 -->
                 <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
                   <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
                   <div class="option-item" @click.stop="openProjectSettingModal(item)">專案設定</div>
