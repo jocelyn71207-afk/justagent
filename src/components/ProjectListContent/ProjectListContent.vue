@@ -51,40 +51,37 @@
     <template v-else>
 
       <!-- 卡片樣式列表 -->
-      <div class="card-list-box mt-2" v-if="projectListMode === 'card' && projectList.length">
-        <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
+      <div class="card-list-box" v-if="projectListMode === 'card' && projectList.length">
+        <div class="project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
           @click="gotoAiViewer(item)"
           @mouseenter="item.isHovered = true"
           @mouseleave="item.isHovered = false; item.showMoreOption = false">
 
-          <!-- 只有 recent 才要出現 -->
-          <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
-          <i :class="['material-symbols-outlined favorite-btn', {
-            'material-fill': i === 0,
-            'active': i === 0
-          }]" @click.stop>star</i>
-
-          <!-- 圖片（預設顯示） -->
-          <div class="img-box" v-show="!item.isHovered">
+          <!-- 圖片區（預設顯示） -->
+          <div class="card-img" v-show="!item.isHovered">
+            <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
             <img :src="item.imgSrc" alt="">
-            <div class="img-collab">
-              <div class="avatar-group">
-                <div
-                  :class="['avatar-sm', { 'avatar-owner': ci === 0 }]"
-                  v-for="(c, ci) in item.collaborators.slice(0, 3)"
-                  :key="ci"
-                  :style="{ backgroundColor: avatarColor(ci) }"
-                >
-                  {{ c.name.slice(0, 1) }}
-                  <span v-if="ci === 0" class="owner-crown">👑</span>
-                </div>
+            <div class="card-img-overlay"></div>
+            <i :class="['material-symbols-outlined card-star', {
+              'material-fill': i === 0,
+              'active': i === 0
+            }]" @click.stop>star</i>
+            <div class="card-avatars">
+              <div
+                :class="['avatar-chip', { 'avatar-owner': ci === 0 }]"
+                v-for="(c, ci) in item.collaborators.slice(0, 3)"
+                :key="ci"
+                :style="{ backgroundColor: avatarColor(ci) }"
+              >
+                {{ c.name.slice(0, 1) }}
+                <span v-if="ci === 0" class="owner-crown">👑</span>
               </div>
               <span class="collab-count">{{ item.collaborators.length }} 人</span>
             </div>
           </div>
 
-          <!-- 長條圖（hover 時顯示） -->
-          <div class="chart-box" v-show="item.isHovered">
+          <!-- 長條圖區（hover 時顯示） -->
+          <div class="card-chart" v-show="item.isHovered">
             <span class="chart-title">近一週使用次數</span>
             <div class="chart-bars">
               <div class="bar-wrap" v-for="(count, di) in item.weeklyUsage" :key="di">
@@ -93,26 +90,23 @@
                 <span class="bar-label">{{ weekLabel(di) }}</span>
               </div>
             </div>
+            <div class="chart-total">
+              近一週共 {{ item.weeklyUsage.reduce((a: number, b: number) => a + b, 0) }} 次
+            </div>
           </div>
 
-          <div class="footer-box">
-            <div class="info-box">
-              <div class="project-name">{{ item.name }}</div>
-              <div class="status-row">
+          <!-- 卡片 footer -->
+          <div class="card-footer">
+            <div class="card-name">{{ item.name }}</div>
+            <div class="card-meta">
+              <div class="card-meta-left">
                 <span :class="['status-badge', `status-${item.status}`]">
                   {{ statusLabel(item.status) }}
                 </span>
+                <span class="card-time">{{ formatTimeToDisplay(item.lastModify) }}</span>
               </div>
-              <div class="lastModify">
-                <template v-if="!item.isHovered">
-                  編輯於 {{ formatTimeToDisplay(item.lastModify) }}
-                </template>
-                <template v-else>
-                  近一週共 {{ item.weeklyUsage.reduce((a: number, b: number) => a + b, 0) }} 次
-                </template>
-              </div>
+              <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
             </div>
-            <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
             <!-- 更多選項小介面 -->
             <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
               <div class="option-item" @click.stop="deleteProject(item)">刪除</div>
