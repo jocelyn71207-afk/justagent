@@ -82,4 +82,255 @@
     padding: 24px 46px 46px;
     flex: 1;
   }
+
+  // ── 覆寫全域 card-list-box：固定 4 欄 ───────────
+  .card-list-box {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    place-items: unset;
+    justify-content: unset;
+    width: 100%;
+  }
+
+  // ── 專案卡片 ────────────────────────────────────
+  .project-card {
+    border-radius: 14px;
+    background: var(--color-wise-card);
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    cursor: pointer;
+    max-width: unset;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+
+    &:hover {
+      transform: translateY(-4px) scale(1);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.11), 0 2px 8px rgba(0, 0, 0, 0.06);
+      border-color: transparent;
+    }
+
+    // ── 圖片區 ───────────────────────────────────
+    .card-img {
+      position: relative;
+      height: 148px;
+      overflow: hidden;
+      background: var(--color-wise-surface);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .card-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.38) 0%, transparent 55%);
+      }
+
+      .card-star {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.65);
+        cursor: pointer;
+        background: none;
+        padding: 0;
+        border-radius: 0;
+        z-index: 3;
+
+        &.material-fill,
+        &.active {
+          color: var(--color-wise-green);
+          background: none;
+        }
+      }
+
+      .card-avatars {
+        position: absolute;
+        bottom: 10px;
+        left: 12px;
+        display: flex;
+        align-items: center;
+        z-index: 3;
+
+        .avatar-chip {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: 2px solid $white;
+          font-size: 10px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $white;
+          margin-left: -6px;
+          position: relative;
+
+          &:first-child { margin-left: 0; }
+
+          .owner-crown {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            line-height: 1;
+          }
+        }
+
+        .collab-count {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.9);
+          margin-left: 7px;
+        }
+      }
+
+      .team-name-box {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        background: rgba(0, 0, 0, 0.45);
+        color: $white;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        z-index: 3;
+      }
+    }
+
+    // ── 長條圖區（hover） ─────────────────────────
+    .card-chart {
+      height: 148px;
+      padding: 12px 14px 10px;
+      background: #f8faf6;
+      display: flex;
+      flex-direction: column;
+
+      .chart-title {
+        font-size: 11px;
+        color: var(--color-wise-gray);
+        margin-bottom: 8px;
+      }
+
+      .chart-bars {
+        display: flex;
+        align-items: flex-end;
+        flex: 1;
+        gap: 6px;
+      }
+
+      .bar-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        flex: 1;
+      }
+
+      .bar {
+        width: 100%;
+        border-radius: 4px 4px 0 0;
+        background: var(--color-wise-green);
+        min-height: 4px;
+      }
+
+      .bar-label { font-size: 9px; color: var(--color-wise-gray); }
+      .bar-count  { font-size: 9px; color: var(--color-wise-warm-dark); font-weight: 600; }
+
+      .chart-total {
+        font-size: 11px;
+        color: var(--color-wise-dark-green);
+        font-weight: 600;
+        margin-top: 8px;
+        flex-shrink: 0;
+      }
+    }
+
+    // ── 卡片 footer ───────────────────────────────
+    .card-footer {
+      padding: 12px 14px 14px;
+      position: relative;
+
+      .card-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-wise-black);
+        line-height: 1.35;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .card-meta-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+          min-width: 0;
+        }
+
+        .card-time {
+          font-size: 11px;
+          color: var(--color-wise-gray);
+        }
+      }
+
+      .more-btn {
+        font-size: 20px;
+        color: var(--color-wise-gray);
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0;
+        padding: 0;
+        flex-shrink: 0;
+        transition: background 0.15s, color 0.15s;
+
+        &:hover {
+          background: var(--color-wise-bg);
+          color: var(--color-wise-black);
+        }
+      }
+
+      .next-option-box {
+        position: absolute;
+        right: 14px;
+        top: calc(100% - 4px);
+        visibility: hidden;
+        z-index: 10;
+
+        &.show { visibility: visible; }
+      }
+    }
+
+    // ── 狀態 badge ────────────────────────────────
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 20px;
+      padding: 3px 10px;
+
+      &.status-active  { background: var(--color-wise-mint);          color: var(--color-wise-dark-green); }
+      &.status-review  { background: var(--color-wise-badge-hot-bg);  color: var(--color-wise-badge-hot-text); }
+      &.status-done    { background: var(--color-wise-surface);       color: var(--color-wise-warm-dark); }
+      &.status-pending { background: #f0f0ef;                         color: var(--color-wise-gray); }
+    }
+  }
 }
