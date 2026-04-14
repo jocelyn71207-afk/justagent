@@ -2,8 +2,8 @@
   <!-- 產品列表組件, "最近使用/團隊專案" 兩個大單元共用此組件 -->
   <div class="ProjectListContent">
 
-    <!-- Wise Banner Header (僅 team 模式顯示) -->
-    <div class="plc-banner" v-if="mode === 'team'">
+    <!-- Banner Header -->
+    <div :class="['plc-banner', { 'plc-banner--green': mode === 'team' }]">
       <div v-if="mode === 'team'" class="plc-banner-breadcrumb">團隊</div>
       <div class="plc-banner-title">{{ mode === 'team' ? subtitle : title }}</div>
       <div v-if="!isLoading && !hasError" class="plc-banner-subtitle">

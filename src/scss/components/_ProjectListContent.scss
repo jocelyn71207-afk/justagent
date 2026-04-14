@@ -5,13 +5,20 @@
 
   // ── Banner ──────────────────────────────────────
   .plc-banner {
-    background: var(--color-wise-green);
     padding: 28px 46px 22px;
     flex-shrink: 0;
 
+    // team 模式：萊姆綠底
+    &.plc-banner--green {
+      background: var(--color-wise-green);
+
+      .plc-banner-breadcrumb { color: var(--color-wise-dark-green); }
+      .plc-banner-title      { color: var(--color-wise-dark-green); }
+      .plc-banner-subtitle   { color: var(--color-wise-dark-green); }
+    }
+
     .plc-banner-breadcrumb {
       font-size: 11px;
-      color: var(--color-wise-dark-green);
       opacity: 0.6;
       letter-spacing: 0.8px;
       text-transform: uppercase;
@@ -21,14 +28,13 @@
     .plc-banner-title {
       font-size: 26px;
       font-weight: 700;
-      color: var(--color-wise-dark-green);
+      color: var(--color-wise-black);
       letter-spacing: -0.3px;
     }
 
     .plc-banner-subtitle {
       font-size: 13px;
-      color: var(--color-wise-dark-green);
-      opacity: 0.6;
+      color: var(--color-wise-gray);
       margin-top: 3px;
     }
   }
