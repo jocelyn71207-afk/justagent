@@ -441,4 +441,54 @@
       &.show { visibility: visible; }
     }
   }
+
+  // ── Empty state ──────────────────────────────────
+  .empty-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 40px;
+    text-align: center;
+    border: 2px dashed var(--color-wise-empty-border);
+    border-radius: 16px;
+    cursor: pointer;
+    max-width: 360px;
+    margin: 40px auto;
+    transition: border-color 0.15s, background 0.15s;
+    width: auto;
+
+    &:hover {
+      border-color: var(--color-wise-green);
+      background: rgba($color-wise-green, 0.05);
+    }
+
+    .empty-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--color-wise-mint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+
+      i {
+        font-size: 24px;
+        color: var(--color-wise-dark-green);
+      }
+    }
+
+    .empty-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-wise-black);
+      margin-bottom: 6px;
+    }
+
+    .empty-sub {
+      font-size: 13px;
+      color: var(--color-wise-gray);
+    }
+  }
 }

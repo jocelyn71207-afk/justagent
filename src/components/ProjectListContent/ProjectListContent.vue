@@ -175,10 +175,14 @@
       </div>
 
       <!-- mode 為 team 沒有任何專案時 -->
-      <div class="empty-box" v-if="mode === 'team' && !projectList.length" @click="openProjectSettingModal(null, true, teamId as string)">
-        <i class="material-symbols-outlined">add</i>
+      <div class="empty-box" v-if="mode === 'team' && !projectList.length"
+        @click="openProjectSettingModal(null, true, teamId as string)">
+        <div class="empty-icon">
+          <i class="material-symbols-outlined">add</i>
+        </div>
+        <div class="empty-title">建立第一個專案</div>
+        <div class="empty-sub">點擊此處為這個團隊建立新專案</div>
       </div>
-      <div class="fs-14 fc-grey-1 mt-1" v-if="mode === 'team' && !projectList.length">建立新專案</div>
 
     </template>
     </div><!-- /plc-content -->
