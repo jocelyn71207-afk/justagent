@@ -208,7 +208,7 @@
     .card-chart {
       height: 148px;
       padding: 12px 14px 10px;
-      background: #f8faf6;
+      background: var(--color-wise-chart-bg);
       display: flex;
       flex-direction: column;
 
@@ -330,7 +330,7 @@
       &.status-active  { background: var(--color-wise-mint);          color: var(--color-wise-dark-green); }
       &.status-review  { background: var(--color-wise-badge-hot-bg);  color: var(--color-wise-badge-hot-text); }
       &.status-done    { background: var(--color-wise-surface);       color: var(--color-wise-warm-dark); }
-      &.status-pending { background: #f0f0ef;                         color: var(--color-wise-gray); }
+      &.status-pending { background: var(--color-wise-badge-pending-bg); color: var(--color-wise-gray); }
     }
   }
 }
