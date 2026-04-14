@@ -1,33 +1,22 @@
 <template>
   <!-- 產品列表組件, "最近使用/團隊專案" 兩個大單元共用此組件 -->
-  <div class="ProjectListContent views-page-content-box">
+  <div class="ProjectListContent">
 
-    <div class="views-page-header">
-      <h3>
-        {{ title }}
-        <div v-if="subtitle" class="secondary-box">{{ subtitle }}</div>
-      </h3>
-      <div class="header-right-box">
-        <!-- 建立新專案按鈕區 (由父層透過 scoped slot 自訂) -->
-        <slot name="createBtnSlot" :openProjectSettingModal="openProjectSettingModal" />
-        <compListCardSwitch v-model="projectListMode"/>
+    <!-- Wise Banner Header -->
+    <div class="plc-banner">
+      <div v-if="mode === 'team'" class="plc-banner-breadcrumb">團隊</div>
+      <div class="plc-banner-title">{{ mode === 'team' ? subtitle : title }}</div>
+      <div v-if="!isLoading && !hasError" class="plc-banner-subtitle">
+        {{ displayProjectList.length }} 個專案
       </div>
     </div>
 
-    <!-- Agent 過濾 Tabs (只有 recent 模式才有) -->
-    <compTabs class="mb-2"
-      v-if="mode === 'recent'"
-      v-model="filterAgent"
-      :tabs="agentTabs"
-    />
-
-    <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
-    <AppErrorState v-else-if="hasError" :message="apiErrorMessage" @retry="retry" />
-    <template v-else>
-
-      <!-- 排序條件 -->
-      <div class="d-flex flex-justify-end" v-if="projectList.length">
+    <!-- Toolbar -->
+    <div class="plc-toolbar">
+      <div class="plc-toolbar-left">
+        <slot name="createBtnSlot" :openProjectSettingModal="openProjectSettingModal" />
         <compDropDown
+          v-if="!isLoading && !hasError && projectList.length"
           :options="[
             { name: '時間排序 新 → 舊', value: 'desc' },
             { name: '時間排序 舊 → 新', value: 'asc' },
@@ -44,6 +33,22 @@
           }"
         />
       </div>
+      <div class="plc-toolbar-right">
+        <compListCardSwitch v-model="projectListMode"/>
+      </div>
+    </div>
+
+    <!-- Agent 過濾 Tabs (只有 recent 模式才有) -->
+    <compTabs class="mb-2"
+      v-if="mode === 'recent'"
+      v-model="filterAgent"
+      :tabs="agentTabs"
+    />
+
+    <div class="plc-content">
+    <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
+    <AppErrorState v-else-if="hasError" :message="apiErrorMessage" @retry="retry" />
+    <template v-else>
 
       <!-- 卡片樣式列表 -->
       <div class="card-list-box mt-2" v-if="projectListMode === 'card' && projectList.length">
@@ -176,6 +181,7 @@
       <div class="fs-14 fc-grey-1 mt-1" v-if="mode === 'team' && !projectList.length">建立新專案</div>
 
     </template>
+    </div><!-- /plc-content -->
 
   </div>
 
