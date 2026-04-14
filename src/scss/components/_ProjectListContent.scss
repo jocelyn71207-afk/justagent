@@ -83,6 +83,11 @@
     flex: 1;
   }
 
+  // ── Agent filter tabs（recent 模式下在 toolbar 外） ──
+  > .compTabs {
+    padding: 0 46px;
+  }
+
   // ── 覆寫全域 card-list-box：固定 4 欄 ───────────
   .card-list-box {
     display: grid;
