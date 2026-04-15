@@ -27,15 +27,33 @@
                 <i class="material-symbols-outlined">upload_file</i>
                 上傳文件
               </div>
-              <div class="option-item" @click="goToApiSources">
-                <i class="material-symbols-outlined">api</i>
-                API 來源管理
-              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Tab 切換 -->
+      <div class="kb-tab-nav">
+        <button
+          :class="['kb-tab', { 'is-active': activeTab === 'items' }]"
+          @click="activeTab = 'items'"
+        >
+          <i class="material-symbols-outlined">menu_book</i>
+          知識條目
+        </button>
+        <button
+          :class="['kb-tab', { 'is-active': activeTab === 'sources' }]"
+          @click="activeTab = 'sources'"
+        >
+          <i class="material-symbols-outlined">api</i>
+          資料來源
+        </button>
+      </div>
+
+      <!-- 資料來源 Tab -->
+      <DataSourceTab v-if="activeTab === 'sources'" />
+
+      <div v-show="activeTab === 'items'">
       <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
       <AppErrorState
         v-else-if="hasError"
@@ -135,12 +153,13 @@
             <tr v-for="item in displayList" :key="item.id" @mouseleave="activeMenuId = ''">
               <td>
                 <div class="d-flex align-items-center">
-                  <div class="knowledge-icon mr-3">
-                    <i class="material-symbols-outlined">menu_book</i>
+                  <div :class="['knowledge-icon', 'mr-3', { 'knowledge-icon--api': item.sourceType === 'API' }]">
+                    <i class="material-symbols-outlined">{{ item.sourceType === 'API' ? 'api' : 'menu_book' }}</i>
                   </div>
                   <div>
                     <div class="d-flex align-items-center gap-2">
                       <div class="entry-title cursor-pointer" @click="goToDetail(item.id)">{{ item.title }}</div>
+                      <span v-if="item.sourceType === 'API'" class="api-source-badge">API 同步</span>
                       <span
                         v-if="item.sourceStale"
                         class="source-stale-badge"
@@ -150,7 +169,12 @@
                         來源已更新
                       </span>
                     </div>
-                    <div class="entry-id">{{ item.id }}</div>
+                    <div class="entry-id">
+                      <template v-if="item.sourceType === 'API'">
+                        來源：{{ item.apiSourceName }} ・ 上次同步：{{ apiSourceMap[item.apiSourceId!]?.lastSyncAt ?? '—' }}
+                      </template>
+                      <template v-else>{{ item.id }}</template>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -222,6 +246,7 @@
       />
 
       </template>
+      </div>
 
     </div>
 
@@ -282,18 +307,16 @@ import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue';
 import AppSkeleton from '@/components/AppSkeleton.vue';
 import AppErrorState from '@/components/AppErrorState.vue';
 import { useApiCall } from '@/composables/useApiCall';
+import DataSourceTab from '@/components/Knowledge/DataSourceTab.vue';
 
 const route = useRoute();
 const router = useRouter();
 
+const activeTab = ref<'items' | 'sources'>('items');
+
 // 新增知識條目下拉
 const showAddDropdown = ref(false);
 const addDropdownRef = ref<HTMLElement | null>(null);
-
-function goToApiSources() {
-  showAddDropdown.value = false;
-  router.push({ name: 'KnowledgeApiSources' });
-}
 
 // 點外部關閉下拉
 function handleOutsideClick(e: MouseEvent) {
@@ -308,6 +331,11 @@ onUnmounted(() => document.removeEventListener('click', handleOutsideClick));
 const rootStore = useRootStore();
 const knowledgeStore = useKnowledgeStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
+const { apiSources } = storeToRefs(knowledgeStore);
+
+const apiSourceMap = computed(() =>
+  Object.fromEntries(apiSources.value.map(s => [s.id, s]))
+);
 
 const {
   data: knowledgeListData,
