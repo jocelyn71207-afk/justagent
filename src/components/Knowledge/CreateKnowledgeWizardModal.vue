@@ -312,7 +312,7 @@ watch(() => props.modelValue, (val) => {
     currentStep.value = 1;
     selectedTemplate.value = '';
     similarItems.value = [];
-    generatedContent.value = '';
+    generatedContent.value = null;
     runSimilarityCheck();
   }
 });
