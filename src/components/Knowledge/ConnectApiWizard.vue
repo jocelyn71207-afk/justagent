@@ -42,6 +42,11 @@
         </div>
 
         <div class="form-field">
+          <label class="form-label">Authorization <span class="form-hint">（選填，如 Bearer token）</span></label>
+          <input class="custom-input" v-model="form.authorization" placeholder="Bearer xxxxxxxx" />
+        </div>
+
+        <div class="form-field">
           <label class="form-label">Headers <span class="form-hint">（選填）</span></label>
           <div class="kv-list">
             <div class="kv-row" v-for="(header, i) in form.headers" :key="i">
@@ -74,7 +79,7 @@
               {{ isTesting ? '測試中...' : '測試 API' }}
             </button>
           </div>
-          <div v-if="mockResponse" class="api-response-preview">{{ mockResponse }}</div>
+          <pre v-if="mockResponse" class="api-response-preview"><code>{{ mockResponse }}</code></pre>
           <div v-else class="api-test-placeholder">點擊「測試 API」查看回傳資料結構</div>
         </div>
 
@@ -83,11 +88,11 @@
           <div class="field-map-row">
             <div>
               <span class="field-map-label">標題欄位名稱</span>
-              <input class="custom-input" v-model="form.titleField" placeholder="例：title" />
+              <input class="custom-input" v-model="form.titleField" placeholder="例：productName" />
             </div>
             <div>
               <span class="field-map-label">內容欄位名稱</span>
-              <input class="custom-input" v-model="form.contentField" placeholder="例：content" />
+              <input class="custom-input" v-model="form.contentField" placeholder="例：description" />
             </div>
           </div>
           <div class="form-hint-text">對應 API 回傳 JSON 中的 key 名稱</div>
@@ -185,6 +190,7 @@ const scheduleOptions = [
 
 const defaultForm = (): WizardPayload => ({
   url: '',
+  authorization: '',
   method: 'GET',
   headers: [],
   body: '',
@@ -209,8 +215,13 @@ watch(() => props.modelValue, (val) => {
 // ── 驗證 ──
 const urlError = computed(() => {
   if (!form.value.url) return '';
-  try { new URL(form.value.url); return ''; }
-  catch { return '請輸入有效的 URL（需包含 https://）'; }
+  try {
+    const parsed = new URL(form.value.url);
+    if (parsed.protocol !== 'https:') return '請輸入有效的 URL（需包含 https://）';
+    return '';
+  } catch {
+    return '請輸入有效的 URL（需包含 https://）';
+  }
 });
 
 const isStepValid = computed(() => {

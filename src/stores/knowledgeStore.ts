@@ -8,6 +8,7 @@ export interface ApiSourceHeader {
 
 export interface WizardPayload {
   url: string;
+  authorization: string;
   method: 'GET' | 'POST';
   headers: ApiSourceHeader[];
   body: string;
