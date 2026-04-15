@@ -9,7 +9,12 @@
       <div class="section-label">已連接（{{ connectedSources.length }}）</div>
       <div class="source-cards">
         <div class="source-card" v-for="source in connectedSources" :key="source.id">
-          <div class="source-card-status">已連接</div>
+          <div :class="['source-card-status', {
+            'status-failed': source.lastSyncStatus === 'FAILED',
+            'status-success': source.lastSyncStatus === 'SUCCESS'
+          }]">
+            {{ source.lastSyncStatus === 'FAILED' ? '同步失敗' : source.lastSyncStatus === 'SUCCESS' ? '已連接' : '已連接' }}
+          </div>
           <div class="source-icon">
             <i class="material-symbols-outlined">api</i>
           </div>
@@ -22,9 +27,9 @@
             <template v-else>尚未同步</template>
           </div>
           <div class="source-card-actions">
-            <button @click="handleSync(source.id)" :disabled="syncingId === source.id">
-              <i class="material-symbols-outlined" style="font-size:14px;" :class="{ 'spin': syncingId === source.id }">sync</i>
-              {{ syncingId === source.id ? '同步中' : '立即同步' }}
+            <button @click="handleSync(source.id)" :disabled="syncingIds.has(source.id)">
+              <i class="material-symbols-outlined" style="font-size:14px;" :class="{ 'spin': syncingIds.has(source.id) }">sync</i>
+              {{ syncingIds.has(source.id) ? '同步中' : '立即同步' }}
             </button>
             <button @click="openEdit(source.id)">
               <i class="material-symbols-outlined" style="font-size:14px;">settings</i>
@@ -91,7 +96,7 @@ const knowledgeStore = useKnowledgeStore();
 const { apiSources, knowledgeList } = storeToRefs(knowledgeStore);
 
 const showWizard = ref(false);
-const syncingId = ref<string | null>(null);
+const syncingIds = ref(new Set<string>());
 
 // 已連接：apiSources 中有對應 KnowledgeItem 的
 const connectedSources = computed(() =>
@@ -130,32 +135,38 @@ async function handleWizardComplete(payload: WizardPayload) {
   });
 
   // 3. 觸發首次同步
-  syncingId.value = apiSourceId;
+  syncingIds.value = new Set([...syncingIds.value, apiSourceId]);
   try {
     await knowledgeStore.triggerSync(apiSourceId);
     const source = apiSources.value.find(s => s.id === apiSourceId);
-    if (source?.lastSyncStatus === 'SUCCESS') {
+    if (!source) return;
+    if (source.lastSyncStatus === 'SUCCESS') {
       popDialog.alert(`「${payload.name}」已連接，成功同步 ${source.lastSyncCount} 筆資料`);
     } else {
       popDialog.alert(`「${payload.name}」已連接，但首次同步失敗，請稍後手動重試`);
     }
   } finally {
-    syncingId.value = null;
+    const next1 = new Set(syncingIds.value);
+    next1.delete(apiSourceId);
+    syncingIds.value = next1;
   }
 }
 
 async function handleSync(id: string) {
-  syncingId.value = id;
+  syncingIds.value = new Set([...syncingIds.value, id]);
   try {
     await knowledgeStore.triggerSync(id);
     const source = apiSources.value.find(s => s.id === id);
-    if (source?.lastSyncStatus === 'SUCCESS') {
+    if (!source) return;
+    if (source.lastSyncStatus === 'SUCCESS') {
       popDialog.alert(`同步成功，已更新知識條目（${source.lastSyncCount} 筆）`);
     } else {
-      popDialog.alert(`同步失敗：${source?.lastSyncError ?? '未知錯誤'}`);
+      popDialog.alert(`同步失敗：${source.lastSyncError ?? '未知錯誤'}`);
     }
   } finally {
-    syncingId.value = null;
+    const next = new Set(syncingIds.value);
+    next.delete(id);
+    syncingIds.value = next;
   }
 }
 
