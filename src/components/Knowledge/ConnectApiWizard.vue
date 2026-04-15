@@ -181,6 +181,7 @@ const isOpenModal = computed({
 const currentStep = ref(1);
 const isTesting = ref(false);
 const mockResponse = ref('');
+const testApiTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 const scheduleOptions = [
   { value: 'MANUAL', label: '手動', icon: 'touch_app' },
@@ -206,9 +207,25 @@ const form = ref<WizardPayload>(defaultForm());
 // 每次開啟時重置
 watch(() => props.modelValue, (val) => {
   if (val) {
+    if (testApiTimer.value !== null) {
+      clearTimeout(testApiTimer.value);
+      testApiTimer.value = null;
+    }
     currentStep.value = 1;
     mockResponse.value = '';
     form.value = defaultForm();
+  }
+});
+
+watch(currentStep, (next, prev) => {
+  if (prev === 2 && next === 1) {
+    form.value.titleField = '';
+    form.value.contentField = '';
+    mockResponse.value = '';
+    if (testApiTimer.value !== null) {
+      clearTimeout(testApiTimer.value);
+      testApiTimer.value = null;
+    }
   }
 });
 
@@ -253,7 +270,7 @@ function removeHeader(i: number) {
 function testApi() {
   isTesting.value = true;
   mockResponse.value = '';
-  setTimeout(() => {
+  testApiTimer.value = setTimeout(() => {
     const t = form.value.titleField || 'title';
     const c = form.value.contentField || 'content';
     mockResponse.value = JSON.stringify(
@@ -262,6 +279,7 @@ function testApi() {
       2
     );
     isTesting.value = false;
+    testApiTimer.value = null;
   }, 800);
 }
 
