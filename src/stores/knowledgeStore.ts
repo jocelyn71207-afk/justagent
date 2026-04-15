@@ -6,6 +6,18 @@ export interface ApiSourceHeader {
   value: string;
 }
 
+export interface WizardPayload {
+  url: string;
+  method: 'GET' | 'POST';
+  headers: ApiSourceHeader[];
+  body: string;
+  titleField: string;
+  contentField: string;
+  name: string;
+  category: string;
+  schedule: 'MANUAL' | 'DAILY' | 'WEEKLY';
+}
+
 export interface ApiSource {
   id: string;
   name: string;
@@ -70,6 +82,9 @@ export interface KnowledgeItem {
   versions: KnowledgeVersion[];
   sourceStale?: boolean;       // 有來源檔案已更新，尚未處理
   staleSourceFileIds?: string[]; // 哪些來源檔案觸發了 stale
+  sourceType?: 'API' | 'FILE';
+  apiSourceId?: string;
+  apiSourceName?: string;
 }
 
 export const useKnowledgeStore = defineStore('knowledge', () => {
@@ -495,6 +510,47 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return newSource.id;
   }
 
+  function createKnowledgeFromApiSource(params: {
+    apiSourceId: string
+    apiSourceName: string
+    name: string
+    category: string
+  }): string {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    const newId = `k-api-${Date.now()}`
+    const draftId = `v1.0-draft-${Date.now()}`
+
+    const newKnowledge: KnowledgeItem = {
+      id: newId,
+      title: params.name,
+      category: params.category,
+      currentVersion: 'v1.0',
+      status: 'DRAFT',
+      lastUpdateTime: now,
+      lastUpdateBy: 'API 同步',
+      sourceType: 'API',
+      apiSourceId: params.apiSourceId,
+      apiSourceName: params.apiSourceName,
+      versions: [{
+        id: draftId,
+        knowledgeId: newId,
+        versionNumber: 'v1.0',
+        status: 'DRAFT',
+        title: params.name,
+        summary: `由 API 來源「${params.apiSourceName}」同步建立`,
+        content: '',
+        category: params.category,
+        tags: [],
+        lastUpdateBy: 'API 同步',
+        lastUpdateTime: now,
+        updateNote: `由 API 來源「${params.apiSourceName}」自動建立`,
+      }],
+    }
+
+    knowledgeList.value.unshift(newKnowledge)
+    return newId
+  }
+
   function updateApiSource(id: string, payload: Partial<Omit<ApiSource, 'id' | 'lastSyncAt' | 'lastSyncStatus' | 'lastSyncCount' | 'lastSyncError'>>) {
     const source = apiSources.value.find(s => s.id === id);
     if (source) Object.assign(source, payload);
@@ -583,6 +639,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     dismissSourceStale,
     apiSources,
     createApiSource,
+    createKnowledgeFromApiSource,
     updateApiSource,
     deleteApiSource,
     toggleApiSourceEnabled,
