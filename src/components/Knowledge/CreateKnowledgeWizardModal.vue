@@ -137,11 +137,15 @@
             </div>
             <span class="header-hint">進入編輯器後可進行細部修改</span>
           </div>
-          <div class="ai-preview-body">
-            <div class="preview-title">{{ previewTitle }}</div>
-            <div class="preview-scroll-area">
-              <pre class="preview-text">{{ generatedContent }}</pre>
-            </div>
+          <div class="ai-preview-body" v-if="generatedContent">
+            <KnowledgeTablePreview
+              v-if="isTablePreview"
+              :data="(generatedContent as any)"
+            />
+            <KnowledgeFlashcardPreview
+              v-else
+              :cards="(generatedContent as any)"
+            />
           </div>
         </div>
       </div>
@@ -194,6 +198,8 @@
 import { ref, computed, watch } from 'vue';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import compModal from '@/components/compModal/compModal.vue';
+import KnowledgeFlashcardPreview from '@/components/Knowledge/KnowledgeFlashcardPreview.vue'
+import KnowledgeTablePreview from '@/components/Knowledge/KnowledgeTablePreview.vue'
 
 interface FileItem {
   id: string;
@@ -286,9 +292,6 @@ const selectedTemplateLabel = computed(
   () => templates.find(t => t.value === selectedTemplate.value)?.label ?? ''
 );
 
-const previewTitle = computed(
-  () => props.file?.fileName.replace(/\.[^.]+$/, '') ?? ''
-);
 
 const fileTypeIcon = computed(() => {
   const type = props.file?.fileType?.toUpperCase() ?? '';
@@ -360,7 +363,7 @@ function startGeneration() {
   }, 200);
 }
 
-function buildFlashcardContent(template: string, _name: string): FlashcardItem[] {
+function buildFlashcardContent(template: string): FlashcardItem[] {
   switch (template) {
     case 'PRODUCT':
       return [
@@ -452,7 +455,7 @@ function buildContent(template: string, _fileName: string): GeneratedContent {
   if (TABLE_TYPES.includes(fileType)) {
     return buildTableContent(template, name)
   }
-  return buildFlashcardContent(template, name)
+  return buildFlashcardContent(template)
 }
 
 function contentToString(content: GeneratedContent): string {
