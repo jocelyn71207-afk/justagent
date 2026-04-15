@@ -421,6 +421,103 @@
     }
   }
 
+  // ── Flashcard Preview ──
+  .KnowledgeFlashcardPreview {
+    .flashcard-count {
+      font-size: 12px;
+      color: var(--color-text-alpha40);
+      margin-bottom: 10px;
+    }
+
+    .flashcard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      @include use-scroll-bar(rgba(0, 0, 0, 0.1));
+    }
+
+    .flashcard {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+
+      &:hover {
+        border-color: var(--color-main-alpha40);
+        box-shadow: 0 2px 10px var(--color-main-alpha10);
+      }
+    }
+
+    .flashcard-q-row,
+    .flashcard-a-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+
+    .flashcard-q-badge {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--color-main);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .flashcard-a-badge {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-main);
+      color: var(--color-main);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      background: var(--color-background);
+    }
+
+    .flashcard-q-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text);
+      line-height: 1.5;
+    }
+
+    .flashcard-sep {
+      height: 1px;
+      background: var(--color-border);
+    }
+
+    .flashcard-a-text {
+      font-size: 11.5px;
+      color: var(--color-text-alpha70);
+      line-height: 1.55;
+    }
+  }
+
+  // ── Table Preview ──
+  .KnowledgeTablePreview {
+    max-height: 300px;
+    overflow-y: auto;
+    @include use-scroll-bar(rgba(0, 0, 0, 0.1));
+  }
+
   // ── Footer Actions ──
   .wizard-footer-actions {
     display: flex;
