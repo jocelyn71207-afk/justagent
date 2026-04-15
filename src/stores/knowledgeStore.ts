@@ -567,59 +567,65 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   // 模擬同步
   function triggerSync(id: string): Promise<void> {
-    const source = apiSources.value.find(s => s.id === id);
-    if (!source) return Promise.resolve();
+    const source = apiSources.value.find(s => s.id === id)
+    if (!source) return Promise.resolve()
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        const success = Math.random() > 0.2;
-        const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+        const success = Math.random() > 0.2
+        const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
 
         if (success) {
-          const count = Math.floor(Math.random() * 8) + 1;
-          source.lastSyncStatus = 'SUCCESS';
-          source.lastSyncAt = now;
-          source.lastSyncCount = count;
-          source.lastSyncError = null;
+          const count = Math.floor(Math.random() * 8) + 1
+          source.lastSyncStatus = 'SUCCESS'
+          source.lastSyncAt = now
+          source.lastSyncCount = count
+          source.lastSyncError = null
 
-          // 建立草稿知識條目
-          for (let i = 0; i < count; i++) {
-            const newId = `k-api-${Date.now()}-${i}`;
-            const draftId = `v1.0-draft-${Date.now()}-${i}`;
-            knowledgeList.value.unshift({
-              id: newId,
-              title: `[API] ${source.name} — 條目 ${i + 1}`,
-              category: '',
-              currentVersion: 'v1.0',
+          // 找到關聯的 KnowledgeItem（1 來源 = 1 條目）
+          const linked = knowledgeList.value.find(k => k.apiSourceId === id)
+          if (linked) {
+            const base =
+              linked.versions.find(v => v.status === 'PUBLISHED') ??
+              linked.versions[linked.versions.length - 1]
+            const [major, minor] = base.versionNumber.replace('v', '').split('.').map(Number)
+            const newNum = `v${major}.${minor + 1}`
+
+            // 組合 Markdown 內容（mock：每筆資料為一個 ## 區塊）
+            const content = Array.from({ length: count }, (_, i) =>
+              `## ${source.titleField} 條目 ${i + 1}\n\n${source.contentField} 的示範內容（由 API 來源「${source.name}」同步）。`
+            ).join('\n\n')
+
+            const newVersion: KnowledgeVersion = {
+              id: `${newNum}-api-${Date.now()}`,
+              knowledgeId: linked.id,
+              versionNumber: newNum,
               status: 'DRAFT',
+              title: linked.title,
+              summary: `由 API 來源「${source.name}」同步更新（${count} 筆資料）`,
+              content,
+              category: linked.category,
+              tags: [],
+              lastUpdateBy: 'API 同步',
               lastUpdateTime: now,
-              lastUpdateBy: `API 同步（${source.name}）`,
-              versions: [{
-                id: draftId,
-                knowledgeId: newId,
-                versionNumber: 'v1.0',
-                status: 'DRAFT',
-                title: `[API] ${source.name} — 條目 ${i + 1}`,
-                summary: `由 API 來源「${source.name}」同步建立`,
-                content: `來源 API：${source.url}\n欄位對應：標題=${source.titleField}，內容=${source.contentField}\n\n（此為示範草稿，實際內容由 API 回傳資料填入）`,
-                category: '',
-                tags: [],
-                lastUpdateBy: `API 同步`,
-                lastUpdateTime: now,
-                updateNote: `由 API 來源「${source.name}」自動同步建立`,
-              }],
-            });
+              updateNote: `API 同步（${source.name}），共 ${count} 筆`,
+            }
+
+            linked.versions.push(newVersion)
+            linked.status = 'DRAFT'
+            linked.lastUpdateTime = now
+            linked.lastUpdateBy = 'API 同步'
           }
         } else {
-          source.lastSyncStatus = 'FAILED';
-          source.lastSyncAt = now;
-          source.lastSyncCount = 0;
-          source.lastSyncError = '連線失敗：API 回應狀態 503';
+          source.lastSyncStatus = 'FAILED'
+          source.lastSyncAt = now
+          source.lastSyncCount = 0
+          source.lastSyncError = '連線失敗：API 回應狀態 503'
         }
 
-        resolve();
-      }, 2000);
-    });
+        resolve()
+      }, 2000)
+    })
   }
 
   return {
