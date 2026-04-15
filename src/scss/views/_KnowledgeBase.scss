@@ -334,6 +334,37 @@
     }
   }
 
+  .category-select-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+
+    .category-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+    }
+
+    .category-select {
+      flex: 1;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--color-border-1);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--color-text-primary);
+      background: var(--color-bg-white);
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-main);
+      }
+    }
+  }
+
   // ── Step 3: AI Generation ──
   .ai-progress-container {
     width: 320px;

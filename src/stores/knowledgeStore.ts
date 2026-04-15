@@ -398,6 +398,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     fileName: string;
     template: string;
     content: string;
+    category: string;
   }) => {
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
     const newId = `k-${Date.now()}`;
@@ -407,7 +408,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const newKnowledge: KnowledgeItem = {
       id: newId,
       title: baseName,
-      category: '',
+      category: params.category,
       currentVersion: 'v1.0',
       status: 'DRAFT',
       lastUpdateTime: now,
@@ -420,7 +421,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         title: baseName,
         summary: `由「${params.fileName}」生成的知識條目草稿`,
         content: params.content,
-        category: '',
+        category: params.category,
         tags: [],
         visibility: 'ALL',
         lastUpdateBy: 'AI 生成',

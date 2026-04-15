@@ -108,6 +108,14 @@
             </div>
           </div>
         </div>
+
+        <div class="category-select-row">
+          <label class="category-label">分類</label>
+          <select class="category-select" v-model="selectedCategory">
+            <option value="">未分類</option>
+            <option v-for="cat in CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+        </div>
       </div>
 
       <!-- ── Step 3：AI 初稿生成 ── -->
@@ -214,7 +222,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'confirm', data: { template: string; content: string }): void;
+  (e: 'confirm', data: { template: string; content: string; category: string }): void;
 }>();
 
 const isOpenModal = computed({
@@ -242,6 +250,7 @@ const currentStep = ref(1);
 const isChecking = ref(false);
 const similarItems = ref<any[]>([]);
 const selectedTemplate = ref('');
+const selectedCategory = ref('');
 const isGenerating = ref(false);
 const generateProgress = ref(0);
 const generatedContent = ref<GeneratedContent>(null)
@@ -282,6 +291,8 @@ const templates = [
   },
 ];
 
+const CATEGORIES = ['商品文件', '系統文件', '客服知識']
+
 const TABLE_TYPES = ['EXCEL', 'MD']
 
 const isTablePreview = computed(() =>
@@ -314,6 +325,7 @@ watch(() => props.modelValue, (val) => {
   if (val) {
     currentStep.value = 1;
     selectedTemplate.value = '';
+    selectedCategory.value = '';
     similarItems.value = [];
     generatedContent.value = null;
     runSimilarityCheck();
@@ -473,6 +485,7 @@ function handleConfirm() {
   emit('confirm', {
     template: selectedTemplateLabel.value,
     content: contentToString(generatedContent.value),
+    category: selectedCategory.value,
   });
   emit('update:modelValue', false);
 }

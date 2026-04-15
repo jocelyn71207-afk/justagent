@@ -347,13 +347,14 @@ function createKnowledge(item: any) {
   isWizardOpen.value = true;
 }
 
-function handleWizardConfirm(data: { template: string; content: string }) {
+function handleWizardConfirm(data: { template: string; content: string; category: string }) {
   if (!wizardFile.value) return;
   const { knowledgeId, versionId } = knowledgeStore.createFromFile({
     fileId: wizardFile.value.id,
     fileName: wizardFile.value.fileName,
     template: data.template,
     content: data.content,
+    category: data.category,
   });
   router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } });
 }
