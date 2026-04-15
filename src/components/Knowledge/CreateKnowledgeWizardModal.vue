@@ -216,6 +216,19 @@ const isOpenModal = computed({
   set: (val) => emit('update:modelValue', val)
 });
 
+// ── 知識預覽資料型別 ──
+interface FlashcardItem {
+  q: string
+  a: string
+}
+
+interface TableData {
+  headers: string[]
+  rows: string[][]
+}
+
+type GeneratedContent = FlashcardItem[] | TableData | null
+
 const knowledgeStore = useKnowledgeStore();
 
 // ── 狀態 ──
@@ -225,7 +238,7 @@ const similarItems = ref<any[]>([]);
 const selectedTemplate = ref('');
 const isGenerating = ref(false);
 const generateProgress = ref(0);
-const generatedContent = ref('');
+const generatedContent = ref<GeneratedContent>(null)
 
 const stepLabels = ['相似性檢查', '選擇模板', 'AI 生成初稿'];
 
@@ -262,6 +275,12 @@ const templates = [
     desc: '規則與政策說明，適合商業規則、合規文件',
   },
 ];
+
+const TABLE_TYPES = ['EXCEL', 'MD']
+
+const isTablePreview = computed(() =>
+  TABLE_TYPES.includes(props.file?.fileType?.toUpperCase() ?? '')
+)
 
 const selectedTemplateLabel = computed(
   () => templates.find(t => t.value === selectedTemplate.value)?.label ?? ''
