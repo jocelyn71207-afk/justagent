@@ -211,6 +211,7 @@ watch(() => props.modelValue, (val) => {
       clearTimeout(testApiTimer.value);
       testApiTimer.value = null;
     }
+    isTesting.value = false;
     currentStep.value = 1;
     mockResponse.value = '';
     form.value = defaultForm();

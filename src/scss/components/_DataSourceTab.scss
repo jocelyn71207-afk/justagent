@@ -47,6 +47,16 @@
       font-weight: 600;
       padding: 2px 8px;
       border-radius: 20px;
+
+      &.status-failed {
+        background: #fdecea;
+        color: var(--color-danger, #e53935);
+      }
+
+      &.status-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
     }
 
     .source-icon {
