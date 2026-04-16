@@ -213,13 +213,25 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           versionNumber: 'v1.0',
           status: 'HISTORY',
           title: '商品目錄即時資料',
-          summary: '初次同步',
-          content: '商品目錄初始內容...',
+          summary: '初次同步，涵蓋冬季主力款',
+          content: `# 商品目錄（2026-04-10 初次同步）
+
+## 冬季主力款
+
+| 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
+|---|---|---|---|---|
+| Teva Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 142 | 上架中 |
+| Teva Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,280 | 87 | 上架中 |
+| Teva Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 203 | 上架中 |
+
+## 備註
+- 資料來源：商品目錄 API（https://api.example.com/products）
+- 同步時間：2026-04-10 09:00`,
           category: '商品文件',
           tags: ['商品', 'API'],
           lastUpdateBy: 'API 同步',
           lastUpdateTime: '2026-04-10 09:00',
-          updateNote: '由 API 來源「商品目錄 API」自動建立',
+          updateNote: '由 API 來源「商品目錄 API」自動建立（初次同步）',
         },
         {
           id: 'k4-v2.0',
@@ -227,13 +239,36 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           versionNumber: 'v2.0',
           status: 'HISTORY',
           title: '商品目錄即時資料',
-          summary: '第二次同步，新增春季新品',
-          content: '商品目錄更新內容（v2）...',
+          summary: '新增春季新品 5 筆，調整 2 筆售價',
+          content: `# 商品目錄（2026-04-11 更新）
+
+## 冬季主力款
+
+| 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
+|---|---|---|---|---|
+| Teva Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 98 | 上架中 |
+| Teva Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 65 | 上架中（降價） |
+| Teva Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 180 | 上架中 |
+
+## 春季新品（新增）
+
+| 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
+|---|---|---|---|---|
+| Teva Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 120 | 預購中 |
+| Teva Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 250 | 上架中 |
+| Teva Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 75 | 預購中 |
+| Teva Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 90 | 上架中 |
+| Teva Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 45 | 預購中 |
+
+## 備註
+- 資料來源：商品目錄 API（https://api.example.com/products）
+- 同步時間：2026-04-11 09:00
+- 本次異動：新增 5 筆春季新品；Teva Tirra 女款售價由 2,280 調整為 2,180`,
           category: '商品文件',
           tags: ['商品', 'API'],
           lastUpdateBy: 'API 同步',
           lastUpdateTime: '2026-04-11 09:00',
-          updateNote: '由 API 來源「商品目錄 API」自動同步',
+          updateNote: '由 API 來源「商品目錄 API」自動同步（新增春季新品 5 筆，售價異動 2 筆）',
         },
         {
           id: 'k4-v3.0',
@@ -241,13 +276,46 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           versionNumber: 'v3.0',
           status: 'PUBLISHED',
           title: '商品目錄即時資料',
-          summary: '最新同步，補充夏季選品',
-          content: '商品目錄最新內容（v3）...',
+          summary: '補充夏季選品 4 筆，冬季款 3 筆下架',
+          content: `# 商品目錄（2026-04-12 最新）
+
+## 上架中
+
+| 商品名稱 | 商品編號 | 售價 | 庫存 | 類別 |
+|---|---|---|---|---|
+| Teva Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 72 | 涼鞋 |
+| Teva Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 43 | 涼鞋 |
+| Teva Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 155 | 涼鞋 |
+| Teva Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 218 | 拖鞋 |
+| Teva Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 108 | 厚底涼鞋 |
+| Teva Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 77 | 休閒鞋 |
+
+## 預購中
+
+| 商品名稱 | 商品編號 | 售價 | 庫存（預計） | 類別 |
+|---|---|---|---|---|
+| Teva Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 60 | 戶外涼鞋 |
+| Teva Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 40 | 防水涼鞋 |
+| Teva Crocband Pro 夏季款 | TV-CRO-U-BLU | NT$1,880 | 200 | 拖鞋 |
+| Teva Terra Fi Lite 輕量款 | TV-TFL-M-TAN | NT$3,480 | 30 | 健行涼鞋 |
+
+## 已下架
+
+| 商品名稱 | 商品編號 | 下架原因 |
+|---|---|---|
+| Teva Hurricane XLT2 冬季限定色 | TV-HUR-M-NVY | 季末清倉結束 |
+| Teva Classic Flip 冬季款 | TV-CLS-U-BRN | 庫存清零 |
+| Teva Tirra 冬季厚底 | TV-TIR-W-BLK | 款式停產 |
+
+## 備註
+- 資料來源：商品目錄 API（https://api.example.com/products）
+- 同步時間：2026-04-12 09:00
+- 本次異動：新增夏季選品 4 筆（預購）；3 筆冬季款轉為下架`,
           category: '商品文件',
           tags: ['商品', 'API'],
           lastUpdateBy: 'API 同步',
           lastUpdateTime: '2026-04-12 09:00',
-          updateNote: '由 API 來源「商品目錄 API」自動同步',
+          updateNote: '由 API 來源「商品目錄 API」自動同步（補充夏季選品 4 筆，冬季款 3 筆下架）',
         },
       ],
     }

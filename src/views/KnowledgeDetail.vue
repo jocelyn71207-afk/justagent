@@ -110,6 +110,25 @@
             <i class="material-symbols-outlined mr-2" style="display: inline-flex; vertical-align: middle;">attachment</i>
             關聯附件與來源檔案
           </h6>
+          <!-- API 來源 -->
+          <div
+            v-if="knowledge?.sourceType === 'API'"
+            class="api-source-card d-flex align-items-center gap-3 mb-2"
+          >
+            <div class="api-source-icon">
+              <i class="material-symbols-outlined">api</i>
+            </div>
+            <div class="api-source-info">
+              <div class="api-source-name">{{ knowledge.apiSourceName }}</div>
+              <div class="api-source-meta">
+                上次同步：{{ apiSourceDetail?.lastSyncAt ?? '—' }}
+                ・
+                狀態：{{ apiSourceDetail?.lastSyncStatus === 'SUCCESS' ? '成功' : apiSourceDetail?.lastSyncStatus === 'FAILED' ? '失敗' : '—' }}
+              </div>
+            </div>
+            <span class="api-source-badge ml-auto">API 同步</span>
+          </div>
+          <!-- 一般附件 -->
           <div class="d-flex flex-wrap gap-2" v-if="versionToShow.sourceFiles?.length">
             <div
               v-for="file in versionToShow.sourceFiles"
@@ -121,7 +140,12 @@
               {{ file.fileName }}
             </div>
           </div>
-          <div class="fc-grey-1 fs-13" v-else>尚未關聯任何來源檔案</div>
+          <div
+            class="fc-grey-1 fs-13"
+            v-if="knowledge?.sourceType !== 'API' && !versionToShow.sourceFiles?.length"
+          >
+            尚未關聯任何來源檔案
+          </div>
         </div>
       </div>
 
@@ -173,6 +197,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import popDialog from '@/services/popDialog';
@@ -189,6 +214,7 @@ const props = defineProps<{ id: string }>();
 
 const router = useRouter();
 const knowledgeStore = useKnowledgeStore();
+const { apiSources } = storeToRefs(knowledgeStore);
 
 const {
   data: knowledgeData,
@@ -199,6 +225,12 @@ const {
 } = useApiCall(() => knowledgeStore.getKnowledgeById(props.id));
 
 const knowledge = computed(() => knowledgeData.value ?? null);
+
+const apiSourceDetail = computed(() =>
+  knowledge.value?.apiSourceId
+    ? apiSources.value.find(s => s.id === knowledge.value!.apiSourceId)
+    : null
+);
 
 // 詳情頁預設顯示「已發布」版本；若無則顯示最後一個版本
 const versionToShow = computed(() => {
