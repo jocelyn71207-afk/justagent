@@ -171,7 +171,7 @@
                     </div>
                     <div class="entry-id">
                       <template v-if="item.sourceType === 'API'">
-                        來源：{{ item.apiSourceName }} ・ 上次同步：{{ apiSourceMap[item.apiSourceId!]?.lastSyncAt ?? '—' }}
+                        來源：{{ item.apiSourceName }} ・ 上次同步：{{ item.apiSourceId ? (apiSourceMap[item.apiSourceId]?.lastSyncAt ?? '—') : '—' }}
                       </template>
                       <template v-else>{{ item.id }}</template>
                     </div>
