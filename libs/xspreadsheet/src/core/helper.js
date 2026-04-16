@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+ 
 function cloneDeep(obj) {
   return JSON.parse(JSON.stringify(obj));
 }

@@ -255,6 +255,102 @@
       color: var(--text-2); background: var(--surface); cursor: pointer; transition: all .15s;
     }
     .chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+    /* ── Donut chart ── */
+    .donut-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px 14px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .donut-title {
+      font-size: 9px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+    }
+    .donut-svg-wrap { flex-shrink: 0; }
+    .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+    .dl-item { display: flex; align-items: center; gap: 7px; }
+    .dl-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dl-name { font-size: 11px; color: var(--text-2); flex: 1; }
+    .dl-pct { font-size: 12px; font-weight: 800; }
+    .dl-bar-wrap { width: 60px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .dl-bar { height: 100%; border-radius: 2px; }
+
+    /* ── Radar chart (in persona card) ── */
+    .radar-row { display: flex; align-items: center; gap: 16px; }
+    .radar-svg-wrap { flex-shrink: 0; }
+    .radar-dim-list { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+    .radar-dim { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-2); }
+    .radar-dim-bar { flex: 1; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .radar-dim-fill { height: 100%; border-radius: 2px; }
+    .radar-dim-val { font-size: 9px; font-weight: 700; color: var(--text-3); width: 22px; text-align: right; flex-shrink: 0; }
+
+    /* ── Stacked channel bar ── */
+    .stacked-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px 14px; margin-bottom: 8px;
+    }
+    .sb-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .sb-row:last-of-type { margin-bottom: 0; }
+    .sb-label { font-size: 10px; color: var(--text-2); width: 52px; flex-shrink: 0; text-align: right; }
+    .sb-track { flex: 1; height: 14px; background: var(--surface2); border-radius: 4px; overflow: hidden; display: flex; }
+    .sb-seg { height: 100%; }
+    .sb-legend { display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--surface2); }
+    .sb-leg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-2); }
+    .sb-leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ── Heatmap ── */
+    .heatmap-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px 14px; margin-bottom: 8px;
+    }
+    .hm-grid {
+      display: grid;
+      grid-template-columns: 52px repeat(12, 1fr);
+      gap: 3px;
+    }
+    .hm-cell {
+      height: 18px; border-radius: 3px;
+    }
+    .hm-row-label {
+      font-size: 10px; color: var(--text-2); font-weight: 600;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 6px;
+    }
+    .hm-month {
+      font-size: 8px; color: var(--text-3); text-align: center;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hm-corner { /* empty top-left */ }
+
+    /* ── Chart 2-col ── */
+    .chart-2col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+    }
+
+    /* ── Funnel ── */
+    .funnel-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px 14px;
+    }
+    .f-step { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .f-step:last-child { margin-bottom: 0; }
+    .f-label { font-size: 10px; color: var(--text-2); width: 68px; flex-shrink: 0; text-align: right; }
+    .f-bar-wrap { flex: 1; height: 16px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .f-bar { height: 100%; border-radius: 4px; transition: width .3s; }
+    .f-pct { font-size: 10px; font-weight: 800; color: var(--text); width: 30px; flex-shrink: 0; }
+
+    /* ── LTV dot matrix ── */
+    .ltv-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px 14px;
+    }
+    .ltv-row { display: flex; flex-direction: column; gap: 8px; }
+    .ltv-item { display: flex; align-items: center; gap: 8px; }
+    .ltv-name { font-size: 10px; color: var(--text-2); width: 52px; flex-shrink: 0; text-align: right; }
+    .ltv-dots { display: flex; gap: 3px; }
+    .ltv-dot { width: 12px; height: 12px; border-radius: 3px; }
+    .ltv-val { font-size: 11px; font-weight: 800; color: var(--text); width: 58px; flex-shrink: 0; }
+    .ltv-sub { font-size: 9px; color: var(--text-3); }
   </style>
 </head>
 <body>
@@ -303,6 +399,66 @@
       <div class="stat-label">首購轉回購</div>
       <div class="stat-value">~19<span style="font-size:13px">月</span></div>
       <div class="stat-sub">平均回購週期</div>
+    </div>
+  </div>
+
+  <!-- Donut: Persona breakdown -->
+  <div class="donut-card">
+    <div style="flex:1">
+      <div class="donut-title">四大客群佔比</div>
+      <div class="donut-legend">
+        <div class="dl-item">
+          <span class="dl-dot" style="background:var(--blue)"></span>
+          <span class="dl-name">都市輕健行者</span>
+          <div class="dl-bar-wrap"><div class="dl-bar" style="width:100%;background:var(--blue)"></div></div>
+          <span class="dl-pct" style="color:var(--blue)">38%</span>
+        </div>
+        <div class="dl-item">
+          <span class="dl-dot" style="background:var(--pink)"></span>
+          <span class="dl-name">親子戶外媽媽</span>
+          <div class="dl-bar-wrap"><div class="dl-bar" style="width:71%;background:var(--pink)"></div></div>
+          <span class="dl-pct" style="color:var(--pink)">27%</span>
+        </div>
+        <div class="dl-item">
+          <span class="dl-dot" style="background:var(--green)"></span>
+          <span class="dl-name">硬派戶外玩家</span>
+          <div class="dl-bar-wrap"><div class="dl-bar" style="width:55%;background:var(--green)"></div></div>
+          <span class="dl-pct" style="color:var(--green)">21%</span>
+        </div>
+        <div class="dl-item">
+          <span class="dl-dot" style="background:var(--purple)"></span>
+          <span class="dl-name">品味生活者</span>
+          <div class="dl-bar-wrap"><div class="dl-bar" style="width:37%;background:var(--purple)"></div></div>
+          <span class="dl-pct" style="color:var(--purple)">14%</span>
+        </div>
+      </div>
+    </div>
+    <!-- Donut SVG: r=44, cx=55, cy=55, circumference≈276.5 -->
+    <!-- Rotation = cumulative_pct*360 - 90 per segment -->
+    <div class="donut-svg-wrap">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <!-- Background ring -->
+        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--surface2)" stroke-width="16"/>
+        <!-- Blue 38%: arc=105.1, rotate -90° -->
+        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--blue)" stroke-width="16"
+          stroke-dasharray="103.6 172.9" stroke-linecap="butt"
+          transform="rotate(-90 55 55)"/>
+        <!-- Pink 27%: arc=74.7, rotate 46.8° -->
+        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--pink)" stroke-width="16"
+          stroke-dasharray="73.2 203.3" stroke-linecap="butt"
+          transform="rotate(46.8 55 55)"/>
+        <!-- Green 21%: arc=58.1, rotate 144° -->
+        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--green)" stroke-width="16"
+          stroke-dasharray="56.6 219.9" stroke-linecap="butt"
+          transform="rotate(144 55 55)"/>
+        <!-- Purple 14%: arc=38.7, rotate 219.6° -->
+        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--purple)" stroke-width="16"
+          stroke-dasharray="37.2 239.3" stroke-linecap="butt"
+          transform="rotate(219.6 55 55)"/>
+        <!-- Center label -->
+        <text x="55" y="51" text-anchor="middle" font-size="18" font-weight="800" fill="var(--text)">4</text>
+        <text x="55" y="63" text-anchor="middle" font-size="9" fill="var(--text-3)">客群</text>
+      </svg>
     </div>
   </div>
 
@@ -396,6 +552,41 @@
           <div class="journey-step"><span class="journey-step-icon">🛍️</span><span class="journey-step-label">官網 / 選品店購入</span></div>
         </div>
       </div>
+      <!-- Radar: 機能=85 外型=90 CP=60 永續=80 稀缺=55 | center(70,58) r=36 -->
+      <div class="persona-full-row">
+        <div class="persona-section-title">品牌價值維度雷達</div>
+        <div class="radar-row">
+          <div class="radar-svg-wrap">
+            <svg width="140" height="110" viewBox="0 0 140 110">
+              <!-- Grid rings -->
+              <polygon points="70,22 104,47 91,87 49,87 36,47" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,34 92,51 84,73 56,73 48,51" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,46 81,54 77,62 63,62 59,54" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <!-- Axes -->
+              <line x1="70" y1="58" x2="70" y2="22" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="104" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="91" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="49" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="36" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <!-- Data: blue -->
+              <polygon points="70,27 101,48 83,76 53,81 51,52" fill="rgba(59,114,246,0.15)" stroke="var(--blue)" stroke-width="1.5"/>
+              <!-- Axis labels -->
+              <text x="70" y="16" text-anchor="middle" font-size="8" fill="var(--text-3)">機能</text>
+              <text x="108" y="46" text-anchor="start" font-size="8" fill="var(--text-3)">外型</text>
+              <text x="94" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">CP值</text>
+              <text x="46" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">永續</text>
+              <text x="32" y="46" text-anchor="end" font-size="8" fill="var(--text-3)">稀缺</text>
+            </svg>
+          </div>
+          <div class="radar-dim-list">
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">機能</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:85%;background:var(--blue)"></div></div><span class="radar-dim-val">85</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">外型</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:90%;background:var(--blue)"></div></div><span class="radar-dim-val">90</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">CP值</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:60%;background:var(--blue)"></div></div><span class="radar-dim-val">60</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">永續</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:80%;background:var(--blue)"></div></div><span class="radar-dim-val">80</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">稀缺</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:55%;background:var(--blue)"></div></div><span class="radar-dim-val">55</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -449,6 +640,38 @@
           <div class="journey-step"><span class="journey-step-icon">🔍</span><span class="journey-step-label">蝦皮搜尋比價</span></div>
           <div class="journey-step"><span class="journey-step-icon">⭐</span><span class="journey-step-label">看評價 / 問照片</span></div>
           <div class="journey-step"><span class="journey-step-icon">🛒</span><span class="journey-step-label">momo / 蝦皮購入</span></div>
+        </div>
+      </div>
+      <!-- Radar: 機能=70 外型=50 CP=95 永續=45 稀缺=30 -->
+      <div class="persona-full-row">
+        <div class="persona-section-title">品牌價值維度雷達</div>
+        <div class="radar-row">
+          <div class="radar-svg-wrap">
+            <svg width="140" height="110" viewBox="0 0 140 110">
+              <polygon points="70,22 104,47 91,87 49,87 36,47" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,34 92,51 84,73 56,73 48,51" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,46 81,54 77,62 63,62 59,54" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="70" y2="22" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="104" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="91" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="49" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="36" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <!-- Data: pink 機能=70 外型=50 CP=95 永續=45 稀缺=30 -->
+              <polygon points="70,33 87,52 90,86 61,71 60,55" fill="rgba(236,72,153,0.15)" stroke="var(--pink)" stroke-width="1.5"/>
+              <text x="70" y="16" text-anchor="middle" font-size="8" fill="var(--text-3)">機能</text>
+              <text x="108" y="46" text-anchor="start" font-size="8" fill="var(--text-3)">外型</text>
+              <text x="94" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">CP值</text>
+              <text x="46" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">永續</text>
+              <text x="32" y="46" text-anchor="end" font-size="8" fill="var(--text-3)">稀缺</text>
+            </svg>
+          </div>
+          <div class="radar-dim-list">
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">機能</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:70%;background:var(--pink)"></div></div><span class="radar-dim-val">70</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">外型</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:50%;background:var(--pink)"></div></div><span class="radar-dim-val">50</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">CP值</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:95%;background:var(--pink)"></div></div><span class="radar-dim-val">95</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">永續</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:45%;background:var(--pink)"></div></div><span class="radar-dim-val">45</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">稀缺</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:30%;background:var(--pink)"></div></div><span class="radar-dim-val">30</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -506,6 +729,38 @@
           <div class="journey-step"><span class="journey-step-icon">🏪</span><span class="journey-step-label">戶外選品店試穿購入</span></div>
         </div>
       </div>
+      <!-- Radar: 機能=98 外型=40 CP=75 永續=55 稀缺=35 -->
+      <div class="persona-full-row">
+        <div class="persona-section-title">品牌價值維度雷達</div>
+        <div class="radar-row">
+          <div class="radar-svg-wrap">
+            <svg width="140" height="110" viewBox="0 0 140 110">
+              <polygon points="70,22 104,47 91,87 49,87 36,47" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,34 92,51 84,73 56,73 48,51" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,46 81,54 77,62 63,62 59,54" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="70" y2="22" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="104" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="91" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="49" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="36" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <!-- Data: green 機能=98 外型=40 CP=75 永續=55 稀缺=35 -->
+              <polygon points="70,23 84,54 86,80 58,74 58,54" fill="rgba(22,163,74,0.15)" stroke="var(--green)" stroke-width="1.5"/>
+              <text x="70" y="16" text-anchor="middle" font-size="8" fill="var(--text-3)">機能</text>
+              <text x="108" y="46" text-anchor="start" font-size="8" fill="var(--text-3)">外型</text>
+              <text x="94" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">CP值</text>
+              <text x="46" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">永續</text>
+              <text x="32" y="46" text-anchor="end" font-size="8" fill="var(--text-3)">稀缺</text>
+            </svg>
+          </div>
+          <div class="radar-dim-list">
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">機能</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:98%;background:var(--green)"></div></div><span class="radar-dim-val">98</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">外型</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:40%;background:var(--green)"></div></div><span class="radar-dim-val">40</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">CP值</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:75%;background:var(--green)"></div></div><span class="radar-dim-val">75</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">永續</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:55%;background:var(--green)"></div></div><span class="radar-dim-val">55</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">稀缺</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:35%;background:var(--green)"></div></div><span class="radar-dim-val">35</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -561,6 +816,38 @@
           <div class="journey-step"><span class="journey-step-icon">📸</span><span class="journey-step-label">穿搭打卡擴散</span></div>
         </div>
       </div>
+      <!-- Radar: 機能=55 外型=95 CP=40 永續=85 稀缺=98 -->
+      <div class="persona-full-row">
+        <div class="persona-section-title">品牌價值維度雷達</div>
+        <div class="radar-row">
+          <div class="radar-svg-wrap">
+            <svg width="140" height="110" viewBox="0 0 140 110">
+              <polygon points="70,22 104,47 91,87 49,87 36,47" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,34 92,51 84,73 56,73 48,51" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <polygon points="70,46 81,54 77,62 63,62 59,54" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="70" y2="22" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="104" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="91" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="49" y2="87" stroke="var(--border)" stroke-width="1"/>
+              <line x1="70" y1="58" x2="36" y2="47" stroke="var(--border)" stroke-width="1"/>
+              <!-- Data: purple 機能=55 外型=95 CP=40 永續=85 稀缺=98 -->
+              <polygon points="70,38 103,48 79,70 52,83 36,47" fill="rgba(124,58,237,0.15)" stroke="var(--purple)" stroke-width="1.5"/>
+              <text x="70" y="16" text-anchor="middle" font-size="8" fill="var(--text-3)">機能</text>
+              <text x="108" y="46" text-anchor="start" font-size="8" fill="var(--text-3)">外型</text>
+              <text x="94" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">CP值</text>
+              <text x="46" y="96" text-anchor="middle" font-size="8" fill="var(--text-3)">永續</text>
+              <text x="32" y="46" text-anchor="end" font-size="8" fill="var(--text-3)">稀缺</text>
+            </svg>
+          </div>
+          <div class="radar-dim-list">
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">機能</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:55%;background:var(--purple)"></div></div><span class="radar-dim-val">55</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">外型</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:95%;background:var(--purple)"></div></div><span class="radar-dim-val">95</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">CP值</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:40%;background:var(--purple)"></div></div><span class="radar-dim-val">40</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">永續</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:85%;background:var(--purple)"></div></div><span class="radar-dim-val">85</span></div>
+            <div class="radar-dim"><span style="font-size:9px;color:var(--text-3);width:28px">稀缺</span><div class="radar-dim-bar"><div class="radar-dim-fill" style="width:98%;background:var(--purple)"></div></div><span class="radar-dim-val">98</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -587,6 +874,226 @@
     <div class="tp-cell"><span class="tp-dot" style="background:var(--purple)"></span>小紅書 / IG</div>
     <div class="tp-cell"><span class="tp-dot" style="background:var(--purple)"></span>官網品牌頁</div>
     <div class="tp-cell"><span class="tp-dot" style="background:var(--purple)"></span>官網限定 / Pop-up</div>
+  </div>
+
+  <!-- Stacked Channel Bar Chart -->
+  <div class="section-title">購買通路分布</div>
+  <div class="stacked-card">
+    <div class="sb-row">
+      <div class="sb-label">都市健行</div>
+      <div class="sb-track">
+        <div class="sb-seg" style="width:52%;background:#3b72f6"></div>
+        <div class="sb-seg" style="width:30%;background:#6ea8f8"></div>
+        <div class="sb-seg" style="width:18%;background:#b3cefb"></div>
+      </div>
+    </div>
+    <div class="sb-row">
+      <div class="sb-label">親子媽媽</div>
+      <div class="sb-track">
+        <div class="sb-seg" style="width:15%;background:#3b72f6"></div>
+        <div class="sb-seg" style="width:68%;background:#ec4899"></div>
+        <div class="sb-seg" style="width:17%;background:#f5a8d2"></div>
+      </div>
+    </div>
+    <div class="sb-row">
+      <div class="sb-label">硬派戶外</div>
+      <div class="sb-track">
+        <div class="sb-seg" style="width:22%;background:#3b72f6"></div>
+        <div class="sb-seg" style="width:18%;background:#ec4899"></div>
+        <div class="sb-seg" style="width:60%;background:#16a34a"></div>
+      </div>
+    </div>
+    <div class="sb-row">
+      <div class="sb-label">品味生活</div>
+      <div class="sb-track">
+        <div class="sb-seg" style="width:71%;background:#3b72f6"></div>
+        <div class="sb-seg" style="width:14%;background:#ec4899"></div>
+        <div class="sb-seg" style="width:15%;background:#7c3aed"></div>
+      </div>
+    </div>
+    <div class="sb-legend">
+      <div class="sb-leg-item"><span class="sb-leg-dot" style="background:#3b72f6"></span>官網直購</div>
+      <div class="sb-leg-item"><span class="sb-leg-dot" style="background:#ec4899"></span>電商平台（momo / 蝦皮）</div>
+      <div class="sb-leg-item"><span class="sb-leg-dot" style="background:#16a34a"></span>實體門市</div>
+      <div class="sb-leg-item"><span class="sb-leg-dot" style="background:#7c3aed"></span>Pop-up / 選品店</div>
+    </div>
+  </div>
+
+  <!-- Monthly Purchase Heatmap -->
+  <div class="section-title">月份購買熱度</div>
+  <div class="heatmap-card">
+    <div class="hm-grid">
+      <div class="hm-corner"></div>
+      <div class="hm-month">1月</div><div class="hm-month">2月</div><div class="hm-month">3月</div>
+      <div class="hm-month">4月</div><div class="hm-month">5月</div><div class="hm-month">6月</div>
+      <div class="hm-month">7月</div><div class="hm-month">8月</div><div class="hm-month">9月</div>
+      <div class="hm-month">10月</div><div class="hm-month">11月</div><div class="hm-month">12月</div>
+      <!-- 都市健行: 15 12 25 80 90 55 30 25 60 75 35 20 -->
+      <div class="hm-row-label">都市健行</div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.15)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.12)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.25)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.80)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.95)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.55)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.30)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.25)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.60)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.75)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.35)"></div>
+      <div class="hm-cell" style="background:rgba(59,114,246,.20)"></div>
+      <!-- 親子媽媽: 10 15 20 60 95 70 80 65 45 30 20 25 -->
+      <div class="hm-row-label">親子媽媽</div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.10)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.15)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.20)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.60)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.95)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.70)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.80)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.65)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.45)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.30)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.20)"></div>
+      <div class="hm-cell" style="background:rgba(236,72,153,.25)"></div>
+      <!-- 硬派戶外: 20 15 55 85 65 40 90 75 70 45 25 15 -->
+      <div class="hm-row-label">硬派戶外</div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.20)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.15)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.55)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.85)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.65)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.40)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.95)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.75)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.70)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.45)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.25)"></div>
+      <div class="hm-cell" style="background:rgba(22,163,74,.15)"></div>
+      <!-- 品味生活: 30 45 20 25 30 80 90 40 25 20 50 65 -->
+      <div class="hm-row-label">品味生活</div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.30)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.45)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.20)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.25)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.30)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.80)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.90)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.40)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.25)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.20)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.50)"></div>
+      <div class="hm-cell" style="background:rgba(124,58,237,.65)"></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+      <span style="font-size:9px;color:var(--text-3)">低</span>
+      <div style="display:flex;gap:2px">
+        <div style="width:14px;height:8px;border-radius:2px;background:rgba(59,114,246,.1)"></div>
+        <div style="width:14px;height:8px;border-radius:2px;background:rgba(59,114,246,.3)"></div>
+        <div style="width:14px;height:8px;border-radius:2px;background:rgba(59,114,246,.6)"></div>
+        <div style="width:14px;height:8px;border-radius:2px;background:rgba(59,114,246,.9)"></div>
+      </div>
+      <span style="font-size:9px;color:var(--text-3)">高（相對銷量指數）</span>
+    </div>
+  </div>
+
+  <!-- Funnel + LTV -->
+  <div class="section-title">轉換漏斗 ＆ 客群 LTV 估算</div>
+  <div class="chart-2col">
+    <!-- Funnel -->
+    <div class="funnel-card">
+      <div class="dist-title">社群 → 購買轉換漏斗</div>
+      <div class="f-step">
+        <div class="f-label">社群曝光</div>
+        <div class="f-bar-wrap"><div class="f-bar" style="width:100%;background:var(--blue)"></div></div>
+        <div class="f-pct">100%</div>
+      </div>
+      <div class="f-step">
+        <div class="f-label">內容點擊</div>
+        <div class="f-bar-wrap"><div class="f-bar" style="width:62%;background:#5d91f8"></div></div>
+        <div class="f-pct">62%</div>
+      </div>
+      <div class="f-step">
+        <div class="f-label">加入購物車</div>
+        <div class="f-bar-wrap"><div class="f-bar" style="width:28%;background:#7eaaf9"></div></div>
+        <div class="f-pct">28%</div>
+      </div>
+      <div class="f-step">
+        <div class="f-label">完成結帳</div>
+        <div class="f-bar-wrap"><div class="f-bar" style="width:18%;background:var(--green)"></div></div>
+        <div class="f-pct">18%</div>
+      </div>
+      <div class="f-step">
+        <div class="f-label">成為回購客</div>
+        <div class="f-bar-wrap"><div class="f-bar" style="width:6%;background:var(--purple)"></div></div>
+        <div class="f-pct">6%</div>
+      </div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--surface2);font-size:10px;color:var(--text-3)">
+        ↳ 品味生活者決策最快（&lt;1天），硬派戶外最長（~5天）
+      </div>
+    </div>
+    <!-- LTV -->
+    <div class="ltv-card">
+      <div class="dist-title">三年期 LTV 估算（NT$）</div>
+      <div class="ltv-row">
+        <div class="ltv-item">
+          <div class="ltv-name">都市健行</div>
+          <div class="ltv-dots">
+            <div class="ltv-dot" style="background:var(--blue)"></div>
+            <div class="ltv-dot" style="background:var(--blue)"></div>
+            <div class="ltv-dot" style="background:var(--blue)"></div>
+            <div class="ltv-dot" style="background:var(--blue);opacity:.35"></div>
+            <div class="ltv-dot" style="background:var(--blue);opacity:.35"></div>
+          </div>
+          <div>
+            <div class="ltv-val">NT$6,400</div>
+            <div class="ltv-sub">均回購 2.1 次</div>
+          </div>
+        </div>
+        <div class="ltv-item">
+          <div class="ltv-name">親子媽媽</div>
+          <div class="ltv-dots">
+            <div class="ltv-dot" style="background:var(--pink)"></div>
+            <div class="ltv-dot" style="background:var(--pink)"></div>
+            <div class="ltv-dot" style="background:var(--pink);opacity:.5"></div>
+            <div class="ltv-dot" style="background:var(--pink);opacity:.2"></div>
+            <div class="ltv-dot" style="background:var(--pink);opacity:.2"></div>
+          </div>
+          <div>
+            <div class="ltv-val">NT$4,800</div>
+            <div class="ltv-sub">均回購 1.5 次</div>
+          </div>
+        </div>
+        <div class="ltv-item">
+          <div class="ltv-name">硬派戶外</div>
+          <div class="ltv-dots">
+            <div class="ltv-dot" style="background:var(--green)"></div>
+            <div class="ltv-dot" style="background:var(--green)"></div>
+            <div class="ltv-dot" style="background:var(--green)"></div>
+            <div class="ltv-dot" style="background:var(--green)"></div>
+            <div class="ltv-dot" style="background:var(--green)"></div>
+          </div>
+          <div>
+            <div class="ltv-val" style="color:var(--green)">NT$8,200</div>
+            <div class="ltv-sub">最高 LTV・均回購 3.1 次</div>
+          </div>
+        </div>
+        <div class="ltv-item">
+          <div class="ltv-name">品味生活</div>
+          <div class="ltv-dots">
+            <div class="ltv-dot" style="background:var(--purple)"></div>
+            <div class="ltv-dot" style="background:var(--purple)"></div>
+            <div class="ltv-dot" style="background:var(--purple)"></div>
+            <div class="ltv-dot" style="background:var(--purple)"></div>
+            <div class="ltv-dot" style="background:var(--purple);opacity:.3"></div>
+          </div>
+          <div>
+            <div class="ltv-val">NT$7,100</div>
+            <div class="ltv-sub">限定款驅動回購</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Purchase Insights -->
