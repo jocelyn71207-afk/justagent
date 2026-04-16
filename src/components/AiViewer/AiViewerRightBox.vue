@@ -802,7 +802,39 @@ const conv1Msgs = ref([
       { name: 'hurricane_trailsetter_sales_report.html', type: 'HTML', size: 6800 },
     ],
   },
+  // 10. AI 主動詢問下一步
+  {
+    id: 'id_10',
+    cardType: 'nextStepPrompt',
+    msg: '接下來想做什麼？',
+    nextSteps: [
+      { label: '🎯 生成行銷策略', msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
+      { label: '👤 目標客群用戶畫像', msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
+      { label: '📊 產出圖表', msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
+    ],
+  },
 ]) as Ref<any[]>;
+
+// ── Conv1 下一步追問邏輯 ──
+const C1_ALL_STEPS = [
+  { key: '行銷策略', label: '🎯 生成行銷策略',     msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
+  { key: '用戶畫像', label: '👤 目標客群用戶畫像', msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
+  { key: '圖表',     label: '📊 產出圖表',          msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
+];
+const conv1DoneSteps = ref<Set<string>>(new Set());
+
+function pushConv1NextStepPrompt(doneKey: string) {
+  conv1DoneSteps.value.add(doneKey);
+  const remaining = C1_ALL_STEPS.filter(s => !conv1DoneSteps.value.has(s.key));
+  if (remaining.length === 0) return;
+  conv1Msgs.value.push({
+    id: 'next-step-' + Date.now(),
+    cardType: 'nextStepPrompt',
+    msg: '還有什麼需要幫你做的？',
+    nextSteps: remaining,
+  });
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
 
 // 在頁面初始化時，將 Hurricane 報告加入畫布，並監聽 iframe chip 點擊
 function c1PushThinkingThenReply(
@@ -811,6 +843,7 @@ function c1PushThinkingThenReply(
   files: { name: string; type: string; size: number }[],
   reportUrl: string,
   reportName: string,
+  doneKey: string,
 ) {
   const thinkingId = 'thinking-' + Date.now();
   conv1Msgs.value.push({ id: thinkingId, isThinking: true });
@@ -827,17 +860,11 @@ function c1PushThinkingThenReply(
     });
     try { addReportBlock(reportUrl, reportName); } catch (e) { /* ignore */ }
     nextTick(() => AiAgentChatListScrollTo('ASC'));
+    pushConv1NextStepPrompt(doneKey);
   }, thinkingDelay);
 }
 
-function handleHurricaneChipMsg(event: MessageEvent) {
-  if (event.data?.type !== 'hurricane-chip-click') return;
-  const msg = event.data.msg as string;
-  if (!msg) return;
-
-  conv1Msgs.value.push({ id: 'chip-user-' + Date.now(), forUser: true, msg });
-  nextTick(() => AiAgentChatListScrollTo('ASC'));
-
+function processConv1Msg(msg: string) {
   if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
     conv1Msgs.value.push({ id: thinkingId, isThinking: true });
@@ -895,6 +922,7 @@ function handleHurricaneChipMsg(event: MessageEvent) {
         msg: '📊 已幫你產出 <strong>3 張銷售分析圖表</strong>，已加到右側畫布：<br>・年度銷售量（長條圖）<br>・年成長率趨勢（折線圖）<br>・各鞋款銷售拆分（堆疊長條圖）<br><br>可直接在畫布上調整大小、截圖使用。',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
+      pushConv1NextStepPrompt('圖表');
     }, 2200);
   } else if (msg.includes('行銷策略')) {
     c1PushThinkingThenReply(
@@ -903,6 +931,7 @@ function handleHurricaneChipMsg(event: MessageEvent) {
       [{ name: 'hurricane_trailsetter_marketing_strategy.html', type: 'HTML', size: 13208 }],
       '/justagent/hurricane_trailsetter_marketing_strategy.html',
       'hurricane_trailsetter_marketing_strategy.html',
+      '行銷策略',
     );
   } else if (msg.includes('用戶畫像')) {
     c1PushThinkingThenReply(
@@ -911,8 +940,18 @@ function handleHurricaneChipMsg(event: MessageEvent) {
       [{ name: 'hurricane_trailsetter_user_persona.html', type: 'HTML', size: 30725 }],
       '/justagent/hurricane_trailsetter_user_persona.html',
       'hurricane_trailsetter_user_persona.html',
+      '用戶畫像',
     );
   }
+}
+
+function handleHurricaneChipMsg(event: MessageEvent) {
+  if (event.data?.type !== 'hurricane-chip-click') return;
+  const msg = event.data.msg as string;
+  if (!msg) return;
+  conv1Msgs.value.push({ id: 'chip-user-' + Date.now(), forUser: true, msg });
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+  processConv1Msg(msg);
 }
 
 onMounted(() => {
@@ -1125,13 +1164,23 @@ function c2Scroll() {
 }
 
 function handleChatAreaClick(e: MouseEvent) {
-  if (currentConversationId.value !== 'conv2') return;
   const target = e.target as HTMLElement;
   const el = target.closest('[data-action]') as HTMLElement | null;
   if (!el) return;
   e.stopPropagation();
   const action = el.dataset.action!;
   const value = el.dataset.value ?? '';
+
+  // conv1 下一步快速按鈕
+  if (action === 'conv1-next-step') {
+    const msg = value;
+    conv1Msgs.value.push({ id: 'btn-user-' + Date.now(), forUser: true, msg });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    processConv1Msg(msg);
+    return;
+  }
+
+  if (currentConversationId.value !== 'conv2') return;
 
   // more-button 開關：直接操作 DOM，不走 reactive 流程
   if (action === 'toggle-file-more') {

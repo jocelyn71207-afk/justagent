@@ -64,6 +64,20 @@
         </div>
       </template>
 
+      <!-- 下一步選擇（快速按鈕） -->
+      <template v-else-if="props.source.cardType === 'nextStepPrompt'">
+        <div v-html="displayMsg"></div>
+        <div class="conv1-quick-btns">
+          <span
+            v-for="step in props.source.nextSteps"
+            :key="step.msg"
+            class="conv1-quick-btn"
+            :data-action="'conv1-next-step'"
+            :data-value="step.msg"
+          >{{ step.label }}</span>
+        </div>
+      </template>
+
       <!-- 一般訊息 -->
       <div v-html="displayMsg" v-else-if="!props.source.isThinking"></div>
 

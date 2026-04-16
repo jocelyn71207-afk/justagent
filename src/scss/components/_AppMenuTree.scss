@@ -151,6 +151,7 @@
           }
           &.active {
             background-color: var(--color-wise-surface);
+            box-shadow: inset 3px 0 0 var(--color-wise-green);
           }
           > i:first-child {
             margin: 0 10px 0 0;
@@ -223,6 +224,7 @@
       &.router-link-active,
       &.active {
         background-color: var(--color-wise-surface);
+        box-shadow: inset 3px 0 0 var(--color-wise-green);
       }
       i {
         margin: 0 10px 0 0;

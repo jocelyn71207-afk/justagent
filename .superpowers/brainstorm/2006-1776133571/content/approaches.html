@@ -1,0 +1,47 @@
+<h2>實作方式比較</h2>
+<p class="subtitle">三種技術路線，選一個最符合你需求的</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>純 SCSS 改造</h3>
+      <p>只新增 / 修改 <code>_ProjectListContent.scss</code> 和 <code>_TeamProject.scss</code>，Vue 元件結構完全不動。速度最快，但受限於現有 HTML 結構，部分 Wise 卡片佈局無法完美還原（例如協作者頭像移到 footer 左側）。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>風險最低，不影響任何邏輯</li><li>改動範圍最小，易回滾</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>HTML 結構限制，無法完全重排版</li><li>Wise 卡片 footer 佈局較難對齊</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>SCSS + 局部 template 調整 ✦ 推薦</h3>
+      <p>調整 <code>ProjectListContent.vue</code> 的卡片 template 結構（重排版面層次、調整 class 名稱），搭配完整 SCSS 重設計。不動任何邏輯、不動 props/emits，只改 HTML 標記和樣式。可以完整呈現 Wise 設計語言。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>版面可以完全重排</li><li>邏輯零改動，風險可控</li><li>能完整還原 Wise 卡片設計</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>需要小心不破壞 hover/showMoreOption 的 JS 綁定</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>提取 ProjectCard 元件 + 完整重設計</h3>
+      <p>將卡片邏輯抽取成獨立的 <code>ProjectCard.vue</code>，在元件內重新設計 Wise 風格的 markup，ProjectListContent 改成呼叫此元件。最乾淨，但涉及元件拆分與 props 傳遞重構。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>最乾淨的架構</li><li>未來維護性最高</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>改動面最大，需要定義 props interface</li><li>超出「視覺重設計」的範疇</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px; padding:16px; background:#f8f8f8; border-radius:8px;">
+  <p class="label">我的建議</p>
+  <p>選 <strong>B</strong>。它讓你得到完整的 Wise 視覺效果，同時把風險限制在 template 結構層面，不碰任何 props、emits、或業務邏輯。</p>
+</div>

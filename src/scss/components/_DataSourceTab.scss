@@ -32,7 +32,7 @@
 
   .source-card {
     background: white;
-    border: 1.5px solid var(--color-primary, #5c35d9);
+    border: 1.5px solid var(--color-wise-green);
     border-radius: 12px;
     padding: 16px;
     position: relative;
@@ -52,13 +52,13 @@
     .source-icon {
       width: 36px;
       height: 36px;
-      background: #ede9fe;
+      background: var(--color-wise-mint);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
-      color: var(--color-primary, #5c35d9);
+      color: var(--color-wise-dark-green);
     }
 
     .source-name {
@@ -119,8 +119,8 @@
     transition: box-shadow 0.2s ease;
 
     &:hover:not(.app-card--disabled) {
-      box-shadow: 0 4px 16px rgba(92, 53, 217, 0.12);
-      border-color: rgba(92, 53, 217, 0.4);
+      box-shadow: 0 4px 16px rgba($color-wise-green, 0.25);
+      border-color: var(--color-wise-green);
     }
 
     &.app-card--disabled {
@@ -163,11 +163,12 @@
       cursor: pointer;
 
       &.btn-primary {
-        background: var(--color-primary, #5c35d9);
-        color: white;
+        background: var(--color-wise-green);
+        color: var(--color-wise-dark-green);
 
         &:hover {
-          background: #4a27c0;
+          background: var(--color-wise-dark-green);
+          color: #fff;
         }
       }
 
@@ -229,13 +230,13 @@
       transition: background 0.2s, color 0.2s;
 
       &.is-done {
-        background: var(--color-primary, #5c35d9);
-        color: white;
+        background: var(--color-wise-green);
+        color: var(--color-wise-dark-green);
       }
 
       &.is-active {
-        background: var(--color-primary, #5c35d9);
-        color: white;
+        background: var(--color-wise-green);
+        color: var(--color-wise-dark-green);
       }
 
       &.is-pending {
@@ -250,7 +251,7 @@
       background: #e0e0e0;
 
       &.is-done {
-        background: var(--color-primary, #5c35d9);
+        background: var(--color-wise-green);
       }
     }
   }
@@ -302,9 +303,9 @@
       cursor: pointer;
 
       &.is-active {
-        border-color: var(--color-primary, #5c35d9);
-        background: #f3f0ff;
-        color: var(--color-primary, #5c35d9);
+        border-color: var(--color-wise-green);
+        background: var(--color-wise-mint);
+        color: var(--color-wise-dark-green);
       }
     }
   }
@@ -420,9 +421,9 @@
       input[type='radio'] { display: none; }
 
       &.is-active {
-        border-color: var(--color-primary, #5c35d9);
-        background: #f3f0ff;
-        color: var(--color-primary, #5c35d9);
+        border-color: var(--color-wise-green);
+        background: var(--color-wise-mint);
+        color: var(--color-wise-dark-green);
         font-weight: 600;
       }
     }

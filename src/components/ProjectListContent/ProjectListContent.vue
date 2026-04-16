@@ -3,8 +3,8 @@
   <div class="ProjectListContent">
 
     <!-- Banner Header -->
-    <div :class="['plc-banner', { 'plc-banner--green': mode === 'team' }]">
-      <div v-if="mode === 'team'" class="plc-banner-breadcrumb">團隊</div>
+    <div class="plc-banner plc-banner--green">
+      <div class="plc-banner-breadcrumb">{{ mode === 'team' ? '團隊' : '最近使用' }}</div>
       <div class="plc-banner-title">{{ mode === 'team' ? subtitle : title }}</div>
       <div v-if="!isLoading && !hasError" class="plc-banner-subtitle">
         {{ displayProjectList.length }} 個專案

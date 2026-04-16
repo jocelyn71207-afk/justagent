@@ -1012,9 +1012,10 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   }
 
   // 圖表生成後自動加入畫布
+  let _chartIdSeq = 0;
   function addChartBlock(chartData: any, blockName: string) {
     let temp: any = {
-      id: 'chart-' + Date.now(),
+      id: 'chart-' + Date.now() + '-' + (++_chartIdSeq),
       x: centerSpaceX - (mainStage.value?.x() ?? 0),
       y: centerSpaceY - (mainStage.value?.y() ?? 0),
       width: 600,

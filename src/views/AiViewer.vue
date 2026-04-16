@@ -1510,35 +1510,6 @@ onUnmounted(() => {
 });
 
 
-// 限制同一個瀏覽器只能有一個網頁分頁使用此頁面
-const aiViewerPageChannel = new BroadcastChannel("AIVIEWER_PAGE_CHANNEL");
-aiViewerPageChannel.addEventListener("message", (event: any) => {
-  console.log("Received message:", event.data);
-  if (event.data.command === "START_CHECK_ONLY") {
-    aiViewerPageChannel.postMessage({
-      command: "PAGE_IN_USE",
-    });
-  }
-  if (event.data.command === "PAGE_IN_USE") {
-    popDialog.alert("此單元限制一次只能有一個分頁使用，請使用已打開的分頁，本頁面將返回平台首頁。", () => {
-      router.replace("/view/ProjectDashboard");
-    });
-  }
-});
-onMounted(() => {
-  aiViewerPageChannel.postMessage({
-    command: "START_CHECK_ONLY",
-  });
-  // 關閉瀏覽器時
-  window.addEventListener("beforeunload", () => {
-    aiViewerPageChannel.close();
-  });
-});
-onUnmounted(() => {
-  aiViewerPageChannel.close();
-});
-
-
 // 專案主功能小介面 DOM 元素
 const projectFnBox = ref<HTMLElement | null>(null);
 const projectFnBoxStyle = ref<any>({});

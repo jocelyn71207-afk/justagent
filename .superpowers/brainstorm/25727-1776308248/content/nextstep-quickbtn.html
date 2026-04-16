@@ -1,0 +1,136 @@
+<h2>快速按鈕樣式預覽</h2>
+<p class="subtitle">三個選項改用 canned-task pill 樣式，排列在 AI 訊息氣泡下方</p>
+
+<style>
+  /* 模擬 AiViewer 實際顏色 */
+  :root {
+    --c-bg: #f4f5f7;
+    --c-bg1: #ffffff;
+    --c-border: rgba(0,0,0,.1);
+    --c-text: #1a1d23;
+    --c-text2: #5c6370;
+    --c-text3: #9ca3af;
+    --c-main: #3b72f6;
+    --radius: 6px;
+  }
+
+  .chat-mock {
+    max-width: 340px;
+    margin: 24px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    font-family: -apple-system, 'PingFang TC', sans-serif;
+    font-size: 13px;
+  }
+  .row { display: flex; gap: 8px; align-items: flex-start; }
+  .row.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--c-main); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; flex-shrink: 0; margin-top: 3px;
+  }
+
+  .bubble {
+    background: var(--c-bg1); border-radius: 0 10px 10px 10px;
+    padding: 9px 12px; color: var(--c-text); line-height: 1.6;
+    max-width: 272px; border: 1px solid var(--c-border);
+  }
+  .bubble.user {
+    background: var(--c-main); color: #fff;
+    border: none; border-radius: 10px 0 10px 10px;
+  }
+
+  .file-badge {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--c-bg); border: 1px solid var(--c-border);
+    border-radius: 7px; padding: 5px 9px; margin-top: 8px;
+  }
+  .file-name { font-size: 11px; font-weight: 600; color: var(--c-text); }
+  .file-meta { font-size: 10px; color: var(--c-text3); }
+
+  /* ── 快速按鈕：與 canned-task-item 一致 ── */
+  .quick-btns-wrap {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-top: 8px;
+  }
+  .quick-btn {
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--c-text);
+    cursor: pointer;
+    line-height: 1.4;
+    transition: all .15s;
+  }
+  .quick-btn:hover {
+    background: rgba(59,114,246,.08);
+    border-color: rgba(59,114,246,.3);
+    color: var(--c-main);
+  }
+
+  .bubble-ai-nextstep {
+    background: var(--c-bg1); border-radius: 0 10px 10px 10px;
+    padding: 10px 12px; color: var(--c-text); line-height: 1.6;
+    max-width: 280px; border: 1px solid var(--c-border);
+  }
+  .ai-ask-text { font-size: 12px; margin-bottom: 0; color: var(--c-text2); }
+
+  .thinking {
+    font-size: 11px; color: var(--c-text3); font-style: italic;
+    display: flex; align-items: center; gap: 5px;
+    background: var(--c-bg1); border: 1px solid var(--c-border);
+    border-radius: 0 10px 10px 10px;
+    padding: 8px 12px;
+  }
+</style>
+
+<div class="chat-mock">
+
+  <!-- AI: 銷售報告完成 -->
+  <div class="row">
+    <div class="avatar">AI</div>
+    <div class="bubble">
+      📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>，2022 年起連續三年成長 20%+。
+      <div class="file-badge">
+        <div>
+          <div class="file-name">hurricane_trailsetter_sales_report.html</div>
+          <div class="file-meta">HTML · 6.8 KB</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI: 主動問下一步 + 快速按鈕 -->
+  <div class="row">
+    <div class="avatar">AI</div>
+    <div class="bubble-ai-nextstep">
+      <div class="ai-ask-text">接下來想做什麼？</div>
+      <div class="quick-btns-wrap">
+        <span class="quick-btn">🎯 生成行銷策略</span>
+        <span class="quick-btn">👤 目標客群用戶畫像</span>
+        <span class="quick-btn">📊 產出圖表（報告用）</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- User 點選後 -->
+  <div class="row user">
+    <div class="bubble user">生成 Hurricane Trailsetter AW26 行銷策略報告</div>
+  </div>
+
+  <!-- AI thinking -->
+  <div class="row">
+    <div class="avatar">AI</div>
+    <div class="thinking">⏳ AI processing…</div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="text-align:center;margin-top:20px">
+  這樣的樣式 OK 嗎？確認後就開始實作。
+</p>

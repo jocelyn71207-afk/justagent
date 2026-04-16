@@ -1,0 +1,333 @@
+<h2>要加哪種圖表？</h2>
+<p class="subtitle">以下三個方案都可以用純 CSS + SVG 實現，無需引入外部套件。請選你最喜歡的方向（可多選）。</p>
+
+<style>
+  .preview-wrap { display:flex; flex-direction:column; gap:20px; margin-top:16px; }
+  .preview-card { background:#fff; border:1.5px solid #e4e7ed; border-radius:12px; overflow:hidden; }
+  .preview-card.selected-preview { border-color:#3b72f6; box-shadow:0 0 0 3px rgba(59,114,246,.15); }
+  .preview-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #f1f3f7; }
+  .preview-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+  .preview-title { font-size:14px; font-weight:700; color:#1a1d23; }
+  .preview-desc { font-size:11px; color:#5c6370; margin-left:auto; }
+  .preview-body { padding:14px 16px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .mini-chart { background:#f7f8fa; border-radius:8px; padding:10px; }
+  .mini-title { font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9ca3af; margin-bottom:8px; }
+
+  /* Donut */
+  .donut-wrap { display:flex; align-items:center; gap:10px; }
+  .donut-legend { flex:1; }
+  .dl-item { display:flex; align-items:center; gap:5px; font-size:10px; color:#5c6370; margin-bottom:3px; }
+  .dl-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  /* Radar */
+  .radar-labels { display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-top:6px; }
+  .radar-label { font-size:9px; color:#9ca3af; display:flex; align-items:center; gap:4px; }
+
+  /* Heatmap */
+  .heatmap { display:grid; grid-template-columns:32px repeat(12,1fr); gap:2px; }
+  .hm-cell { height:14px; border-radius:2px; }
+  .hm-label { font-size:8px; color:#9ca3af; line-height:14px; }
+
+  /* Funnel */
+  .funnel-wrap { display:flex; flex-direction:column; gap:3px; align-items:center; }
+  .funnel-step { display:flex; align-items:center; gap:6px; width:100%; }
+  .funnel-bar-wrap { flex:1; height:16px; background:#f1f3f7; border-radius:3px; overflow:hidden; }
+  .funnel-bar { height:100%; border-radius:3px; }
+  .funnel-label { font-size:9px; color:#5c6370; width:44px; text-align:right; flex-shrink:0; }
+  .funnel-pct { font-size:9px; font-weight:700; color:#1a1d23; width:26px; flex-shrink:0; }
+
+  /* Bar group */
+  .bar-group { display:flex; flex-direction:column; gap:4px; }
+  .bg-row { display:flex; align-items:center; gap:5px; }
+  .bg-label { font-size:9px; color:#9ca3af; width:32px; text-align:right; flex-shrink:0; }
+  .bg-track { flex:1; height:10px; background:#f1f3f7; border-radius:3px; overflow:hidden; display:flex; gap:1px; }
+  .bg-seg { height:100%; }
+
+  /* LTV timeline */
+  .ltv-row { display:flex; flex-direction:column; gap:5px; }
+  .ltv-item { display:flex; align-items:center; gap:7px; }
+  .ltv-name { font-size:9px; color:#5c6370; width:52px; flex-shrink:0; }
+  .ltv-dots { display:flex; gap:3px; }
+  .ltv-dot { width:10px; height:10px; border-radius:2px; opacity:.85; }
+  .ltv-dot.empty { opacity:.15; }
+  .ltv-val { font-size:9px; font-weight:700; color:#1a1d23; }
+</style>
+
+<div class="preview-wrap">
+
+  <!-- Option A -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>量化總覽強化</h3>
+      <p>甜甜圈圖 + 雷達圖：用圓形視覺強化四大客群的比例與特性對比</p>
+      <div class="preview-body" style="padding:12px 0 0 0; grid-template-columns:1fr 1fr;">
+        <!-- Donut -->
+        <div class="mini-chart">
+          <div class="mini-title">客群佔比分布</div>
+          <div class="donut-wrap">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r="22" fill="none" stroke="#f1f3f7" stroke-width="10"/>
+              <!-- 38% blue -->
+              <circle cx="30" cy="30" r="22" fill="none" stroke="#3b72f6" stroke-width="10"
+                stroke-dasharray="52.2 86" stroke-dashoffset="21.5" transform="rotate(-90 30 30)"/>
+              <!-- 27% pink -->
+              <circle cx="30" cy="30" r="22" fill="none" stroke="#ec4899" stroke-width="10"
+                stroke-dasharray="37.1 101" stroke-dashoffset="-30.7" transform="rotate(-90 30 30)"/>
+              <!-- 21% green -->
+              <circle cx="30" cy="30" r="22" fill="none" stroke="#16a34a" stroke-width="10"
+                stroke-dasharray="28.9 109.3" stroke-dashoffset="-67.8" transform="rotate(-90 30 30)"/>
+              <!-- 14% purple -->
+              <circle cx="30" cy="30" r="22" fill="none" stroke="#7c3aed" stroke-width="10"
+                stroke-dasharray="19.2 119" stroke-dashoffset="-96.7" transform="rotate(-90 30 30)"/>
+              <text x="30" y="34" text-anchor="middle" font-size="9" font-weight="700" fill="#1a1d23">4族群</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="dl-item"><span class="dl-dot" style="background:#3b72f6"></span>都市健行 38%</div>
+              <div class="dl-item"><span class="dl-dot" style="background:#ec4899"></span>親子媽媽 27%</div>
+              <div class="dl-item"><span class="dl-dot" style="background:#16a34a"></span>硬派戶外 21%</div>
+              <div class="dl-item"><span class="dl-dot" style="background:#7c3aed"></span>品味生活 14%</div>
+            </div>
+          </div>
+        </div>
+        <!-- Radar -->
+        <div class="mini-chart">
+          <div class="mini-title">都市健行者 特性雷達</div>
+          <svg width="100%" height="90" viewBox="0 0 120 90">
+            <!-- Axes -->
+            <line x1="60" y1="10" x2="60" y2="80" stroke="#e4e7ed" stroke-width="1"/>
+            <line x1="20" y1="35" x2="100" y2="55" stroke="#e4e7ed" stroke-width="1"/>
+            <line x1="20" y1="55" x2="100" y2="35" stroke="#e4e7ed" stroke-width="1"/>
+            <!-- Grid -->
+            <polygon points="60,30 78,42 72,62 48,62 42,42" fill="none" stroke="#e4e7ed" stroke-width="1"/>
+            <polygon points="60,20 88,37 80,67 40,67 32,37" fill="none" stroke="#e4e7ed" stroke-width="1"/>
+            <!-- Data -->
+            <polygon points="60,22 85,39 77,63 43,64 36,41" fill="rgba(59,114,246,.2)" stroke="#3b72f6" stroke-width="1.5"/>
+            <!-- Labels -->
+            <text x="60" y="8" text-anchor="middle" font-size="7" fill="#9ca3af">機能</text>
+            <text x="106" y="50" text-anchor="start" font-size="7" fill="#9ca3af">外型</text>
+            <text x="106" y="35" text-anchor="start" font-size="7" fill="#9ca3af">永續</text>
+            <text x="8" y="50" text-anchor="end" font-size="7" fill="#9ca3af">CP值</text>
+            <text x="8" y="35" text-anchor="end" font-size="7" fill="#9ca3af">稀缺</text>
+          </svg>
+          <div class="radar-labels">
+            <span class="radar-label"><span style="width:7px;height:7px;border-radius:50%;background:#3b72f6;display:inline-block"></span>都市健行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>時間 / 季節熱力圖 + 漏斗</h3>
+      <p>月份購買熱力圖 + 轉換漏斗：直觀呈現購買時機與流失點</p>
+      <div style="padding:12px 0 0 0; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <!-- Heatmap -->
+        <div class="mini-chart">
+          <div class="mini-title">月份購買熱度</div>
+          <div style="overflow:hidden;">
+            <div class="heatmap">
+              <div class="hm-label" style="font-size:7px;color:#9ca3af;line-height:14px">都市</div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.15)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.2)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.35)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.9)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.8)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.6)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.4)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.3)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.25)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.2)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.3)"></div>
+              <div class="hm-cell" style="background:rgba(59,114,246,.45)"></div>
+
+              <div class="hm-label" style="font-size:7px;color:#9ca3af;line-height:14px">親子</div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.1)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.15)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.3)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.5)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.95)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.7)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.5)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.4)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.2)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.15)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.2)"></div>
+              <div class="hm-cell" style="background:rgba(236,72,153,.3)"></div>
+
+              <div class="hm-label" style="font-size:7px;color:#9ca3af;line-height:14px">硬派</div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.15)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.2)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.5)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.85)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.65)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.45)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.9)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.7)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.3)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.2)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.2)"></div>
+              <div class="hm-cell" style="background:rgba(22,163,74,.25)"></div>
+
+              <!-- Month labels -->
+              <div></div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">1</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">2</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">3</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">4</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">5</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">6</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">7</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">8</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">9</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">10</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">11</div>
+              <div style="font-size:6.5px;color:#9ca3af;text-align:center">12</div>
+            </div>
+          </div>
+        </div>
+        <!-- Funnel -->
+        <div class="mini-chart">
+          <div class="mini-title">購買轉換漏斗</div>
+          <div class="funnel-wrap">
+            <div class="funnel-step">
+              <div class="funnel-label" style="font-size:8px">曝光</div>
+              <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%;background:#3b72f6"></div></div>
+              <div class="funnel-pct">100%</div>
+            </div>
+            <div class="funnel-step">
+              <div class="funnel-label" style="font-size:8px">點擊</div>
+              <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:62%;background:#3b72f6;opacity:.8"></div></div>
+              <div class="funnel-pct">62%</div>
+            </div>
+            <div class="funnel-step">
+              <div class="funnel-label" style="font-size:8px">加入購物車</div>
+              <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:28%;background:#3b72f6;opacity:.65"></div></div>
+              <div class="funnel-pct">28%</div>
+            </div>
+            <div class="funnel-step">
+              <div class="funnel-label" style="font-size:8px">完成購買</div>
+              <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:18%;background:#16a34a;opacity:.85"></div></div>
+              <div class="funnel-pct">18%</div>
+            </div>
+            <div class="funnel-step">
+              <div class="funnel-label" style="font-size:8px">回購</div>
+              <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:6%;background:#7c3aed;opacity:.8"></div></div>
+              <div class="funnel-pct">6%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>LTV 點陣圖 + 堆疊通路圖</h3>
+      <p>各客群終身價值對比 + 各通路購買佔比堆疊圖，強化商業洞察感</p>
+      <div style="padding:12px 0 0 0; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <!-- LTV dots -->
+        <div class="mini-chart">
+          <div class="mini-title">客群 LTV 點陣估算</div>
+          <div class="ltv-row">
+            <div class="ltv-item">
+              <div class="ltv-name" style="font-size:8px">都市健行</div>
+              <div class="ltv-dots">
+                <div class="ltv-dot" style="background:#3b72f6"></div>
+                <div class="ltv-dot" style="background:#3b72f6"></div>
+                <div class="ltv-dot" style="background:#3b72f6"></div>
+                <div class="ltv-dot" style="background:#3b72f6"></div>
+                <div class="ltv-dot" style="background:#3b72f6;opacity:.4"></div>
+              </div>
+              <div class="ltv-val">NT$6,400</div>
+            </div>
+            <div class="ltv-item">
+              <div class="ltv-name" style="font-size:8px">親子媽媽</div>
+              <div class="ltv-dots">
+                <div class="ltv-dot" style="background:#ec4899"></div>
+                <div class="ltv-dot" style="background:#ec4899"></div>
+                <div class="ltv-dot" style="background:#ec4899"></div>
+                <div class="ltv-dot" style="background:#ec4899;opacity:.4"></div>
+                <div class="ltv-dot" style="background:#ec4899;opacity:.15"></div>
+              </div>
+              <div class="ltv-val">NT$4,800</div>
+            </div>
+            <div class="ltv-item">
+              <div class="ltv-name" style="font-size:8px">硬派戶外</div>
+              <div class="ltv-dots">
+                <div class="ltv-dot" style="background:#16a34a"></div>
+                <div class="ltv-dot" style="background:#16a34a"></div>
+                <div class="ltv-dot" style="background:#16a34a"></div>
+                <div class="ltv-dot" style="background:#16a34a"></div>
+                <div class="ltv-dot" style="background:#16a34a"></div>
+              </div>
+              <div class="ltv-val">NT$8,200</div>
+            </div>
+            <div class="ltv-item">
+              <div class="ltv-name" style="font-size:8px">品味生活</div>
+              <div class="ltv-dots">
+                <div class="ltv-dot" style="background:#7c3aed"></div>
+                <div class="ltv-dot" style="background:#7c3aed"></div>
+                <div class="ltv-dot" style="background:#7c3aed"></div>
+                <div class="ltv-dot" style="background:#7c3aed"></div>
+                <div class="ltv-dot" style="background:#7c3aed;opacity:.3"></div>
+              </div>
+              <div class="ltv-val">NT$7,100</div>
+            </div>
+          </div>
+        </div>
+        <!-- Stacked bar channels -->
+        <div class="mini-chart">
+          <div class="mini-title">購買通路堆疊分布</div>
+          <div class="bar-group">
+            <div class="bg-row">
+              <div class="bg-label">都市</div>
+              <div class="bg-track">
+                <div class="bg-seg" style="width:52%;background:#3b72f6"></div>
+                <div class="bg-seg" style="width:30%;background:#6495f8"></div>
+                <div class="bg-seg" style="width:18%;background:#93b4fa"></div>
+              </div>
+            </div>
+            <div class="bg-row">
+              <div class="bg-label">親子</div>
+              <div class="bg-track">
+                <div class="bg-seg" style="width:18%;background:#3b72f6"></div>
+                <div class="bg-seg" style="width:62%;background:#ec4899"></div>
+                <div class="bg-seg" style="width:20%;background:#f08cbc"></div>
+              </div>
+            </div>
+            <div class="bg-row">
+              <div class="bg-label">硬派</div>
+              <div class="bg-track">
+                <div class="bg-seg" style="width:25%;background:#3b72f6"></div>
+                <div class="bg-seg" style="width:15%;background:#ec4899"></div>
+                <div class="bg-seg" style="width:60%;background:#16a34a"></div>
+              </div>
+            </div>
+            <div class="bg-row">
+              <div class="bg-label">品味</div>
+              <div class="bg-track">
+                <div class="bg-seg" style="width:70%;background:#3b72f6"></div>
+                <div class="bg-seg" style="width:10%;background:#ec4899"></div>
+                <div class="bg-seg" style="width:20%;background:#7c3aed"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+              <span style="font-size:8px;color:#5c6370;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#3b72f6;border-radius:2px;display:inline-block"></span>官網</span>
+              <span style="font-size:8px;color:#5c6370;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#ec4899;border-radius:2px;display:inline-block"></span>電商</span>
+              <span style="font-size:8px;color:#5c6370;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#16a34a;border-radius:2px;display:inline-block"></span>實體</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;text-align:center">可以多選，三個都要也沒問題。選好後在 terminal 告訴我。</p>

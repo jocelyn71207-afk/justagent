@@ -9,7 +9,7 @@ importScripts(
     './functions.js'
 );
 
-var MsgQueue = new Array();
+var MsgQueue = [];
 
 var themeContent = null;
 
@@ -1533,20 +1533,20 @@ function getSchemeColorFromTheme(schemeClr) {
 
 function extractChartData(serNode) {
     
-    var dataMat = new Array();
+    var dataMat = [];
     
     if (serNode === undefined) {
         return dataMat;
     }
     
     if (serNode["c:xVal"] !== undefined) {
-        var dataRow = new Array();
+        var dataRow = [];
         eachElement(serNode["c:xVal"]["c:numRef"]["c:numCache"]["c:pt"], function(innerNode, index) {
             dataRow.push(parseFloat(innerNode["c:v"]));
             return "";
         });
         dataMat.push(dataRow);
-        dataRow = new Array();
+        dataRow = [];
         eachElement(serNode["c:yVal"]["c:numRef"]["c:numCache"]["c:pt"], function(innerNode, index) {
             dataRow.push(parseFloat(innerNode["c:v"]));
             return "";
@@ -1554,7 +1554,7 @@ function extractChartData(serNode) {
         dataMat.push(dataRow);
     } else {
         eachElement(serNode, function(innerNode, index) {
-            var dataRow = new Array();
+            var dataRow = [];
             var colName = getTextByPathList(innerNode, ["c:tx", "c:strRef", "c:strCache", "c:pt", "c:v"]) || index;
 
             // Category (string or number)

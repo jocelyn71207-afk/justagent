@@ -2146,6 +2146,32 @@
   }
 }
 
+// 下一步快速按鈕（conv1 nextStepPrompt）
+.conv1-quick-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.conv1-quick-btn {
+  background-color: var(--color-background-1);
+  border: 1px solid var(--color-border-1-alpha50);
+  border-radius: $radius;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-text);
+  user-select: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    background-color: rgba($color-main-1, 0.08);
+    border-color: rgba($color-main-1, 0.35);
+    color: $color-main-1;
+  }
+}
+
 // 對話2 初始狀態：模式選擇卡片
 .ai-mode-card {
   margin-top: 10px;

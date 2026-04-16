@@ -31,7 +31,16 @@
       "Bash(sed -n '480,600p' /Users/jocelyn/Desktop/demosite/src/stores/knowledgeStore.ts)",
       "Bash(npx sass:*)",
       "Bash(grep -v '^$')",
-      "Bash(grep -r '$color-danger\\\\|$color-warning\\\\|$color-amber' /Users/jocelyn/Desktop/demosite/src/scss/ '--include=*.scss' -n)"
+      "Bash(grep -r '$color-danger\\\\|$color-warning\\\\|$color-amber' /Users/jocelyn/Desktop/demosite/src/scss/ '--include=*.scss' -n)",
+      "Bash(bash /Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
+      "Bash(/Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
+      "Bash(npx stylelint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git stash:*)",
+      "Bash(git rm:*)",
+      "Bash(git push:*)",
+      "Bash(bash /Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
+      "Read(//Users/jocelyn/.claude/**)"
     ],
     "additionalDirectories": [
       "/Users/jocelyn/Desktop/demosite"

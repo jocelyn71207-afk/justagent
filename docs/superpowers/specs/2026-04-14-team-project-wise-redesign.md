@@ -65,7 +65,7 @@ TeamProject
 
 ### [C] 卡片 Grid
 
-**Grid：** `repeat(3, 1fr)`，`gap: 16px`
+**Grid：** `repeat(4, 1fr)`，`gap: 16px`（最少一行 4 欄，不隨視窗縮減）
 
 **卡片結構（上到下）：**
 

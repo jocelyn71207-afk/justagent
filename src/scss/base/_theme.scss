@@ -84,6 +84,18 @@
   --color-tab-active-bg: #{$color-tab-active-bg-light}; // 頁籤 active 的背景顏色
   --color-switch-active-bg: #{$color-switch-active-bg-light}; // switch active 的背景顏色
 
+  // ── 品牌主色（對應 Wise 綠色系統）────────────────────────────────────────────
+  --color-main: #{$color-wise-green};
+  --color-main-alpha10: #{rgba($color-wise-green, 0.1)};
+  --color-main-alpha20: #{rgba($color-wise-green, 0.2)};
+  --color-main-alpha30: #{rgba($color-wise-green, 0.3)};
+  --color-main-alpha40: #{rgba($color-wise-green, 0.4)};
+  --color-main-alpha50: #{rgba($color-wise-green, 0.5)};
+  --color-main-alpha70: #{rgba($color-wise-green, 0.7)};
+
+  // ── 灰色 ───────────────────────────────────────────────────────────────────
+  --color-grey-1: #{$color_grey_1};
+
   // ── Wise 設計系統 tokens ────────────────────────────────────────────────────
   --color-wise-card: #ffffff;             // 卡片底色
   --color-wise-green: #9fe870;            // 萊姆綠 CTA

@@ -5,7 +5,7 @@
     <ProjectListContent title="最近使用" mode="recent">
       <!-- 建立專案按鈕的插槽 -->
       <template #createBtnSlot="{ openProjectSettingModal }">
-        <button class="custom-btn custom-main-btn"
+        <button class="wise-create-btn"
           @click="isOpenCreateProjectOptionBox = !isOpenCreateProjectOptionBox">
           <i class="material-symbols-outlined">add</i>
           建立新專案
