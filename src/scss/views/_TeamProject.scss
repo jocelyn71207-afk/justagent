@@ -1,15 +1,6 @@
 .TeamProject {
-  .empty-box {
-    border: 1px dashed var(--color-text-alpha50);
-    border-radius: 8px;
-    padding: 80px 40px;
-    text-align: center;
-    color: var(--color-text-alpha50);
-    width: 362px;
-    user-select: none;
-    cursor: pointer;
-    i {
-      font-size: 30px;
-    }
+  &.views-page {
+    padding: 0;
+    overflow-y: auto;
   }
 }

@@ -1,11 +1,11 @@
 <template>
   <div class="oneFileItem">
-    <img class="file-icon" :src="htmlIcon" alt="file icon">
+    <img class="file-icon" :src="fileIcon" alt="file icon">
     <div class="file-info-box">
-      <div class="file-name">xxxxxxx檔案名稱稱稱稱稱稱稱稱稱稱稱稱稱稱稱稱稱稱稱</div>
-      <div class="file-size">HTML．{{ formatFileSize(2000) }}
+      <div class="file-name" v-tooltip="props.fileInfo.name">{{ props.fileInfo.name }}</div>
+      <div class="file-size">{{ props.fileInfo.fileType }}．{{ formatFileSize(props.fileInfo.size) }}
         <!-- 是否已加到畫布 -->
-        <span>．已加到畫布</span>
+        <span v-if="isAddedToCanvas">．已加到畫布</span>
       </div>
     </div>
     <i :class="['material-symbols-outlined file-more-btn', { active: showMoreOptions }]"
@@ -15,33 +15,56 @@
     <!-- 更多選項 -->
     <div :class="['more-options-box next-option-box', { show: showMoreOptions}]" ref="moreOptionsBox">
       <div class="option-item">加到共享資源庫</div>
-      <div class="option-item">加到左側畫布</div>
+      <div class="option-item" @click="addToCanvas()">加到左側畫布</div>
       <div class="option-item" @click="deleteFile()">刪除</div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { storeToRefs } from "pinia";
   import { useAiviewerStore } from "@/stores/AiViewerStore";
   import { formatFileSize } from '@/utils/file';
   import {initClickOutsideListener } from "@/utils/utils";
   import popDialog from '@/services/popDialog';
 
-  import htmlIcon from '@/assets/fileTypeIcon/html.png';
-
-  // const props = defineProps<{
-  //   fileInfo: any,
-  // }>();
+  const props = defineProps<{
+    fileInfo: {
+      name: string,
+      fileType: string,
+      size: number
+    },
+  }>();
 
   const aiviewerStore = useAiviewerStore();
-  const { aiViewerBlocks } = storeToRefs(aiviewerStore);
+  const { aiViewerBlocks, useIconFileTypes } = storeToRefs(aiviewerStore);
 
   const showMoreOptions = ref(false);
   const moreOptionsBox = ref<HTMLElement | null>(null);
 
+  // 取得檔案圖示
+  const fileIcon = computed(() => {
+    return useIconFileTypes.value[props.fileInfo.fileType] || useIconFileTypes.value['OTHER'];
+  });
+
+  // 是否已加到畫布 (依據檔名判斷)
+  const isAddedToCanvas = computed(() => {
+    return aiViewerBlocks.value.some((block: any) => block.id === props.fileInfo.name || block.blockName === props.fileInfo.name);
+  });
+
+  // 加到畫布
+  const addToCanvas = () => {
+    showMoreOptions.value = false;
+    // 直接調用 store 的 sendUserInput 或類似方法來加入區塊
+    // 這裡我們暫時模擬透過輸入檔名的方式來加入
+    aiviewerStore.userInputModal.msg = props.fileInfo.name;
+    aiviewerStore.sendUserInput();
+    aiviewerStore.userInputModal.msg = '';
+  };
+
   const deleteFile = () => {
+    showMoreOptions.value = false;
     // 刪除檔案的邏輯
     popDialog.confirm(`
     <div class="d-flex flex-justify-center flex-column text-center">

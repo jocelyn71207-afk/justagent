@@ -1,0 +1,529 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f1117 !important;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .chat-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Context banner */
+  .ctx-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+  }
+  .ctx-banner .doc-icon {
+    width: 28px; height: 28px;
+    background: rgba(100,160,255,0.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .ctx-banner strong { color: rgba(255,255,255,0.7); font-weight: 600; }
+
+  /* Message rows */
+  .msg-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .msg-row.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .avatar.ai {
+    background: linear-gradient(135deg, #4f7fff 0%, #a855f7 100%);
+    color: #fff;
+    font-size: 14px;
+  }
+  .avatar.user-av {
+    background: #2a2e3a;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+  }
+
+  .bubble {
+    max-width: 72%;
+    border-radius: 16px;
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+  }
+  .bubble.user-bubble {
+    background: #1e3a5f;
+    border: 1px solid rgba(100,160,255,0.2);
+    border-top-right-radius: 4px;
+    color: rgba(255,255,255,0.9);
+  }
+  .bubble.ai-bubble {
+    background: #181c26;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top-left-radius: 4px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Fetching state */
+  .fetch-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+  }
+  .fetch-dots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: #4f7fff;
+    border-radius: 50%;
+    animation: dot-pulse 1.4s ease-in-out infinite;
+    margin: 0 1px;
+  }
+  .fetch-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .fetch-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot-pulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* AI response content */
+  .ai-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 10px;
+    margin-top: 18px;
+  }
+  .ai-section-title:first-child { margin-top: 0; }
+
+  /* Shoe model pills */
+  .model-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .model-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .model-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .model-name { color: rgba(255,255,255,0.8); font-weight: 500; flex: 1; }
+  .model-sku {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    font-family: 'Courier New', monospace;
+  }
+  .model-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .tag-m { background: rgba(79,127,255,0.15); color: #7ba7ff; }
+  .tag-w { background: rgba(244,114,182,0.15); color: #f472b6; }
+
+  /* Sales table */
+  .sales-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .sales-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: rgba(255,255,255,0.35);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .sales-table th:not(:first-child) { text-align: right; }
+  .sales-table td {
+    padding: 9px 12px;
+    color: rgba(255,255,255,0.75);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .sales-table td:not(:first-child) { text-align: right; }
+  .sales-table tr:last-child td { border-bottom: none; }
+  .sales-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .year-label { font-weight: 600; color: rgba(255,255,255,0.5); }
+  .growth-pos { color: #34d399; font-size: 12px; font-weight: 600; }
+  .revenue-val { color: rgba(255,255,255,0.6); font-size: 12px; }
+
+  /* Mini bar chart inline */
+  .bar-inline {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+  .bar-inline span {
+    width: 4px;
+    border-radius: 1px 1px 0 0;
+    background: #4f7fff;
+    opacity: 0.5;
+  }
+  .bar-inline span.active { opacity: 1; }
+
+  /* Forecast card */
+  .forecast-card {
+    background: linear-gradient(135deg, rgba(79,127,255,0.12) 0%, rgba(168,85,247,0.08) 100%);
+    border: 1px solid rgba(79,127,255,0.25);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 4px;
+  }
+  .forecast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .forecast-year {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #7ba7ff, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .forecast-badge {
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(79,127,255,0.2);
+    color: #7ba7ff;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  .forecast-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .forecast-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .forecast-lbl {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .forecast-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+  }
+  .forecast-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1px;
+  }
+  .forecast-growth-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .forecast-growth-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #4f7fff, #a855f7);
+    transition: width 1s ease;
+  }
+  .forecast-drivers {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .driver-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+  }
+  .driver-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #4f7fff;
+    flex-shrink: 0;
+  }
+
+  /* Follow-up suggestion */
+  .followup-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .followup-chip {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .followup-chip:hover {
+    background: rgba(79,127,255,0.15);
+    border-color: rgba(79,127,255,0.3);
+    color: #7ba7ff;
+  }
+
+  /* Animate in */
+  .msg-row, .ctx-banner {
+    animation: fade-up 0.4s ease both;
+  }
+  .msg-row:nth-child(2) { animation-delay: 0.1s; }
+  .msg-row:nth-child(3) { animation-delay: 0.2s; }
+  .msg-row:nth-child(4) { animation-delay: 0.3s; }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="chat-wrap">
+
+  <!-- Context banner -->
+  <div class="ctx-banner">
+    <div class="doc-icon">📄</div>
+    <span>已載入文件：<strong>AW26 Teva Product Descriptions</strong>（完整版）・知識庫連結中</span>
+  </div>
+
+  <!-- User message -->
+  <div class="msg-row user">
+    <div class="avatar user-av">J</div>
+    <div class="bubble user-bubble">
+      幫我抓出該文件中的 Hurricane Trailsetter 系列的鞋款，歷年的銷售數據跟預估今年的銷售數據
+    </div>
+  </div>
+
+  <!-- AI fetching -->
+  <div class="msg-row">
+    <div class="avatar ai">✦</div>
+    <div class="bubble ai-bubble">
+      <div class="fetch-row">
+        <div class="fetch-dots">
+          <span></span><span></span><span></span>
+        </div>
+        正在從文件與知識庫擷取 Hurricane Trailsetter 相關資料…
+      </div>
+    </div>
+  </div>
+
+  <!-- AI full response -->
+  <div class="msg-row">
+    <div class="avatar ai">✦</div>
+    <div class="bubble ai-bubble">
+
+      <!-- Models found -->
+      <div class="ai-section-title">找到 4 款 Hurricane Trailsetter 系列鞋款</div>
+      <div class="model-grid">
+        <div class="model-item">
+          <div class="model-dot" style="background:#7ba7ff"></div>
+          <span class="model-name">Hurricane Trailsetter Sandal</span>
+          <span class="model-sku">1136261</span>
+          <span class="model-tag tag-m">男款</span>
+        </div>
+        <div class="model-item">
+          <div class="model-dot" style="background:#f472b6"></div>
+          <span class="model-name">Hurricane Trailsetter Sandal</span>
+          <span class="model-sku">1136262</span>
+          <span class="model-tag tag-w">女款</span>
+        </div>
+        <div class="model-item">
+          <div class="model-dot" style="background:#7ba7ff"></div>
+          <span class="model-name">Hurricane Trailsetter Mid</span>
+          <span class="model-sku">1136263</span>
+          <span class="model-tag tag-m">男款</span>
+        </div>
+        <div class="model-item">
+          <div class="model-dot" style="background:#f472b6"></div>
+          <span class="model-name">Hurricane Trailsetter Mid</span>
+          <span class="model-sku">1136264</span>
+          <span class="model-tag tag-w">女款</span>
+        </div>
+      </div>
+
+      <!-- Historical sales -->
+      <div class="ai-section-title">歷年銷售數據（台灣市場・合計）</div>
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>年度</th>
+            <th>銷售量（雙）</th>
+            <th>營業額</th>
+            <th>年成長</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="year-label">2022</span></td>
+            <td>1,240
+              <span class="bar-inline">
+                <span style="height:5px"></span>
+                <span style="height:7px"></span>
+                <span style="height:6px"></span>
+                <span style="height:9px"></span>
+                <span style="height:8px"></span>
+              </span>
+            </td>
+            <td><span class="revenue-val">NT$1,860,000</span></td>
+            <td><span style="color:rgba(255,255,255,0.3);font-size:12px">—</span></td>
+          </tr>
+          <tr>
+            <td><span class="year-label">2023</span></td>
+            <td>1,580
+              <span class="bar-inline">
+                <span style="height:5px"></span>
+                <span style="height:8px"></span>
+                <span style="height:10px"></span>
+                <span style="height:9px"></span>
+                <span style="height:12px" class="active"></span>
+              </span>
+            </td>
+            <td><span class="revenue-val">NT$2,370,000</span></td>
+            <td><span class="growth-pos">↑ +27.4%</span></td>
+          </tr>
+          <tr>
+            <td><span class="year-label">2024</span></td>
+            <td>1,920
+              <span class="bar-inline">
+                <span style="height:6px"></span>
+                <span style="height:9px"></span>
+                <span style="height:11px"></span>
+                <span style="height:13px" class="active"></span>
+                <span style="height:12px"></span>
+              </span>
+            </td>
+            <td><span class="revenue-val">NT$2,976,000</span></td>
+            <td><span class="growth-pos">↑ +21.5%</span></td>
+          </tr>
+          <tr>
+            <td><span class="year-label">2025</span></td>
+            <td>2,310
+              <span class="bar-inline">
+                <span style="height:7px"></span>
+                <span style="height:10px"></span>
+                <span style="height:13px"></span>
+                <span style="height:14px" class="active"></span>
+                <span style="height:16px" class="active"></span>
+              </span>
+            </td>
+            <td><span class="revenue-val">NT$3,696,000</span></td>
+            <td><span class="growth-pos">↑ +20.3%</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 2026 Forecast -->
+      <div class="ai-section-title">2026 年銷售預估</div>
+      <div class="forecast-card">
+        <div class="forecast-header">
+          <div class="forecast-year">F26</div>
+          <div class="forecast-badge">AI 預測</div>
+        </div>
+        <div class="forecast-grid">
+          <div class="forecast-item">
+            <div class="forecast-lbl">預估銷量</div>
+            <div class="forecast-val">2,700–2,850 雙</div>
+            <div class="forecast-sub">較 2025 年 ↑ +17%～+23%</div>
+          </div>
+          <div class="forecast-item">
+            <div class="forecast-lbl">預估營業額</div>
+            <div class="forecast-val">NT$430–456 萬</div>
+            <div class="forecast-sub">中位數 NT$4,420,000</div>
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:4px">
+            <span>成長信心度</span>
+            <span>82%</span>
+          </div>
+          <div class="forecast-growth-bar">
+            <div class="forecast-growth-fill" style="width:82%"></div>
+          </div>
+        </div>
+        <div class="forecast-drivers">
+          <div class="driver-item">
+            <div class="driver-dot"></div>
+            戶外健行風潮持續升溫，帶動 Trailsetter Mid 需求
+          </div>
+          <div class="driver-item">
+            <div class="driver-dot"></div>
+            AW26 新增 3 個配色（含台灣限定款），預期吸引回購客群
+          </div>
+          <div class="driver-item">
+            <div class="driver-dot"></div>
+            競品（KEEN / Merrell）供貨縮減，市場空缺有利 Teva
+          </div>
+        </div>
+      </div>
+
+      <!-- Follow-up suggestions -->
+      <div class="followup-row">
+        <span class="followup-chip">📊 按款式拆分銷售</span>
+        <span class="followup-chip">🏪 各通路佔比</span>
+        <span class="followup-chip">📈 與競品比較</span>
+        <span class="followup-chip">📝 生成銷售摘要報告</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>

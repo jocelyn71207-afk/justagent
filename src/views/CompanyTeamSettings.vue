@@ -3,11 +3,11 @@
     <div class="views-page-content-box">
 
       <div class="views-page-header">
-        <div class="d-flex flex-align-start">
-          <h3>
-            企業/團隊設定
-            <div class="secondary-box">公司名稱</div>
-          </h3>
+        <div class="d-flex flex-align-center">
+          <div class="page-title-group">
+            <h3>企業/團隊設定</h3>
+            <span class="company-name-badge">公司名稱</span>
+          </div>
           <compSwitch v-model="isCompanyTab" :options="switchOptions" />
         </div>
         <button class="custom-btn custom-main-btn" v-if="!isCompanyTab" @click="openTeamModal('create')">
@@ -17,62 +17,70 @@
       </div>
 
       <!-- 企業 tab -->
-      <div v-if="isCompanyTab">
+      <div v-if="isCompanyTab" class="company-settings">
 
-        <!-- 企業類型 -->
-        <section class="setting-section">
-          <div class="setting-label">企業類型</div>
-          <div class="setting-value">零售</div>
-          <a href="#" class="setting-link">
-            更改請聯絡客服
-            <i class="material-symbols-outlined">chevron_right</i>
-          </a>
-        </section>
+        <div class="info-card">
+          <div class="info-row">
+            <div class="info-row-left">
+              <span class="material-symbols-outlined info-row-icon">domain</span>
+              <span class="info-row-label">企業類型</span>
+            </div>
+            <div class="info-row-right">
+              <span class="info-row-value">零售</span>
+              <a href="#" class="setting-link">
+                更改請聯絡客服
+                <i class="material-symbols-outlined">chevron_right</i>
+              </a>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-row-left">
+              <span class="material-symbols-outlined info-row-icon">groups</span>
+              <span class="info-row-label">團隊類型</span>
+            </div>
+            <div class="info-row-right">
+              <span class="type-tag">實體門市</span>
+              <span class="type-tag">電子商務</span>
+            </div>
+          </div>
+          <div class="info-row no-border">
+            <div class="info-row-left">
+              <span class="material-symbols-outlined info-row-icon">workspace_premium</span>
+              <span class="info-row-label">使用方案</span>
+            </div>
+            <div class="info-row-right">
+              <span class="plan-badge">標準版</span>
+              <span class="plan-expire">到期日 2026.08.09</span>
+            </div>
+          </div>
+        </div>
 
-        <hr class="setting-divider" />
-
-        <!-- 團隊類型 -->
-        <section class="setting-section">
-          <div class="setting-label">團隊類型</div>
-          <div class="setting-value">實體門市</div>
-          <div class="setting-value">電子商務</div>
-        </section>
-
-        <hr class="setting-divider" />
-
-        <!-- 使用方案 -->
-        <section class="setting-section">
-          <div class="setting-label">使用方案</div>
-          <div class="setting-value">標準版</div>
-          <div class="setting-value">2026.08.09 到期</div>
-        </section>
-
-        <hr class="setting-divider" />
-
-        <!-- 現有 Agent -->
-        <section class="setting-section">
-          <div class="setting-label">現有Agent</div>
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">smart_toy</span>
+            <span class="settings-block-title">現有 Agent</span>
+          </div>
           <div class="agent-list">
             <div class="agent-card" v-for="agent in agentList" :key="agent.id">
-              <i class="material-symbols-outlined">{{ agent.icon }}</i>
+              <div class="agent-icon-bg">
+                <i class="material-symbols-outlined">{{ agent.icon }}</i>
+              </div>
               <span>{{ agent.name }}</span>
             </div>
           </div>
-        </section>
+        </div>
 
-        <hr class="setting-divider" />
-
-        <!-- 平台管理者 -->
-        <section class="setting-section">
-          <div class="admin-header">
-            <div class="setting-label">平台管理者</div>
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">admin_panel_settings</span>
+            <span class="settings-block-title">平台管理者</span>
             <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
               <i class="material-symbols-outlined">add</i>
               新增平台管理者
             </button>
           </div>
           <div class="setting-description">
-            <i class="material-symbols-outlined fs-19">info</i>
+            <i class="material-symbols-outlined">info</i>
             企業擁有者擁有最高權限並綁定付費帳戶；管理員享有完全相同權限但無法轉移擁有權，可自由管理團隊成員。
           </div>
           <div class="admin-table-box">
@@ -88,8 +96,13 @@
               <tbody>
                 <tr v-for="admin in adminList" :key="admin.id">
                   <td>
-                    <i v-if="admin.isOwner" class="material-symbols-outlined owner-icon">diamond</i>
-                    {{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}
+                    <div class="admin-name-cell">
+                      <div class="admin-avatar" :class="{ 'is-owner': admin.isOwner }">
+                        {{ admin.name.charAt(0) }}
+                      </div>
+                      <span>{{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}</span>
+                      <i v-if="admin.isOwner" class="material-symbols-outlined owner-icon">diamond</i>
+                    </div>
                   </td>
                   <td>{{ admin.email }}</td>
                   <td class="fc-grey-1">{{ formatTimeToDisplay(admin.lastActive) }}</td>
@@ -101,32 +114,44 @@
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
 
       </div>
 
       <!-- 團隊 tab -->
-      <div v-if="!isCompanyTab">
-        <section class="setting-section">
-          <div class="setting-label">實體門市</div>
+      <div v-if="!isCompanyTab" class="team-settings">
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">store</span>
+            <span class="settings-block-title">實體門市</span>
+          </div>
           <div class="team-list">
             <div class="team-card" v-for="item in [1,2]" :key="'testA'+item">
-              <span>團隊名稱{{ item }}</span>
-              <i class="material-symbols-outlined edit-btn">delete</i>
-              <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
+              <span class="material-symbols-outlined team-card-icon">meeting_room</span>
+              <span class="team-card-name">團隊名稱{{ item }}</span>
+              <div class="team-card-actions">
+                <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
+                <i class="material-symbols-outlined edit-btn">delete</i>
+              </div>
             </div>
           </div>
-        </section>
-        <section class="setting-section">
-          <div class="setting-label">電子商務</div>
+        </div>
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">shopping_cart</span>
+            <span class="settings-block-title">電子商務</span>
+          </div>
           <div class="team-list">
             <div class="team-card" v-for="item in [1,2]" :key="'testB'+item">
-              <span>團隊名稱{{ item }}</span>
-              <i class="material-symbols-outlined edit-btn">delete</i>
-              <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
+              <span class="material-symbols-outlined team-card-icon">storefront</span>
+              <span class="team-card-name">團隊名稱{{ item }}</span>
+              <div class="team-card-actions">
+                <i class="material-symbols-outlined edit-btn" @click="openTeamModal('edit', String(item))">edit</i>
+                <i class="material-symbols-outlined edit-btn">delete</i>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
       </div>
 
     </div>
@@ -170,15 +195,16 @@ const switchOptions = [
 
 // 現有 Agent 列表  TODO... 後端吐資料
 const agentList = ref([
-  { id: 'a1', name: '資料標準化Agent', icon: 'article' },
-  { id: 'a2', name: '數據分析Agent', icon: 'bar_chart' },
+  { id: 'a1', name: '業務助理', icon: 'support_agent' },
+  { id: 'a2', name: '數據分析', icon: 'analytics' },
+  { id: 'a3', name: '行銷專員', icon: 'campaign' },
 ]);
 
 // 平台管理者列表  TODO... 後端吐資料
 const adminList = ref([
-  { id: 'u1', name: 'Rita', email: 'rita@gmail.com', lastActive: '2026-03-06 00:00:00', isOwner: true },
-  { id: 'u2', name: 'Rita', email: 'rita@gmail.com', lastActive: '2026-03-06 00:00:00', isOwner: false },
-  { id: 'u3', name: 'Rita', email: 'rita@gmail.com', lastActive: '2026-03-06 00:00:00', isOwner: false },
+  { id: 'u1', name: 'Lucas', email: 'lucas.admin@gmail.com', lastActive: '2026-04-01 10:00:00', isOwner: true },
+  { id: 'u2', name: 'Rita', email: 'rita@gmail.com', lastActive: '2026-03-11 10:00:00', isOwner: false },
+  { id: 'u3', name: 'Amy', email: 'amy19342@gmail.com', lastActive: '2026-03-25 10:00:00', isOwner: false },
 ]);
 
 function deleteAdmin(admin: any) {

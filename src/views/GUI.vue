@@ -88,12 +88,12 @@
       <div class="mb-3">
         <h3>觀看色彩計畫</h3>
         <div :class="['lookColor', `bgc-main-${n}`] " v-for="n in 6" :key="'color-main'+n">.{{ `bgc-main-${n}` }}
-          <div class="pt-1" v-if="n === 1">#3eb5cc; <br> 產品主色</div>
-          <div class="pt-1" v-if="n === 2">#22c2d3;</div>
-          <div class="pt-1" v-if="n === 3">#76cbdd;</div>
-          <div class="pt-1" v-if="n === 4">#ceecf2;</div>
-          <div class="pt-1" v-if="n === 5">#e9f9fb;</div>
-          <div class="pt-1" v-if="n === 6">#ecfbff;</div>
+          <div class="pt-1" v-if="n === 1">#16a34a; <br> 產品主色</div>
+          <div class="pt-1" v-if="n === 2">#15803d;</div>
+          <div class="pt-1" v-if="n === 3">#22c55e;</div>
+          <div class="pt-1" v-if="n === 4">#bbf7d0;</div>
+          <div class="pt-1" v-if="n === 5">#dcfce7;</div>
+          <div class="pt-1" v-if="n === 6">#f0fdf4;</div>
         </div> <br>
 
         <div :class="['lookColor', `bgc-grey-${n}`] " v-for="n in 2" :key="'color-grey'+n">.{{ `bgc-grey-${n}` }}

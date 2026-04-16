@@ -1,0 +1,179 @@
+<h2>Wise 設計系統要套多深？</h2>
+<p class="subtitle">探索頁面目前是 Liquid Glass 風格（綠色毛玻璃背景），以下三個方向程度不同</p>
+
+<div class="cards">
+
+  <!-- Option A: Full Transformation -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#ffffff; padding:16px; border-radius:8px; font-family:Inter,sans-serif; border:1px solid #e5e5e5;">
+        <!-- Search bar -->
+        <div style="background:#f5f5f5; border-radius:9999px; padding:8px 16px; display:flex; align-items:center; gap:8px; margin-bottom:10px; border:1px solid rgba(14,15,12,0.12);">
+          <span style="font-size:14px; color:#868685;">🔍</span>
+          <span style="font-size:13px; color:#868685; font-weight:600;">搜尋 Agent 助理...</span>
+        </div>
+        <!-- Chips -->
+        <div style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap;">
+          <span style="padding:3px 12px; border-radius:9999px; font-size:11px; font-weight:600; background:rgba(22,51,0,0.08); color:#0e0f0c;">內容創作</span>
+          <span style="padding:3px 12px; border-radius:9999px; font-size:11px; font-weight:600; background:rgba(22,51,0,0.08); color:#0e0f0c;">財務分析</span>
+          <span style="padding:3px 12px; border-radius:9999px; font-size:11px; font-weight:600; background:rgba(22,51,0,0.08); color:#0e0f0c;">會議記錄</span>
+        </div>
+        <!-- Hero -->
+        <div style="background:#0e0f0c; border-radius:30px; padding:20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:22px; font-weight:900; color:#9fe870; line-height:0.85; margin-bottom:8px;">今天想讓 Agent<br>助理幫你做什麼？</div>
+            <div style="font-size:12px; color:rgba(159,232,112,0.6);">發掘最強大工作效率</div>
+          </div>
+          <div style="background:#9fe870; border-radius:20px; padding:12px 16px; cursor:pointer; flex-shrink:0;">
+            <div style="font-size:9px; font-weight:600; color:#163300; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">由我推薦</div>
+            <div style="font-size:12px; font-weight:600; color:#163300;">內容創作者</div>
+            <div style="font-size:10px; font-weight:600; color:#163300; margin-top:6px;">立即使用 →</div>
+          </div>
+        </div>
+        <!-- Cards -->
+        <div style="font-size:12px; font-weight:900; color:#0e0f0c; margin-bottom:8px; letter-spacing:-0.3px;">使用熱度榜</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px;">
+          <div style="background:#ffffff; border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:#9fe870;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#163300;margin-bottom:6px;">1</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">內容創作者</div>
+            <div style="color:#868685;line-height:1.4;">撰寫高品質文章...</div>
+          </div>
+          <div style="background:#ffffff; border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:rgba(14,15,12,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0e0f0c;margin-bottom:6px;">2</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">社群管理</div>
+            <div style="color:#868685;line-height:1.4;">管理各平台社群...</div>
+          </div>
+          <div style="background:#ffffff; border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:rgba(14,15,12,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0e0f0c;margin-bottom:6px;">3</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">專案管理</div>
+            <div style="color:#868685;line-height:1.4;">從規劃到執行...</div>
+          </div>
+          <div style="background:#ffffff; border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:rgba(14,15,12,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0e0f0c;margin-bottom:6px;">4</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">顧客服務</div>
+            <div style="color:#868685;line-height:1.4;">提升客戶滿意度...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — 完全轉換</h3>
+      <p>白底取代毛玻璃背景。黑色大標題 + 萊姆綠 CTA。近黑色框線卡片。完全 Wise 感。</p>
+    </div>
+  </div>
+
+  <!-- Option B: Hybrid -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:linear-gradient(145deg,#bbf7d0,#86efac 35%,#7dd3fc); padding:16px; border-radius:8px; font-family:Inter,sans-serif;">
+        <!-- Search bar -->
+        <div style="background:rgba(255,255,255,0.55); border-radius:9999px; padding:8px 16px; display:flex; align-items:center; gap:8px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.5); backdrop-filter:blur(10px);">
+          <span style="font-size:14px; color:rgba(0,50,30,0.6);">🔍</span>
+          <span style="font-size:13px; color:rgba(0,50,30,0.6); font-weight:600;">搜尋 Agent 助理...</span>
+        </div>
+        <!-- Chips - Wise style pill on glass bg -->
+        <div style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap;">
+          <span style="padding:3px 12px; border-radius:9999px; font-size:11px; font-weight:600; background:#9fe870; color:#163300;">內容創作</span>
+          <span style="padding:3px 12px; border-radius:9999px; font-size:11px; font-weight:600; background:rgba(255,255,255,0.6); color:#0e0f0c;">財務分析</span>
+          <span style="padding:3px 12px; border-radius:9999px; font-size:11px; font-weight:600; background:rgba(255,255,255,0.6); color:#0e0f0c;">會議記錄</span>
+        </div>
+        <!-- Hero - glass card with Wise typography -->
+        <div style="background:rgba(255,255,255,0.52); backdrop-filter:blur(20px); border-radius:24px; padding:18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.7);">
+          <div>
+            <div style="font-size:18px; font-weight:900; color:#0e0f0c; line-height:0.9; margin-bottom:8px;">今天想讓 Agent<br>助理幫你做什麼？</div>
+            <div style="font-size:12px; color:#454745; font-weight:600;">發掘最強大工作效率</div>
+          </div>
+          <div style="background:#9fe870; border-radius:20px; padding:10px 14px; cursor:pointer; flex-shrink:0; box-shadow:0 2px 8px rgba(22,51,0,0.2);">
+            <div style="font-size:9px; font-weight:600; color:#163300; text-transform:uppercase; margin-bottom:2px;">由我推薦</div>
+            <div style="font-size:12px; font-weight:600; color:#163300;">內容創作者</div>
+            <div style="font-size:10px; font-weight:600; color:#163300; margin-top:5px;">立即使用 →</div>
+          </div>
+        </div>
+        <!-- Cards - glass with Wise border -->
+        <div style="font-size:12px; font-weight:900; color:#0e0f0c; margin-bottom:8px;">使用熱度榜</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px;">
+          <div style="background:rgba(255,255,255,0.5); backdrop-filter:blur(10px); border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:#9fe870;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#163300;margin-bottom:6px;">1</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">內容創作者</div>
+            <div style="color:#454745;">文章與多媒體...</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.5); backdrop-filter:blur(10px); border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:rgba(14,15,12,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0e0f0c;margin-bottom:6px;">2</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">社群管理</div>
+            <div style="color:#454745;">管理各平台...</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.5); backdrop-filter:blur(10px); border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:rgba(14,15,12,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0e0f0c;margin-bottom:6px;">3</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">專案管理</div>
+            <div style="color:#454745;">規劃到執行...</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.5); backdrop-filter:blur(10px); border:1px solid rgba(14,15,12,0.12); border-radius:16px; padding:10px; font-size:10px;">
+            <div style="width:28px;height:28px;border-radius:9999px;background:rgba(14,15,12,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0e0f0c;margin-bottom:6px;">4</div>
+            <div style="font-weight:600;color:#0e0f0c;margin-bottom:2px;">顧客服務</div>
+            <div style="color:#454745;">提升滿意度...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 混搭（推薦）</h3>
+      <p>保留毛玻璃背景動態感，套入 Wise 的字重 900、萊姆綠 CTA、近黑邊框系統。兩種風格融合。</p>
+    </div>
+  </div>
+
+  <!-- Option C: Token Only -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:linear-gradient(145deg,#bbf7d0,#86efac 35%,#7dd3fc); padding:16px; border-radius:8px; font-family:Inter,sans-serif;">
+        <!-- Search bar - mostly unchanged -->
+        <div style="background:rgba(255,255,255,0.45); border-radius:18px; padding:8px 14px; display:flex; align-items:center; gap:8px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.6);">
+          <span style="font-size:14px; color:rgba(0,50,30,0.6);">🔍</span>
+          <span style="font-size:13px; color:rgba(0,50,30,0.45); font-weight:400;">搜尋 Agent 助理...</span>
+        </div>
+        <!-- Chips - subtle change: just CTA becomes lime green -->
+        <div style="display:flex; gap:6px; margin-bottom:14px;">
+          <span style="padding:4px 14px; border-radius:20px; font-size:11px; background:rgba(255,255,255,0.52); color:rgba(0,50,30,0.62);">內容創作</span>
+          <span style="padding:4px 14px; border-radius:20px; font-size:11px; background:rgba(255,255,255,0.52); color:rgba(0,50,30,0.62);">財務分析</span>
+          <span style="padding:4px 14px; border-radius:20px; font-size:11px; background:rgba(255,255,255,0.52); color:rgba(0,50,30,0.62);">會議記錄</span>
+        </div>
+        <!-- Hero - same glass, only CTA button changes -->
+        <div style="background:rgba(255,255,255,0.45); backdrop-filter:blur(20px); border-radius:18px; padding:18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.5);">
+          <div>
+            <div style="font-size:15px; font-weight:600; color:#0a2e18; margin-bottom:5px;">今天想讓 Agent 助理幫你做什麼？</div>
+            <div style="font-size:12px; color:rgba(10,46,24,0.52);">發掘最強大工作效率</div>
+          </div>
+          <div style="background:#9fe870; border-radius:9999px; padding:10px 16px; cursor:pointer; flex-shrink:0;">
+            <div style="font-size:11px; font-weight:600; color:#163300;">立即使用 →</div>
+          </div>
+        </div>
+        <!-- Cards - unchanged glass style -->
+        <div style="font-size:14px; font-weight:600; color:#0a2e18; margin-bottom:8px;">使用熱度榜</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px;">
+          <div style="background:rgba(255,255,255,0.50); backdrop-filter:blur(20px); border-radius:16px; padding:10px; font-size:10px; border:1px solid rgba(255,255,255,0.5);">
+            <div style="font-weight:600;color:#0a2e18;margin-bottom:2px;">內容創作者</div>
+            <div style="color:rgba(10,46,24,0.52);">撰寫高品質文章...</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.50); backdrop-filter:blur(20px); border-radius:16px; padding:10px; font-size:10px; border:1px solid rgba(255,255,255,0.5);">
+            <div style="font-weight:600;color:#0a2e18;margin-bottom:2px;">社群管理</div>
+            <div style="color:rgba(10,46,24,0.52);">管理各平台...</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.50); backdrop-filter:blur(20px); border-radius:16px; padding:10px; font-size:10px; border:1px solid rgba(255,255,255,0.5);">
+            <div style="font-weight:600;color:#0a2e18;margin-bottom:2px;">專案管理</div>
+            <div style="color:rgba(10,46,24,0.52);">規劃到執行...</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.50); backdrop-filter:blur(20px); border-radius:16px; padding:10px; font-size:10px; border:1px solid rgba(255,255,255,0.5);">
+            <div style="font-weight:600;color:#0a2e18;margin-bottom:2px;">顧客服務</div>
+            <div style="color:rgba(10,46,24,0.52);">提升滿意度...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — 僅換 CTA 顏色</h3>
+      <p>只把按鈕和 link 換成萊姆綠 + 圓角 pill。其餘毛玻璃風格完全保留。最小幅度改動。</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">點選你傾向的方向，或在 terminal 告訴我</p>

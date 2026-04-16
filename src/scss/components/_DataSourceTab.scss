@@ -1,0 +1,450 @@
+// src/scss/components/_DataSourceTab.scss
+
+.DataSourceTab {
+  padding: 24px 0;
+
+  // ── 區塊標題 ──
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--color-grey-1);
+    margin-bottom: 12px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--color-grey-1);
+    margin-bottom: 20px;
+  }
+
+  // ── 已連接區塊 ──
+  .connected-section {
+    margin-bottom: 32px;
+  }
+
+  .source-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .source-card {
+    background: white;
+    border: 1.5px solid var(--color-wise-green);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+
+    .source-card-status {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .source-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--color-wise-mint);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      color: var(--color-wise-dark-green);
+    }
+
+    .source-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .source-type-label {
+      font-size: 11px;
+      color: var(--color-grey-1);
+      margin-bottom: 8px;
+    }
+
+    .source-sync-info {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .source-card-actions {
+      display: flex;
+      gap: 6px;
+
+      button {
+        flex: 1;
+        padding: 5px 0;
+        border: 1px solid var(--color-border, #e0e0e0);
+        border-radius: 6px;
+        font-size: 11px;
+        background: white;
+        cursor: pointer;
+
+        &:hover {
+          background: #f5f5f5;
+        }
+      }
+    }
+  }
+
+  // ── App 卡片 Grid ──
+  .app-section {
+    margin-bottom: 24px;
+  }
+
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .app-card {
+    background: white;
+    border: 1.5px solid var(--color-border, #e0e0e0);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+
+    &:hover:not(.app-card--disabled) {
+      box-shadow: 0 4px 16px rgba($color-wise-green, 0.25);
+      border-color: var(--color-wise-green);
+    }
+
+    &.app-card--disabled {
+      background: #fafafa;
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    .app-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .app-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .app-desc {
+      font-size: 11px;
+      color: var(--color-grey-1);
+      margin-bottom: 10px;
+      min-height: 28px;
+    }
+
+    .app-connect-btn {
+      width: 100%;
+      padding: 6px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+
+      &.btn-primary {
+        background: var(--color-wise-green);
+        color: var(--color-wise-dark-green);
+
+        &:hover {
+          background: var(--color-wise-dark-green);
+          color: #fff;
+        }
+      }
+
+      &.btn-disabled {
+        background: #e0e0e0;
+        color: #aaa;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .app-card--more {
+    border: 1.5px dashed #d0d0d0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    min-height: 140px;
+    cursor: default;
+
+    &:hover {
+      box-shadow: none;
+    }
+
+    .more-icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .more-text {
+      font-size: 11px;
+    }
+  }
+}
+
+// ══════════════════════════════════════
+// ConnectApiWizard Modal
+// ══════════════════════════════════════
+
+.ConnectApiWizard {
+  // ── 步驟指示器 ──
+  .wizard-step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 24px;
+
+    .step-node {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+
+      &.is-done {
+        background: var(--color-wise-green);
+        color: var(--color-wise-dark-green);
+      }
+
+      &.is-active {
+        background: var(--color-wise-green);
+        color: var(--color-wise-dark-green);
+      }
+
+      &.is-pending {
+        background: #e0e0e0;
+        color: #aaa;
+      }
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #e0e0e0;
+
+      &.is-done {
+        background: var(--color-wise-green);
+      }
+    }
+  }
+
+  // ── 表單 ──
+  .wizard-body {
+    min-height: 260px;
+  }
+
+  .form-field {
+    margin-bottom: 16px;
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--color-text);
+
+      .required {
+        color: var(--color-danger, #e53935);
+        margin-left: 2px;
+      }
+
+      .form-hint {
+        font-weight: 400;
+        color: var(--color-grey-1);
+      }
+    }
+
+    .form-error {
+      font-size: 11px;
+      color: var(--color-danger, #e53935);
+      margin-top: 4px;
+    }
+  }
+
+  .method-toggle {
+    display: flex;
+    gap: 6px;
+
+    .method-btn {
+      padding: 7px 20px;
+      border: 1.5px solid var(--color-border, #e0e0e0);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      background: white;
+      cursor: pointer;
+
+      &.is-active {
+        border-color: var(--color-wise-green);
+        background: var(--color-wise-mint);
+        color: var(--color-wise-dark-green);
+      }
+    }
+  }
+
+  .kv-list {
+    .kv-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+
+      .kv-key { flex: 0 0 140px; }
+      .kv-value { flex: 1; }
+
+      .kv-remove-btn {
+        padding: 0 6px;
+        border: none;
+        background: transparent;
+        color: var(--color-grey-1);
+        cursor: pointer;
+        font-size: 16px;
+
+        &:hover { color: var(--color-danger, #e53935); }
+      }
+    }
+
+    .add-kv-btn {
+      font-size: 12px;
+      padding: 5px 12px;
+    }
+  }
+
+  .body-textarea {
+    height: 80px;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  // ── Step 2：API 預覽 ──
+  .api-test-box {
+    background: #f0f4ff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+
+    .api-test-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+
+      .api-test-title {
+        font-size: 12px;
+        font-weight: 600;
+      }
+    }
+
+    .api-response-preview {
+      background: #1e1e2e;
+      border-radius: 6px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #a8d8a8;
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+
+    .api-test-placeholder {
+      text-align: center;
+      color: var(--color-grey-1);
+      font-size: 12px;
+      padding: 12px 0;
+    }
+  }
+
+  .field-map-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    .field-map-label {
+      display: block;
+      font-size: 11px;
+      color: var(--color-grey-1);
+      margin-bottom: 4px;
+    }
+  }
+
+  .form-hint-text {
+    font-size: 11px;
+    color: var(--color-grey-1);
+    margin-top: 5px;
+  }
+
+  // ── Step 3：同步頻率 ──
+  .schedule-options {
+    display: flex;
+    gap: 8px;
+
+    .schedule-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border: 1.5px solid var(--color-border, #e0e0e0);
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+
+      input[type='radio'] { display: none; }
+
+      &.is-active {
+        border-color: var(--color-wise-green);
+        background: var(--color-wise-mint);
+        color: var(--color-wise-dark-green);
+        font-weight: 600;
+      }
+    }
+  }
+
+  // ── 完成確認提示 ──
+  .confirm-hint {
+    background: #f0fff4;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #2e7d32;
+    margin-top: 12px;
+  }
+
+  // ── Footer ──
+  .modal-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+}

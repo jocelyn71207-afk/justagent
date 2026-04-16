@@ -83,4 +83,36 @@
 
   --color-tab-active-bg: #{$color-tab-active-bg-light}; // 頁籤 active 的背景顏色
   --color-switch-active-bg: #{$color-switch-active-bg-light}; // switch active 的背景顏色
+
+  // ── 品牌主色（對應 Wise 綠色系統）────────────────────────────────────────────
+  --color-main: #{$color-wise-green};
+  --color-main-alpha10: #{rgba($color-wise-green, 0.1)};
+  --color-main-alpha20: #{rgba($color-wise-green, 0.2)};
+  --color-main-alpha30: #{rgba($color-wise-green, 0.3)};
+  --color-main-alpha40: #{rgba($color-wise-green, 0.4)};
+  --color-main-alpha50: #{rgba($color-wise-green, 0.5)};
+  --color-main-alpha70: #{rgba($color-wise-green, 0.7)};
+
+  // ── 灰色 ───────────────────────────────────────────────────────────────────
+  --color-grey-1: #{$color_grey_1};
+
+  // ── Wise 設計系統 tokens ────────────────────────────────────────────────────
+  --color-wise-card: #ffffff;             // 卡片底色
+  --color-wise-green: #9fe870;            // 萊姆綠 CTA
+  --color-wise-dark-green: #163300;       // CTA 文字
+  --color-wise-black: #0e0f0c;            // 主色文字 / 深底
+  --color-wise-gray: #868685;             // 次要文字
+  --color-wise-warm-dark: #454745;        // 三級文字
+  --color-wise-bg: #f2f4f0;               // 頁面背景
+  --color-wise-surface: #e8ebe6;          // hover 底色
+  --color-wise-mint: #e2f6d5;             // badge 淡綠底
+  --color-wise-badge-hot-bg: #faeeda;     // hot badge 底
+  --color-wise-badge-hot-text: #854f0b;   // hot badge 文字
+  --color-wise-badge-sat-text: #0f6e56;   // sat badge 文字
+  --color-wise-rank-bronze-bg: #f5dfc0;   // 第3名 badge 底
+  --color-wise-rank-bronze-text: #854f0b; // 第3名 badge 文字
+  --color-wise-chart-bg: #f8faf6;        // 長條圖面板背景（極淺綠）
+  --color-wise-badge-pending-bg: #f0f0ef; // pending badge 底色
+  --color-wise-table-header-bg: #f8f9f7; // 表格 header / hover 背景
+  --color-wise-empty-border: #d3d4d0;
 }

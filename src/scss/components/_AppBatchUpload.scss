@@ -120,6 +120,9 @@
               overflow: hidden;
               text-overflow: ellipsis;
             }
+            .process-type-badge {
+              margin-top: 4px;
+            }
           }
           .delete-btn {
             font-size: 24px;
@@ -218,7 +221,7 @@
             border-radius: 50%;
             flex-shrink: 0;
             background: conic-gradient(
-              $color_green_1 var(--progress, 0%),
+              var(--color-wise-green) var(--progress, 0%),
               $color_grey_1 var(--progress, 0%)
             );
             &::after {
@@ -230,7 +233,7 @@
             }
           }
           .ok {
-            color: $color_green_1;
+            color: var(--color-wise-dark-green);
           }
           .delete-btn {
             margin-left: 10px;

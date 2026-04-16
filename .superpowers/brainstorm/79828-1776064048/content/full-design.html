@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjectTrashCans 完整設計</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft JhengHei UI", "Segoe UI", system-ui, sans-serif;
+    background: #f4f6f8;
+    color: #232735;
+    padding: 32px 24px;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 24px; }
+
+  /* ── Page Mockup Frame ── */
+  .page-frame {
+    background: #f0f3f0;
+    border-radius: 16px;
+    padding: 40px 40px 32px;
+    max-width: 900px;
+    margin: 0 auto;
+    border: 1px solid #dde2dd;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .page-title { font-size: 22px; font-weight: 700; }
+  .team-tag {
+    font-size: 14px;
+    font-weight: 400;
+    color: #8b90a0;
+    margin-left: 8px;
+  }
+  .filter-pill {
+    border: 1px solid #d3d4d8;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #555;
+    background: white;
+    cursor: pointer;
+  }
+
+  /* ── Info Banner ── */
+  .info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: #78350f;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .info-banner .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Cards Grid ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  /* ── Project Card ── */
+  .trash-card {
+    border-radius: 14px;
+    background: white;
+    border: 1px solid rgba(14,15,12,0.08);
+    overflow: hidden;
+    transition: all 0.22s cubic-bezier(0.34,1.4,0.64,1);
+    cursor: default;
+  }
+  .trash-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(14,15,12,0.09);
+    border-color: rgba(14,15,12,0.14);
+  }
+
+  .card-img-wrap {
+    position: relative;
+    height: 150px;
+    overflow: hidden;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(1);
+    opacity: 0.55;
+    display: block;
+  }
+
+  /* 到期標籤 */
+  .expiry-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    z-index: 2;
+  }
+  .badge-urgent  { background: #e53935; }
+  .badge-warning { background: #f59e0b; color: #fff; }
+  .badge-normal  { background: rgba(0,0,0,0.38); }
+
+  /* 垃圾桶小圖示（角落） */
+  .trash-icon-overlay {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(0,0,0,0.30);
+    border-radius: 8px;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: white;
+    z-index: 2;
+  }
+
+  .card-footer {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name {
+    font-size: 13px; font-weight: 600;
+    color: #232735;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-meta {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #8b90a0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .deleter-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #b0bec5;
+    font-size: 8px; font-weight: 700;
+    color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .more-btn {
+    font-size: 18px;
+    color: #8b90a0;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    margin-left: 8px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .more-btn:hover { background: #f3f4f6; color: #232735; }
+
+  /* ── Empty State ── */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 12px;
+  }
+  .empty-icon-bg {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #e8eae8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: #9e9e9e;
+  }
+  .empty-title { font-size: 16px; font-weight: 600; color: #5a5e6b; }
+  .empty-sub { font-size: 13px; color: #9e9e9e; }
+
+  /* ── Annotation ── */
+  .annotations {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-top: 28px;
+    border-top: 1px solid #dde2dd;
+    padding-top: 20px;
+  }
+  .ann-item { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .ann-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #6366f1;
+    color: white;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .ann-text { color: #444; line-height: 1.6; }
+  .ann-text strong { color: #232735; }
+
+  /* ── Dropdown Preview ── */
+  .option-menu {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    overflow: hidden;
+    width: 130px;
+    display: inline-block;
+    font-size: 13px;
+  }
+  .opt-item { padding: 10px 14px; cursor: pointer; }
+  .opt-item:hover { background: #f9fafb; }
+  .opt-item.danger { color: #e53935; }
+  .opt-item.danger:hover { background: #fff5f5; }
+</style>
+</head>
+<body>
+<h2>ProjectTrashCans 完整設計稿</h2>
+<p class="subtitle">方向 A — 灰階圖片 ＋ 色碼到期標籤，完整頁面預覽</p>
+
+<!-- ── 主頁面 ── -->
+<div class="page-frame">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">專案垃圾桶 <span class="team-tag">團隊一</span></div>
+    <div class="filter-pill">所有刪除者 ▾</div>
+  </div>
+
+  <!-- Info Banner（升級版） -->
+  <div class="info-banner">
+    <span class="icon">⚠️</span>
+    <span>專案將依剩餘天數自動永久刪除。<strong>紅色</strong>代表 3 天內到期，請盡快還原或確認刪除。</span>
+  </div>
+
+  <!-- Cards -->
+  <div class="cards-grid">
+
+    <!-- 緊急（≤3天） -->
+    <div class="trash-card">
+      <div class="card-img-wrap">
+        <img src="https://picsum.photos/300/200?random=71" alt="">
+        <div class="trash-icon-overlay">🗑</div>
+        <div class="expiry-badge badge-urgent">剩 2 天</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-info">
+          <div class="card-name">行銷企劃案</div>
+          <div class="card-meta">
+            <div class="deleter-dot">L</div>
+            Lucas 刪除
+          </div>
+        </div>
+        <div class="more-btn">•••</div>
+      </div>
+    </div>
+
+    <!-- 警告（4–7天） -->
+    <div class="trash-card">
+      <div class="card-img-wrap">
+        <img src="https://picsum.photos/300/200?random=72" alt="">
+        <div class="trash-icon-overlay">🗑</div>
+        <div class="expiry-badge badge-warning">剩 5 天</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-info">
+          <div class="card-name">Q2 數據分析報告</div>
+          <div class="card-meta">
+            <div class="deleter-dot">S</div>
+            Syney 刪除
+          </div>
+        </div>
+        <div class="more-btn">•••</div>
+      </div>
+    </div>
+
+    <!-- 正常（>7天） -->
+    <div class="trash-card">
+      <div class="card-img-wrap">
+        <img src="https://picsum.photos/300/200?random=73" alt="">
+        <div class="trash-icon-overlay">🗑</div>
+        <div class="expiry-badge badge-normal">剩 14 天</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-info">
+          <div class="card-name">品牌形象專案</div>
+          <div class="card-meta">
+            <div class="deleter-dot">小</div>
+            小烏龜 刪除
+          </div>
+        </div>
+        <div class="more-btn">•••</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 說明標注 -->
+  <div class="annotations">
+    <div class="ann-item">
+      <div class="ann-num">1</div>
+      <div class="ann-text"><strong>圖片灰階 + 半透明</strong>：filter: grayscale(1) opacity(0.55)，強調已刪除狀態</div>
+    </div>
+    <div class="ann-item">
+      <div class="ann-num">2</div>
+      <div class="ann-text"><strong>到期標籤顏色</strong>：≤3天 紅色 <code style="background:#ffeaea;color:#c62828;border-radius:4px;padding:1px 5px">badge-urgent</code>・4–7天 琥珀 <code style="background:#fffbeb;color:#92400e;border-radius:4px;padding:1px 5px">badge-warning</code>・>7天 半透明灰 <code style="background:#f3f4f6;color:#555;border-radius:4px;padding:1px 5px">badge-normal</code></div>
+    </div>
+    <div class="ann-item">
+      <div class="ann-num">3</div>
+      <div class="ann-text"><strong>垃圾桶角標</strong>：左上角小圖示，強化「此區為垃圾桶」語意</div>
+    </div>
+    <div class="ann-item">
+      <div class="ann-num">4</div>
+      <div class="ann-text"><strong>info 橫幅升級</strong>：黃底帶邊框，說明色碼規則</div>
+    </div>
+    <div class="ann-item">
+      <div class="ann-num">5</div>
+      <div class="ann-text"><strong>更多選單</strong>：「永久刪除」顯示紅色危險色，「還原」保持預設色</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 空狀態 & 選單預覽 ── -->
+<div style="display:flex;gap:32px;max-width:900px;margin:24px auto 0;flex-wrap:wrap">
+
+  <div style="flex:1;min-width:260px">
+    <p style="font-size:13px;font-weight:700;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">空狀態</p>
+    <div style="background:white;border-radius:14px;border:1px solid #e5e7eb;padding:12px">
+      <div class="empty-state">
+        <div class="empty-icon-bg">🗑️</div>
+        <div class="empty-title">垃圾桶是空的</div>
+        <div class="empty-sub">已刪除的專案會顯示在這裡</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:200px">
+    <p style="font-size:13px;font-weight:700;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">更多選單</p>
+    <div class="option-menu">
+      <div class="opt-item">還原</div>
+      <div class="opt-item danger">永久刪除</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+
+> JustAgent-ui@0.0.0 type-check
+> vue-tsc --build
+
+src/components/AppSearchPage.vue(226,48): error TS2304: Cannot find name 'RouterLink'.
+src/components/ProjectListContent/ProjectListContent.vue(185,29): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/ProjectListContent/ProjectListContent.vue(185,32): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/ProjectListContent/ProjectListContent.vue(187,29): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/ProjectListContent/ProjectListContent.vue(187,32): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/ProjectListContent/ProjectListContent.vue(198,24): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/ProjectListContent/ProjectListContent.vue(201,24): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/ProjectListContent/ProjectListContent.vue(246,50): error TS7006: Parameter 'project' implicitly has an 'any' type.
+src/components/TeamAccountSettingModal.vue(96,12): error TS2345: Argument of type '{ class: string; onClick: (research?: boolean) => void; }' is not assignable to parameter of type 'ButtonHTMLAttributes & ReservedProps & Record<string, unknown>'.
+  Type '{ class: string; onClick: (research?: boolean) => void; }' is not assignable to type 'ButtonHTMLAttributes'.
+    Types of property 'onClick' are incompatible.
+      Type '(research?: boolean) => void' is not assignable to type '(payload: PointerEvent) => void'.
+        Types of parameters 'research' and 'payload' are incompatible.
+          Type 'PointerEvent' is not assignable to type 'boolean | undefined'.

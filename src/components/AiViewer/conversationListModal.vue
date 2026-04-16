@@ -8,12 +8,12 @@
     <div class="mb-3">
 
       <ul class="conversation-list">
-        <li class="active" @click="close()">
-          <span>對話名稱1對話名稱1對話名稱1對話名稱1對話名稱1對話名稱1對話名稱1對話名稱1</span>
+        <li :class="{ active: currentConversationId === 'conv1' }" @click="switchConversation('conv1')">
+          <span>2026商品文件翻譯</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
-        <li @click="close()">
-          <span>對話名稱2</span>
+        <li :class="{ active: currentConversationId === 'conv2' }" @click="switchConversation('conv2')">
+          <span>未命名對話</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
       </ul>
@@ -37,10 +37,15 @@ import { useAiviewerStore } from '@/stores/AiViewerStore';
 import popDialog from '@/services/popDialog';
 
 const aiviewerStore = useAiviewerStore();
-const { isOpenConversationListModal } = storeToRefs(aiviewerStore);
+const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore);
 
 function close() {
   isOpenConversationListModal.value = false;
+}
+
+function switchConversation(id: string) {
+  currentConversationId.value = id;
+  close();
 }
 
 function deleteFn(event: MouseEvent) {

@@ -40,6 +40,10 @@ $gapLevel: (
   .pl-#{$name} {
     padding-left: #{$weight}px !important;
   }
+  // gap
+  .gap-#{$name} {
+    gap: #{$weight}px !important;
+  }
 }
 
 $fontSize: (

@@ -1,0 +1,115 @@
+// src/scss/components/_AppSkeleton.scss
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: calc(400px + 100%) 0; }
+}
+
+%skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-border-1-alpha30) 25%,
+    var(--color-border-1-alpha50) 50%,
+    var(--color-border-1-alpha30) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+// ── List skeleton ──
+.app-skeleton--list {
+  padding: 8px 0;
+
+  .skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--color-border-1-alpha20);
+  }
+
+  .skeleton-cell-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+// ── Detail skeleton ──
+.app-skeleton--detail {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ── Card skeleton (spinner) ──
+.app-skeleton--card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 12px;
+
+  .skeleton-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-border-1-alpha30);
+    border-top-color: var(--color-main);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .skeleton-spinner-label {
+    font-size: 13px;
+    color: var(--color-text-alpha50);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Shared skeleton cells ──
+.skeleton-cell {
+  @extend %skeleton-shimmer;
+
+  &--icon    { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; }
+  &--title   { height: 16px; width: 55%; }
+  &--subtitle{ height: 12px; width: 35%; }
+  &--badge   { height: 22px; width: 60px; border-radius: 20px; flex-shrink: 0; }
+  &--heading { height: 28px; width: 60%; }
+  &--tag     { height: 20px; width: 80px; border-radius: 20px; }
+  &--para    { height: 14px; width: 100%; }
+  &--para-short { width: 65%; }
+}
+
+// ── AppErrorState ──
+.app-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+
+  &--inline {
+    padding: 32px 20px;
+  }
+
+  &__icon {
+    font-size: 48px;
+    color: var(--color-text-alpha30);
+    margin-bottom: 12px;
+  }
+
+  &__message {
+    font-size: 14px;
+    color: var(--color-text-alpha60);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+}

@@ -1,0 +1,304 @@
+<h2>專案卡片設計 — 淺色風格</h2>
+<p class="subtitle">參考附件白底卡片風格，左：預設狀態 / 右：Hover 顯示使用圖</p>
+
+<style>
+  body { background: #f0f4f8 !important; }
+
+  .card-demo-wrap {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .card-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #999;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Card base */
+  .card-demo {
+    width: 240px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
+    position: relative;
+    font-family: -apple-system, sans-serif;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  /* Image area */
+  .card-demo .img-area {
+    height: 170px;
+    overflow: hidden;
+    background: #e8edf2;
+    position: relative;
+  }
+  .card-demo .img-area img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+
+  /* Overlays on image */
+  .card-demo .img-overlay-top {
+    position: absolute;
+    top: 10px; left: 10px; right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+  }
+  .team-pill {
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(6px);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .heart-btn {
+    width: 30px; height: 30px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(6px);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    cursor: pointer;
+  }
+
+  /* Collaborators at bottom of image */
+  .img-collab {
+    position: absolute;
+    bottom: 10px; left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 2;
+  }
+  .avatar-group { display: flex; }
+  .avatar-sm {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: #fff;
+    margin-left: -7px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .avatar-sm:first-child { margin-left: 0; }
+  .collab-count {
+    font-size: 11px;
+    color: #fff;
+    font-weight: 600;
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    padding: 2px 7px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Chart area (hover state) */
+  .chart-area {
+    height: 170px;
+    background: #f7f9fb;
+    display: flex;
+    align-items: flex-end;
+    padding: 24px 16px 10px;
+    gap: 8px;
+  }
+  .bar-wrap {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px; flex: 1;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: #7c6aff;
+  }
+  .bar.dim { background: #c5bfff; }
+  .bar-label { font-size: 9px; color: #aaa; }
+  .bar-count { font-size: 9px; color: #888; }
+  .chart-title {
+    position: absolute;
+    top: 10px; left: 14px;
+    font-size: 11px; font-weight: 700; color: #888;
+  }
+
+  /* Footer */
+  .card-footer {
+    padding: 12px 14px 14px;
+  }
+  .proj-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+  }
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .status-badge {
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-pending { background: #f3f4f6; color: #9ca3af; }
+  .status-active  { background: #dcfce7; color: #16a34a; }
+  .status-review  { background: #fef9c3; color: #ca8a04; }
+  .status-done    { background: #ede9fe; color: #7c3aed; }
+  .last-edit {
+    font-size: 11px; color: #bbb;
+  }
+  .use-count {
+    font-size: 11px; color: #7c6aff; font-weight: 600;
+  }
+
+  /* Status palette */
+  .palette-wrap {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+  }
+</style>
+
+<div class="card-demo-wrap">
+
+  <!-- 預設狀態 -->
+  <div class="card-col">
+    <div class="section-label">預設狀態</div>
+    <div class="card-demo">
+      <div class="img-area">
+        <div class="img-overlay-top">
+          <span class="team-pill">Teva電子商務</span>
+          <span class="heart-btn">🤍</span>
+        </div>
+        <img src="https://picsum.photos/410/240.webp?random=62" alt="">
+        <div class="img-collab">
+          <div class="avatar-group">
+            <div class="avatar-sm" style="background:#7c6aff">L</div>
+            <div class="avatar-sm" style="background:#f472b6">滷</div>
+            <div class="avatar-sm" style="background:#34d399">小</div>
+          </div>
+          <span class="collab-count">3 人</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="proj-name">26W官網選品建議</div>
+        <div class="footer-row">
+          <span class="status-badge status-active">進行中</span>
+          <span class="last-edit">3 天前編輯</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hover 狀態 -->
+  <div class="card-col">
+    <div class="section-label">Hover 狀態（近一週使用圖）</div>
+    <div class="card-demo">
+      <div style="position:relative">
+        <div class="img-overlay-top" style="z-index:3">
+          <span class="team-pill">Teva電子商務</span>
+          <span class="heart-btn">🤍</span>
+        </div>
+        <span class="chart-title" style="top:36px">近一週使用次數</span>
+        <div class="chart-area" style="padding-top:52px">
+          <div class="bar-wrap">
+            <div class="bar-count">12</div>
+            <div class="bar dim" style="height:50px"></div>
+            <div class="bar-label">週一</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-count">8</div>
+            <div class="bar dim" style="height:34px"></div>
+            <div class="bar-label">週二</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-count">20</div>
+            <div class="bar" style="height:86px"></div>
+            <div class="bar-label">週三</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-count">15</div>
+            <div class="bar dim" style="height:64px"></div>
+            <div class="bar-label">週四</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-count">5</div>
+            <div class="bar dim" style="height:22px"></div>
+            <div class="bar-label">週五</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-count">3</div>
+            <div class="bar dim" style="height:13px"></div>
+            <div class="bar-label">週六</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-count">18</div>
+            <div class="bar" style="height:77px"></div>
+            <div class="bar-label">今天</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="proj-name">26W官網選品建議</div>
+        <div class="footer-row">
+          <span class="status-badge status-active">進行中</span>
+          <span class="use-count">近一週 81 次</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Status palette -->
+<div class="section" style="max-width:540px;margin:0 auto">
+  <h3>狀態標籤色系</h3>
+  <div class="palette-wrap">
+    <span class="status-badge status-pending" style="font-size:13px;padding:5px 14px">待啟動</span>
+    <span class="status-badge status-active" style="font-size:13px;padding:5px 14px">進行中</span>
+    <span class="status-badge status-review" style="font-size:13px;padding:5px 14px">待驗收</span>
+    <span class="status-badge status-done" style="font-size:13px;padding:5px 14px">已完成</span>
+  </div>
+</div>
+
+<!-- Question -->
+<div class="section" style="max-width:540px;margin:24px auto 0">
+  <h3>確認細節</h3>
+  <p class="subtitle">Hover 時 footer 底部那行文字，要換成「近一週 N 次」嗎？</p>
+  <div class="options">
+    <div class="option" data-choice="a" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>要換 ✓</h3>
+        <p>「3 天前編輯」→「近一週 81 次」，呼應圖表</p>
+      </div>
+    </div>
+    <div class="option" data-choice="b" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>不換</h3>
+        <p>只換圖片→圖表，footer 文字維持原樣</p>
+      </div>
+    </div>
+  </div>
+</div>

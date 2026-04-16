@@ -1,0 +1,132 @@
+<h2>設計方案：三個行動按鈕移入對話</h2>
+<p class="subtitle">目前三顆按鈕藏在 HTML iframe 底部。下圖是移到對話後的樣子——AI 主動問「接下來？」並顯示選項。</p>
+
+<style>
+  .chat-mock {
+    max-width: 340px;
+    margin: 20px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: -apple-system, 'PingFang TC', sans-serif;
+  }
+  .bubble-wrap { display: flex; gap: 8px; align-items: flex-start; }
+  .bubble-wrap.user { flex-direction: row-reverse; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #3b72f6; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .bubble {
+    background: #f1f3f7; border-radius: 12px 12px 12px 4px;
+    padding: 10px 12px; font-size: 12px; color: #1a1d23; line-height: 1.6;
+    max-width: 260px;
+  }
+  .bubble.user {
+    background: #3b72f6; color: #fff;
+    border-radius: 12px 12px 4px 12px;
+  }
+  .file-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #e4e7ed;
+    border-radius: 7px; padding: 6px 9px; margin-top: 7px;
+    font-size: 11px; color: #5c6370;
+  }
+  .file-icon { font-size: 14px; }
+  .file-name { font-weight: 600; color: #1a1d23; }
+  .file-meta { font-size: 10px; color: #9ca3af; }
+
+  /* ── Next step prompt bubble ── */
+  .nextstep-bubble {
+    background: #fff; border: 1px solid #e4e7ed;
+    border-radius: 12px 12px 12px 4px;
+    padding: 12px 13px; max-width: 270px;
+  }
+  .nextstep-question {
+    font-size: 12px; color: #1a1d23; margin-bottom: 10px; font-weight: 500;
+  }
+  .nextstep-btns { display: flex; flex-direction: column; gap: 6px; }
+  .nextstep-btn {
+    display: block; width: 100%;
+    background: #f7f8fa; border: 1px solid #e4e7ed;
+    border-radius: 8px; padding: 8px 12px;
+    font-size: 12px; font-weight: 600; color: #1a1d23;
+    text-align: left; cursor: pointer;
+    transition: all .15s;
+  }
+  .nextstep-btn:hover {
+    background: rgba(59,114,246,.07);
+    border-color: rgba(59,114,246,.35);
+    color: #3b72f6;
+  }
+  .nextstep-btn .btn-sub {
+    display: block; font-size: 10px; color: #9ca3af; font-weight: 400; margin-top: 1px;
+  }
+
+  .change-note {
+    background: #fefce8; border: 1px solid #fde047;
+    border-radius: 8px; padding: 10px 12px; font-size: 11px;
+    color: #713f12; margin-top: 12px; line-height: 1.6;
+  }
+  .change-note strong { color: #92400e; }
+</style>
+
+<div class="section">
+  <h3>對話預覽</h3>
+  <p class="subtitle">銷售報告訊息後，AI 主動問下一步</p>
+
+  <div class="chat-mock">
+    <!-- AI: 銷售數據完成 -->
+    <div class="bubble-wrap">
+      <div class="avatar">AI</div>
+      <div class="bubble">
+        📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>，2022 年起連續三年成長 20%+。
+        <div class="file-badge">
+          <span class="file-icon">🌐</span>
+          <div>
+            <div class="file-name">hurricane_trailsetter_sales_report.html</div>
+            <div class="file-meta">HTML · 6.8 KB</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI: 主動問下一步 ← 新增 -->
+    <div class="bubble-wrap">
+      <div class="avatar">AI</div>
+      <div class="nextstep-bubble">
+        <div class="nextstep-question">📌 接下來想做什麼？</div>
+        <div class="nextstep-btns">
+          <button class="nextstep-btn">
+            🎯 生成行銷策略
+            <span class="btn-sub">產出 AW26 台灣市場行銷策略報告</span>
+          </button>
+          <button class="nextstep-btn">
+            👤 目標客群用戶畫像
+            <span class="btn-sub">分析四大核心客群輪廓與購買行為</span>
+          </button>
+          <button class="nextstep-btn">
+            📊 產出圖表（報告用）
+            <span class="btn-sub">年度銷售量、成長率、款式拆分圖表</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User: 選了一個 -->
+    <div class="bubble-wrap user">
+      <div class="bubble user">生成 Hurricane Trailsetter AW26 行銷策略報告</div>
+    </div>
+
+    <!-- AI: thinking -->
+    <div class="bubble-wrap">
+      <div class="avatar">AI</div>
+      <div class="bubble" style="color:#9ca3af;font-style:italic">⏳ AI processing…</div>
+    </div>
+  </div>
+
+  <div class="change-note">
+    <strong>同步修改：</strong>銷售報告 HTML 底部的「🎯 生成行銷策略 / 👤 目標客群用戶畫像 / 📊 產出圖表」三顆 chip 移除，其他「按款式拆分 / 各通路佔比 / 與競品比較 / 完整報告」保留。
+  </div>
+</div>

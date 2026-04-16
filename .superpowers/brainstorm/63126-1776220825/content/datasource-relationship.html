@@ -1,0 +1,53 @@
+<h2>連接資料來源後，知識庫長什麼樣？</h2>
+<p class="subtitle">連接「商品系統 API」並同步後，知識庫列表應該呈現哪種方式？</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>一個來源 → 一個知識條目</h3>
+      <p>「商品系統 API」同步後，只在知識庫裡產生 <strong>1 個條目</strong>，內容包含所有回傳資料（例如一份商品清單文件）。每次重新同步就更新這個條目的版本。</p>
+      <div style="margin-top:12px;background:#f5f5f5;border-radius:8px;padding:12px;font-size:13px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #e0e0e0;">
+          <span style="font-size:18px">📄</span>
+          <div>
+            <div style="font-weight:600;">商品系統 API（商品總覽）</div>
+            <div style="color:#888;font-size:12px;">來源：商品系統 API ・ v1.3 ・ 已發布</div>
+          </div>
+        </div>
+        <div style="padding:6px 0;opacity:0.4;font-size:12px;text-align:center;">（其他一般知識條目...）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>一個來源 → 多筆條目，依來源分組</h3>
+      <p>維持多筆條目（一筆產品 = 一個知識條目），但知識庫列表可以依「資料來源」篩選或分組，清楚看出哪些條目來自同一個 API。</p>
+      <div style="margin-top:12px;background:#f5f5f5;border-radius:8px;padding:12px;font-size:13px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-weight:600;color:#666;">來源：商品系統 API</span>
+          <span style="font-size:12px;color:#888;">5 個條目</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #e0e0e0;">
+          <span style="font-size:16px">📄</span>
+          <div>
+            <div style="font-weight:500;font-size:12px;">Teva 運動鞋款 2025</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #e0e0e0;">
+          <span style="font-size:16px">📄</span>
+          <div>
+            <div style="font-weight:500;font-size:12px;">Nike Air Max 系列</div>
+          </div>
+        </div>
+        <div style="padding:4px 0;opacity:0.4;font-size:12px;text-align:center;">...更多</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;">💡 這個選擇會影響知識庫的資料模型與 AI 讀取方式</p>

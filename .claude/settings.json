@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npx getdesign@latest add wise)",
+      "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/**)",
+      "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/**)",
+      "Read(//Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite branch --show-current)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite log --oneline 37cc9f6..HEAD)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite add src/scss/base/_theme.scss src/scss/views/_Explore.scss)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite commit -m ':*)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite diff --stat 37cc9f6..HEAD)",
+      "Bash(ls /Users/jocelyn/Desktop/demosite/vite.config*)",
+      "Bash(node -e \"import\\('./vite.config.ts'\\).then\\(m => console.log\\('ok'\\)\\).catch\\(e => console.error\\(e.message\\)\\)\")",
+      "Bash(grep -rn '\\\\$color_main_1\\\\|\\\\$color_main_3\\\\|\\\\$color_main_4\\\\|\\\\$color_blue_1\\\\|\\\\$color_yellow_1\\\\|\\\\$color_yellow_2\\\\|\\\\$color_green_1\\\\|\\\\$white' /Users/jocelyn/Desktop/demosite/src/scss/views/ /Users/jocelyn/Desktop/demosite/src/scss/components/)",
+      "Bash(sed -i '' 's/\\\\$color_main_1/$color-wise-green/g' /Users/jocelyn/Desktop/demosite/src/scss/views/_KnowledgeBase.scss)",
+      "Bash(sed -i '' 's/\\\\$color_main_3/var\\(--color-wise-green\\)/g' /Users/jocelyn/Desktop/demosite/src/scss/views/_KnowledgeBase.scss)",
+      "Bash(sed -i '' 's/\\\\$color_main_4/var\\(--color-wise-mint\\)/g' /Users/jocelyn/Desktop/demosite/src/scss/views/_KnowledgeBase.scss)",
+      "Bash(sed -i '' 's/\\\\$color_main_1/$color-wise-green/g' /Users/jocelyn/Desktop/demosite/src/scss/views/_Knowledge.scss)",
+      "Bash(sed -i '' 's/background: linear-gradient\\(90deg, \\\\$color-wise-green, #7c3aed\\);/background: linear-gradient\\(90deg, var\\(--color-wise-green\\), #7c3aed\\);/' /Users/jocelyn/Desktop/demosite/src/scss/views/_KnowledgeBase.scss)",
+      "Bash(sed -i '' 's/color: darken\\(\\\\$color-wise-green, 10%\\);/color: var\\(--color-wise-dark-green\\);/' /Users/jocelyn/Desktop/demosite/src/scss/views/_KnowledgeBase.scss)",
+      "Bash(grep -n '\\\\$color-wise-green' /Users/jocelyn/Desktop/demosite/src/scss/views/_KnowledgeBase.scss)",
+      "Bash(sed -i '' 's/border: 1px dashed var\\(--color-text-alpha50\\);/border: 1px dashed rgba\\(14, 15, 12, 0.20\\);/' /Users/jocelyn/Desktop/demosite/src/scss/views/_TeamProject.scss)",
+      "Bash(sed -i '' 's/color: var\\(--color-text-alpha50\\);/color: var\\(--color-wise-gray\\);/' /Users/jocelyn/Desktop/demosite/src/scss/views/_TeamProject.scss)",
+      "Bash(sed -i '' 's/outline: 2px solid \\\\$color_main_1;/outline: 2px solid var\\(--color-wise-green\\);/g' /Users/jocelyn/Desktop/demosite/src/scss/components/_compListCardSwitch.scss /Users/jocelyn/Desktop/demosite/src/scss/components/_compSwitch.scss /Users/jocelyn/Desktop/demosite/src/scss/components/_compTabs.scss)",
+      "Bash(sed -i '' 's/color: \\\\$white;/color: var\\(--color-wise-dark-green\\);/g' /Users/jocelyn/Desktop/demosite/src/scss/components/_compListCardSwitch.scss)",
+      "Bash(sed -i '' 's/border-color: \\\\$color_main_3;/border-color: var\\(--color-wise-green\\);/' /Users/jocelyn/Desktop/demosite/src/scss/components/_compDropDown.scss)",
+      "Bash(sed -n '1,50p' /Users/jocelyn/Desktop/demosite/src/stores/knowledgeStore.ts)",
+      "Bash(sed -n '180,230p' /Users/jocelyn/Desktop/demosite/src/stores/knowledgeStore.ts)",
+      "Bash(sed -n '480,600p' /Users/jocelyn/Desktop/demosite/src/stores/knowledgeStore.ts)",
+      "Bash(npx sass:*)",
+      "Bash(grep -v '^$')",
+      "Bash(grep -r '$color-danger\\\\|$color-warning\\\\|$color-amber' /Users/jocelyn/Desktop/demosite/src/scss/ '--include=*.scss' -n)",
+      "Bash(bash /Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
+      "Bash(/Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
+      "Bash(npx stylelint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git stash:*)",
+      "Bash(git rm:*)",
+      "Bash(git push:*)",
+      "Bash(bash /Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
+      "Read(//Users/jocelyn/.claude/**)"
+    ],
+    "additionalDirectories": [
+      "/Users/jocelyn/Desktop/demosite"
+    ]
+  }
+}

@@ -2,17 +2,18 @@
 
 ## 待實作
 
-### AppBatchUpload.vue — 真實上傳邏輯
-- **狀態**：UI 完成，上傳邏輯目前為 mock（setInterval 模擬進度）
-- **目標**：串接 Attachment API，實作真實 S3 上傳、進度顯示、取消、失敗重試
-- **相關 API 文件**：`docs/api/agent-workspace/`（已讀，摘要存於 memory）
-- **上傳流程**：
-  1. `POST /b/attachment/create` → 取得 `{ id, uploadUrl }`
-  2. `axios.put(uploadUrl, file)` → 直接上傳 S3（帶 onUploadProgress）
-  3. 失敗時 → `GET /b/attachment/getUploadUrl?attachmentId={id}` → 重試
-- **需補充的 ChoicedFileItem 欄位**：`attachmentId`, `uploadStatus`, `abortController`
-- **注意**：上傳到 S3 不走 `http.ts`，直接用 `axios.put`
+（無）
 
 ---
 
-> 完成後請將項目移至「已完成」並補充說明。
+## 已完成
+
+### AppBatchUpload.vue — 真實上傳邏輯
+- **完成日期**：2026-04-08
+- **實作內容**：
+  - 新增 `attachmentId`、`uploadStatus`、`abortController` 至 `ChoicedFileItem`
+  - `POST /b/attachment/create` 取得上傳 URL
+  - `axios.put(uploadUrl, file)` 直接上傳 S3，帶 `onUploadProgress` 即時更新進度
+  - 失敗自動重試：`GET /b/attachment/getUploadUrl?attachmentId={id}` 取新 URL 再試一次
+  - 取消按鈕綁定 `AbortController.abort()`
+  - 關閉確認視窗也會中止所有進行中的上傳

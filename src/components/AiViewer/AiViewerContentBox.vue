@@ -277,7 +277,7 @@
         </div>
 
         <!-- TODO... 測試用 form 表單 ODM 之後刪除  -->
-        <div style="background-color: #c4bb80;" v-if="props.id === 'testForm'">
+        <div style="background-color: var(--color-background-2);" v-if="props.id === 'testForm'">
           測試 form 表單是否會被套件影響<br>
           <input class="mr-1" type="text" /><br>
           <label class="mr-1"><input type="checkbox" /> checkbox</label><br>

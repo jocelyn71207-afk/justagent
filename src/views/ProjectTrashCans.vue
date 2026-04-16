@@ -21,9 +21,9 @@
         </div>
       </div>
 
-      <div class="d-flex flex-align-center fs-14 fc-grey-1" v-if="trashList.length">
-        <i class="material-symbols-outlined fs-19 mr-1">info</i>
-        專案會顯示剩餘天數。過了期限後，專案將被永久刪除且無法復原。
+      <div class="trash-info-banner" v-if="trashList.length">
+        <i class="material-symbols-outlined">warning</i>
+        <span>專案將依剩餘天數自動永久刪除。<strong>紅色標籤</strong>代表 3 天內到期，請盡快還原或確認刪除。</span>
       </div>
 
       <!-- 卡片列表 -->
@@ -32,6 +32,10 @@
           @mouseleave="item.showMoreOption = false;">
           <div class="img-box">
             <img :src="item.imgSrc" alt="">
+            <i class="material-symbols-outlined trash-icon-overlay">delete</i>
+            <div :class="['expiry-badge', `expiry-badge--${expiryUrgency(item.remainingDays)}`]">
+              {{ calcRemainingDays(item.remainingDays) === 0 ? '已過期' : `剩 ${calcRemainingDays(item.remainingDays)} 天` }}
+            </div>
           </div>
           <div class="footer-box">
             <div class="info-box">
@@ -41,15 +45,19 @@
             <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = true">more_horiz</i>
             <div :class="['next-option-box', { 'show': item.showMoreOption }]">
               <div class="option-item" @click="restoreProject(item)">還原</div>
-              <div class="option-item" @click="permanentlyDelete(item)">永久刪除</div>
+              <div class="option-item danger" @click="permanentlyDelete(item)">永久刪除</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 空狀態 -->
-      <div class="p-5 mt-4 text-center fc-grey-1" v-if="!trashList.length">
-        <div class="fs-16 mt-1">垃圾桶中沒有專案</div>
+      <div class="trash-empty-state" v-if="!trashList.length">
+        <div class="empty-icon-wrap">
+          <i class="material-symbols-outlined">delete</i>
+        </div>
+        <div class="empty-title">垃圾桶是空的</div>
+        <div class="empty-sub">已刪除的專案會顯示在這裡</div>
       </div>
 
     </div>
@@ -131,6 +139,14 @@ function calcRemainingDays(dateStr: string): number {
   const expireTime = new Date(dateStr).getTime();
   const now = Date.now();
   return Math.max(0, Math.ceil((expireTime - now) / (1000 * 60 * 60 * 24)));
+}
+
+// 依剩餘天數回傳顏色等級
+function expiryUrgency(dateStr: string): 'urgent' | 'warning' | 'normal' {
+  const days = calcRemainingDays(dateStr);
+  if (days <= 3) return 'urgent';
+  if (days <= 7) return 'warning';
+  return 'normal';
 }
 
 // 取得垃圾桶專案清單

@@ -5,7 +5,7 @@
     <ProjectListContent title="團隊專案" mode="team" :subtitle="teamName as string" :teamId="teamId as string">
       <!-- 建立專案按鈕的插槽 -->
       <template #createBtnSlot="{ openProjectSettingModal }">
-        <button class="custom-btn custom-main-btn"
+        <button class="wise-create-btn"
           @click="openProjectSettingModal(null, true, teamId as string)">
           <i class="material-symbols-outlined">add</i>
           建立新專案

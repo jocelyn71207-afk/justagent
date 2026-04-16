@@ -1,5 +1,129 @@
 .ProjectTrashCans {
-  .card-list-box .one-card-box.project-card .img-box img {
+  // ── 卡片整體 ─────────────────────────────────────
+  .card-list-box .one-card-box.project-card {
     cursor: default;
+
+    &:hover {
+      transform: translateY(-2px) scale(1.005);
+    }
+
+    // ── 圖片灰階 ─────────────────────────────────
+    .img-box {
+      position: relative;
+
+      img {
+        filter: grayscale(1);
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      // ── 左上垃圾桶角標 ─────────────────────────
+      .trash-icon-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba($black, 0.30);
+        border-radius: 8px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: $white;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      // ── 右上到期標籤 ───────────────────────────
+      .expiry-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border-radius: 20px;
+        padding: 3px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        color: $white;
+        line-height: 1;
+        letter-spacing: 0.02em;
+        z-index: 2;
+        pointer-events: none;
+
+        &--urgent  { background: $color-danger; }
+        &--warning { background: $color-warning-amber; color: $color-warning-text-dark; }
+        &--normal  { background: rgba($black, 0.38); }
+      }
+    }
+
+    // ── 危險選項（永久刪除）──────────────────────
+    .next-option-box .option-item.danger {
+      color: $color-danger;
+
+      &:hover {
+        background-color: rgba($color-danger, 0.08);
+      }
+    }
+  }
+
+  // ── Info 橫幅 ──────────────────────────────────
+  .trash-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: $color-warning-bg;
+    border: 1px solid $color-warning-border;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: $color-warning-text;
+    margin-bottom: 20px;
+    line-height: 1.5;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+  }
+
+  // ── 空狀態 ────────────────────────────────────
+  .trash-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 12px;
+
+    .empty-icon-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--color-background-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .material-symbols-outlined {
+        font-size: 34px;
+        color: var(--color-text-alpha50);
+      }
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-alpha50);
+    }
+
+    .empty-sub {
+      font-size: 13px;
+      color: var(--color-text-alpha30);
+    }
   }
 }

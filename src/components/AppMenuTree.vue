@@ -21,7 +21,7 @@
           <!-- 更多用戶選項選單 -->
           <div class="more-userOption-box next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
             <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
-            <div class="option-item">登出</div>
+            <div class="option-item" @click="handleLogout">登出</div>
           </div>
         </div>
         <!-- TODO... 第一階段先沒有小鈴噹 -->
@@ -47,10 +47,10 @@
         </RouterLink>
       </div>
       <div class="one-btn-item">
-        <a href="javascript:;">
+        <RouterLink to="/view/Explore">
           <i class="material-symbols-outlined">lightbulb</i>
           探索
-        </a>
+        </RouterLink>
       </div>
 
     </div>
@@ -86,13 +86,30 @@
               </a>
             </RouterLink>
           </div>
-          <div class="one-btn-item">
-            <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: item.id, teamName: item.name } }" custom v-slot="{ href, navigate }">
-              <a :href="href" @click="navigate" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == item.id }">
-                <i class="material-symbols-outlined">cloud</i>
-                共享資源庫
-              </a>
-            </RouterLink>
+          <!-- 共享資源庫（可展開） -->
+          <div class="one-btn-item sub-group-header" @click="item.isResourceOpen = !item.isResourceOpen"
+            :class="{ active: route.path === '/view/ResourceLibrary' || route.path === '/view/KnowledgeBase' }">
+            <i class="material-symbols-outlined">cloud</i>
+            共享資源庫
+            <i class="material-symbols-outlined sub-arrow">{{ item.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+          </div>
+          <div class="sub-menu-box" v-if="item.isResourceOpen">
+            <div class="one-btn-item">
+              <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: item.id, teamName: item.name } }" custom v-slot="{ href, navigate }">
+                <a :href="href" @click="navigate" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == item.id }">
+                  <i class="material-symbols-outlined">folder_open</i>
+                  共用檔案管理
+                </a>
+              </RouterLink>
+            </div>
+            <div class="one-btn-item">
+              <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: item.id, teamName: item.name } }" custom v-slot="{ href, navigate }">
+                <a :href="href" @click="navigate" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == item.id }">
+                  <i class="material-symbols-outlined">menu_book</i>
+                  知識庫管理
+                </a>
+              </RouterLink>
+            </div>
           </div>
           <div class="one-btn-item">
             <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: item.id, teamName: item.name } }" custom v-slot="{ href, navigate }">
@@ -125,17 +142,23 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { handleContentWheel, initClickOutsideListener } from '@/utils/utils';
 
 const route = useRoute();
+const router = useRouter();
 
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, appSearchKeyword, testGroups } = storeToRefs(rootStore);
 
 const moreUserOptionsBox = ref<HTMLElement | null>(null);
 const isOpenUserOptionsBox = ref(false);
+
+const handleLogout = () => {
+  isOpenUserOptionsBox.value = false;
+  router.push('/');
+};
 
 const isMobileMenuOpen = ref(false);
 const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };

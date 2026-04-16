@@ -15,7 +15,7 @@
     cursor: pointer;
 
     &:hover {
-      border-color: $color_main_3;
+      border-color: var(--color-wise-green);
     }
 
     .selected-text {
@@ -130,7 +130,7 @@
     }
 
     &.selected {
-      color: $color_main_1;
+      color: var(--color-wise-dark-green);
       background-color: $color_main_6;
       font-weight: 500;
     }
@@ -160,7 +160,7 @@
     .check-icon {
       font-size: 18px;
       margin-left: 8px;
-      color: $color_main_1;
+      color: var(--color-wise-dark-green);
     }
   }
 
