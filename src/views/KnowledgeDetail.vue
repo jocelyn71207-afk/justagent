@@ -100,8 +100,7 @@
           <span class="fc-grey-1">摘要：{{ versionToShow.summary || '（無摘要）' }}</span>
         </div>
         <div class="article-body">
-          <!-- 模擬 Markdown / Rich Text 渲染 -->
-          <div style="white-space: pre-wrap;">{{ versionToShow.content || '（此版本無內容）' }}</div>
+          <div class="markdown-body" v-html="renderedContent"></div>
         </div>
 
         <!-- 關聯附件區 -->
@@ -198,6 +197,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import MarkdownIt from 'markdown-it';
+import 'github-markdown-css/github-markdown.css';
 import { useRouter } from 'vue-router';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import popDialog from '@/services/popDialog';
@@ -225,6 +226,14 @@ const {
 } = useApiCall(() => knowledgeStore.getKnowledgeById(props.id));
 
 const knowledge = computed(() => knowledgeData.value ?? null);
+
+const md = new MarkdownIt({ html: false, breaks: true, linkify: false });
+
+const renderedContent = computed(() => {
+  const content = versionToShow.value?.content;
+  if (!content) return '<span style="color:#999">（此版本無內容）</span>';
+  return md.render(content);
+});
 
 const apiSourceDetail = computed(() =>
   knowledge.value?.apiSourceId
