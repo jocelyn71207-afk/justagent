@@ -96,23 +96,60 @@
   // ── 灰色 ───────────────────────────────────────────────────────────────────
   --color-grey-1: #{$color_grey_1};
 
-  // ── Wise 設計系統 tokens ────────────────────────────────────────────────────
+  // ── Spring Green 設計系統 tokens ────────────────────────────────────────────
   --color-wise-card: #ffffff;             // 卡片底色
-  --color-wise-green: #9fe870;            // 萊姆綠 CTA
-  --color-wise-dark-green: #163300;       // CTA 文字
+  --color-wise-green: #34d399;            // Spring emerald-400 CTA
+  --color-wise-dark-green: #047857;       // CTA 深色文字
   --color-wise-black: #0e0f0c;            // 主色文字 / 深底
   --color-wise-gray: #868685;             // 次要文字
   --color-wise-warm-dark: #454745;        // 三級文字
-  --color-wise-bg: #f2f4f0;               // 頁面背景
-  --color-wise-surface: #e8ebe6;          // hover 底色
-  --color-wise-mint: #e2f6d5;             // badge 淡綠底
+  --color-wise-bg: #ffffff;               // 頁面背景（白色）
+  --color-wise-surface: #ecfdf5;          // hover 底色（emerald-50）
+  --color-wise-mint: #d1fae5;             // badge 淡綠底（emerald-100）
   --color-wise-badge-hot-bg: #faeeda;     // hot badge 底
   --color-wise-badge-hot-text: #854f0b;   // hot badge 文字
-  --color-wise-badge-sat-text: #0f6e56;   // sat badge 文字
+  --color-wise-badge-sat-text: #059669;   // sat badge 文字
   --color-wise-rank-bronze-bg: #f5dfc0;   // 第3名 badge 底
   --color-wise-rank-bronze-text: #854f0b; // 第3名 badge 文字
-  --color-wise-chart-bg: #f8faf6;        // 長條圖面板背景（極淺綠）
+  --color-wise-chart-bg: #f0fdf8;        // 長條圖面板背景
   --color-wise-badge-pending-bg: #f0f0ef; // pending badge 底色
-  --color-wise-table-header-bg: #f8f9f7; // 表格 header / hover 背景
-  --color-wise-empty-border: #d3d4d0;
+  --color-wise-table-header-bg: #f0fdf8; // 表格 header / hover 背景
+  --color-wise-empty-border: #a7f3d0;
+
+  // ── Linear 設計系統 新增 tokens ─────────────────────────────────────────────
+
+  // 主色語意別名
+  --color-primary:         #059669;
+  --color-primary-hover:   #047857;
+  --color-primary-muted:   #d1fae5;
+  --color-primary-subtle:  #f0fdf4;
+
+  // 中性背景層次
+  --color-bg:              #ffffff;
+  --color-bg-subtle:       #f9fafb;
+  --color-bg-muted:        #f3f4f6;
+
+  // 強化邊框
+  --color-border-strong:   #d1d5db;
+
+  // 文字層次
+  --color-text-muted:      #6b7280;
+  --color-text-disabled:   #9ca3af;
+
+  // 陰影系統
+  --shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md:     0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-lg:     0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-focus:  0 0 0 3px rgba(5, 150, 105, 0.15);
+
+  // 間距系統（4px grid）
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
 }
