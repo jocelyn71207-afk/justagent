@@ -3,7 +3,7 @@
 // Layout
 $header-height: 36px;
 $header-AiViewer-height: 0px;
-$menuWidth: 306px;
+$menuWidth: 260px;
 $menuSmallWidth: 200px;
 $menuHeaderHeight: 216px;
 $menuFooterHeight: 50px;
@@ -19,22 +19,22 @@ $white: #ffffff;
 $black: #000000;
 
 // 灰色基調定義
-$grey-border: #d3d4d8; // 邊框
-$grey-font: #232735; // 文字
+$grey-border: #e5e7eb; // 邊框
+$grey-font: #111827; // 文字
 $grey-shadow: #29323c; // 陰影
 
-// Wise 設計系統
-$color-wise-green: #9fe870; // Wise 主色 lime green（用於 rgba() SCSS 函式）
-$color-wise-dark-green: #163300; // Wise 深綠（文字）
-$color-wise-mint-rgb: 226, 246, 213; // Wise mint（用於 rgba）
+// Wise 設計系統（Spring Green 配色）
+$color-wise-green: #34d399; // Spring 主色 emerald-400
+$color-wise-dark-green: #047857; // Spring 深綠（文字）
+$color-wise-mint-rgb: 209, 250, 229; // d1fae5（用於 rgba）
 
 // Main
-$color_main_1: #16a34a; // 產品主色 (預設justka use)
-$color_main_2: #15803d;
-$color_main_3: #22c55e;
-$color_main_4: #bbf7d0;
-$color_main_5: #dcfce7;
-$color_main_6: #f0fdf4;
+$color_main_1: #059669; // 產品主色 emerald-600
+$color_main_2: #047857; // emerald-700
+$color_main_3: #34d399; // emerald-400 hover
+$color_main_4: #d1fae5; // emerald-100 light fill
+$color_main_5: #ecfdf5; // emerald-50
+$color_main_6: #f0fdf8; // lightest bg tint
 
 // 灰色
 $color_grey_1: #8b90a0;
@@ -132,7 +132,9 @@ $line-height-base: 1.5;
 $select_triangle: "data:image/gif;base64,R0lGODlhZABCAPMAAJ+ruqWxv7K8yLnBzL/H0cXN1szS2tLY39nd4+Xp7ezu8fL09vn5+gAAAAAAAAAAACH5BAEAAA0ALAAAAABkAEIAAAT+sMlJq7046827/2AojmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqdDENhYUMQEkaGAAAIKGgFLgBB1Iq731j4TBYSzlwvbA2nBgPweJpFhx+ECHl6fIIAAgxDgYJyKX1nh0WKeYwmjmKQRpJwlCOWXJhHmmecIJ6GiEqiYqQdpqCphawarqhNqoOtha+2sXsZtE8Ut2izurXBEsOyDcDIFcq+Es3Oz70U09TVi2nY2dqTCt3e34V5u+MWw4Ln6Onlj8ftGeqf8fLz5ez3GLf6+/xw/P0DWG+gCAQBBtgzyLChw4cQI0qcSLGixYsYM2rcyLGjRwoCEQAAOw==";
 
 // 導角
-$radius: 8px;
+$radius: 8px;     // 互動元件（Button、Input、Switch）
+$radius-lg: 16px; // 大容器（Card、Modal、Drawer）
+$radius-sm: 4px;  // 小標籤（Badge、Tag）
 
 // ── Badge / Status 色彩 ──────────────────────────────
 // Process type badge
@@ -164,9 +166,9 @@ $color-explore-accent-text: #534AB7;   // 紫色文字
 $color-explore-accent-dark: #3C3489;   // 深紫文字
 
 // Explore agent badge
-$color-badge-new-bg: #EAF3DE;
-$color-badge-new-text: #3B6D11;
+$color-badge-new-bg: #d1fae5;
+$color-badge-new-text: #059669;
 $color-badge-hot-bg: #FAEEDA;
 $color-badge-hot-text: #854F0B;
-$color-badge-sat-bg: #E1F5EE;
-$color-badge-sat-text: #0F6E56;
+$color-badge-sat-bg: #d1fae5;
+$color-badge-sat-text: #059669;
