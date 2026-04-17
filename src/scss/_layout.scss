@@ -42,7 +42,7 @@
   .views-page {
     flex: 1;
     padding: 46px;
-    background-color: var(--color-wise-bg);
+    background-color: var(--color-background);
     // max-width: 100%;
     // min-width: 600px;
     width: calc(100vw - #{$menuWidth});
@@ -81,13 +81,59 @@
         gap: 12px;
       }
     }
+
+    // 新版頁面 banner（取代 views-page-header）
+    .page-banner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-left: 16px;
+      padding-bottom: 20px;
+      border-left: 3px solid #059669;
+      border-bottom: 1px solid var(--color-wise-surface);
+      margin-bottom: 24px;
+
+      .banner-crumb {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #059669;
+        margin-bottom: 4px;
+        font-family: 'JetBrains Mono', monospace;
+        &::before { content: '>_ '; opacity: 0.5; }
+      }
+
+      .banner-title {
+        font-size: 24px;
+        font-weight: 900;
+        color: #111;
+        letter-spacing: -0.4px;
+      }
+
+      .banner-sub {
+        font-size: 11px;
+        color: var(--color-wise-gray);
+        margin-top: 3px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .banner-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+        padding-top: 4px;
+      }
+    }
   }
 
   // 通用性查詢結果介面的樣式 (依賴於 .views-page 的樣式)
   .AppSearchPage {
     flex: 1;
     padding: 46px;
-    background-color: var(--color-wise-bg);
+    background-color: var(--color-background);
     width: calc(100vw - #{$menuWidth});
     overflow: auto;
     @include no-scroll-bar();
@@ -140,9 +186,9 @@
       transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
       border: 1px solid rgba(14, 15, 12, 0.08);
       &:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: rgba(14, 15, 12, 0.10) 0px 12px 32px;
-        border-color: rgba(14, 15, 12, 0.16);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--color-border-strong);
       }
       .team-name-box {
         position: absolute;
