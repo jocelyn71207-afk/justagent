@@ -11,9 +11,9 @@
   position: absolute;
   inset: 0;
   // background: rgba(from var(--color-background) r g b / 0.2);
-  background: rgba(#000, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(#000, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .compModal-panel {
@@ -25,7 +25,7 @@
   color: var(--color-text);
   border-radius: 16px;
   margin: 10px;
-  // box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   max-height: 92svh;
   overflow: hidden;
 
@@ -34,7 +34,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 30px 30px 0px 30px;
+    padding: 24px 24px 0;
     .compModal-title {
       font-size: 22px;
       font-weight: 600;
@@ -53,7 +53,7 @@
   }
 
   .compModal-body {
-    padding: 30px;
+    padding: 24px;
     overflow: auto;
     @include no-scroll-bar();
     @include use-scroll-bar(var(--color-scrollbar-alpha50));
