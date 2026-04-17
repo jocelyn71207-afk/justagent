@@ -14,8 +14,8 @@ button.custom-btn {
   white-space: nowrap; // 實驗按鈕強制不換行看看
   cursor: pointer;
   &:hover {
-    border-color: $color_main_3;
-    color: $color_main_3;
+    border-color: $color_main_2;
+    color: $color_main_2;
   }
   &:active,
   &:focus {
@@ -49,8 +49,8 @@ button.custom-btn {
   background-color: $color_main_1;
   color: $white;
   &:hover {
-    border-color: $color_main_3;
-    background-color: $color_main_3;
+    border-color: $color_main_2;
+    background-color: $color_main_2;
     color: $white;
   }
   &:active,
