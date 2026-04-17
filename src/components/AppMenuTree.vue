@@ -58,9 +58,9 @@
     <div class="menu-list-box" @wheel.stop="handleContentWheel($event);">
       <!-- 企業 -->
       <div class="company-box">
-        <select class="custom-select w-100">
-          <option value="企業A">企業A</option>
-          <option value="企業B">企業B</option>
+        <select class="custom-select w-100" v-model="rootStore.nowMenuTreeCompanyName">
+          <option value="Teva">Teva</option>
+          <option value="UGG">UGG</option>
         </select>
         <div class="one-btn-item">
           <RouterLink :to="`/view/CompanyTeamSettings`">
