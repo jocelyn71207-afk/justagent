@@ -8,16 +8,20 @@ export type BreadcrumbItem = {
 }
 
 const _dynamicLabel = ref<string | null>(null)
+let _watchInstalled = false
 
 export function useBreadcrumb() {
   const route = useRoute()
   const router = useRouter()
   const rootStore = useRootStore()
 
-  watch(
-    () => route.fullPath,
-    () => { _dynamicLabel.value = null }
-  )
+  if (!_watchInstalled) {
+    watch(
+      () => route.fullPath,
+      () => { _dynamicLabel.value = null }
+    )
+    _watchInstalled = true
+  }
 
   const items = computed<BreadcrumbItem[]>(() => {
     const result: BreadcrumbItem[] = []
