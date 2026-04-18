@@ -3,11 +3,24 @@
   <div class="ProjectListContent">
 
     <!-- Banner Header -->
-    <div class="plc-banner plc-banner--green">
-      <div class="plc-banner-breadcrumb">{{ mode === 'team' ? '團隊' : '最近使用' }}</div>
-      <div class="plc-banner-title">{{ mode === 'team' ? subtitle : title }}</div>
-      <div v-if="!isLoading && !hasError" class="plc-banner-subtitle">
-        {{ displayProjectList.length }} 個專案
+    <div class="plc-banner">
+      <div class="plc-banner-left">
+        <AppBreadcrumb />
+        <div class="plc-banner-title">{{ mode === 'team' ? subtitle : title }}</div>
+        <div v-if="!isLoading && !hasError" class="plc-banner-subtitle">
+          {{ displayProjectList.length }} projects
+        </div>
+      </div>
+      <!-- KPI 數字 -->
+      <div v-if="!isLoading && !hasError && displayProjectList.length" class="plc-banner-kpi">
+        <div class="kpi-item">
+          <div class="kpi-num">{{ kpiActive }}</div>
+          <div class="kpi-label">Active</div>
+        </div>
+        <div class="kpi-item kpi-review">
+          <div class="kpi-num review">{{ kpiReview }}</div>
+          <div class="kpi-label">Review</div>
+        </div>
       </div>
     </div>
 
@@ -57,9 +70,13 @@
           @mouseenter="item.isHovered = true"
           @mouseleave="item.isHovered = false; item.showMoreOption = false">
 
+          <!-- 狀態色條 -->
+          <div :class="['card-status-strip', `strip-${item.status}`]"></div>
+
           <!-- 圖片區（預設顯示） -->
           <div class="card-img" v-show="!item.isHovered">
             <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
+            <div class="card-project-id" v-else>PRJ-{{ String(i + 1).padStart(3, '0') }}</div>
             <img :src="item.imgSrc" alt="">
             <div class="card-img-overlay"></div>
             <i :class="['material-symbols-outlined card-star', {
@@ -200,6 +217,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -253,6 +271,10 @@ const {
   errorMessage: apiErrorMessage,
   retry,
 } = useApiCall(() => projectList.value);
+
+// KPI 計算
+const kpiActive = computed(() => displayProjectList.value.filter((p: any) => p.status === 'active').length);
+const kpiReview = computed(() => displayProjectList.value.filter((p: any) => p.status === 'review').length);
 
 // 過濾後要呈現的專案列表
 const displayProjectList = computed(() => {

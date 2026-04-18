@@ -3,15 +3,12 @@
     <div class="views-page-content-box">
 
       <!-- 頁面標題與快速操作 -->
-      <div class="views-page-header">
-        <div class="page-title-group">
-          <h3>
-            知識庫管理
-            <div class="secondary-box">{{ teamName }}</div>
-          </h3>
-          <i class="material-symbols-outlined fc-grey-1 fs-18 ml-2" v-tooltip="'管理產品知識條目及其版本演進'" style="cursor: default;">info</i>
+      <div class="page-banner">
+        <div>
+          <AppBreadcrumb />
+          <div class="banner-title">知識庫管理</div>
         </div>
-        <div class="header-right-box">
+        <div class="banner-right">
           <div class="search-box">
             <i class="material-symbols-outlined">search</i>
             <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋條目標題、內容或標籤" />
@@ -289,7 +286,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, reactive, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
+import { useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
@@ -309,7 +307,6 @@ import AppErrorState from '@/components/AppErrorState.vue';
 import { useApiCall } from '@/composables/useApiCall';
 import DataSourceTab from '@/components/Knowledge/DataSourceTab.vue';
 
-const route = useRoute();
 const router = useRouter();
 
 const activeTab = ref<'items' | 'sources'>('items');
@@ -344,9 +341,6 @@ const {
   errorMessage: apiErrorMessage,
   retry,
 } = useApiCall(() => knowledgeStore.knowledgeList);
-
-const teamName = ref(String(route.query.teamName || '預設團隊'));
-watch(() => route.query, (q) => teamName.value = String(q.teamName || '預設團隊'));
 
 // --- 狀態與過濾 ---
 const searchText = ref('');
