@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, effectScope } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useRootStore } from '@/stores/rootStore'
 
@@ -8,6 +8,8 @@ export type BreadcrumbItem = {
 }
 
 const _dynamicLabel = ref<string | null>(null)
+// Detached scope ensures the route watcher survives component unmounts
+const _scope = effectScope(true)
 let _watchInstalled = false
 
 export function useBreadcrumb() {
@@ -16,10 +18,12 @@ export function useBreadcrumb() {
   const rootStore = useRootStore()
 
   if (!_watchInstalled) {
-    watch(
-      () => route.fullPath,
-      () => { _dynamicLabel.value = null }
-    )
+    _scope.run(() => {
+      watch(
+        () => route.fullPath,
+        () => { _dynamicLabel.value = null }
+      )
+    })
     _watchInstalled = true
   }
 
