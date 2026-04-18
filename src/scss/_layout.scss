@@ -54,6 +54,23 @@
     // 注意: 這是每一頁都會有的容器 (排除畫布那一個單元)
     .views-page-content-box {
       min-width: 500px;
+
+      // AppBreadcrumb 元件樣式（適用於所有 banner 類型）
+      .banner-crumb {
+        .crumb-link {
+          color: inherit;
+          text-decoration: none;
+          opacity: 0.7;
+          &:hover { opacity: 1; }
+        }
+        .crumb-current {
+          opacity: 1;
+        }
+        .crumb-sep {
+          opacity: 0.4;
+          margin: 0 2px;
+        }
+      }
     }
 
     // 每頁共用的 header 樣式
