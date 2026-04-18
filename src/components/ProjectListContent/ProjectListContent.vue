@@ -272,10 +272,6 @@ const {
   retry,
 } = useApiCall(() => projectList.value);
 
-// KPI 計算
-const kpiActive = computed(() => displayProjectList.value.filter((p: any) => p.status === 'active').length);
-const kpiReview = computed(() => displayProjectList.value.filter((p: any) => p.status === 'review').length);
-
 // 過濾後要呈現的專案列表
 const displayProjectList = computed(() => {
   let list = (projectListData.value ?? []) as any[];
@@ -287,6 +283,10 @@ const displayProjectList = computed(() => {
   }
   return list;
 });
+
+// KPI 計算
+const kpiActive = computed(() => displayProjectList.value.filter((p: any) => p.status === 'active').length);
+const kpiReview = computed(() => displayProjectList.value.filter((p: any) => p.status === 'review').length);
 
 // 開啟專案設定 Modal 相關
 const isOpenProjectSettingModal = ref(false);
