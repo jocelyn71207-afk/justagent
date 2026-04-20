@@ -2,12 +2,13 @@
   <div class="ProjectTrashCans views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
-      <div class="views-page-header">
-        <h3>
-          專案垃圾桶
-          <div v-if="teamName" class="secondary-box">{{ teamName }}</div>
-        </h3>
-        <div class="header-right-box">
+      <div class="page-banner">
+        <div>
+          <AppBreadcrumb />
+          <div class="banner-title">專案垃圾桶</div>
+          <div class="banner-sub">{{ trashList.length }} projects</div>
+        </div>
+        <div class="banner-right">
           <compDropDown v-if="trashList.length"
             :options="deleterOptions"
             :show-search="false"
@@ -66,6 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRootStore } from '@/stores/rootStore';

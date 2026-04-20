@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   z-index: 10;
-  background-color: var(--color-wise-card);
+  background-color: #f8fafc;
   // border-right: 1px solid var(--color-border);
   width: $menuWidth;
   height: 100svh;
@@ -30,8 +30,8 @@
         align-items: center;
         justify-content: center;
         user-select: none;
-        background-color: var(--color-text); // js 給予嗎？
-        color: var(--color-background);
+        background-color: #34d399;
+        color: #fff;
       }
       .user-name {
         font-size: 16px;
@@ -117,7 +117,7 @@
         user-select: none;
         cursor: pointer;
         &:hover {
-          background-color: var(--color-wise-surface);
+          background-color: var(--color-bg-muted);
         }
         .group-name {
           max-width: 90%;
@@ -147,11 +147,14 @@
           cursor: pointer;
           user-select: none;
           &:hover {
-            background-color: var(--color-wise-surface);
+            background-color: var(--color-bg-muted);
           }
           &.active {
-            background-color: var(--color-wise-surface);
-            box-shadow: inset 3px 0 0 var(--color-wise-green);
+            background-color: var(--color-primary-subtle);
+            box-shadow: none;
+            border-radius: $radius;
+            color: var(--color-primary);
+            font-weight: 500;
           }
           > i:first-child {
             margin: 0 10px 0 0;
@@ -216,15 +219,18 @@
       border-radius: $radius;
       width: 100%;
       &:hover {
-        background-color: var(--color-wise-surface);
+        background-color: var(--color-bg-muted);
       }
       &:focus {
         outline: 1px solid transparent;
       }
       &.router-link-active,
       &.active {
-        background-color: var(--color-wise-surface);
-        box-shadow: inset 3px 0 0 var(--color-wise-green);
+        background-color: #d1fae5;
+        box-shadow: none;
+        border-radius: 999px;
+        color: #059669;
+        font-weight: 600;
       }
       i {
         margin: 0 10px 0 0;

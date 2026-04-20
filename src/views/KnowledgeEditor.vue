@@ -2,16 +2,15 @@
   <div class="KnowledgeBase KnowledgeEditor views-page">
     <div class="views-page-content-box" v-if="draft">
 
-      <!-- 頂部操作列 -->
+      <!-- 頂部麵包屑 -->
+      <div class="page-banner">
+        <AppBreadcrumb />
+        <div class="banner-title">編輯草稿 {{ draft.versionNumber }}</div>
+      </div>
+
+      <!-- 操作列 -->
       <div class="views-page-header">
-        <div class="d-flex align-items-center">
-          <button class="custom-btn mr-3" @click="handleBack">
-            <i class="material-symbols-outlined">close</i>
-          </button>
-          <div class="page-title-group">
-            <h3>編輯草稿 {{ draft.versionNumber }}</h3>
-          </div>
-        </div>
+        <div class="d-flex align-items-center"></div>
         <div class="header-right-box">
           <button class="custom-btn" @click="handleSave">
             <i class="material-symbols-outlined">save</i>
@@ -230,13 +229,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue';
+import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import type { SourceFileRef } from '@/stores/knowledgeStore';
 import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import SubmitReviewModal from '@/components/Knowledge/SubmitReviewModal.vue';
 import popDialog from '@/services/popDialog';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
+import { useBreadcrumb } from '@/composables/useBreadcrumb';
 
 const props = defineProps<{
   knowledgeId: string;
@@ -248,6 +249,12 @@ const knowledgeStore = useKnowledgeStore();
 
 const knowledge = computed(() => knowledgeStore.getKnowledgeById(props.knowledgeId));
 const draft = computed(() => knowledgeStore.getVersionById(props.knowledgeId, props.versionId));
+
+const { setDynamic } = useBreadcrumb();
+
+watch(knowledge, (val) => {
+  if (val?.title) setDynamic(val.title);
+}, { immediate: true });
 
 const statusLabelMap: Record<string, string> = {
   DRAFT:    '草稿',
@@ -315,12 +322,6 @@ function handleSave() {
   }
   knowledgeStore.saveDraft(props.knowledgeId, props.versionId, { ...formData });
   popDialog.toast('草稿已儲存', 1500);
-}
-
-function handleBack() {
-  popDialog.confirm('尚未儲存的變更將會遺失，確定要關閉嗎？', () => {
-    router.back();
-  });
 }
 
 const isReviewModalOpen = ref(false);

@@ -2,7 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useRootStore } from '@/stores/rootStore'
 
-
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string
+    parentName?: string
+    useCompanyName?: boolean
+    hideMenuTree?: boolean
+  }
+}
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -25,21 +32,25 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/ProjectDashboard',
         name: 'ProjectDashboard',
         component: () => import('@/views/ProjectDashboard.vue'),
+        meta: { title: '最近使用' },
       },
       {
         path: '/view/TeamProject',
         name: 'TeamProject',
         component: () => import('@/views/TeamProject.vue'),
+        meta: { title: '團隊專案' },
       },
       {
         path: '/view/ResourceLibrary',
         name: 'ResourceLibrary',
         component: () => import('@/views/ResourceLibrary.vue'),
+        meta: { title: '共享資源庫' },
       },
       {
         path: '/view/TeamAccessManagement',
         name: 'TeamAccessManagement',
         component: () => import('@/views/TeamAccessManagement.vue'),
+        meta: { title: '權限管理' },
       },
       {
         path: '/view/AiViewer',
@@ -51,6 +62,7 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/CompanyTeamSettings',
         name: 'CompanyTeamSettings',
         component: () => import('@/views/CompanyTeamSettings.vue'),
+        meta: { title: '企業/團隊設定', useCompanyName: true },
       },
       {
         path: '/view/GUI',
@@ -61,28 +73,33 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/ProjectTrashCans',
         name: 'ProjectTrashCans',
         component: () => import('@/views/ProjectTrashCans.vue'),
+        meta: { title: '垃圾桶' },
       },
       {
         path: '/view/KnowledgeBase',
         name: 'KnowledgeBase',
         component: () => import('@/views/KnowledgeBase.vue'),
+        meta: { title: '知識庫管理' },
       },
       {
         path: '/view/KnowledgeDetail/:id',
         name: 'KnowledgeDetail',
         component: () => import('@/views/KnowledgeDetail.vue'),
         props: true,
+        meta: { title: '知識庫', parentName: 'KnowledgeBase' },
       },
       {
         path: '/view/KnowledgeEditor/:knowledgeId/:versionId',
         name: 'KnowledgeEditor',
         component: () => import('@/views/KnowledgeEditor.vue'),
         props: true,
+        meta: { title: '編輯器', parentName: 'KnowledgeBase' },
       },
       {
         path: '/view/Explore',
         name: 'Explore',
         component: () => import('@/views/Explore.vue'),
+        meta: { title: '探索' },
       },
     ]
   },

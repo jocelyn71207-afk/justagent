@@ -14,6 +14,7 @@ export const useRootStore = defineStore('rootStore', () => {
   const projectListMode = ref<'list' | 'card'>('card'); // 專案列表的顯示模式
 
   const nowMenuTreeCompanyId = ref(''); // 主選單目前選擇的公司 ID
+  const nowMenuTreeCompanyName = ref<string>('Teva')
 
   const isShowBuserModal = ref(false); // 是否顯示 Buser Modal
 
@@ -56,8 +57,8 @@ export const useRootStore = defineStore('rootStore', () => {
     appSearchKeyword,
 
     nowMenuTreeCompanyId,
+    nowMenuTreeCompanyName,
     isShowBuserModal,
-
 
     testGroups,
 

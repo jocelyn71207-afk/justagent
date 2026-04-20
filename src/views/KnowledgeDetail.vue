@@ -8,16 +8,16 @@
     />
     <div class="views-page-content-box" v-else-if="knowledge">
 
-      <!-- 頂部導航與標題 -->
+      <!-- 頂部麵包屑 -->
+      <div class="page-banner">
+        <AppBreadcrumb />
+        <div class="banner-title">{{ versionToShow.title }}</div>
+      </div>
+
+      <!-- 操作列 -->
       <div class="views-page-header">
         <div class="d-flex align-items-center">
-          <button class="custom-btn mr-3" @click="router.back()">
-            <i class="material-symbols-outlined">arrow_back</i>
-          </button>
-          <div class="page-title-group">
-            <h3>{{ versionToShow.title }}</h3>
-            <span class="category-tag ml-2">{{ knowledge.category }}</span>
-          </div>
+          <span class="category-tag">{{ knowledge.category }}</span>
         </div>
         <div class="header-right-box">
           <button class="custom-btn" @click="isHistoryOpen = true">
@@ -195,11 +195,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import MarkdownIt from 'markdown-it';
 import 'github-markdown-css/github-markdown.css';
 import { useRouter } from 'vue-router';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import { useBreadcrumb } from '@/composables/useBreadcrumb'
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import popDialog from '@/services/popDialog';
 import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue';
@@ -247,6 +249,12 @@ const versionToShow = computed(() => {
   const published = knowledge.value.versions.find(v => v.status === 'PUBLISHED');
   return published ?? knowledge.value.versions[knowledge.value.versions.length - 1];
 });
+
+const { setDynamic } = useBreadcrumb()
+
+watch(versionToShow, (val) => {
+  if (val?.title) setDynamic(val.title)
+}, { immediate: true })
 
 const statusLabelMap: Record<string, string> = {
   PUBLISHED: '目前發布版',

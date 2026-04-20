@@ -2,18 +2,14 @@
   <div class="CompanyTeamSettings views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
-      <div class="views-page-header">
-        <div class="d-flex flex-align-center">
-          <div class="page-title-group">
-            <h3>企業/團隊設定</h3>
-            <span class="company-name-badge">公司名稱</span>
-          </div>
+      <div class="page-banner">
+        <div>
+          <AppBreadcrumb />
+          <div class="banner-title">企業/團隊設定</div>
+        </div>
+        <div class="banner-right">
           <compSwitch v-model="isCompanyTab" :options="switchOptions" />
         </div>
-        <button class="custom-btn custom-main-btn" v-if="!isCompanyTab" @click="openTeamModal('create')">
-          <i class="material-symbols-outlined">add</i>
-          新增團隊
-        </button>
       </div>
 
       <!-- 企業 tab -->
@@ -120,6 +116,12 @@
 
       <!-- 團隊 tab -->
       <div v-if="!isCompanyTab" class="team-settings">
+        <div class="team-settings-toolbar">
+          <button class="custom-btn custom-main-btn" @click="openTeamModal('create')">
+            <i class="material-symbols-outlined">add</i>
+            新增團隊
+          </button>
+        </div>
         <div class="settings-block">
           <div class="settings-block-header">
             <span class="material-symbols-outlined settings-block-icon">store</span>
@@ -164,6 +166,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import compSwitch from '@/components/compSwitch/compSwitch.vue';

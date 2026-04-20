@@ -2,12 +2,13 @@
   <div class="TeamAccessManagement views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
-      <div class="views-page-header">
-        <div class="page-title-group">
-          <h3>權限管理</h3>
-          <span class="team-name-badge">{{ teamName }}</span>
+      <div class="page-banner">
+        <div>
+          <AppBreadcrumb />
+          <div class="banner-title">權限管理</div>
+          <div class="banner-sub">{{ memberList.length }} members</div>
         </div>
-        <div class="header-right-box">
+        <div class="banner-right">
           <div class="search-box">
             <i class="material-symbols-outlined">search</i>
             <input class="custom-input" type="text" v-model="searchText" placeholder="搜尋成員名稱、郵件、職位" />
@@ -93,8 +94,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed } from 'vue';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import popDialog from '@/services/popDialog';
@@ -103,16 +104,8 @@ import compPagination from '@/components/compPagination/compPagination.vue';
 import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
 import TeamAccountSettingModal from '@/components/TeamAccountSettingModal.vue';
 
-const route = useRoute();
 const rootStore = useRootStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
-
-const teamId = ref(route.query.teamId);
-const teamName = ref(route.query.teamName);
-watch(() => route.query, (newQuery) => {
-  teamId.value = newQuery.teamId;
-  teamName.value = newQuery.teamName;
-});
 
 const searchText = ref('');
 

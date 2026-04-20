@@ -83,5 +83,31 @@
 
     --color-tab-active-bg: #{$color-tab-active-bg-dark}; // 頁籤 active 的背景顏色
     --color-switch-active-bg: #{$color-switch-active-bg-dark}; // switch active 的背景顏色
+
+    // ── Linear 設計系統 Dark mode 覆寫 ──────────────────────────────────────────
+
+    // 主色語意別名（dark mode 下主色不變）
+    --color-primary:         #059669;
+    --color-primary-hover:   #10b981;
+    --color-primary-muted:   rgba(5, 150, 105, 0.15);
+    --color-primary-subtle:  rgba(5, 150, 105, 0.08);
+
+    // 中性背景層次（deep dark）
+    --color-bg:              #111827;
+    --color-bg-subtle:       #1f2937;
+    --color-bg-muted:        #374151;
+
+    // 強化邊框
+    --color-border-strong:   #4b5563;
+
+    // 文字層次
+    --color-text-muted:      #9ca3af;
+    --color-text-disabled:   #6b7280;
+
+    // 陰影系統（dark mode 陰影更深）
+    --shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md:     0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-lg:     0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-focus:  0 0 0 3px rgba(5, 150, 105, 0.25);
   }
 }

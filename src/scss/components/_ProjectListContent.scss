@@ -1,48 +1,92 @@
+// ── 設計規格 ───────────────────────────────────────────
+// 主色：#34d399 Spring (emerald-400) / 文字深色：#059669
+// Banner：白底 + 左側 3px 綠線
+// 按鈕：Pill (border-radius: 999px)
+// 字型點綴：JetBrains Mono（crumb、時間、sort）
+// 卡片頂部：4px 狀態色條 / Highlight A：pill #d1fae5
+// ──────────────────────────────────────────────────────
+$plc-emerald:       #059669;
+$plc-emerald-light: #d1fae5;
+$plc-emerald-dark:  #047857;
+
 .ProjectListContent {
   display: flex;
   flex-direction: column;
   min-height: 100%;
 
-  // ── Banner ──────────────────────────────────────
+  // ── Banner ──────────────────────────────────────────
   .plc-banner {
-    padding: 28px 46px 22px;
+    padding: 24px 46px 20px;
+    background: #fff;
+    border-left: 3px solid $plc-emerald;
+    border-bottom: 1px solid var(--color-wise-surface);
     flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
-    // 萊姆綠底（recent / team 模式共用）
-    &.plc-banner--green {
-      background: var(--color-wise-green);
-
-      .plc-banner-breadcrumb { color: var(--color-wise-dark-green); }
-      .plc-banner-title      { color: var(--color-wise-dark-green); }
-      .plc-banner-subtitle   { color: var(--color-wise-dark-green); }
-    }
-
-    .plc-banner-breadcrumb {
-      font-size: 11px;
-      opacity: 0.6;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
+    .plc-banner-left {}
 
     .plc-banner-title {
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--color-wise-black);
-      letter-spacing: -0.3px;
+      font-size: 24px;
+      font-weight: 900;
+      color: #111;
+      letter-spacing: -0.4px;
     }
 
     .plc-banner-subtitle {
-      font-size: 13px;
+      font-size: 11px;
       color: var(--color-wise-gray);
       margin-top: 3px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    // KPI 數字區
+    .plc-banner-kpi {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding-top: 2px;
+      flex-shrink: 0;
+
+      .kpi-item {
+        text-align: center;
+        background: var(--color-wise-bg);
+        border: 1px solid var(--color-wise-surface);
+        border-top: 2px solid $plc-emerald;
+        border-radius: 8px;
+        padding: 8px 16px;
+
+        &.kpi-review { border-top-color: #d97706; }
+        &.kpi-done   { border-top-color: #94a3b8; }
+
+        .kpi-num {
+          font-size: 22px;
+          font-weight: 900;
+          color: $plc-emerald;
+          line-height: 1;
+          font-family: 'JetBrains Mono', monospace;
+
+          &.review { color: #d97706; }
+          &.done   { color: #94a3b8; }
+        }
+
+        .kpi-label {
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+          color: var(--color-wise-gray);
+          margin-top: 3px;
+        }
+      }
     }
   }
 
-  // ── Toolbar ─────────────────────────────────────
+  // ── Toolbar ─────────────────────────────────────────
   .plc-toolbar {
-    background: var(--color-wise-bg);
-    padding: 12px 46px;
+    background: #fff;
+    padding: 11px 46px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -62,72 +106,95 @@
     }
   }
 
-  // ── Wise 建立按鈕 ───────────────────────────────
+  // ── 建立按鈕 ────────────────────────────────────────
   .wise-create-btn {
-    background: var(--color-wise-dark-green);
-    color: var(--color-wise-green);
+    background: $plc-emerald;
+    color: #fff;
     border: none;
-    border-radius: 24px;
-    padding: 8px 18px;
+    border-radius: 999px;
+    padding: 8px 20px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-family: inherit;
-    transition: opacity 0.15s;
+    transition: background 0.15s;
 
-    &:hover { opacity: 0.88; }
+    &:hover { background: $plc-emerald-dark; }
 
     i { font-size: 18px; }
   }
 
-  // ── Content 區域 ────────────────────────────────
-  .plc-content {
-    padding: 24px 46px 46px;
-    flex: 1;
+  // ── 覆寫 compDropDown 的 sort 為 pill ───────────────
+  .compDropDown .dropdown-trigger,
+  :deep(.compDropDown .dropdown-trigger) {
+    border-radius: 999px !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
   }
 
-  // ── Agent filter tabs（recent 模式下在 toolbar 外） ──
+  // ── Content 區域 ────────────────────────────────────
+  .plc-content {
+    padding: 20px 46px 46px;
+    flex: 1;
+    background: var(--color-wise-bg);
+  }
+
+  // ── Agent filter tabs ────────────────────────────────
   > .compTabs {
     padding: 0 46px;
+    background: #fff;
+    border-bottom: 1px solid var(--color-wise-surface);
   }
 
-  // ── 覆寫全域 card-list-box：固定 4 欄 ───────────
+  // ── 卡片格線：固定 4 欄 ─────────────────────────────
   .card-list-box {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 14px;
     place-items: unset;
     justify-content: unset;
     width: 100%;
   }
 
-  // ── 專案卡片 ────────────────────────────────────
+  // ── 專案卡片 ────────────────────────────────────────
   .project-card {
-    border-radius: 14px;
-    background: var(--color-wise-card);
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--color-wise-surface);
+    box-shadow: none;
     overflow: hidden;
     cursor: pointer;
     max-width: unset;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
     position: relative;
 
     &:hover {
-      transform: translateY(-4px) scale(1);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.11), 0 2px 8px rgba(0, 0, 0, 0.06);
-      border-color: transparent;
+      border-color: rgba($plc-emerald, 0.5);
+      box-shadow: 0 4px 16px rgba($plc-emerald, 0.08);
+      transform: translateY(-2px);
     }
 
-    // ── 圖片區 ───────────────────────────────────
+    // ── 狀態色條（卡片頂部 4px）─────────────────────
+    .card-status-strip {
+      height: 4px;
+      width: 100%;
+
+      &.strip-active  { background: $plc-emerald; }
+      &.strip-review  { background: #d97706; }
+      &.strip-done    { background: #94a3b8; }
+      &.strip-pending { background: #c084fc; }
+    }
+
+    // ── 圖片區 ──────────────────────────────────────
     .card-img {
       position: relative;
-      height: 148px;
+      height: 140px;
       overflow: hidden;
-      background: var(--color-wise-surface);
+      background: $plc-emerald-light;
+      height: 148px;
 
       img {
         width: 100%;
@@ -139,7 +206,7 @@
       .card-img-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.38) 0%, transparent 55%);
+        background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 55%);
       }
 
       .card-star {
@@ -147,18 +214,11 @@
         top: 10px;
         right: 10px;
         font-size: 18px;
-        color: rgba(255, 255, 255, 0.65);
+        color: rgba(255,255,255,0.65);
         cursor: pointer;
-        background: none;
-        padding: 0;
-        border-radius: 0;
         z-index: 3;
 
-        &.material-fill,
-        &.active {
-          color: var(--color-wise-green);
-          background: none;
-        }
+        &.active { color: $plc-emerald; }
       }
 
       .card-avatars {
@@ -197,36 +257,50 @@
 
         .collab-count {
           font-size: 11px;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255,255,255,0.9);
           margin-left: 7px;
         }
+      }
+
+      // 卡片右上角專案 ID
+      .card-project-id {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.7);
+        font-family: 'JetBrains Mono', monospace;
+        z-index: 3;
       }
 
       .team-name-box {
         position: absolute;
         left: 10px;
         top: 10px;
-        background: rgba(0, 0, 0, 0.45);
+        background: rgba(0,0,0,0.4);
         color: $white;
         border-radius: 6px;
-        padding: 4px 8px;
-        font-size: 11px;
+        padding: 3px 8px;
+        font-size: 10px;
         z-index: 3;
       }
     }
 
-    // ── 長條圖區（hover） ─────────────────────────
+    // ── 長條圖區（hover）────────────────────────────
     .card-chart {
       height: 148px;
       padding: 12px 14px 10px;
-      background: var(--color-wise-chart-bg);
+      background: var(--color-wise-bg);
       display: flex;
       flex-direction: column;
 
       .chart-title {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--color-wise-gray);
         margin-bottom: 8px;
+        font-family: 'JetBrains Mono', monospace;
       }
 
       .chart-bars {
@@ -246,32 +320,33 @@
 
       .bar {
         width: 100%;
-        border-radius: 4px 4px 0 0;
-        background: var(--color-wise-green);
+        border-radius: 3px 3px 0 0;
+        background: $plc-emerald;
         min-height: 4px;
       }
 
-      .bar-label { font-size: 9px; color: var(--color-wise-gray); }
-      .bar-count  { font-size: 9px; color: var(--color-wise-warm-dark); font-weight: 600; }
+      .bar-label { font-size: 9px; color: var(--color-wise-gray); font-family: 'JetBrains Mono', monospace; }
+      .bar-count  { font-size: 9px; color: #111; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 
       .chart-total {
         font-size: 11px;
-        color: var(--color-wise-dark-green);
-        font-weight: 600;
+        color: $plc-emerald;
+        font-weight: 700;
         margin-top: 8px;
         flex-shrink: 0;
+        font-family: 'JetBrains Mono', monospace;
       }
     }
 
-    // ── 卡片 footer ───────────────────────────────
+    // ── 卡片 footer ─────────────────────────────────
     .card-footer {
-      padding: 12px 14px 14px;
+      padding: 11px 13px 13px;
       position: relative;
 
       .card-name {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
-        color: var(--color-wise-black);
+        color: #111;
         line-height: 1.35;
         margin-bottom: 8px;
         display: -webkit-box;
@@ -294,8 +369,9 @@
         }
 
         .card-time {
-          font-size: 11px;
+          font-size: 10px;
           color: var(--color-wise-gray);
+          font-family: 'JetBrains Mono', monospace;
         }
       }
 
@@ -309,20 +385,18 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-left: 0;
-        padding: 0;
         flex-shrink: 0;
         transition: background 0.15s, color 0.15s;
 
         &:hover {
           background: var(--color-wise-bg);
-          color: var(--color-wise-black);
+          color: #111;
         }
       }
 
       .next-option-box {
         position: absolute;
-        right: 14px;
+        right: 13px;
         top: calc(100% - 4px);
         visibility: hidden;
         z-index: 10;
@@ -331,26 +405,27 @@
       }
     }
 
-    // ── 狀態 badge ────────────────────────────────
+    // ── 狀態 badge ──────────────────────────────────
     .status-badge {
-      font-size: 11px;
-      font-weight: 600;
-      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
       padding: 3px 10px;
 
-      &.status-active  { background: var(--color-wise-mint);          color: var(--color-wise-dark-green); }
-      &.status-review  { background: var(--color-wise-badge-hot-bg);  color: var(--color-wise-badge-hot-text); }
-      &.status-done    { background: var(--color-wise-surface);       color: var(--color-wise-warm-dark); }
-      &.status-pending { background: var(--color-wise-badge-pending-bg); color: var(--color-wise-gray); }
+      &.status-active  { background: $plc-emerald-light; color: $plc-emerald-dark; }
+      &.status-review  { background: #fef3c7; color: #92400e; }
+      &.status-done    { background: #f1f5f9; color: #64748b; }
+      &.status-pending { background: #f3e8ff; color: #7e22ce; }
     }
   }
 
-  // ── 覆寫全域 table-list-box：Wise 樣式 ─────────
+  // ── 表格樣式 ────────────────────────────────────────
   .table-list-box {
-    background: var(--color-wise-card);
+    background: #fff;
     border-radius: 12px;
     padding: 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
+    border: 1px solid var(--color-wise-surface);
     overflow: hidden;
 
     .custom-table {
@@ -361,15 +436,16 @@
       }
 
       thead tr {
-        background: var(--color-wise-table-header-bg);
+        background: var(--color-wise-bg);
         border-bottom: 1px solid var(--color-wise-surface);
 
         th {
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
           color: var(--color-wise-gray);
-          letter-spacing: 0.5px;
+          letter-spacing: 1px;
           text-transform: uppercase;
+          font-family: 'JetBrains Mono', monospace;
         }
       }
 
@@ -378,11 +454,8 @@
         cursor: pointer;
 
         &:last-child { border-bottom: none; }
-
         td { background: transparent !important; }
-
-        &:hover td { background: var(--color-wise-table-header-bg) !important; }
-
+        &:hover td { background: var(--color-wise-bg) !important; }
         td:first-child { border-radius: 0 !important; }
         td:last-child  { border-radius: 0 !important; position: relative; }
       }
@@ -398,15 +471,15 @@
     }
 
     .status-badge {
-      font-size: 11px;
-      font-weight: 600;
-      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
       padding: 3px 10px;
 
-      &.status-active  { background: var(--color-wise-mint);             color: var(--color-wise-dark-green); }
-      &.status-review  { background: var(--color-wise-badge-hot-bg);     color: var(--color-wise-badge-hot-text); }
-      &.status-done    { background: var(--color-wise-surface);          color: var(--color-wise-warm-dark); }
-      &.status-pending { background: var(--color-wise-badge-pending-bg); color: var(--color-wise-gray); }
+      &.status-active  { background: $plc-emerald-light; color: $plc-emerald-dark; }
+      &.status-review  { background: #fef3c7; color: #92400e; }
+      &.status-done    { background: #f1f5f9; color: #64748b; }
+      &.status-pending { background: #f3e8ff; color: #7e22ce; }
     }
 
     .favorite-btn {
@@ -418,7 +491,7 @@
       cursor: pointer;
       vertical-align: middle;
 
-      &.active { color: var(--color-wise-green); }
+      &.active { color: $plc-emerald; }
     }
 
     .owner-box {
@@ -427,6 +500,10 @@
       border-radius: 50%;
       font-size: 11px;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
     }
 
     .more-btn {
@@ -436,10 +513,7 @@
       border-radius: 4px;
       cursor: pointer;
 
-      &:hover {
-        background: var(--color-wise-bg);
-        color: var(--color-wise-black);
-      }
+      &:hover { background: var(--color-wise-bg); color: #111; }
     }
 
     .next-option-box {
@@ -453,7 +527,7 @@
     }
   }
 
-  // ── Empty state ──────────────────────────────────
+  // ── Empty state ─────────────────────────────────────
   .empty-box {
     display: flex;
     flex-direction: column;
@@ -461,24 +535,23 @@
     justify-content: center;
     padding: 56px 40px;
     text-align: center;
-    border: 2px dashed var(--color-wise-empty-border);
+    border: 2px dashed rgba($plc-emerald, 0.3);
     border-radius: 16px;
     cursor: pointer;
     max-width: 360px;
     margin: 40px auto;
     transition: border-color 0.15s, background 0.15s;
-    width: auto;
 
     &:hover {
-      border-color: var(--color-wise-green);
-      background: rgba($color-wise-green, 0.05);
+      border-color: $plc-emerald;
+      background: rgba($plc-emerald, 0.03);
     }
 
     .empty-icon {
       width: 54px;
       height: 54px;
       border-radius: 50%;
-      background: var(--color-wise-mint);
+      background: $plc-emerald-light;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -486,14 +559,14 @@
 
       i {
         font-size: 24px;
-        color: var(--color-wise-dark-green);
+        color: $plc-emerald;
       }
     }
 
     .empty-title {
       font-size: 15px;
       font-weight: 700;
-      color: var(--color-wise-black);
+      color: #111;
       margin-bottom: 6px;
     }
 

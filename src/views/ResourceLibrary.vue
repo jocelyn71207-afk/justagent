@@ -2,24 +2,29 @@
   <div class="ResourceLibrary views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
-      <div class="views-page-header">
-        <h3>
-          共用檔案管理
-          <div class="secondary-box">{{ teamName }}</div>
-        </h3>
-        <div class="header-right-box">
+      <div class="page-banner">
+        <div>
+          <AppBreadcrumb />
+          <div class="banner-title">共用檔案管理</div>
+          <div class="banner-sub">{{ displayList.length }} files</div>
+        </div>
+        <div class="banner-right">
           <compListCardSwitch v-model="viewMode"/>
+          <button class="custom-btn custom-main-btn" @click="openBatchUploadFn()">
+            <i class="material-symbols-outlined">add</i>
+            上傳檔案
+          </button>
         </div>
       </div>
 
-      <!-- 過濾區域: tabs on left + dropdowns + upload button on right -->
+      <!-- 過濾區域: tabs on left + type dropdown on right -->
       <div class="resource-filter-row">
         <compTabs
           v-model="filterValue"
           :tabs="filterTabs"
         />
         <div class="filter-right">
-          <compDropDown class="mr-2"
+          <compDropDown
             :options="[
               { name: '所有檔案類型', value: '' },
               { name: 'PDF', value: 'PDF' },
@@ -40,10 +45,6 @@
             placeholder="所有檔案類型"
             @select="(item) => { filterTypeValue = item.value; }"
           />
-          <button class="custom-btn custom-main-btn" @click="openBatchUploadFn()">
-            <i class="material-symbols-outlined">add</i>
-            上傳檔案
-          </button>
         </div>
       </div>
 
@@ -182,8 +183,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import type { Ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import compTabs from '@/components/compTabs/compTabs.vue';
@@ -230,17 +232,9 @@ import wordIcon from '@/assets/fileTypeIcon/word.png';
 import txtIcon from '@/assets/fileTypeIcon/txt.png';
 import chartIcon from '@/assets/fileTypeIcon/chart.png';
 
-const route = useRoute();
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, projectListMode: viewMode } = storeToRefs(rootStore);
 const openBatchUploadFn = rootStore.openBatchUploadFn;
-
-const teamId = ref(route.query.teamId);
-const teamName = ref(route.query.teamName);
-watch(() => route.query, (newQuery) => {
-  teamId.value = newQuery.teamId;
-  teamName.value = newQuery.teamName;
-});
 
 // 過濾條件: 全部 / 資料入庫型 / 原檔保存型
 const filterValue = ref('ALL');
