@@ -951,6 +951,7 @@
     @include user-select-none;
 
     .ctrl-btn {
+      color: var(--color-text-alpha80);
       font-size: 22px;
       width: 36px;
       height: 36px;
