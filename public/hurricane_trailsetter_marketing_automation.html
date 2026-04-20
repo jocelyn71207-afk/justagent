@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hurricane Trailsetter AW26 行銷自動化旅程</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f8fa;--surface:#fff;--border:#e4e7ed;
+  --text:#1a1d23;--text2:#5c6370;--text3:#9ca3af;
+  --blue:#3b72f6;--blue-l:rgba(59,114,246,.08);
+  --purple:#7c3aed;--purple-l:rgba(124,58,237,.08);
+  --green:#16a34a;--green-l:rgba(22,163,74,.08);
+  --orange:#ea580c;--orange-l:rgba(234,88,12,.08);
+  --teal:#0891b2;--teal-l:rgba(8,145,178,.08);
+}
+body{background:var(--bg);font-family:'Helvetica Neue','PingFang TC','Microsoft JhengHei',sans-serif;
+  color:var(--text);padding:24px 22px 48px;font-size:13px;line-height:1.6}
+
+/* Header */
+.rh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px}
+.brand{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
+.title{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.meta{font-size:11px;color:var(--text3);margin-top:3px}
+.badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--blue-l);
+  color:var(--blue);border:1px solid rgba(59,114,246,.2);white-space:nowrap;flex-shrink:0}
+
+/* Section */
+.sec{margin-bottom:24px}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Segments */
+.segs{display:flex;gap:8px;flex-wrap:wrap}
+.seg{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid}
+.seg-new{background:var(--blue-l);color:var(--blue);border-color:rgba(59,114,246,.25)}
+.seg-warm{background:var(--purple-l);color:var(--purple);border-color:rgba(124,58,237,.25)}
+.seg-vip{background:var(--orange-l);color:var(--orange);border-color:rgba(234,88,12,.25)}
+
+/* Flow */
+.flow{display:flex;flex-direction:column}
+.node-row{display:flex;align-items:flex-start}
+.node-spine{width:32px;display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.spine-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.spine-line{width:2px;flex:1;min-height:20px}
+.node-body{flex:1;padding-bottom:20px}
+.node-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.node-day{font-size:10px;font-weight:700;color:var(--text3);min-width:28px}
+.node-label{font-size:13px;font-weight:700;color:var(--text)}
+.node-trigger{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;
+  background:var(--surface);border:1px solid var(--border);color:var(--text2)}
+
+/* Channels */
+.channels{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.ch{padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;border:1px solid}
+.ch-email{background:var(--blue-l);color:var(--blue);border-color:rgba(59,114,246,.2)}
+.ch-line{background:var(--green-l);color:var(--green);border-color:rgba(22,163,74,.2)}
+.ch-sms{background:var(--teal-l);color:var(--teal);border-color:rgba(8,145,178,.2)}
+.ch-ad{background:var(--orange-l);color:var(--orange);border-color:rgba(234,88,12,.2)}
+.ch-push{background:var(--purple-l);color:var(--purple);border-color:rgba(124,58,237,.2)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;
+  transition:all .15s;user-select:none;background:var(--surface)}
+.chip:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.chip:active{transform:scale(.96)}
+.chip-blue{background:var(--blue-l);color:var(--blue);border-color:rgba(59,114,246,.3)}
+.chip-green{background:var(--green-l);color:var(--green);border-color:rgba(22,163,74,.3)}
+.chip-purple{background:var(--purple-l);color:var(--purple);border-color:rgba(124,58,237,.3)}
+.chip-orange{background:var(--orange-l);color:var(--orange);border-color:rgba(234,88,12,.3)}
+.chip.sent{opacity:.45;pointer-events:none;text-decoration:line-through}
+
+/* Fork */
+.fork{display:flex;gap:10px;margin-bottom:8px}
+.fork-branch{flex:1;border-radius:8px;padding:8px 10px;border:1px solid}
+.fork-yes{background:var(--green-l);border-color:rgba(22,163,74,.2)}
+.fork-no{background:#fef9e7;border-color:#fcd34d}
+.fork-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.fork-yes .fork-label{color:var(--green)}
+.fork-no .fork-label{color:#92400e}
+.fork-content{font-size:11px;color:var(--text2)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;text-align:center}
+.kpi-val{font-size:18px;font-weight:800;color:var(--blue);line-height:1}
+.kpi-lbl{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:#1a1d23;color:#fff;font-size:12px;font-weight:600;padding:9px 18px;
+  border-radius:20px;white-space:nowrap;pointer-events:none;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s;opacity:0;z-index:999}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="rh">
+  <div>
+    <div class="brand">Hurricane Trailsetter · AW26</div>
+    <div class="title">行銷自動化旅程</div>
+    <div class="meta">生成日期：2026-04-20 · 適用期間：2026 Q3–Q4</div>
+  </div>
+  <div class="badge">Marketing Automation</div>
+</div>
+
+<!-- Segments -->
+<div class="sec">
+  <div class="sec-title">目標受眾</div>
+  <div class="segs">
+    <div class="seg seg-new">🆕 新客（未購買）</div>
+    <div class="seg seg-warm">🔁 溫客（瀏覽未購）</div>
+    <div class="seg seg-vip">⭐ VIP（購買 2+）</div>
+  </div>
+</div>
+
+<!-- Flow -->
+<div class="sec">
+  <div class="sec-title">自動化旅程節點</div>
+  <div class="flow">
+
+    <!-- D0 -->
+    <div class="node-row">
+      <div class="node-spine">
+        <div class="spine-dot" style="background:var(--blue)"></div>
+        <div class="spine-line" style="background:linear-gradient(var(--blue),var(--purple))"></div>
+      </div>
+      <div class="node-body">
+        <div class="node-head">
+          <span class="node-day">D0</span>
+          <span class="node-label">觸發加入旅程</span>
+          <span class="node-trigger">觸發：首次訪問商品頁 / 加入購物車</span>
+        </div>
+        <div class="channels">
+          <div class="ch ch-ad">📢 Meta 廣告 · 品牌曝光</div>
+          <div class="ch ch-push">🔔 Web Push · 歡迎</div>
+        </div>
+        <div class="chips">
+          <span class="chip chip-blue" onclick="sendChip(this,'生成 AW26 Hurricane 品牌曝光廣告文案')">✏️ 生成廣告文案</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D1 -->
+    <div class="node-row">
+      <div class="node-spine">
+        <div class="spine-dot" style="background:var(--purple)"></div>
+        <div class="spine-line" style="background:linear-gradient(var(--purple),var(--green))"></div>
+      </div>
+      <div class="node-body">
+        <div class="node-head">
+          <span class="node-day">D1</span>
+          <span class="node-label">歡迎序列啟動</span>
+        </div>
+        <div class="channels">
+          <div class="ch ch-email">📧 Email · 品牌故事 + 產品亮點</div>
+          <div class="ch ch-line">💬 LINE · 歡迎加好友優惠</div>
+        </div>
+        <div class="chips">
+          <span class="chip chip-blue" onclick="sendChip(this,'生成 Hurricane Trailsetter AW26 歡迎 Email 模板')">✉️ 生成 Email 模板</span>
+          <span class="chip chip-green" onclick="sendChip(this,'撰寫 LINE 歡迎訊息腳本')">💬 撰寫 LINE 腳本</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D3 -->
+    <div class="node-row">
+      <div class="node-spine">
+        <div class="spine-dot" style="background:var(--green)"></div>
+        <div class="spine-line" style="background:linear-gradient(var(--green),var(--orange))"></div>
+      </div>
+      <div class="node-body">
+        <div class="node-head">
+          <span class="node-day">D3</span>
+          <span class="node-label">行為條件分流</span>
+          <span class="node-trigger">條件：Email 開啟 / 未開啟</span>
+        </div>
+        <div class="fork">
+          <div class="fork-branch fork-yes">
+            <div class="fork-label">✓ 已開啟 Email</div>
+            <div class="fork-content">發送 <strong>限時優惠碼</strong>（7 折，72hr 效期）+ LINE 推播提醒</div>
+          </div>
+          <div class="fork-branch fork-no">
+            <div class="fork-label">✗ 未開啟</div>
+            <div class="fork-content">換題目重發 Email + Meta 再行銷廣告加強</div>
+          </div>
+        </div>
+        <div class="chips">
+          <span class="chip chip-orange" onclick="sendChip(this,'設定 Hurricane Trailsetter 限時優惠碼再行銷廣告受眾')">🎯 設定再行銷受眾</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D7 -->
+    <div class="node-row">
+      <div class="node-spine">
+        <div class="spine-dot" style="background:var(--orange)"></div>
+        <div class="spine-line" style="background:linear-gradient(var(--orange),var(--teal))"></div>
+      </div>
+      <div class="node-body">
+        <div class="node-head">
+          <span class="node-day">D7</span>
+          <span class="node-label">產品深度培育</span>
+        </div>
+        <div class="channels">
+          <div class="ch ch-email">📧 Email · Hurricane 戶外穿搭指南</div>
+          <div class="ch ch-ad">📢 Instagram · UGC 素材投放</div>
+        </div>
+        <div class="chips">
+          <span class="chip chip-purple" onclick="sendChip(this,'生成 Hurricane Trailsetter 戶外穿搭指南 Email 內容')">📝 生成穿搭指南</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D14 -->
+    <div class="node-row">
+      <div class="node-spine">
+        <div class="spine-dot" style="background:var(--teal)"></div>
+        <div class="spine-line" style="background:linear-gradient(var(--teal),#db2777)"></div>
+      </div>
+      <div class="node-body">
+        <div class="node-head">
+          <span class="node-day">D14</span>
+          <span class="node-label">購買轉換衝刺</span>
+          <span class="node-trigger">觸發：加入購物車未結帳</span>
+        </div>
+        <div class="channels">
+          <div class="ch ch-sms">📱 SMS · 棄單提醒</div>
+          <div class="ch ch-line">💬 LINE · 最後倒數</div>
+          <div class="ch ch-ad">📢 動態再行銷廣告</div>
+        </div>
+        <div class="chips">
+          <span class="chip chip-blue" onclick="sendChip(this,'撰寫 Hurricane Trailsetter 棄單 SMS 提醒文案')">📱 棄單 SMS 文案</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D30 -->
+    <div class="node-row">
+      <div class="node-spine">
+        <div class="spine-dot" style="background:#db2777"></div>
+        <div class="spine-line" style="background:#e5e7eb;min-height:10px"></div>
+      </div>
+      <div class="node-body">
+        <div class="node-head">
+          <span class="node-day">D30</span>
+          <span class="node-label">購後回購培育</span>
+          <span class="node-trigger">條件：完成購買</span>
+        </div>
+        <div class="channels">
+          <div class="ch ch-email">📧 Email · 使用心得 + 開箱引導</div>
+          <div class="ch ch-line">💬 LINE · 積分通知 + 會員升級</div>
+        </div>
+        <div class="chips">
+          <span class="chip chip-green" onclick="sendChip(this,'設計 Hurricane Trailsetter 購後忠誠計畫與積分規則')">⭐ 設計忠誠計畫</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="sec">
+  <div class="sec-title">預估成效</div>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-val">28%</div><div class="kpi-lbl">Email 開信率</div></div>
+    <div class="kpi"><div class="kpi-val">4.2%</div><div class="kpi-lbl">轉換率</div></div>
+    <div class="kpi"><div class="kpi-val">1.8×</div><div class="kpi-lbl">ROAS</div></div>
+    <div class="kpi"><div class="kpi-val">−32%</div><div class="kpi-lbl">棄單流失率</div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+function sendChip(el, msg) {
+  window.parent.postMessage({ type: 'hurricane-chip-click', msg }, '*');
+  el.classList.add('sent');
+  showToast('已送出：' + msg.slice(0, 28) + (msg.length > 28 ? '…' : ''));
+}
+function showToast(text) {
+  var t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+</script>
+</body>
+</html>
