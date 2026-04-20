@@ -811,15 +811,17 @@ const conv1Msgs = ref([
       { label: '🎯 生成行銷策略', msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
       { label: '👤 目標客群用戶畫像', msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
       { label: '📊 產出圖表', msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
+      { label: '🗺️ 生成行銷自動化旅程', msg: '生成 Hurricane Trailsetter AW26 行銷自動化旅程' },
     ],
   },
 ]) as Ref<any[]>;
 
 // ── Conv1 下一步追問邏輯 ──
 const C1_ALL_STEPS = [
-  { key: '行銷策略', label: '🎯 生成行銷策略',     msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
-  { key: '用戶畫像', label: '👤 目標客群用戶畫像', msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
-  { key: '圖表',     label: '📊 產出圖表',          msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
+  { key: '行銷策略',       label: '🎯 生成行銷策略',       msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
+  { key: '用戶畫像',       label: '👤 目標客群用戶畫像',   msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
+  { key: '圖表',           label: '📊 產出圖表',           msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
+  { key: '行銷自動化旅程', label: '🗺️ 生成行銷自動化旅程', msg: '生成 Hurricane Trailsetter AW26 行銷自動化旅程' },
 ];
 const conv1DoneSteps = ref<Set<string>>(new Set());
 
