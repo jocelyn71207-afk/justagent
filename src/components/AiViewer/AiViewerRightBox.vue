@@ -944,6 +944,15 @@ function processConv1Msg(msg: string) {
       'hurricane_trailsetter_user_persona.html',
       '用戶畫像',
     );
+  } else if (msg.includes('行銷自動化旅程')) {
+    c1PushThinkingThenReply(
+      2000,
+      '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
+      [{ name: 'hurricane_trailsetter_marketing_automation.html', type: 'HTML', size: 9800 }],
+      '/justagent/hurricane_trailsetter_marketing_automation.html',
+      'hurricane_trailsetter_marketing_automation.html',
+      '行銷自動化旅程',
+    );
   }
 }
 
