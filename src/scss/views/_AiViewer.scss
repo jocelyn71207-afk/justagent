@@ -999,8 +999,10 @@
       width 0.2s ease-in-out;
     .ctrl-btn {
       color: var(--color-text-alpha80);
-      font-size: 30px;
-      margin: 12px 10px;
+      font-size: 22px;
+      width: 36px;
+      height: 36px;
+      margin: 5px 3px;
     }
     .fn-btn-box {
       display: flex;
