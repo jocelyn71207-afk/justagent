@@ -415,14 +415,11 @@ const AiViewerStyle = computed(() => {
 });
 // 中間區塊樣式
 const centerBoxStyle = computed(() => {
-  /* css 樣式的圓點點,會依照縮放比例改變大小
-    background-image: radial-gradient(circle, rgba(#000, 0.5) 1px, transparent 1px);
-    background-size: 10px 10px; // 點點間距
-    background-position: 0 0;
-  */
-  const bgSize = 10 * centerContentScale.value;
+  // 細十字格線雙層縮放（大格 96px / 小格 24px，隨畫布 scale 同步）
+  const small = 24 * centerContentScale.value;
+  const large = 96 * centerContentScale.value;
   return {
-    backgroundSize: `${bgSize}px ${bgSize}px`,
+    backgroundSize: `${large}px ${large}px, ${large}px ${large}px, ${small}px ${small}px, ${small}px ${small}px`,
   };
 });
 // 包著每一個小區塊的容器 樣式
