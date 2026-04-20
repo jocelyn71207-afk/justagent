@@ -29,14 +29,22 @@
     // background:
     //   linear-gradient(-90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 20px 20px,
     //   linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 20px 20px;
-    // 圓點點背景
-    background-image: radial-gradient(circle, rgba($black, 0.1) 1px, transparent 1px);
-    background-size: 10px 10px; // 點點間距 js 會依照縮放比例調整
+    // 細十字格線背景（大格 96px / 小格 24px，js 會依縮放比例動態調整 background-size）
+    background-image:
+      repeating-linear-gradient(rgba($black, 0.055) 0px, transparent 1px),
+      repeating-linear-gradient(90deg, rgba($black, 0.055) 0px, transparent 1px),
+      repeating-linear-gradient(rgba($black, 0.025) 0px, transparent 1px),
+      repeating-linear-gradient(90deg, rgba($black, 0.025) 0px, transparent 1px);
+    background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px; // js 會覆蓋此值
     background-position: 0 0;
 
     // 特別客製深色主題
     @media (prefers-color-scheme: dark) {
-      background-image: radial-gradient(circle, rgba($white, 0.08) 1px, transparent 1px);
+      background-image:
+        repeating-linear-gradient(rgba($white, 0.04) 0px, transparent 1px),
+        repeating-linear-gradient(90deg, rgba($white, 0.04) 0px, transparent 1px),
+        repeating-linear-gradient(rgba($white, 0.018) 0px, transparent 1px),
+        repeating-linear-gradient(90deg, rgba($white, 0.018) 0px, transparent 1px);
     }
 
     // 包著每一個小區塊的容器
