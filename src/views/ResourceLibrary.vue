@@ -223,14 +223,14 @@ const isSourceUpdateModalOpen = ref(false);
 const sourceUpdateFileId = ref('');
 
 // 檔案類型圖示 mapping
-import pdfIcon from '@/assets/fileTypeIcon/pdf.png';
-import pptIcon from '@/assets/fileTypeIcon/ppt.png';
-import excelIcon from '@/assets/fileTypeIcon/excel.png';
-import htmlIcon from '@/assets/fileTypeIcon/html.png';
-import mdIcon from '@/assets/fileTypeIcon/md.png';
-import wordIcon from '@/assets/fileTypeIcon/word.png';
-import txtIcon from '@/assets/fileTypeIcon/txt.png';
-import chartIcon from '@/assets/fileTypeIcon/chart.png';
+import pdfIcon from '@/assets/fileTypeIcon/pdf.svg';
+import pptIcon from '@/assets/fileTypeIcon/ppt.svg';
+import excelIcon from '@/assets/fileTypeIcon/excel.svg';
+import htmlIcon from '@/assets/fileTypeIcon/html.svg';
+import mdIcon from '@/assets/fileTypeIcon/md.svg';
+import wordIcon from '@/assets/fileTypeIcon/word.svg';
+import txtIcon from '@/assets/fileTypeIcon/txt.svg';
+import chartIcon from '@/assets/fileTypeIcon/chart.svg';
 
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, projectListMode: viewMode } = storeToRefs(rootStore);
