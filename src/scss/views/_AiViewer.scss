@@ -950,6 +950,13 @@
     align-items: center;
     @include user-select-none;
 
+    .ctrl-btn {
+      font-size: 22px;
+      width: 36px;
+      height: 36px;
+      margin: 0 2px;
+    }
+
     // TODO... 是情況移除
     .resetPosition {
       border: 0;
