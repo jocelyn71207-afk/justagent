@@ -69,7 +69,7 @@
       border-radius: 9999px;
       font-size: 13px;
       font-weight: 600;
-      background: rgba(22, 51, 0, 0.07);
+      background: rgba(52, 211, 153, 0.10);
       color: var(--color-wise-black);
       cursor: pointer;
       border: 1px solid transparent;
@@ -78,7 +78,7 @@
       font-feature-settings: "calt";
 
       &:hover {
-        background: rgba(22, 51, 0, 0.12);
+        background: rgba(52, 211, 153, 0.16);
         transform: scale(1.04);
       }
     }
@@ -149,7 +149,7 @@
       .hero-cta-label {
         font-size: 10px;
         font-weight: 600;
-        color: rgba(22, 51, 0, 0.6);
+        color: rgba(4, 120, 87, 0.70);
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 5px;
@@ -165,7 +165,7 @@
 
       .hero-cta-desc {
         font-size: 11px;
-        color: rgba(22, 51, 0, 0.65);
+        color: rgba(4, 120, 87, 0.75);
         line-height: 1.5;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -377,7 +377,7 @@
         border-radius: 9999px;
         font-size: 13px;
         font-weight: 600;
-        background: rgba(22, 51, 0, 0.06);
+        background: rgba(52, 211, 153, 0.08);
         color: var(--color-wise-warm-dark);
         cursor: pointer;
         border: 1px solid transparent;
@@ -385,7 +385,7 @@
         white-space: nowrap;
 
         &:hover {
-          background: rgba(22, 51, 0, 0.10);
+          background: rgba(52, 211, 153, 0.14);
           color: var(--color-wise-black);
         }
 

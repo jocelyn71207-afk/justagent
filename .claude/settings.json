@@ -40,7 +40,11 @@
       "Bash(git rm:*)",
       "Bash(git push:*)",
       "Bash(bash /Users/jocelyn/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/scripts/start-server.sh --project-dir /Users/jocelyn/Desktop/demosite)",
-      "Read(//Users/jocelyn/.claude/**)"
+      "Read(//Users/jocelyn/.claude/**)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite log --oneline main..HEAD)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite show d4b34d5 --stat)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite show 80ddc86 --stat)",
+      "Bash(git -C /Users/jocelyn/Desktop/demosite show 30df0ed --stat)"
     ],
     "additionalDirectories": [
       "/Users/jocelyn/Desktop/demosite"

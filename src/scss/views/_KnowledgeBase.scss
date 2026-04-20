@@ -222,9 +222,9 @@
     }
 
     &--success {
-      background: #E8F5E9;
-      color: #2E7D32;
-      border: 1px solid rgba(76, 175, 80, 0.2);
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid rgba(52, 211, 153, 0.2);
     }
 
     &--warning {
@@ -596,7 +596,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      i { font-size: 22px; color: #02a100; }
+      i { font-size: 22px; color: #059669; }
     }
 
     &__name {
@@ -628,9 +628,9 @@
     }
 
     &--new {
-      background: rgba(2, 195, 0, 0.10);
-      color: #02a100;
-      border: 1px solid rgba(2, 195, 0, 0.20);
+      background: rgba(52, 211, 153, 0.10);
+      color: #059669;
+      border: 1px solid rgba(52, 211, 153, 0.20);
     }
   }
 
@@ -741,7 +741,7 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 6px;
-      i { font-size: 16px; color: #02a100; }
+      i { font-size: 16px; color: #059669; }
     }
 
     &__note {
@@ -827,20 +827,18 @@
   }
 
   // ── 通用頁面區塊 ──
-  .views-page-header {
-    .search-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-      > i {
-        position: absolute;
-        left: 8px;
-        color: var(--color-text-alpha50);
-        pointer-events: none;
-      }
-      .custom-input {
-        padding-left: 34px;
-      }
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    > i {
+      position: absolute;
+      left: 8px;
+      color: var(--color-text-alpha50);
+      pointer-events: none;
+    }
+    .custom-input {
+      padding-left: 34px;
     }
   }
 
@@ -878,8 +876,8 @@
         i { color: var(--color-wise-dark-green); }
       }
       &--green {
-        background: rgba(2, 195, 0, 0.12);
-        i { color: #02c300; }
+        background: rgba(52, 211, 153, 0.12);
+        i { color: #34d399; }
       }
       &--yellow {
         background: rgba(251, 192, 0, 0.15);
@@ -934,8 +932,8 @@
     i { font-size: 14px; }
 
     &--PUBLISHED {
-      background: rgba(2, 195, 0, 0.10);
-      color: #02a100;
+      background: rgba(52, 211, 153, 0.10);
+      color: #059669;
     }
     &--REVIEWING {
       background: rgba(251, 192, 0, 0.15);
@@ -1165,8 +1163,8 @@
     white-space: nowrap;
 
     &--added {
-      background: rgba(2, 195, 0, 0.10);
-      color: #02a100;
+      background: rgba(52, 211, 153, 0.10);
+      color: #059669;
     }
     &--removed {
       background: rgba(229, 57, 53, 0.10);
@@ -1230,9 +1228,9 @@
         word-break: break-word;
         
         &.is-added {
-          background-color: rgba(2, 195, 0, 0.08);
-          border: 1px solid rgba(2, 195, 0, 0.2);
-          color: #02a100;
+          background-color: rgba(52, 211, 153, 0.08);
+          border: 1px solid rgba(52, 211, 153, 0.2);
+          color: #059669;
         }
         &.is-removed {
           background-color: rgba(229, 57, 53, 0.08);
@@ -1311,7 +1309,7 @@
     }
     
     &.is-published {
-      border-left: 5px solid #02a100;
+      border-left: 5px solid #059669;
     }
   }
 
@@ -1710,7 +1708,7 @@
     flex-shrink: 0;
 
     &--submitted  { background: #1565c0; }
-    &--approved   { background: #02a100; }
+    &--approved   { background: #059669; }
     &--rejected   { background: #c62828; }
     &--withdrawn  { background: var(--color-text-alpha40); }
   }

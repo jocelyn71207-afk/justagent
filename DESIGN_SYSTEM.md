@@ -27,16 +27,35 @@
 
 ---
 
-## 1. 品牌主色
+## 1. 品牌主色（Spring Green 系統）
 
 | 變數名 | Hex | 用途 |
 |--------|-----|------|
-| `$color_main_1` | `#3eb5cc` | 主色：按鈕、連結、主題 |
-| `$color_main_2` | `#22c2d3` | Active / Focus 狀態 |
-| `$color_main_3` | `#76cbdd` | Hover 狀態 |
-| `$color_main_4` | `#ceecf2` | 淺背景 |
-| `$color_main_5` | `#e9f9fb` | 極淺背景 |
-| `$color_main_6` | `#ecfbff` | 最淺背景（幾乎白） |
+| `$color_main_1` | `#059669` | 主色 Emerald-600：按鈕、連結、主題文字 |
+| `$color_main_2` | `#047857` | Emerald-700：Active / Focus 狀態 |
+| `$color_main_3` | `#34d399` | Emerald-400 Spring：Hover / CTA |
+| `$color_main_4` | `#d1fae5` | Emerald-100：Pill highlight 填充、badge 背景 |
+| `$color_main_5` | `#ecfdf5` | Emerald-50：Hover surface |
+| `$color_main_6` | `#f0fdf8` | 最淺背景頁面底色 |
+
+**Wise 設計系統 tokens（Spring Green）**
+
+| 變數 | Hex | 用途 |
+|------|-----|------|
+| `--color-wise-green` | `#34d399` | Spring CTA / active |
+| `--color-wise-dark-green` | `#047857` | CTA 文字 / 深色輔助 |
+| `--color-wise-surface` | `#ecfdf5` | Hover 底色（emerald-50） |
+| `--color-wise-mint` | `#d1fae5` | Badge 淡綠底（emerald-100） |
+| `--color-wise-bg` | `#f0fdf8` | 頁面背景色 |
+
+**Sidebar Active State（Highlight Style A）**
+
+| 元素 | 規格 |
+|------|------|
+| 背景色 | `#d1fae5`（Pill 圓角，border-radius: 999px） |
+| 文字色 | `#059669`，font-weight: 600 |
+| 側欄底色 | `#f8fafc` |
+| Hover | `rgba(52, 211, 153, 0.06)` |
 
 **灰色系**
 
@@ -54,17 +73,17 @@
 |------|------|------|
 | uploading（藍） | `rgba(30, 136, 229, 0.10)` | `#1565c0` |
 | parsing（黃） | `rgba(251, 192, 0, 0.15)` | `#b07d00` |
-| stored（綠） | `rgba(2, 195, 0, 0.10)` | `#02a100` |
-| saved（青） | `rgba(0, 150, 136, 0.10)` | `#00695c` |
+| stored（綠） | `rgba(52, 211, 153, 0.10)` | `#059669` |
+| saved（青） | `rgba(52, 211, 153, 0.10)` | `#059669` |
 | failed（紅） | `rgba(229, 57, 53, 0.10)` | `#c62828` |
 
 **Explore 頁面 Badge**
 
 | 標籤 | 背景 | 文字 |
 |------|------|------|
-| New（綠） | `#EAF3DE` | `#3B6D11` |
+| New（綠） | `#d1fae5` | `#059669` |
 | Hot（橙） | `#FAEEDA` | `#854F0B` |
-| Sat（青） | `#E1F5EE` | `#0F6E56` |
+| Sat（青） | `#d1fae5` | `#059669` |
 
 ---
 

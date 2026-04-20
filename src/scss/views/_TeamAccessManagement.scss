@@ -17,14 +17,14 @@
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: rgba(22, 51, 0, 0.18) 0px 4px 16px;
+    box-shadow: rgba(4, 120, 87, 0.15) 0px 4px 16px;
     transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.15s ease;
 
     i { font-size: 18px; }
 
     &:hover {
       transform: scale(1.04);
-      box-shadow: rgba(22, 51, 0, 0.24) 0px 6px 20px;
+      box-shadow: rgba(4, 120, 87, 0.20) 0px 6px 20px;
     }
 
     &:active { transform: scale(0.98); }
@@ -32,21 +32,19 @@
 
   // ==================== 舊版樣式 ====================
 
-  .views-page-header {
-    .search-box {
-      position: relative;
-      display: flex;
-      align-items: center;
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
 
-      > i {
-        position: absolute;
-        left: 8px;
-        color: var(--color-wise-gray);
-        pointer-events: none;
-      }
-
-      .custom-input { padding-left: 34px; }
+    > i {
+      position: absolute;
+      left: 8px;
+      color: var(--color-wise-gray);
+      pointer-events: none;
     }
+
+    .custom-input { padding-left: 34px; }
   }
 
   .table-box {
