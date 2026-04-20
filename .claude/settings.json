@@ -44,7 +44,9 @@
       "Bash(git -C /Users/jocelyn/Desktop/demosite log --oneline main..HEAD)",
       "Bash(git -C /Users/jocelyn/Desktop/demosite show d4b34d5 --stat)",
       "Bash(git -C /Users/jocelyn/Desktop/demosite show 80ddc86 --stat)",
-      "Bash(git -C /Users/jocelyn/Desktop/demosite show 30df0ed --stat)"
+      "Bash(git -C /Users/jocelyn/Desktop/demosite show 30df0ed --stat)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "/Users/jocelyn/Desktop/demosite"
