@@ -953,6 +953,104 @@ function processConv1Msg(msg: string) {
       'hurricane_trailsetter_marketing_automation.html',
       '行銷自動化旅程',
     );
+  } else if (msg.includes('廣告文案')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '以下是 3 條 Hurricane Trailsetter AW26 品牌曝光廣告文案：<br><br>① <strong>「山路之王，秋冬出擊」</strong><br>Hurricane Trailsetter — 專為台灣山林設計，防滑耐磨，陪你征服每一條步道。<br><br>② <strong>「戶外不將就，腳感決定一切」</strong><br>全新 AW26 系列登場，Vibram 大底 × 防水鞋面，由內而外的戶外自信。<br><br>③ <strong>「你的下一段旅程，從這裡開始」</strong><br>Hurricane Trailsetter AW26，限時優惠倒數中。',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1500);
+  } else if (msg.includes('歡迎 Email 模板')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '📧 <strong>歡迎 Email 模板</strong><br><br><strong>主旨：</strong>歡迎加入 Hurricane Trailsetter 探險家族 🏔️<br><br><strong>內文：</strong><br>Hi [姓名]，<br><br>感謝你關注 Hurricane Trailsetter！我們為 AW26 秋冬系列注入了全新工藝——<br>・Vibram® 大底，抓地力提升 30%<br>・Gore-Tex® 防水膜，惡劣天氣也不妥協<br>・符合台灣山林地形設計的鞋楦<br><br>身為我們的新朋友，這裡有一份 <strong>專屬 9 折優惠碼：WELCOME26</strong>，有效期 7 天。<br><br>[立即選購] 按鈕<br><br>期待在每條步道上看見你的足跡。<br>Hurricane Trailsetter 團隊',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1800);
+  } else if (msg.includes('LINE 腳本')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '💬 <strong>LINE 歡迎訊息腳本</strong><br><br><strong>主訊息：</strong><br>嗨！感謝加入 Hurricane Trailsetter 官方帳號 🏔️<br>AW26 秋冬新品現正上市，加好友限定 85 折！<br><br><strong>快速回覆按鈕（建議設定 3 個）：</strong><br>・🛒 立即選購<br>・📦 查看新品<br>・🎁 領取優惠碼<br><br><strong>備注：</strong>按鈕點擊後導向官網商品頁，搭配 UTM 參數追蹤轉換。',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1500);
+  } else if (msg.includes('再行銷受眾')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '🎯 <strong>再行銷受眾設定建議</strong><br><br><strong>受眾條件（Meta Ads Manager）：</strong><br>・行為事件：<code>ViewContent</code>（商品頁停留 &gt; 15 秒）<br>・時間窗口：過去 <strong>7 天</strong>內瀏覽但未購買<br>・排除條件：過去 30 天內已購買者<br><br><strong>廣告素材建議：</strong><br>・動態商品廣告（DPA）自動帶入瀏覽商品<br>・文案：「還在考慮嗎？限時優惠只剩 2 天 ⏳」<br>・預算：日預算 NT$500，CPM 目標 ≤ NT$180',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1600);
+  } else if (msg.includes('穿搭指南')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '📝 <strong>戶外穿搭指南 Email 內容草稿</strong><br><br><strong>主旨：</strong>這個秋冬，跟著 Hurricane 這樣穿出門 🍂<br><br><strong>Section 1 — 日系機能風</strong><br>Hurricane Trailsetter Mid + 寬版工作褲 + 薄羽絨背心，輕量機能感十足。<br><br><strong>Section 2 — 城市健走風</strong><br>Hurricane Trailsetter Sandal + 修身長褲 + 連帽外套，從捷運到步道無縫接軌。<br><br><strong>Section 3 — 週末山林風</strong><br>Hurricane Trailsetter Mid + 快乾長褲 + 防風外層，應對台灣 2000m 以下山徑全制霸。<br><br>每段附產品連結與 UTM 追蹤參數。',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1800);
+  } else if (msg.includes('棄單 SMS')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '📱 <strong>棄單 SMS 提醒文案（2 條）</strong><br><br><strong>版本 A（優惠導向，70 字以內）：</strong><br>「Hurricane Trailsetter 購物車提醒：你的 AW26 鞋款還在等你！現在結帳享 85 折，限今日。點此完成購買：[短網址]」<br><br><strong>版本 B（稀缺感導向，70 字以內）：</strong><br>「你選的 Hurricane Trailsetter 剩最後幾雙，明天可能就沒了！點此立即結帳：[短網址]  回覆 TD 退訂」<br><br><strong>建議發送時間：</strong>棄單後 1 小時，若未購買再於 24 小時後發版本 B。',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1500);
+  } else if (msg.includes('忠誠計畫')) {
+    const thinkingId = 'thinking-' + Date.now();
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        msg: '⭐ <strong>購後忠誠計畫建議</strong><br><br><strong>積分規則：</strong><br>・每消費 NT$1 = 1 點<br>・開箱影片投稿 = 500 點<br>・成功推薦好友 = 300 點（雙方各得）<br><br><strong>會員等級（3 級）：</strong><br>・🥾 <strong>Trail Starter</strong>（0–2,999 點）：生日禮 + 新品早鳥 5% off<br>・🏔️ <strong>Trail Explorer</strong>（3,000–9,999 點）：免運 + 季末特賣 10% off<br>・🦅 <strong>Trail Master</strong>（10,000 點以上）：專屬客服 + 限定商品優先購 + 15% off<br><br><strong>升級通知：</strong>LINE 推播 + Email 雙管道，搭配升級限定優惠碼刺激下一單。',
+      });
+      nextTick(() => AiAgentChatListScrollTo('ASC'));
+    }, 1800);
   }
 }
 
