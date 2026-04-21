@@ -143,9 +143,3 @@ function nodeKeyColor(status: NodeStatus): string {
 }
 </script>
 
-<style>
-@keyframes journey-blink {
-  0%,100% { opacity:1 }
-  50% { opacity:.2 }
-}
-</style>
