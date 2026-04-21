@@ -59,6 +59,12 @@ export const routes: RouteRecordRaw[] = [
         meta: { hideMenuTree: true },
       },
       {
+        path: '/view/journeys',
+        name: 'JourneyDashboard',
+        component: () => import('@/views/JourneyDashboard.vue'),
+        meta: { hideMenuTree: true },
+      },
+      {
         path: '/view/CompanyTeamSettings',
         name: 'CompanyTeamSettings',
         component: () => import('@/views/CompanyTeamSettings.vue'),

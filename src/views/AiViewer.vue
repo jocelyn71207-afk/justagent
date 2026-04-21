@@ -135,6 +135,10 @@
       <div class="option-item">
         <i class="material-symbols-outlined">description</i> 操作教學
       </div>
+      <div class="option-item" @click="router.push('/view/journeys')">
+        <i class="material-symbols-outlined">route</i>
+        旅程總覽
+      </div>
     </div>
   </div>
 
