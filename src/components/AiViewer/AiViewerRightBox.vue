@@ -447,6 +447,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
+import { useJourneyStore } from '@/stores/journeyStore'
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
@@ -467,6 +468,9 @@ const { nowChoiceAiViewerId, copyAiViewerBlock, isStopCopyPasteAiViewerBlock, is
 const { fullAiViewerBlockId, isAspectRatioMode } = storeToRefs(aiviewerStore);
 const { aiViewerBlocks } = storeToRefs(aiviewerStore);
 const { sendUserInput, addReportBlock, addChartBlock } = aiviewerStore;
+const journeyStore = useJourneyStore()
+const journeyDashboardAdded = ref(false)
+let _journeyUserCount = 0
 const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
 const conv2Title = ref('');
@@ -952,7 +956,14 @@ function processConv1Msg(msg: string) {
       '/justagent/hurricane_trailsetter_marketing_automation.html',
       'hurricane_trailsetter_marketing_automation.html',
       '行銷自動化旅程',
-    );
+    )
+    _journeyUserCount++
+    const journeyId = journeyStore.createJourney(`User #${_journeyUserCount}`)
+    if (!journeyDashboardAdded.value) {
+      addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
+      journeyDashboardAdded.value = true
+    }
+    startJourneyExecution(journeyId)
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
     conv1Msgs.value.push({ id: thinkingId, isThinking: true });
@@ -1054,6 +1065,37 @@ function processConv1Msg(msg: string) {
   }
 }
 
+function syncJourneyToIframe() {
+  const iframe = document.querySelector(
+    'iframe[src*="journey_dashboard"]'
+  ) as HTMLIFrameElement | null
+  iframe?.contentWindow?.postMessage(
+    { type: 'journey-state-sync', journeys: journeyStore.journeys },
+    '*'
+  )
+}
+
+function startJourneyExecution(journeyId: string) {
+  const schedule = [
+    { key: 'D0',  runningDelay: 500,   doneDelay: 2000  },
+    { key: 'D1',  runningDelay: 2500,  doneDelay: 5000  },
+    { key: 'D3',  runningDelay: 5500,  doneDelay: 8500  },
+    { key: 'D7',  runningDelay: 9000,  doneDelay: 11500 },
+    { key: 'D14', runningDelay: 12000, doneDelay: 15000 },
+    { key: 'D30', runningDelay: 15500, doneDelay: 18000 },
+  ]
+  for (const { key, runningDelay, doneDelay } of schedule) {
+    setTimeout(() => {
+      journeyStore.setNodeRunning(journeyId, key)
+      syncJourneyToIframe()
+    }, runningDelay)
+    setTimeout(() => {
+      journeyStore.setNodeDone(journeyId, key)
+      syncJourneyToIframe()
+    }, doneDelay)
+  }
+}
+
 function handleHurricaneChipMsg(event: MessageEvent) {
   if (event.data?.type !== 'hurricane-chip-click') return;
   const msg = event.data.msg as string;
@@ -1063,6 +1105,11 @@ function handleHurricaneChipMsg(event: MessageEvent) {
   processConv1Msg(msg);
 }
 
+function handleJourneyStateRequest(event: MessageEvent) {
+  if (event.data?.type !== 'journey-state-request') return
+  syncJourneyToIframe()
+}
+
 onMounted(() => {
   try {
     addReportBlock(
@@ -1070,12 +1117,14 @@ onMounted(() => {
       'hurricane_trailsetter_sales_report.html'
     );
   } catch (e) { /* canvas 尚未初始化時略過 */ }
-  window.addEventListener('message', handleHurricaneChipMsg);
-});
+  window.addEventListener('message', handleHurricaneChipMsg)
+  window.addEventListener('message', handleJourneyStateRequest)
+})
 
 onUnmounted(() => {
-  window.removeEventListener('message', handleHurricaneChipMsg);
-});
+  window.removeEventListener('message', handleHurricaneChipMsg)
+  window.removeEventListener('message', handleJourneyStateRequest)
+})
 
 // -------- Conversation 2 流程 --------
 const DEMO_IMG = 'https://d12ro2iv4p7r0b.cloudfront.net/media/catalog/product/u/g/ug1183390sndc-1.jpg';
