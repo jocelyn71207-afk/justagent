@@ -292,7 +292,7 @@ $plc-emerald-dark:  #047857;
     .card-chart {
       height: 148px;
       padding: 12px 14px 10px;
-      background: var(--color-wise-bg);
+      background: $plc-emerald-light;
       display: flex;
       flex-direction: column;
 
