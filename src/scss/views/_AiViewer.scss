@@ -1336,7 +1336,8 @@
     border-radius: 0 0 18px 18px; // 提性要配合父層調整且跟border也有關係
     overflow: hidden;
     width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     @include no-scroll-bar();
 
     // 這幾個內容區塊內部通用樣式
