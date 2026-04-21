@@ -43,7 +43,7 @@
           </div>
           <div style="display:flex;align-items:center;gap:12px">
             <div style="font-size:12px;color:#9ca3af">
-              {{ doneCount(journey) }} / 6 節點完成
+              {{ doneCount(journey) }} / {{ journey.nodes.length }} 節點完成
             </div>
             <span :style="statusBadgeStyle(journey.status)">
               {{ journey.status === 'done' ? '已完成' : '執行中' }}
@@ -60,7 +60,7 @@
               background: journey.status === 'done'
                 ? 'linear-gradient(90deg,#16a34a,#0891b2)'
                 : 'linear-gradient(90deg,#7c3aed,#3b72f6)',
-              width: (doneCount(journey) / 6 * 100) + '%',
+              width: (doneCount(journey) / journey.nodes.length * 100) + '%',
               transition: 'width .5s ease',
             }"
           />
@@ -80,7 +80,7 @@
             <div style="font-size:11px;font-weight:600;">{{ node.label }}</div>
             <div v-if="node.status === 'running'"
               style="font-size:9px;color:#3b72f6;margin-top:4px;display:flex;align-items:center;gap:3px">
-              <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#3b72f6;animation:blink 1s ease-in-out infinite"></span>
+              <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#3b72f6;animation:journey-blink 1s ease-in-out infinite"></span>
               執行中
             </div>
             <div v-if="node.completedAt"
@@ -144,7 +144,7 @@ function nodeKeyColor(status: NodeStatus): string {
 </script>
 
 <style>
-@keyframes blink {
+@keyframes journey-blink {
   0%,100% { opacity:1 }
   50% { opacity:.2 }
 }
