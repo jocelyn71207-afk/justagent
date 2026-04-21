@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅程總覽</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -73,9 +74,6 @@ body{padding:20px 24px 40px;min-height:100%}
   background:var(--bg);
 }
 .node.running .node-icon,.node.done .node-icon{border-color:transparent}
-.node.done .node-icon::after{content:'✓';position:absolute;font-size:10px;font-weight:700;
-  top:-4px;right:-4px;background:var(--green);color:#fff;width:14px;height:14px;
-  border-radius:50%;display:flex;align-items:center;justify-content:center}
 .node-icon-wrap{position:relative;width:28px;margin:0 auto 8px}
 
 .node-label{font-size:12px;font-weight:700;text-align:center;color:var(--text)}
@@ -89,7 +87,6 @@ body{padding:20px 24px 40px;min-height:100%}
 /* Branch (D3) */
 .branch-row{display:flex;gap:8px;width:100%;margin-top:0}
 .branch-side{flex:1;display:flex;flex-direction:column;align-items:center}
-.branch-line{width:2px;height:14px;background:var(--border)}
 .branch-node{width:100%;border-radius:8px;padding:7px 8px;border:1px solid var(--border);
   background:var(--surface);font-size:10px;text-align:center;color:var(--text2)}
 .branch-label{font-size:9px;font-weight:700;margin-bottom:3px}
@@ -164,7 +161,7 @@ function renderJourneys(journeys) {
     col.innerHTML =
       '<div class="col-hdr">' +
         '<div class="col-name">' + escHtml(journey.userName) + '</div>' +
-        '<div class="col-prog">' + doneCount + ' / 6 節點完成</div>' +
+        '<div class="col-prog">' + doneCount + ' / ' + journey.nodes.length + ' 節點完成</div>' +
         '<span class="col-status ' + statusClass + '">' + statusLabel + '</span>' +
       '</div>' +
       '<div class="flow">' + renderFlow(journey.nodes) + '</div>';
@@ -178,6 +175,8 @@ function renderFlow(nodes) {
   nodes.forEach(function(node, i) {
     var meta = NODE_META[node.key] || { icon:'⚙️', sub:'', color:'#9ca3af' };
     var connClass = i > 0 ? nodes[i-1].status : 'pending';
+    // Validate against known values
+    if (connClass !== 'running' && connClass !== 'done') connClass = 'pending';
 
     // Connector before node (skip first)
     if (i > 0) {
@@ -194,18 +193,19 @@ function renderFlow(nodes) {
 }
 
 function renderLinearNode(node, meta) {
-  var runningIndicator = node.status === 'running'
+  var safeStatus = (node.status === 'running' || node.status === 'done') ? node.status : 'pending';
+  var runningIndicator = safeStatus === 'running'
     ? '<span class="running-dot"></span>執行中…'
     : '';
-  var doneCheck = node.status === 'done'
+  var doneCheck = safeStatus === 'done'
     ? '<div style="position:absolute;top:-4px;right:-4px;background:#16a34a;color:#fff;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">✓</div>'
     : '';
   return (
     '<div class="node-wrap">' +
-      '<div class="node ' + node.status + '">' +
-        '<div class="node-day">' + node.key + '</div>' +
+      '<div class="node ' + safeStatus + '">' +
+        '<div class="node-day">' + escHtml(node.key) + '</div>' +
         '<div class="node-icon-wrap" style="position:relative;width:28px;margin:0 auto 8px">' +
-          '<div class="node-icon" style="border-color:' + (node.status==='pending'?'var(--border)':meta.color) + '">' + meta.icon + '</div>' +
+          '<div class="node-icon" style="border-color:' + (safeStatus==='pending'?'var(--border)':meta.color) + '">' + meta.icon + '</div>' +
           doneCheck +
         '</div>' +
         '<div class="node-label">' + escHtml(node.label) + '</div>' +
@@ -217,18 +217,19 @@ function renderLinearNode(node, meta) {
 }
 
 function renderBranchNode(node, meta) {
-  var runningIndicator = node.status === 'running'
+  var safeStatus = (node.status === 'running' || node.status === 'done') ? node.status : 'pending';
+  var runningIndicator = safeStatus === 'running'
     ? '<div style="font-size:10px;color:var(--blue);margin-top:6px;text-align:center"><span class="running-dot"></span>執行中…</div>'
     : '';
-  var doneCheck = node.status === 'done'
+  var doneCheck = safeStatus === 'done'
     ? '<div style="position:absolute;top:-4px;right:-4px;background:#16a34a;color:#fff;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">✓</div>'
     : '';
   return (
     '<div class="node-wrap">' +
-      '<div class="node ' + node.status + '">' +
-        '<div class="node-day">' + node.key + '</div>' +
+      '<div class="node ' + safeStatus + '">' +
+        '<div class="node-day">' + escHtml(node.key) + '</div>' +
         '<div class="node-icon-wrap" style="position:relative;width:28px;margin:0 auto 8px">' +
-          '<div class="node-icon" style="border-color:' + (node.status==='pending'?'var(--border)':meta.color) + '">' + meta.icon + '</div>' +
+          '<div class="node-icon" style="border-color:' + (safeStatus==='pending'?'var(--border)':meta.color) + '">' + meta.icon + '</div>' +
           doneCheck +
         '</div>' +
         '<div class="node-label">' + escHtml(node.label) + '</div>' +
@@ -265,6 +266,7 @@ function escHtml(str) {
 
 window.addEventListener('message', function(e) {
   if (!e.data || e.data.type !== 'journey-state-sync') return;
+  if (!Array.isArray(e.data.journeys)) return;
   renderJourneys(e.data.journeys);
 });
 
