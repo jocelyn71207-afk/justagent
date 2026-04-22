@@ -1110,6 +1110,14 @@ function handleJourneyStateRequest(event: MessageEvent) {
   syncJourneyToIframe()
 }
 
+function handleJourneyStartRequest(event: MessageEvent) {
+  if (event.data?.type !== 'journey-start-request') return
+  _journeyUserCount++  // shared module-level counter with the chip handler
+  const journeyId = journeyStore.createJourney(`User #${_journeyUserCount}`)
+  startJourneyExecution(journeyId)
+  syncJourneyToIframe()
+}
+
 onMounted(() => {
   try {
     addReportBlock(
@@ -1119,11 +1127,13 @@ onMounted(() => {
   } catch (e) { /* canvas 尚未初始化時略過 */ }
   window.addEventListener('message', handleHurricaneChipMsg)
   window.addEventListener('message', handleJourneyStateRequest)
+  window.addEventListener('message', handleJourneyStartRequest)
 })
 
 onUnmounted(() => {
   window.removeEventListener('message', handleHurricaneChipMsg)
   window.removeEventListener('message', handleJourneyStateRequest)
+  window.removeEventListener('message', handleJourneyStartRequest)
 })
 
 // -------- Conversation 2 流程 --------
