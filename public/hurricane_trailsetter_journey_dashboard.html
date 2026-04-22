@@ -382,7 +382,7 @@ function renderJourneyBlock(journey, totalJourneys) {
       '<hr class="stats-divider">' +
       '<div class="stats-title">數據概覽</div>' +
       '<div class="stats-row"><span class="stats-label">旅程觸發</span><span class="stats-val blue">' + (totalJourneys || 1) + '</span></div>' +
-      '<div class="stats-row"><span class="stats-label">訊息發送</span><span class="stats-val">' + msgSent + '</span></div>' +
+      '<div class="stats-row"><span class="stats-label">訊息發送</span><span class="stats-val">' + (msgSent * (totalJourneys || 1)) + '</span></div>' +
       '<div class="stats-row"><span class="stats-label">完成率</span><span class="stats-val green">' + completionRate + '</span></div>' +
       '<div class="stats-row"><span class="stats-label">預估完成</span><span class="stats-val">' + estTime + '</span></div>' +
     '</div>'
