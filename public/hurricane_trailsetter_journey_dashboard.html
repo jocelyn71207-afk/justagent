@@ -48,7 +48,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .node.type-cond{border-color:var(--amber-border);background:var(--amber-bg)}
 .node.type-end{border-color:var(--green-border);background:var(--green-bg)}
 .node.pending{opacity:.45}
-.node.running{box-shadow:0 0 0 3px rgba(59,114,246,.18)}
+.node.running{box-shadow:0 0 0 3px rgba(59,114,246,.12)}
 .node.done{opacity:.8}
 .node.done .node-label{text-decoration:line-through;color:var(--text3)}
 
@@ -322,18 +322,24 @@ function renderDrawer(journeys) {
     body.innerHTML = '<div class="drawer-hint">點「▶ 啟動旅程」<br>開始執行並追蹤進度</div>';
     return;
   }
+  var total = journeys.length;
   var html = '';
   for (var i = 0; i < journeys.length; i++) {
-    html += renderJourneyBlock(journeys[i]);
+    html += renderJourneyBlock(journeys[i], total);
   }
   body.innerHTML = html;
 }
 
-function renderJourneyBlock(journey) {
+function renderJourneyBlock(journey, totalJourneys) {
   var nodes = journey.nodes;
   var doneCount = 0;
+  var msgKeys = { D1: true, D7: true, D14: true };
+  var msgSent = 0;
   for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i].status === 'done') doneCount++;
+    if (nodes[i].status === 'done') {
+      doneCount++;
+      if (msgKeys[nodes[i].key]) msgSent++;
+    }
   }
   var total = nodes.length;
   var pct = total > 0 ? Math.round(doneCount / total * 100) : 0;
@@ -375,8 +381,8 @@ function renderJourneyBlock(journey) {
       '<div class="jb-count">' + doneCount + ' / ' + total + ' 節點</div>' +
       '<hr class="stats-divider">' +
       '<div class="stats-title">數據概覽</div>' +
-      '<div class="stats-row"><span class="stats-label">旅程觸發</span><span class="stats-val blue">1</span></div>' +
-      '<div class="stats-row"><span class="stats-label">訊息發送</span><span class="stats-val">' + doneCount + '</span></div>' +
+      '<div class="stats-row"><span class="stats-label">旅程觸發</span><span class="stats-val blue">' + (totalJourneys || 1) + '</span></div>' +
+      '<div class="stats-row"><span class="stats-label">訊息發送</span><span class="stats-val">' + msgSent + '</span></div>' +
       '<div class="stats-row"><span class="stats-label">完成率</span><span class="stats-val green">' + completionRate + '</span></div>' +
       '<div class="stats-row"><span class="stats-label">預估完成</span><span class="stats-val">' + estTime + '</span></div>' +
     '</div>'
