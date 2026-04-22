@@ -957,13 +957,11 @@ function processConv1Msg(msg: string) {
       'hurricane_trailsetter_marketing_automation.html',
       '行銷自動化旅程',
     )
-    _journeyUserCount++
-    const journeyId = journeyStore.createJourney(`User #${_journeyUserCount}`)
     if (!journeyDashboardAdded.value) {
       addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
       journeyDashboardAdded.value = true
     }
-    startJourneyExecution(journeyId)
+    startNewJourney()
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
     conv1Msgs.value.push({ id: thinkingId, isThinking: true });
@@ -1110,12 +1108,16 @@ function handleJourneyStateRequest(event: MessageEvent) {
   syncJourneyToIframe()
 }
 
-function handleJourneyStartRequest(event: MessageEvent) {
-  if (event.data?.type !== 'journey-start-request') return
-  _journeyUserCount++  // shared module-level counter with the chip handler
+function startNewJourney() {
+  _journeyUserCount++
   const journeyId = journeyStore.createJourney(`User #${_journeyUserCount}`)
   startJourneyExecution(journeyId)
   syncJourneyToIframe()
+}
+
+function handleJourneyStartRequest(event: MessageEvent) {
+  if (event.data?.type !== 'journey-start-request') return
+  startNewJourney()
 }
 
 onMounted(() => {
