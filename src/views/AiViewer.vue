@@ -544,8 +544,8 @@ function panToJourneyBlock(type: 'marketing' | 'birthday') {
   const block = findJourneyBlock(type);
   if (!block || !mainStage.value) return;
   const s = mainStage.value.scaleX();
-  const newX = centerViewWidth.value / 2 / s - (block.x + block.width / 2);
-  const newY = centerViewHeight.value / 2 / s - (block.y + block.height / 2);
+  const newX = centerViewWidth.value / 2 - (block.x + block.width / 2) * s;
+  const newY = centerViewHeight.value / 2 - (block.y + block.height / 2) * s;
   setMainStagePosition(newX, newY);
 }
 
@@ -571,6 +571,7 @@ function clearJourneyBlockHighlight() {
 function onJcdSectionEnter(type: 'marketing' | 'birthday') {
   if (jcdHoverTimer) clearTimeout(jcdHoverTimer);
   jcdHoverTimer = setTimeout(() => {
+    jcdHoverTimer = null;
     jcdHoverType.value = type;
     panToJourneyBlock(type);
     applyJourneyBlockHighlight(type);
