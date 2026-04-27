@@ -3259,6 +3259,85 @@
   &:hover { background: var(--color-primary-hover, #007F5F); }
 }
 
+// ── Conv1 翻譯確認動作列 ─────────────────────────────────────────────────────
+.conv1-transl-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--color-background-1);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  border: 0.5px solid var(--color-border);
+
+  button {
+    width: auto !important;
+    height: auto !important;
+    border-radius: 6px !important;
+    padding: 0 !important;
+  }
+
+  .conv1-tab-summary {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--color-text-alpha70);
+    overflow: hidden;
+  }
+
+  .conv1-tab-file {
+    font-weight: 600;
+    color: var(--color-text);
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .conv1-tab-sep { opacity: 0.4; flex-shrink: 0; }
+
+  .conv1-tab-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .conv1-tab-btns {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .conv1-tab-btn {
+    padding: 5px 10px !important;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1.4;
+
+    &--sec {
+      background: transparent;
+      color: var(--color-text);
+      border: 0.5px solid var(--color-border) !important;
+      &:hover { background: var(--color-background); }
+    }
+
+    &--primary {
+      background: var(--color-wise-green);
+      color: #fff;
+      &:hover { opacity: 0.88; }
+    }
+  }
+}
+
 // conv1 空白開始狀態全螢幕遮罩
 .conv1-empty-overlay {
   position: fixed;
@@ -3561,12 +3640,12 @@
     transition: opacity 0.2s;
     white-space: nowrap;
     flex-shrink: 0;
-    .jcd-section--hover-marketing & {
+    @at-root .jcd-section--hover-marketing & {
       opacity: 1;
       background: #3b72f6;
       color: #fff;
     }
-    .jcd-section--hover-birthday & {
+    @at-root .jcd-section--hover-birthday & {
       opacity: 1;
       background: #7c3aed;
       color: #fff;
@@ -3785,13 +3864,11 @@
   outline: 3px solid #3b72f6 !important;
   box-shadow: 0 0 0 4px rgba(59, 114, 246, 0.2), 0 0 24px rgba(59, 114, 246, 0.12) !important;
   transition: outline 0.2s, box-shadow 0.2s;
-  z-index: 50 !important;
 }
 .jcd-highlight-birthday {
   outline: 3px solid #7c3aed !important;
   box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2), 0 0 24px rgba(124, 58, 237, 0.12) !important;
   transition: outline 0.2s, box-shadow 0.2s;
-  z-index: 50 !important;
 }
 .jcd-dimmed {
   opacity: 0.35 !important;
