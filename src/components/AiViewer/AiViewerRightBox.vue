@@ -79,15 +79,22 @@
         </div>
         <div class="conv2-fp-body">
           <div class="conv2-up-panel">
-            <div class="conv2-up-img-box">
-              <img :src="DEMO_IMG" />
+            <div :class="['conv2-up-img-box', {'conv2-up-img-box--empty': !conv2UploadImgLoaded}]" @click.stop="conv2LoadDemoImg()">
+              <img v-if="conv2UploadImgLoaded" :src="DEMO_IMG" />
+              <div v-else class="conv2-up-img-placeholder">
+                <i class="material-symbols-outlined">add_photo_alternate</i>
+                <span>點擊上傳圖片</span>
+              </div>
             </div>
             <div class="conv2-up-desc-box">
               <div class="conv2-up-lbl">商品描述 <span class="conv2-up-hint">圖片或描述至少填一項</span></div>
-              <textarea class="conv2-up-ta" v-model="conv2UploadDesc" rows="3" @click.stop></textarea>
-              <div class="conv2-up-status conv2-up-status--ready">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                圖片已上傳・描述已填寫
+              <textarea class="conv2-up-ta" v-model="conv2UploadDesc" rows="3" @click.stop="conv2FillDemoDesc()"></textarea>
+              <div :class="['conv2-up-status', {'conv2-up-status--ready': conv2UploadImgLoaded || conv2UploadDesc}]">
+                <template v-if="conv2UploadImgLoaded || conv2UploadDesc">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {{ conv2UploadImgLoaded && conv2UploadDesc ? '圖片已上傳・描述已填寫' : conv2UploadImgLoaded ? '圖片已上傳' : '描述已填寫' }}
+                </template>
+                <template v-else>圖片或描述至少填一項</template>
               </div>
             </div>
           </div>
@@ -291,7 +298,7 @@
       </div>
 
       <!-- 要上傳的附件 -->
-      <div v-if="!conv2FpActive" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
+      <div v-if="!inputAreaHidden" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
         <!-- 已選擇的檔案附件 -->
         <div :class="['accessory-item-box', {'no-accessory-item': userInputModal.userUploadFiles.length === 0 && userInputModal.aiFiles.length === 0}]">
@@ -358,17 +365,34 @@
             </button>
           </div>
         </template>
+        <!-- Conv1 旅程修改需求懸浮面板 -->
+        <div v-if="showJourneyModifyPill && currentConversationId !== 'conv2'" class="conv2-fp" @click.stop>
+          <div class="conv2-fp-top">
+            <span class="conv2-fp-title">旅程修改需求</span>
+            <button class="conv2-fp-close-btn" @click.stop="showJourneyModifyPill = false">
+              <i class="material-symbols-outlined">close</i>
+            </button>
+          </div>
+          <div class="conv2-fp-body">
+            <div class="conv2-info-note">✦ 描述您希望調整的旅程內容</div>
+            <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="journeyModifyInput" rows="3" @click.stop
+              placeholder="例如：旅程過於單一，我需要更豐富的旅程設計..."></textarea>
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出 →</button>
+            </div>
+          </div>
+        </div>
         <!-- fp 互動模式時完全移除輸入框 -->
-        <textarea v-if="!conv2FpActive" :class="['custom-textarea']"
+        <textarea v-if="!inputAreaHidden" :class="['custom-textarea']"
           id="userInput"
           placeholder="請輸入您的需求"
           ref="userInputRef"
           v-model.trim="userInputModal.msg"
           @focus="inputFocus()"
           @blur="inputBlur()"
-          @keydown="inputKeyPress($event); handleEnterKeySubmit($event, sendUserInput)">
+          @keydown="inputKeyPress($event); handleEnterKeySubmit($event, send)">
         </textarea>
-        <div v-if="!conv2FpActive">
+        <div v-if="!inputAreaHidden">
           <!-- 展開快速罐頭任務區塊按鈕 -->
           <button class="custom-btn" v-tooltip.top="'使用快速任務'"
             @click="isShowCannedTaskListBox = true">
@@ -396,7 +420,7 @@
           <div class="option-item">從共享資源庫新增</div>
         </div>
         <!-- 發送按鈕 -->
-        <button class="custom-btn" v-if="!conv2FpActive" v-tooltip="'發送訊息'"
+        <button class="custom-btn" v-if="!inputAreaHidden" v-tooltip="'發送訊息'"
           @click="send()"><i class="material-symbols-outlined material-fill">send</i></button>
       </div>
 
@@ -471,6 +495,7 @@ const { sendUserInput, addReportBlock, addChartBlock } = aiviewerStore;
 const journeyStore = useJourneyStore()
 const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
+const showJourneyModifyPill = ref(false)
 const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
 const conv2Title = ref('');
@@ -664,7 +689,27 @@ watch(() => userInputModal.value.msg, () => {
 
 // 發送使用者輸入訊息
 function send() {
+  if (currentConversationId.value === 'conv1') {
+    const msg = userInputModal.value.msg.trim();
+    if (!msg) return;
+    conv1Msgs.value.push({ id: 'user-' + Date.now(), forUser: true, msg });
+    userInputModal.value.msg = '';
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    processConv1Msg(msg);
+    return;
+  }
   sendUserInput();
+}
+
+const journeyModifyInput = ref('')
+function submitJourneyModify() {
+  const msg = journeyModifyInput.value.trim();
+  if (!msg) return;
+  conv1Msgs.value.push({ id: 'user-modify-' + Date.now(), forUser: true, msg });
+  journeyModifyInput.value = '';
+  showJourneyModifyPill.value = false;
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+  processConv1Msg('旅程過於單一');
 }
 
 // virtual-list 滾動到頂部或底部的回呼
@@ -746,16 +791,16 @@ const conv1Msgs = ref([
     id: 'id_2',
     msg: '當然可以！🙌 幫我確認幾個細節，就可以馬上開始：<br><br>📄 <strong>翻譯文件</strong>：請上傳或指定 Excel 檔案<br>📌 <strong>翻譯範圍</strong>：全文 or 特定工作表 / 欄位？<br>🌐 <strong>目標語言</strong>：繁體中文、簡體、日文……？<br><br>確認後我會立刻開工 💪',
   },
-  // 3. 使用者以確認卡片樣式回覆（confirmed=true 代表已點擊「開始翻譯」）
+  // 3. 使用者以確認卡片樣式回覆（confirmed=false 代表使用者尚未點擊「開始翻譯」）
   {
     id: 'id_3',
     forUser: true,
     cardType: 'translationConfirm',
-    confirmed: true,
-    file: 'AW26 Product Descriptions.xlsx',
+    confirmed: false,
+    file: '',
     fileSize: 2834016,
-    range: 'Line Sheet - Teva Footwear Fal/Features and Benefits (Product Bullets)',
-    lang: '繁體中文',
+    range: '',
+    lang: '',
     msg: '',
   },
   // 4. AI 確認並說明進度
@@ -819,6 +864,19 @@ const conv1Msgs = ref([
     ],
   },
 ]) as Ref<any[]>;
+
+// ── Conv1 翻譯設定選項 ──
+const conv1RangeOptions = [
+  { value: 'Features and Benefits (Product Bullets)', label: 'Features and Benefits (Product Bullets)', sub: 'Line Sheet · Teva Footwear Fall · 143 欄位' },
+  { value: '全部工作表', label: '全部工作表', sub: '所有 Sheet 完整翻譯' },
+  { value: 'Line Sheet only', label: 'Line Sheet only', sub: '僅翻譯 Line Sheet 頁' },
+];
+const conv1LangOptions = [
+  { value: '繁體中文', label: '繁體中文', flag: '🇹🇼', sub: 'Traditional Chinese' },
+  { value: '簡體中文', label: '簡體中文', flag: '🇨🇳', sub: 'Simplified Chinese' },
+  { value: '日文', label: '日文', flag: '🇯🇵', sub: 'Japanese' },
+  { value: '韓文', label: '韓文', flag: '🇰🇷', sub: 'Korean' },
+];
 
 // ── Conv1 下一步追問邏輯 ──
 const C1_ALL_STEPS = [
@@ -949,19 +1007,60 @@ function processConv1Msg(msg: string) {
       '用戶畫像',
     );
   } else if (msg.includes('行銷自動化旅程')) {
-    c1PushThinkingThenReply(
-      2000,
-      '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
-      [{ name: 'hurricane_trailsetter_marketing_automation.html', type: 'HTML', size: 9800 }],
-      '/justagent/hurricane_trailsetter_marketing_automation.html',
-      'hurricane_trailsetter_marketing_automation.html',
-      '行銷自動化旅程',
-    )
+    const thinkingId = 'thinking-' + Date.now()
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        cardType: 'translationComplete',
+        msg: '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
+        files: [],
+      })
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+      pushConv1NextStepPrompt('行銷自動化旅程')
+    }, 2000)
     if (!journeyDashboardAdded.value) {
       addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
       journeyDashboardAdded.value = true
     }
-    startNewJourney()
+  } else if (msg.includes('旅程過於單一') || msg.includes('更豐富的旅程')) {
+    const thinkingId = 'thinking-' + Date.now()
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        cardType: 'translationComplete',
+        msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預估提升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
+        files: [],
+      })
+      addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard-1.html', '旅程總覽-1')
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+    }, 2500)
+  } else if (msg.includes('壽星') || msg.includes('生日旅程')) {
+    const thinkingId = 'thinking-' + Date.now()
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+      conv1Msgs.value.push({
+        id: 'ai-reply-' + Date.now(),
+        finishResponse: true,
+        cardType: 'translationComplete',
+        msg: '已從 CDP 篩選出台北地區 <strong>1,284 位 5 月壽星</strong>，完成專屬行銷自動化旅程設計。旅程從生日前 7 天預熱啟動，整合 Email、LINE、SMS 三大渠道，並在 D+1 依兌換行為進行分流，預估轉換提升 38%，請在畫布中查閱。',
+        files: [],
+      })
+      addReportBlock('/justagent/hurricane_trailsetter_birthday_journey.html', '5月壽星專屬旅程')
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+    }, 2800)
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
     conv1Msgs.value.push({ id: thinkingId, isThinking: true });
@@ -1064,33 +1163,41 @@ function processConv1Msg(msg: string) {
 }
 
 function syncJourneyToIframe() {
-  const iframe = document.querySelector(
-    'iframe[src*="journey_dashboard"]'
-  ) as HTMLIFrameElement | null
-  iframe?.contentWindow?.postMessage(
-    { type: 'journey-state-sync', journeys: journeyStore.journeys },
-    '*'
+  const marketingJourneys = journeyStore.journeys.filter(j => j.journeyType === 'marketing')
+  document.querySelectorAll<HTMLIFrameElement>('iframe[src*="journey_dashboard"]').forEach(iframe => {
+    iframe.contentWindow?.postMessage(
+      { type: 'journey-state-sync', journeys: marketingJourneys }, '*'
+    )
+  })
+  const birthdayJourneys = journeyStore.journeys.filter(j => j.journeyType === 'birthday')
+  const bdIframe = document.querySelector('iframe[src*="birthday_journey"]') as HTMLIFrameElement | null
+  bdIframe?.contentWindow?.postMessage(
+    { type: 'birthday-journey-state-sync', journeys: birthdayJourneys }, '*'
   )
 }
 
-function startJourneyExecution(journeyId: string) {
-  const schedule = [
+const JOURNEY_SCHEDULES = {
+  marketing: [
     { key: 'D0',  runningDelay: 500,   doneDelay: 2000  },
     { key: 'D1',  runningDelay: 2500,  doneDelay: 5000  },
     { key: 'D3',  runningDelay: 5500,  doneDelay: 8500  },
     { key: 'D7',  runningDelay: 9000,  doneDelay: 11500 },
     { key: 'D14', runningDelay: 12000, doneDelay: 15000 },
     { key: 'D30', runningDelay: 15500, doneDelay: 18000 },
-  ]
-  for (const { key, runningDelay, doneDelay } of schedule) {
-    setTimeout(() => {
-      journeyStore.setNodeRunning(journeyId, key)
-      syncJourneyToIframe()
-    }, runningDelay)
-    setTimeout(() => {
-      journeyStore.setNodeDone(journeyId, key)
-      syncJourneyToIframe()
-    }, doneDelay)
+  ],
+  birthday: [
+    { key: 'PRE7', runningDelay: 500,   doneDelay: 2000  },
+    { key: 'D0',   runningDelay: 2500,  doneDelay: 5000  },
+    { key: 'D1',   runningDelay: 5500,  doneDelay: 8000  },
+    { key: 'D7',   runningDelay: 8500,  doneDelay: 11000 },
+    { key: 'D30',  runningDelay: 11500, doneDelay: 14000 },
+  ],
+} as const
+
+function startJourneyExecution(journeyId: string, type: 'marketing' | 'birthday' = 'marketing') {
+  for (const { key, runningDelay, doneDelay } of JOURNEY_SCHEDULES[type]) {
+    setTimeout(() => { journeyStore.setNodeRunning(journeyId, key); syncJourneyToIframe() }, runningDelay)
+    setTimeout(() => { journeyStore.setNodeDone(journeyId, key);    syncJourneyToIframe() }, doneDelay)
   }
 }
 
@@ -1108,16 +1215,48 @@ function handleJourneyStateRequest(event: MessageEvent) {
   syncJourneyToIframe()
 }
 
-function startNewJourney() {
-  _journeyUserCount++
-  const journeyId = journeyStore.createJourney(`User #${_journeyUserCount}`)
-  startJourneyExecution(journeyId)
+const DEMO_NAMES = [
+  '林小明','陳美玲','黃建國','李志強','王怡君','張家豪','吳雅婷','劉俊宏',
+  '蔡欣怡','楊博文','鄭淑芬','許志偉','謝佳音','洪宇軒','曾雅惠','廖明哲',
+  '賴美慧','簡志豪','柯欣樺','邱建志','周淑珍','游俊傑','葉雅琳','蘇文傑',
+  '呂美君','丁志遠','方淑慧','江建宏','石雅萍','何志偉','彭冠廷','龔佳穎',
+  '馬俊毅','孫淑芬','陸雨澤','韓思妤','沈冠宇','傅雅如','盧俊豪','鐘宜庭',
+  '田承翰','余芷涵','唐浩然','范子晴','姚承恩','夏詩涵','錢志豪','翁美君',
+  '戴宗翰','顏佳蓉','尤承翰','巫雅甄','雷俊傑','毛淑芬','歐陽欣','司徒豪',
+  '上官婷','諸葛偉','慕容芸','東方凱','獨孤逸','令狐珊','南宮彤','段志遠',
+]
+
+function startJourneyBatch(type: 'marketing' | 'birthday') {
+  const BATCH = 64
+  const STAGGER = 120 // ms between each person's journey offset
+  for (let i = 0; i < BATCH; i++) {
+    _journeyUserCount++
+    const name = DEMO_NAMES[(_journeyUserCount - 1) % DEMO_NAMES.length]
+    const journeyId = journeyStore.createJourney(name, type)
+    const offset = i * STAGGER
+    for (const { key, runningDelay, doneDelay } of JOURNEY_SCHEDULES[type]) {
+      setTimeout(() => { journeyStore.setNodeRunning(journeyId, key); syncJourneyToIframe() }, runningDelay + offset)
+      setTimeout(() => { journeyStore.setNodeDone(journeyId, key);    syncJourneyToIframe() }, doneDelay + offset)
+    }
+  }
   syncJourneyToIframe()
 }
 
 function handleJourneyStartRequest(event: MessageEvent) {
   if (event.data?.type !== 'journey-start-request') return
-  startNewJourney()
+  const jType = event.data.journeyType === 'birthday' ? 'birthday' : 'marketing'
+  startJourneyBatch(jType)
+}
+
+function handleBirthdayStateRequest(event: MessageEvent) {
+  if (event.data?.type !== 'birthday-journey-state-request') return
+  syncJourneyToIframe()
+}
+
+function handleJourneyModifyRequest(event: MessageEvent) {
+  if (event.data?.type !== 'journey-modify-request') return;
+  showJourneyModifyPill.value = true;
+  nextTick(() => userInputRef.value?.focus());
 }
 
 onMounted(() => {
@@ -1130,12 +1269,16 @@ onMounted(() => {
   window.addEventListener('message', handleHurricaneChipMsg)
   window.addEventListener('message', handleJourneyStateRequest)
   window.addEventListener('message', handleJourneyStartRequest)
+  window.addEventListener('message', handleJourneyModifyRequest)
+  window.addEventListener('message', handleBirthdayStateRequest)
 })
 
 onUnmounted(() => {
   window.removeEventListener('message', handleHurricaneChipMsg)
   window.removeEventListener('message', handleJourneyStateRequest)
   window.removeEventListener('message', handleJourneyStartRequest)
+  window.removeEventListener('message', handleJourneyModifyRequest)
+  window.removeEventListener('message', handleBirthdayStateRequest)
 })
 
 // -------- Conversation 2 流程 --------
@@ -1157,7 +1300,11 @@ const conv2DirectUrlInput = ref(CONV2_DIRECT_URL_DEFAULT);
 // ── 懸浮面板 state ──
 const conv2UploadFpVisible = ref(false);
 const conv2ShowUploadPill = ref(false); // pill 是否顯示（獨立於 panel 展開狀態）
-const conv2UploadDesc = ref(DEMO_DESC);
+const conv2UploadImgLoaded = ref(false);
+const conv2UploadDesc = ref('');
+
+function conv2LoadDemoImg() { conv2UploadImgLoaded.value = true; }
+function conv2FillDemoDesc() { if (!conv2UploadDesc.value) conv2UploadDesc.value = DEMO_DESC; }
 
 const conv2StepFpVisible = ref(false);
 const conv2ShowStepPill = ref(false); // pill 是否顯示
@@ -1167,6 +1314,8 @@ const conv2CurStep = ref<number | string>(1);
 const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
+// 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
+const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value);
 
 const conv2StepTitleMap: Record<string, string> = {
   '1': '商品資訊確認', '2': '商品類別確認',
@@ -1624,7 +1773,8 @@ function resetConversation() {
     conv2Msgs.value = [];
     conv2UploadFpVisible.value = false;
     conv2ShowUploadPill.value = false;
-    conv2UploadDesc.value = DEMO_DESC;
+    conv2UploadImgLoaded.value = false;
+    conv2UploadDesc.value = '';
     conv2StepFpVisible.value = false;
     conv2ShowStepPill.value = false;
     conv2CurStep.value = 1;
