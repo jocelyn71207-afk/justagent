@@ -18,7 +18,7 @@
       </div>
 
       <!-- 翻譯確認卡片（使用者訊息） -->
-      <div class="translation-confirm-card" v-else-if="props.source.cardType === 'translationConfirm'">
+      <div class="translation-confirm-card" v-else-if="props.source.cardType === 'translationConfirm' && props.source.confirmed">
         <div class="tc-file-row">
           <img class="tc-file-icon" :src="excelIcon" alt="xlsx">
           <div class="tc-file-info">
@@ -45,6 +45,13 @@
             開始翻譯
           </button>
         </div>
+      </div>
+
+      <!-- 翻譯設定尚未確認（等待使用者操作面板） -->
+      <div class="tc-pending-card" v-else-if="props.source.cardType === 'translationConfirm' && !props.source.confirmed">
+        <div class="tc-pending-icon">📄</div>
+        <div class="tc-pending-text">點擊下方按鈕設定翻譯參數</div>
+        <button class="tc-setup-btn" data-action="conv1-open-transl-panel">設定翻譯參數 →</button>
       </div>
 
       <!-- 翻譯完成（AI 訊息含下載檔案） -->
