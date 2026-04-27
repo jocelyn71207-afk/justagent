@@ -2908,20 +2908,14 @@
     &:focus { border-color: rgba(29,78,216,.28); }
   }
   .conv2-ghost-btn {
+    opacity: 0;
     font-size: 9px;
-    color: var(--color-text-alpha30, rgba(9,21,26,.3));
     background: none;
-    border: 0.5px dashed var(--color-border);
-    border-radius: 4px;
+    border: none;
     padding: 2px 6px;
     cursor: pointer;
+    flex-shrink: 0;
     white-space: nowrap;
-    line-height: 1.5;
-    transition: color .15s, border-color .15s;
-    &:hover {
-      color: var(--color-text-alpha70, rgba(9,21,26,.7));
-      border-color: var(--color-text-alpha30, rgba(9,21,26,.3));
-    }
   }
   .conv2-sku-prompt {
     display: flex;
@@ -3097,6 +3091,28 @@
   }
 
   // Step 1: 文件卡片
+  // Step 1: 上傳 zone（空狀態）
+  .conv1-transl-upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 20px 12px;
+    border-radius: 8px;
+    border: 1.5px dashed var(--color-border);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    margin-bottom: 8px;
+    &:hover {
+      border-color: var(--color-primary, #00A078);
+      background: var(--color-primary-subtle, #E6F7F0);
+    }
+  }
+  .conv1-transl-upload-zone-icon { font-size: 28px !important; color: var(--color-text-alpha50); }
+  .conv1-transl-upload-zone-text { font-size: 11px; font-weight: 600; color: var(--color-text); }
+  .conv1-transl-upload-zone-hint { font-size: 10px; color: var(--color-text-alpha50); }
+
   .conv1-transl-file-card {
     display: flex;
     align-items: center;
@@ -3241,6 +3257,92 @@
   border: none;
   cursor: pointer;
   &:hover { background: var(--color-primary-hover, #007F5F); }
+}
+
+// conv1 空白開始狀態全螢幕遮罩
+.conv1-empty-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background-color: var(--color-background);
+  background-image:
+    repeating-linear-gradient(rgba(0, 0, 0, 0.055) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.055) 0px, transparent 1px),
+    repeating-linear-gradient(rgba(0, 0, 0, 0.025) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.025) 0px, transparent 1px);
+  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.conv1-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 640px;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.conv1-empty-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.conv1-empty-input-box {
+  width: 100%;
+  background: var(--color-background-1);
+  border-radius: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.conv1-empty-textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--color-text);
+  min-height: 24px;
+  font-family: inherit;
+  line-height: 1.5;
+  &::placeholder { color: var(--color-text-alpha50); }
+}
+
+.conv1-empty-input-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.conv1-empty-input-left {
+  display: flex;
+  gap: 2px;
+}
+
+.conv1-empty-input-box button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  color: var(--color-text);
+  padding: 0;
+  background: transparent;
+  border-radius: 40px;
+  cursor: pointer;
+  > i { font-size: 22px; }
+  &:hover { background: var(--color-background); }
 }
 
 // Pills inside input row
@@ -3409,6 +3511,23 @@
     gap: 8px;
   }
 
+  // ── Section 容器（hover 互動範圍）──
+  .jcd-section {
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    padding: 4px 4px 2px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: default;
+    &--hover-marketing {
+      background: #eff6ff;
+      border-color: #3b72f6;
+    }
+    &--hover-birthday {
+      background: #f5f3ff;
+      border-color: #7c3aed;
+    }
+  }
+
   // ── Journey-type section header ──
   .jcd-type-hdr {
     display: flex;
@@ -3432,6 +3551,26 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .jcd-locate-chip {
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 2px 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    .jcd-section--hover-marketing & {
+      opacity: 1;
+      background: #3b72f6;
+      color: #fff;
+    }
+    .jcd-section--hover-birthday & {
+      opacity: 1;
+      background: #7c3aed;
+      color: #fff;
+    }
   }
 
   // ── 4-stat row per section ──
@@ -3639,4 +3778,22 @@
 .jcd-fab-pop-leave-to {
   opacity: 0;
   transform: scale(0.6);
+}
+
+// ── Journey block hover highlight（套用在 AiViewerContentBox 的根元素）──
+.jcd-highlight-marketing {
+  outline: 3px solid #3b72f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 114, 246, 0.2), 0 0 24px rgba(59, 114, 246, 0.12) !important;
+  transition: outline 0.2s, box-shadow 0.2s;
+  z-index: 50 !important;
+}
+.jcd-highlight-birthday {
+  outline: 3px solid #7c3aed !important;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2), 0 0 24px rgba(124, 58, 237, 0.12) !important;
+  transition: outline 0.2s, box-shadow 0.2s;
+  z-index: 50 !important;
+}
+.jcd-dimmed {
+  opacity: 0.35 !important;
+  transition: opacity 0.2s;
 }
