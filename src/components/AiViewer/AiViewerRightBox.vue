@@ -138,7 +138,15 @@
           <!-- Step 2: 輸入商品貨號 -->
           <div v-show="conv2DirectFpStep === 2">
             <div class="conv2-info-note">✦ 輸入商品貨號（可搭配 @ 引用知識庫）</div>
-            <input class="conv2-fi conv2-fi--full" v-model="conv2DirectSkuInput" @click.stop style="margin-top:8px;font-family:monospace" />
+            <div class="conv2-sku-wrap" @click.stop>
+              <input class="conv2-fi conv2-fi--full conv2-sku-input" v-model="conv2DirectSkuInput" />
+              <div class="conv2-sku-overlay" aria-hidden="true">
+                <template v-for="(part, i) in conv2SkuParts" :key="i">
+                  <span v-if="part.isRef" class="conv2-sku-ref">{{ part.text }}</span>
+                  <span v-else>{{ part.text }}</span>
+                </template>
+              </div>
+            </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
               <button class="conv2-fp-sec-btn" @click.stop="conv2DirectFpStep = 1">← 返回</button>
               <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitSku()">確認送出 →</button>
@@ -1294,6 +1302,19 @@ const conv2ShowDirectPill = ref(false);
 const conv2DirectFpStep = ref(1); // 1:方法選擇 2:輸入貨號 3:競品網址
 const conv2DirectMethod = ref('');
 const conv2DirectSkuInput = ref('UG1166915BLK@2025產品總表-Q3');
+const conv2SkuParts = computed(() => {
+  const parts: { text: string; isRef: boolean }[] = [];
+  const raw = conv2DirectSkuInput.value;
+  const regex = /@[^\s@]+/g;
+  let lastIndex = 0, match;
+  while ((match = regex.exec(raw)) !== null) {
+    if (match.index > lastIndex) parts.push({ text: raw.slice(lastIndex, match.index), isRef: false });
+    parts.push({ text: match[0], isRef: true });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < raw.length) parts.push({ text: raw.slice(lastIndex), isRef: false });
+  return parts;
+});
 const CONV2_DIRECT_URL_DEFAULT = 'https://www.zara.com/tw/\nhttps://www.paidal.com.tw/\nhttps://www.zivmode.com/\nhttps://www.parkcat.com.tw/\nhttps://www.zara.com/tw/';
 const conv2DirectUrlInput = ref(CONV2_DIRECT_URL_DEFAULT);
 
@@ -1315,7 +1336,33 @@ const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
-const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value);
+const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
+
+const conv1TranslPanelVisible = ref(false)
+const conv1TranslStep = ref(1)
+const conv1TranslFile = ref('AW26 Product Descriptions.xlsx')
+const conv1TranslRange = ref('')
+const conv1TranslLang = ref('')
+
+function conv1OpenTranslPanel() {
+  conv1TranslStep.value = 1
+  conv1TranslFile.value = 'AW26 Product Descriptions.xlsx'
+  conv1TranslRange.value = ''
+  conv1TranslLang.value = ''
+  conv1TranslPanelVisible.value = true
+}
+
+function conv1TranslSubmit() {
+  conv1TranslPanelVisible.value = false
+  const record = conv1Msgs.value.find((m: any) => m.id === 'id_3')
+  if (record) {
+    record.confirmed = true
+    record.file = conv1TranslFile.value
+    record.range = conv1TranslRange.value
+    record.lang = conv1TranslLang.value
+  }
+  nextTick(() => AiAgentChatListScrollTo('ASC'))
+}
 
 const conv2StepTitleMap: Record<string, string> = {
   '1': '商品資訊確認', '2': '商品類別確認',
@@ -1497,6 +1544,11 @@ function handleChatAreaClick(e: MouseEvent) {
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     processConv1Msg(msg);
     return;
+  }
+
+  if (action === 'conv1-open-transl-panel') {
+    conv1OpenTranslPanel()
+    return
   }
 
   if (currentConversationId.value !== 'conv2') return;
