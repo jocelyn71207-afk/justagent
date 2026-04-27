@@ -185,9 +185,23 @@
         <div class="conv2-fp-body">
           <!-- Step 1: 商品資訊 -->
           <div v-show="conv2CurStep === 1">
-            <div class="conv2-info-note">✦ 圖片選填；商品名稱與描述為必填</div>
-            <div class="conv2-up-img-box" style="margin-bottom:10px">
-              <img :src="DEMO_IMG" />
+            <div class="conv2-info-note" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <span>✦ 圖片選填；商品名稱與描述為必填</span>
+              <div class="conv2-ghost-btns">
+                <button class="conv2-ghost-btn" @click.stop="conv2S1FillDemo()">帶入範例商品</button>
+                <button class="conv2-ghost-btn" @click.stop="conv2S1ShowSkuInput = !conv2S1ShowSkuInput; conv2S1SkuInput = ''">輸入貨號帶入</button>
+              </div>
+            </div>
+            <div v-if="conv2S1ShowSkuInput" class="conv2-sku-prompt" @click.stop>
+              <input class="conv2-fi" v-model="conv2S1SkuInput" placeholder="輸入貨號，如 UG1166915BLK" @click.stop style="flex:1;min-width:0" />
+              <button class="conv2-fp-btn" style="flex-shrink:0" @click.stop="conv2S1ApplySku()">帶入</button>
+            </div>
+            <div :class="['conv2-up-img-box', {'conv2-up-img-box--empty': !conv2S1ImgLoaded}]" style="margin-bottom:10px" @click.stop="conv2S1ImgLoaded = true">
+              <img v-if="conv2S1ImgLoaded" :src="DEMO_IMG" />
+              <div v-else class="conv2-up-img-placeholder">
+                <i class="material-symbols-outlined">add_photo_alternate</i>
+                <span>點擊上傳圖片</span>
+              </div>
             </div>
             <div class="conv2-fg">
               <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop /></div>
@@ -373,6 +387,78 @@
             </button>
           </div>
         </template>
+        <!-- Conv1 翻譯設定步驟面板 -->
+        <div v-show="conv1TranslPanelVisible && currentConversationId === 'conv1'" class="conv2-fp conv1-transl-fp" @click.stop>
+          <div class="conv2-fp-top">
+            <div class="conv1-transl-step-track">
+              <div :class="['conv1-transl-sd', { 'conv1-transl-sd--done': conv1TranslStep > 1, 'conv1-transl-sd--active': conv1TranslStep === 1 }]"></div>
+              <div class="conv1-transl-sl"></div>
+              <div :class="['conv1-transl-sd', { 'conv1-transl-sd--done': conv1TranslStep > 2, 'conv1-transl-sd--active': conv1TranslStep === 2 }]"></div>
+              <div class="conv1-transl-sl"></div>
+              <div :class="['conv1-transl-sd', { 'conv1-transl-sd--active': conv1TranslStep === 3 }]"></div>
+            </div>
+            <span class="conv2-fp-title">{{ ['選擇翻譯文件', '選擇翻譯範圍', '選擇目標語言'][conv1TranslStep - 1] }}</span>
+            <button class="conv2-fp-close-btn" @click.stop="conv1TranslPanelVisible = false">
+              <i class="material-symbols-outlined">close</i>
+            </button>
+          </div>
+          <div class="conv2-fp-body">
+            <!-- Step 1: 選擇翻譯文件 -->
+            <div v-show="conv1TranslStep === 1">
+              <div class="conv2-info-note">✦ 選擇要翻譯的 Excel 檔案</div>
+              <div :class="['conv1-transl-file-card', { 'conv1-transl-file-card--selected': conv1TranslFile === 'AW26 Product Descriptions.xlsx' }]"
+                   @click.stop="conv1TranslFile = 'AW26 Product Descriptions.xlsx'">
+                <span class="conv1-transl-file-icon">📊</span>
+                <div class="conv1-transl-file-info">
+                  <div class="conv1-transl-file-name">AW26 Product Descriptions.xlsx</div>
+                  <div class="conv1-transl-file-meta">XLSX · 2.7 MB · 已上傳</div>
+                </div>
+                <i class="material-symbols-outlined conv1-transl-file-check" v-if="conv1TranslFile === 'AW26 Product Descriptions.xlsx'">check_circle</i>
+              </div>
+              <div class="conv1-transl-upload-hint" @click.stop>
+                <i class="material-symbols-outlined" style="font-size:14px">add</i>
+                上傳其他檔案
+              </div>
+            </div>
+            <!-- Step 2: 選擇翻譯範圍 -->
+            <div v-show="conv1TranslStep === 2">
+              <div class="conv2-info-note">✦ 選擇翻譯範圍</div>
+              <div class="conv1-transl-range-list">
+                <div v-for="(opt, i) in conv1RangeOptions" :key="i"
+                     :class="['conv1-transl-range-item', { 'conv1-transl-range-item--selected': conv1TranslRange === opt.value }]"
+                     @click.stop="conv1TranslRange = opt.value">
+                  <div :class="['conv1-transl-radio', { 'conv1-transl-radio--sel': conv1TranslRange === opt.value }]"></div>
+                  <div>
+                    <div class="conv1-transl-range-title">{{ opt.label }}</div>
+                    <div class="conv1-transl-range-sub">{{ opt.sub }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Step 3: 選擇目標語言 -->
+            <div v-show="conv1TranslStep === 3">
+              <div class="conv2-info-note">✦ 選擇目標語言</div>
+              <div class="conv1-transl-lang-grid">
+                <div v-for="(lang, i) in conv1LangOptions" :key="i"
+                     :class="['conv1-transl-lang-chip', { 'conv1-transl-lang-chip--selected': conv1TranslLang === lang.value }]"
+                     @click.stop="conv1TranslLang = lang.value">
+                  <div class="conv1-transl-lang-flag">{{ lang.flag }}</div>
+                  <div class="conv1-transl-lang-name">{{ lang.label }}</div>
+                  <div class="conv1-transl-lang-sub">{{ lang.sub }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="conv1-transl-footer">
+            <button v-if="conv1TranslStep > 1" class="conv2-fp-sec-btn" @click.stop="conv1TranslStep--">← 返回</button>
+            <button v-if="conv1TranslStep < 3" class="conv2-fp-btn"
+                    :disabled="(conv1TranslStep === 1 && !conv1TranslFile) || (conv1TranslStep === 2 && !conv1TranslRange)"
+                    @click.stop="conv1TranslStep++">下一步 →</button>
+            <button v-if="conv1TranslStep === 3" class="conv2-fp-btn"
+                    :disabled="!conv1TranslLang"
+                    @click.stop="conv1TranslSubmit()">確認送出 ✓</button>
+          </div>
+        </div>
         <!-- Conv1 旅程修改需求懸浮面板 -->
         <div v-if="showJourneyModifyPill && currentConversationId !== 'conv2'" class="conv2-fp" @click.stop>
           <div class="conv2-fp-top">
@@ -1399,11 +1485,33 @@ function conv2GoStep1to2() {
 const conv2S1Cat = ref('室內拖鞋');
 const conv2S1Custom = ref('');
 // Step 2保暖厚底毛絨拖鞋
-const conv2S2Brand = ref('UGG');
-const conv2S2Price = ref('NT$5,980');
-const conv2S2Name = ref("Women's Elea Pooch Slip-on");
-const conv2S2Desc = ref(DEMO_DESC);
+const conv2S1ImgLoaded = ref(false);
+const conv2S1ShowSkuInput = ref(false);
+const conv2S1SkuInput = ref('');
+const conv2S2Brand = ref('');
+const conv2S2Price = ref('');
+const conv2S2Name = ref('');
+const conv2S2Desc = ref('');
 const conv2S2Err = ref('');
+
+function conv2S1FillDemo() {
+  conv2S1ImgLoaded.value = true;
+  conv2S2Brand.value = 'UGG';
+  conv2S2Price.value = 'NT$5,980';
+  conv2S2Name.value = "Women's Elea Pooch Slip-on";
+  conv2S2Desc.value = DEMO_DESC;
+  conv2S1ShowSkuInput.value = false;
+}
+function conv2S1ApplySku() {
+  if (!conv2S1SkuInput.value.trim()) return;
+  conv2S1ImgLoaded.value = true;
+  conv2S2Brand.value = 'UGG';
+  conv2S2Price.value = 'NT$5,980';
+  conv2S2Name.value = "Women's Elea Pooch Slip-on";
+  conv2S2Desc.value = DEMO_DESC;
+  conv2S1ShowSkuInput.value = false;
+  conv2S1SkuInput.value = '';
+}
 // Step 3
 const conv2S3Err = ref('');
 const conv2S3Features = ref([
@@ -1839,10 +1947,13 @@ function resetConversation() {
     conv2CurStep.value = 1;
     conv2S1Cat.value = '室內拖鞋';
     conv2S1Custom.value = '';
-    conv2S2Brand.value = 'UGG';
-    conv2S2Price.value = 'NT$5,980';
-    conv2S2Name.value = "Women's Elea Pooch Slip-on";
-    conv2S2Desc.value = DEMO_DESC;
+    conv2S1ImgLoaded.value = false;
+    conv2S1ShowSkuInput.value = false;
+    conv2S1SkuInput.value = '';
+    conv2S2Brand.value = '';
+    conv2S2Price.value = '';
+    conv2S2Name.value = '';
+    conv2S2Desc.value = '';
     conv2S2Err.value = '';
     conv2S3Err.value = '';
     conv2S3Features.value.forEach(f => { f.sel = f.key === 'material' || f.key === 'design'; });
