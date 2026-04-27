@@ -75,6 +75,7 @@
     </i>
   </div>
   <div :class="['AiViewr-ctrl-box right-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
+    v-show="!conv1IsEmpty"
     :style="{
       right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? ctrlRightGap + 'px' : '10px',
     }"
@@ -93,6 +94,7 @@
 
   <!-- 專案控制小介面 -->
   <div :class="['AiViewr-ctrl-box user-project-ctrl-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
+    v-show="!conv1IsEmpty"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
 
@@ -224,6 +226,7 @@
 
   <!-- 主場景尺寸比例控制小介面 -->
   <div :class="['AiViewr-ctrl-box size-ctrl-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
+    v-show="!conv1IsEmpty"
     :style="{
       right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? (ctrlRightGap + 50) + 'px' : '60px',
     }"
@@ -303,6 +306,14 @@
             (startPinchDistance.position.startX && startPinchDistance.position.startY) ? 2 : 0,
         }"
       ></div>
+
+      <!-- 收合狀態：懸浮 FAB（在 center-box 內，跟著畫布區域移動）-->
+      <Transition name="jcd-fab-pop">
+        <div class="journey-canvas-fab" v-if="showJourneyDrawer && isJcdCollapsed" @click="isJcdCollapsed = false" title="展開旅程狀態">
+          <i class="material-symbols-outlined jcd-fab-icon">account_tree</i>
+          <span class="jcd-fab-badge" v-if="jcdStats.running > 0">{{ jcdStats.running }}</span>
+        </div>
+      </Transition>
     </div>
 
     <!-- 右區塊 -->
@@ -340,6 +351,104 @@
   <!-- 對話列表 Modal -->
   <conversationListModal />
 
+  <!-- 旅程執行狀態 Drawer (canvas overlay) -->
+  <Transition name="jcd-slide">
+    <div class="journey-canvas-drawer" v-if="showJourneyDrawer && !isJcdCollapsed">
+      <div class="jcd-hdr">
+        <span class="jcd-hdr-title">旅程執行狀態</span>
+        <button class="jcd-collapse-btn" @click="isJcdCollapsed = true" title="收合">
+          <i class="material-symbols-outlined">chevron_left</i>
+        </button>
+      </div>
+      <div class="jcd-body">
+
+        <!-- 行銷自動化旅程 section -->
+        <template v-if="jcdStats.marketing.total > 0">
+          <div class="jcd-type-hdr">
+            <span class="jcd-type-dot jcd-type-dot--marketing"></span>
+            <span class="jcd-type-name">行銷自動化旅程</span>
+          </div>
+          <div class="jcd-stat-row">
+            <div class="jcd-stat"><div class="jcd-stat-val blue">{{ jcdStats.marketing.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
+            <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">完成</div></div>
+            <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.marketing.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
+            <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.marketing.total - jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
+          </div>
+          <div v-for="nc in jcdStats.marketing.nodeCounts" :key="nc.key" class="jcd-node-dist">
+            <div class="jcd-node-dist-hdr">
+              <span class="jcd-node-dist-key">{{ nc.key }}</span>
+              <span class="jcd-node-dist-label">{{ nc.label }}</span>
+              <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
+                {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+              </span>
+            </div>
+            <div class="jcd-dist-bar" v-if="jcdStats.marketing.total > 0">
+              <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.marketing.total * 100) + '%' }"></div>
+              <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.marketing.total * 100) + '%' }"></div>
+            </div>
+          </div>
+          <div class="jcd-rows-title">個別旅程</div>
+          <div v-for="journey in jcdStats.marketing.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
+            <span class="jcd-row-name">{{ journey.userName }}</span>
+            <div class="jcd-row-dots">
+              <span v-for="node in journey.nodes" :key="node.key"
+                :class="['jcd-rdot', node.status]"
+                :title="node.key + ' ' + node.label"></span>
+            </div>
+            <span :class="['jcd-row-badge', journey.status]">
+              {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
+            </span>
+          </div>
+          <div v-if="jcdStats.marketing.total > 8" class="jcd-rows-more">+{{ jcdStats.marketing.total - 8 }} 人</div>
+        </template>
+
+        <div class="jcd-divider" v-if="jcdStats.marketing.total > 0 && jcdStats.birthday.total > 0"></div>
+
+        <!-- 5月壽星專屬旅程 section -->
+        <template v-if="jcdStats.birthday.total > 0">
+          <div class="jcd-type-hdr">
+            <span class="jcd-type-dot jcd-type-dot--birthday"></span>
+            <span class="jcd-type-name">5月壽星專屬旅程</span>
+          </div>
+          <div class="jcd-stat-row">
+            <div class="jcd-stat"><div class="jcd-stat-val violet">{{ jcdStats.birthday.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
+            <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">完成</div></div>
+            <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.birthday.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
+            <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.birthday.total - jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
+          </div>
+          <div v-for="nc in jcdStats.birthday.nodeCounts" :key="nc.key" class="jcd-node-dist">
+            <div class="jcd-node-dist-hdr">
+              <span class="jcd-node-dist-key">{{ nc.key }}</span>
+              <span class="jcd-node-dist-label">{{ nc.label }}</span>
+              <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
+                {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+              </span>
+            </div>
+            <div class="jcd-dist-bar" v-if="jcdStats.birthday.total > 0">
+              <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.birthday.total * 100) + '%' }"></div>
+              <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.birthday.total * 100) + '%' }"></div>
+            </div>
+          </div>
+          <div class="jcd-rows-title">個別旅程</div>
+          <div v-for="journey in jcdStats.birthday.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
+            <span class="jcd-row-name">{{ journey.userName }}</span>
+            <div class="jcd-row-dots">
+              <span v-for="node in journey.nodes" :key="node.key"
+                :class="['jcd-rdot', node.status]"
+                :title="node.key + ' ' + node.label"></span>
+            </div>
+            <span :class="['jcd-row-badge', journey.status]">
+              {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
+            </span>
+          </div>
+          <div v-if="jcdStats.birthday.total > 8" class="jcd-rows-more">+{{ jcdStats.birthday.total - 8 }} 人</div>
+        </template>
+
+      </div>
+    </div>
+  </Transition>
+
+
 </template>
 
 <script setup lang="ts">
@@ -347,6 +456,7 @@ import { ref, onMounted, onUnmounted, nextTick, computed, watch } from "vue";
 import type { Ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useAiviewerStore } from "@/stores/AiViewerStore";
+import { useJourneyStore } from "@/stores/journeyStore";
 import { useRouter } from "vue-router";
 import AiViewerLeftBox from "@/components/AiViewer/AiViewerLeftBox.vue";
 import AiViewerRightBox from "@/components/AiViewer/AiViewerRightBox.vue";
@@ -365,9 +475,113 @@ import popDialog from "@/services/popDialog";
 window.pdfjsLib.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}/libs/pdf.worker.min.js`;
 
 const aiviewerStore = useAiviewerStore();
-const { isTouchDevice, isShowCommentListView, isShowBlockListView, isShowFileListView } = storeToRefs(aiviewerStore);
+const { isTouchDevice, isShowCommentListView, isShowBlockListView, isShowFileListView, conv1IsEmpty } = storeToRefs(aiviewerStore);
 const { resetAiViewerState } = aiviewerStore;
 const router = useRouter();
+
+// ── 旅程執行狀態 Drawer ──────────────────────────────────────────
+const journeyStore = useJourneyStore();
+const showJourneyDrawer = ref(false);
+const isJcdCollapsed = ref(false);
+watch(() => journeyStore.journeys.length, (n) => { if (n > 0) showJourneyDrawer.value = true; });
+
+const jcdHoverType = ref<'marketing' | 'birthday' | null>(null);
+let jcdHoverTimer: ReturnType<typeof setTimeout> | null = null;
+const JOURNEY_TYPE_NODES = {
+  marketing: [
+    { key: 'D0',  label: '觸發加入旅程' },
+    { key: 'D1',  label: '歡迎序列啟動' },
+    { key: 'D3',  label: '行為條件分流' },
+    { key: 'D7',  label: '產品深度培育' },
+    { key: 'D14', label: '購買轉換衝刺' },
+    { key: 'D30', label: '購後回購培育' },
+  ],
+  birthday: [
+    { key: 'PRE7', label: '壽星名單篩選' },
+    { key: 'D0',   label: '生日驚喜觸發' },
+    { key: 'D1',   label: '生日禮追蹤' },
+    { key: 'D7',   label: '壽星回購培育' },
+    { key: 'D30',  label: '旅程成效報告' },
+  ],
+} as const;
+function getTypeStats(type: 'marketing' | 'birthday') {
+  const list = journeyStore.journeys.filter(j => j.journeyType === type);
+  const total = list.length;
+  const done = list.filter(j => j.status === 'done').length;
+  const completion = total > 0 ? Math.round(done / total * 100) : 0;
+  const nodeCounts = JOURNEY_TYPE_NODES[type].map(({ key, label }) => {
+    let doneCount = 0, runningCount = 0;
+    for (const j of list) {
+      const node = j.nodes.find(n => n.key === key);
+      if (!node) continue;
+      if (node.status === 'done') doneCount++;
+      else if (node.status === 'running') runningCount++;
+    }
+    return { key, label, done: doneCount, running: runningCount };
+  });
+  return { total, done, completion, journeys: list, nodeCounts };
+}
+const jcdStats = computed(() => {
+  const total = journeyStore.journeys.length;
+  const done = journeyStore.journeys.filter(j => j.status === 'done').length;
+  return {
+    total,
+    done,
+    running: total - done,
+    marketing: getTypeStats('marketing'),
+    birthday: getTypeStats('birthday'),
+  };
+});
+
+function findJourneyBlock(type: 'marketing' | 'birthday') {
+  const keyword = type === 'marketing' ? 'journey_dashboard' : 'birthday_journey';
+  return (aiViewerBlocks.value as any[]).find(
+    (b: any) => b.data?.data?.fileUrl?.includes(keyword)
+  ) ?? null;
+}
+
+function panToJourneyBlock(type: 'marketing' | 'birthday') {
+  const block = findJourneyBlock(type);
+  if (!block || !mainStage.value) return;
+  const s = mainStage.value.scaleX();
+  const newX = centerViewWidth.value / 2 / s - (block.x + block.width / 2);
+  const newY = centerViewHeight.value / 2 / s - (block.y + block.height / 2);
+  setMainStagePosition(newX, newY);
+}
+
+function applyJourneyBlockHighlight(type: 'marketing' | 'birthday') {
+  const focusBlock = findJourneyBlock(type);
+  const otherType: 'marketing' | 'birthday' = type === 'marketing' ? 'birthday' : 'marketing';
+  const otherBlock = findJourneyBlock(otherType);
+  if (focusBlock) {
+    document.getElementById(focusBlock.id)?.classList.add(`jcd-highlight-${type}`);
+  }
+  if (otherBlock) {
+    document.getElementById(otherBlock.id)?.classList.add('jcd-dimmed');
+  }
+}
+
+function clearJourneyBlockHighlight() {
+  document.querySelectorAll('.jcd-highlight-marketing, .jcd-highlight-birthday, .jcd-dimmed')
+    .forEach(el => {
+      el.classList.remove('jcd-highlight-marketing', 'jcd-highlight-birthday', 'jcd-dimmed');
+    });
+}
+
+function onJcdSectionEnter(type: 'marketing' | 'birthday') {
+  if (jcdHoverTimer) clearTimeout(jcdHoverTimer);
+  jcdHoverTimer = setTimeout(() => {
+    jcdHoverType.value = type;
+    panToJourneyBlock(type);
+    applyJourneyBlockHighlight(type);
+  }, 400);
+}
+
+function onJcdSectionLeave() {
+  if (jcdHoverTimer) { clearTimeout(jcdHoverTimer); jcdHoverTimer = null; }
+  jcdHoverType.value = null;
+  clearJourneyBlockHighlight();
+}
 
 // konva.js 主場景物件
 const { mainStage } = storeToRefs(aiviewerStore);
@@ -684,7 +898,7 @@ function checkRightSize (callback: (() => void) | null = null): void {
 }
 
 // ● 畫布內容 block 區塊相關
-const { aiViewerBlocks } = storeToRefs(aiviewerStore); // 使用者使用的區塊
+const { aiViewerBlocks, panToTarget } = storeToRefs(aiviewerStore); // 使用者使用的區塊
 const {
   nowChoiceAiViewerId,
   isMultiChoiceAiViewerMode,
@@ -694,6 +908,16 @@ const {
 const { copyAiViewerBlock, isStopCopyPasteAiViewerBlock } = storeToRefs(aiviewerStore);
 const { fullAiViewerBlockId } = storeToRefs(aiviewerStore); // 單一小區塊進入放大滿版
 const { calcNextZindex, deleteBlock } = aiviewerStore;
+
+// 新增 report block 後自動 pan 到該位置
+watch(panToTarget, (target) => {
+  if (!target || !mainStage.value) return;
+  const scale = mainStage.value.scaleX();
+  const newX = 20 - target.x * scale;
+  const newY = 20 - target.y * scale;
+  setMainStagePosition(newX, newY);
+  panToTarget.value = null;
+});
 
 // 處理多選模式 (不跟單選的 choiceAiViewerContentBox 一起處理是因為套件回呼會觸發多次)
 function checkMultiChoiceMode(itemId: string): void {
@@ -1495,6 +1719,8 @@ onMounted(async() => {
 onUnmounted(() => {
   // 移除 body 的 style
   document.body.style.overflow = "";
+  if (jcdHoverTimer) { clearTimeout(jcdHoverTimer); jcdHoverTimer = null; }
+  clearJourneyBlockHighlight();
   // 清理滑鼠事件監聽器
   document.removeEventListener("mousemove", onLRMouseMove);
   document.removeEventListener("mouseup", onLRMouseUp);
