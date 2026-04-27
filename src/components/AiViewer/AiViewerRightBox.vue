@@ -139,7 +139,7 @@
           <div v-show="conv2DirectFpStep === 2">
             <div class="conv2-info-note">✦ 輸入商品貨號（可搭配 @ 引用知識庫）</div>
             <div class="conv2-sku-wrap" @click.stop>
-              <input class="conv2-fi conv2-fi--full conv2-sku-input" v-model="conv2DirectSkuInput" />
+              <input class="conv2-fi conv2-fi--full conv2-sku-input" v-model="conv2DirectSkuInput" @click="conv2FillDemoSku()" />
               <div class="conv2-sku-overlay" aria-hidden="true">
                 <template v-for="(part, i) in conv2SkuParts" :key="i">
                   <span v-if="part.isRef" class="conv2-sku-ref">{{ part.text }}</span>
@@ -155,7 +155,7 @@
           <!-- Step 3: 輸入競品網址 -->
           <div v-show="conv2DirectFpStep === 3">
             <div class="conv2-info-note">✦ 提供競品的商品頁面網址（最多 5 個）</div>
-            <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2DirectUrlInput" rows="4" @click.stop
+            <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2DirectUrlInput" rows="4" @click.stop="conv2FillDemoUrls()"
               placeholder="每行一個網址&#10;e.g. https://shopee.tw/..." style="margin-top:8px"></textarea>
             <div class="conv2-fp-btn-row" style="margin-top:8px">
               <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitUrls()">開始分析 →</button>
@@ -1301,7 +1301,9 @@ const conv2DirectFpVisible = ref(false);
 const conv2ShowDirectPill = ref(false);
 const conv2DirectFpStep = ref(1); // 1:方法選擇 2:輸入貨號 3:競品網址
 const conv2DirectMethod = ref('');
-const conv2DirectSkuInput = ref('UG1166915BLK@2025產品總表-Q3');
+const CONV2_DEMO_SKU = 'UG1166915BLK@2025產品總表-Q3';
+const conv2DirectSkuInput = ref('');
+function conv2FillDemoSku() { if (!conv2DirectSkuInput.value) conv2DirectSkuInput.value = CONV2_DEMO_SKU; }
 const conv2SkuParts = computed(() => {
   const parts: { text: string; isRef: boolean }[] = [];
   const raw = conv2DirectSkuInput.value;
@@ -1315,8 +1317,9 @@ const conv2SkuParts = computed(() => {
   if (lastIndex < raw.length) parts.push({ text: raw.slice(lastIndex), isRef: false });
   return parts;
 });
-const CONV2_DIRECT_URL_DEFAULT = 'https://www.zara.com/tw/\nhttps://www.paidal.com.tw/\nhttps://www.zivmode.com/\nhttps://www.parkcat.com.tw/\nhttps://www.zara.com/tw/';
-const conv2DirectUrlInput = ref(CONV2_DIRECT_URL_DEFAULT);
+const CONV2_DIRECT_URL_DEFAULT = 'https://www.zara.com/tw/\nhttps://www.paidal.com.tw/\nhttps://www.zivmode.com/\nhttps://www.parkcat.com.tw/\nhttps://www.parkcat.com.tw/products/aw26-slipper';
+const conv2DirectUrlInput = ref('');
+function conv2FillDemoUrls() { if (!conv2DirectUrlInput.value) conv2DirectUrlInput.value = CONV2_DIRECT_URL_DEFAULT; }
 
 // ── 懸浮面板 state ──
 const conv2UploadFpVisible = ref(false);
@@ -1338,11 +1341,11 @@ const conv2FpActive = computed(() =>
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
 const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
 
-const conv1TranslPanelVisible = ref(false)
-const conv1TranslStep = ref(1)
-const conv1TranslFile = ref('AW26 Product Descriptions.xlsx')
-const conv1TranslRange = ref('')
-const conv1TranslLang = ref('')
+const conv1TranslPanelVisible = ref(false);
+const conv1TranslStep = ref(1);
+const conv1TranslFile = ref('AW26 Product Descriptions.xlsx');
+const conv1TranslRange = ref('');
+const conv1TranslLang = ref('');
 
 function conv1OpenTranslPanel() {
   conv1TranslStep.value = 1
@@ -1763,7 +1766,11 @@ function conv2DirectSubmitSku() {
 function conv2DirectSubmitUrls() {
   conv2DirectFpVisible.value = false;
   conv2ShowDirectPill.value = false;
-  c2Push({ forUser: true, msg: '提供 3 個競品網址：<br>1. shopee.tw — 日光手感-小狗立體保暖毛絨拖鞋<br>2. paidal.com.tw — 野生喵喵怪毛絨室內拖鞋<br>3. zara.com/tw — CAPYFUN 室內拖鞋' });
+  const urls = conv2DirectUrlInput.value.split('\n').map(u => u.trim()).filter(Boolean);
+  const urlListHtml = urls.map((u, i) => {
+    try { return `${i + 1}. ${new URL(u).hostname}`; } catch { return `${i + 1}. ${u}`; }
+  }).join('<br>');
+  c2Push({ forUser: true, msg: `提供 ${urls.length} 個競品網址：<br>${urlListHtml}` });
   c2Push({ msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取商品資料中</div>
   <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對分析中</div>
@@ -1849,8 +1856,8 @@ function resetConversation() {
     conv2ShowDirectPill.value = false;
     conv2DirectFpStep.value = 1;
     conv2DirectMethod.value = '';
-    conv2DirectSkuInput.value = 'UG1166915BLK@2025產品總表-Q3';
-    conv2DirectUrlInput.value = CONV2_DIRECT_URL_DEFAULT;
+    conv2DirectSkuInput.value = '';
+    conv2DirectUrlInput.value = '';
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
