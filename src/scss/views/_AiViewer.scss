@@ -3072,6 +3072,8 @@
 }
 
 // ── Conv1 翻譯設定步驟面板 ────────────────────────────────────────────────────
+// Container geometry (background, border, border-radius, shadow) comes from .conv2-fp,
+// which is applied alongside this class in the template.
 .conv1-transl-fp {
   .conv1-transl-step-track {
     display: flex;
@@ -3090,7 +3092,7 @@
   }
   .conv1-transl-sl {
     width: 5px;
-    height: 2px;
+    height: 1px;
     background: var(--color-border);
   }
 
@@ -3121,14 +3123,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .conv1-transl-file-meta { font-size: 10px; color: var(--color-text-muted, #3F565E); margin-top: 1px; }
+  .conv1-transl-file-meta { font-size: 10px; color: var(--color-text-alpha50); margin-top: 1px; }
   .conv1-transl-file-check { font-size: 18px !important; color: var(--color-primary, #00A078); flex-shrink: 0; }
   .conv1-transl-upload-hint {
     display: flex;
     align-items: center;
     gap: 4px;
     font-size: 11px;
-    color: var(--color-text-muted, #3F565E);
+    color: var(--color-text-alpha50);
     padding: 6px 2px 0;
     cursor: default;
     opacity: 0.6;
@@ -3173,7 +3175,7 @@
     }
   }
   .conv1-transl-range-title { font-size: 11px; font-weight: 600; color: var(--color-text); }
-  .conv1-transl-range-sub { font-size: 10px; color: var(--color-text-muted, #3F565E); margin-top: 1px; }
+  .conv1-transl-range-sub { font-size: 10px; color: var(--color-text-alpha50); margin-top: 1px; }
 
   // Step 3: 語言 chip grid
   .conv1-transl-lang-grid {
@@ -3195,8 +3197,8 @@
     }
   }
   .conv1-transl-lang-flag { font-size: 18px; margin-bottom: 3px; }
-  .conv1-transl-lang-name { font-size: 11px; font-weight: 700; color: var(--color-text); }
-  .conv1-transl-lang-sub { font-size: 9px; color: var(--color-text-muted, #3F565E); }
+  .conv1-transl-lang-name { font-size: 11px; font-weight: 600; color: var(--color-text); }
+  .conv1-transl-lang-sub { font-size: 9px; color: var(--color-text-alpha50); }
 
   // 面板底部按鈕列
   .conv1-transl-footer {
@@ -3224,18 +3226,18 @@
   gap: 8px;
   padding: 12px;
   border-radius: 10px;
-  background: var(--color-bg-subtle, #F8FAFB);
+  background: var(--color-background-1);
   border: 1px solid var(--color-border);
 }
 .tc-pending-icon { font-size: 20px; }
-.tc-pending-text { font-size: 12px; color: var(--color-text-muted, #3F565E); }
+.tc-pending-text { font-size: 12px; color: var(--color-text-alpha50); }
 .tc-setup-btn {
   padding: 5px 12px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
   background: var(--color-primary, #00A078);
-  color: #fff;
+  color: var(--color-background);
   border: none;
   cursor: pointer;
   &:hover { background: var(--color-primary-hover, #007F5F); }
