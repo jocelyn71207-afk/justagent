@@ -321,7 +321,7 @@
       ref="AiViewerRightResizerDOM"
       @mousedown="onLRMouseStart('right', $event)"
       @touchstart="onLRTouchStart('right', $event)"
-      v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
+      v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) && !conv1IsEmpty"
     ></div>
     <AiViewerRightBox v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
       :rightWidth="rightWidth"
@@ -364,84 +364,100 @@
 
         <!-- 行銷自動化旅程 section -->
         <template v-if="jcdStats.marketing.total > 0">
-          <div class="jcd-type-hdr">
-            <span class="jcd-type-dot jcd-type-dot--marketing"></span>
-            <span class="jcd-type-name">行銷自動化旅程</span>
-          </div>
-          <div class="jcd-stat-row">
-            <div class="jcd-stat"><div class="jcd-stat-val blue">{{ jcdStats.marketing.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
-            <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">完成</div></div>
-            <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.marketing.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
-            <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.marketing.total - jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
-          </div>
-          <div v-for="nc in jcdStats.marketing.nodeCounts" :key="nc.key" class="jcd-node-dist">
-            <div class="jcd-node-dist-hdr">
-              <span class="jcd-node-dist-key">{{ nc.key }}</span>
-              <span class="jcd-node-dist-label">{{ nc.label }}</span>
-              <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
-                {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+          <div
+            class="jcd-section"
+            :class="{ 'jcd-section--hover-marketing': jcdHoverType === 'marketing' }"
+            @mouseenter="onJcdSectionEnter('marketing')"
+            @mouseleave="onJcdSectionLeave()"
+          >
+            <div class="jcd-type-hdr">
+              <span class="jcd-type-dot jcd-type-dot--marketing"></span>
+              <span class="jcd-type-name">行銷自動化旅程</span>
+              <span class="jcd-locate-chip">定位 ↗</span>
+            </div>
+            <div class="jcd-stat-row">
+              <div class="jcd-stat"><div class="jcd-stat-val blue">{{ jcdStats.marketing.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">完成</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.marketing.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.marketing.total - jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
+            </div>
+            <div v-for="nc in jcdStats.marketing.nodeCounts" :key="nc.key" class="jcd-node-dist">
+              <div class="jcd-node-dist-hdr">
+                <span class="jcd-node-dist-key">{{ nc.key }}</span>
+                <span class="jcd-node-dist-label">{{ nc.label }}</span>
+                <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
+                  {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+                </span>
+              </div>
+              <div class="jcd-dist-bar" v-if="jcdStats.marketing.total > 0">
+                <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.marketing.total * 100) + '%' }"></div>
+                <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.marketing.total * 100) + '%' }"></div>
+              </div>
+            </div>
+            <div class="jcd-rows-title">個別旅程</div>
+            <div v-for="journey in jcdStats.marketing.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
+              <span class="jcd-row-name">{{ journey.userName }}</span>
+              <div class="jcd-row-dots">
+                <span v-for="node in journey.nodes" :key="node.key"
+                  :class="['jcd-rdot', node.status]"
+                  :title="node.key + ' ' + node.label"></span>
+              </div>
+              <span :class="['jcd-row-badge', journey.status]">
+                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
               </span>
             </div>
-            <div class="jcd-dist-bar" v-if="jcdStats.marketing.total > 0">
-              <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.marketing.total * 100) + '%' }"></div>
-              <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.marketing.total * 100) + '%' }"></div>
-            </div>
-          </div>
-          <div class="jcd-rows-title">個別旅程</div>
-          <div v-for="journey in jcdStats.marketing.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
-            <span class="jcd-row-name">{{ journey.userName }}</span>
-            <div class="jcd-row-dots">
-              <span v-for="node in journey.nodes" :key="node.key"
-                :class="['jcd-rdot', node.status]"
-                :title="node.key + ' ' + node.label"></span>
-            </div>
-            <span :class="['jcd-row-badge', journey.status]">
-              {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
-            </span>
-          </div>
-          <div v-if="jcdStats.marketing.total > 8" class="jcd-rows-more">+{{ jcdStats.marketing.total - 8 }} 人</div>
+            <div v-if="jcdStats.marketing.total > 8" class="jcd-rows-more">+{{ jcdStats.marketing.total - 8 }} 人</div>
+          </div><!-- /jcd-section marketing -->
         </template>
 
         <div class="jcd-divider" v-if="jcdStats.marketing.total > 0 && jcdStats.birthday.total > 0"></div>
 
         <!-- 5月壽星專屬旅程 section -->
         <template v-if="jcdStats.birthday.total > 0">
-          <div class="jcd-type-hdr">
-            <span class="jcd-type-dot jcd-type-dot--birthday"></span>
-            <span class="jcd-type-name">5月壽星專屬旅程</span>
-          </div>
-          <div class="jcd-stat-row">
-            <div class="jcd-stat"><div class="jcd-stat-val violet">{{ jcdStats.birthday.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
-            <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">完成</div></div>
-            <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.birthday.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
-            <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.birthday.total - jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
-          </div>
-          <div v-for="nc in jcdStats.birthday.nodeCounts" :key="nc.key" class="jcd-node-dist">
-            <div class="jcd-node-dist-hdr">
-              <span class="jcd-node-dist-key">{{ nc.key }}</span>
-              <span class="jcd-node-dist-label">{{ nc.label }}</span>
-              <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
-                {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+          <div
+            class="jcd-section"
+            :class="{ 'jcd-section--hover-birthday': jcdHoverType === 'birthday' }"
+            @mouseenter="onJcdSectionEnter('birthday')"
+            @mouseleave="onJcdSectionLeave()"
+          >
+            <div class="jcd-type-hdr">
+              <span class="jcd-type-dot jcd-type-dot--birthday"></span>
+              <span class="jcd-type-name">5月壽星專屬旅程</span>
+              <span class="jcd-locate-chip">定位 ↗</span>
+            </div>
+            <div class="jcd-stat-row">
+              <div class="jcd-stat"><div class="jcd-stat-val violet">{{ jcdStats.birthday.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">完成</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.birthday.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.birthday.total - jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
+            </div>
+            <div v-for="nc in jcdStats.birthday.nodeCounts" :key="nc.key" class="jcd-node-dist">
+              <div class="jcd-node-dist-hdr">
+                <span class="jcd-node-dist-key">{{ nc.key }}</span>
+                <span class="jcd-node-dist-label">{{ nc.label }}</span>
+                <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
+                  {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+                </span>
+              </div>
+              <div class="jcd-dist-bar" v-if="jcdStats.birthday.total > 0">
+                <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.birthday.total * 100) + '%' }"></div>
+                <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.birthday.total * 100) + '%' }"></div>
+              </div>
+            </div>
+            <div class="jcd-rows-title">個別旅程</div>
+            <div v-for="journey in jcdStats.birthday.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
+              <span class="jcd-row-name">{{ journey.userName }}</span>
+              <div class="jcd-row-dots">
+                <span v-for="node in journey.nodes" :key="node.key"
+                  :class="['jcd-rdot', node.status]"
+                  :title="node.key + ' ' + node.label"></span>
+              </div>
+              <span :class="['jcd-row-badge', journey.status]">
+                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
               </span>
             </div>
-            <div class="jcd-dist-bar" v-if="jcdStats.birthday.total > 0">
-              <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.birthday.total * 100) + '%' }"></div>
-              <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.birthday.total * 100) + '%' }"></div>
-            </div>
-          </div>
-          <div class="jcd-rows-title">個別旅程</div>
-          <div v-for="journey in jcdStats.birthday.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
-            <span class="jcd-row-name">{{ journey.userName }}</span>
-            <div class="jcd-row-dots">
-              <span v-for="node in journey.nodes" :key="node.key"
-                :class="['jcd-rdot', node.status]"
-                :title="node.key + ' ' + node.label"></span>
-            </div>
-            <span :class="['jcd-row-badge', journey.status]">
-              {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
-            </span>
-          </div>
-          <div v-if="jcdStats.birthday.total > 8" class="jcd-rows-more">+{{ jcdStats.birthday.total - 8 }} 人</div>
+            <div v-if="jcdStats.birthday.total > 8" class="jcd-rows-more">+{{ jcdStats.birthday.total - 8 }} 人</div>
+          </div><!-- /jcd-section birthday -->
         </template>
 
       </div>
