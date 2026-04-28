@@ -24,10 +24,11 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── Canvas ── */
 .canvas-area{
-  flex:1;position:relative;overflow:hidden;
+  flex:1;min-height:0;position:relative;
   background-color:#f8faff;
   background-image:radial-gradient(circle,#c7d2fe 1px,transparent 1px);
   background-size:24px 24px;
+  display:flex;flex-direction:column;overflow:hidden;
 }
 
 /* ── Zoom controls (visual only) ── */
@@ -46,7 +47,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── Flow (scrollable) ── */
 .flow{
-  position:absolute;inset:0;overflow-y:auto;
+  flex:1;min-height:0;overflow-y:auto;
   display:flex;flex-direction:column;align-items:center;
   padding:20px 16px 40px;
 }
