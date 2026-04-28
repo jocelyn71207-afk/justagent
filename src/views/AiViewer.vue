@@ -322,7 +322,7 @@
       ref="AiViewerRightResizerDOM"
       @mousedown="onLRMouseStart('right', $event)"
       @touchstart="onLRTouchStart('right', $event)"
-      v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
+      v-show="!conv1IsEmpty && (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
     ></div>
     <AiViewerRightBox v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
       :rightWidth="rightWidth"
@@ -499,7 +499,7 @@ const router = useRouter();
 // ── 旅程執行狀態 Drawer ──────────────────────────────────────────
 const journeyStore = useJourneyStore();
 const showJourneyDrawer = ref(false);
-const isJcdCollapsed = ref(false);
+const { isJcdCollapsed } = storeToRefs(journeyStore);
 watch(() => journeyStore.journeys.length, (n) => { if (n > 0) showJourneyDrawer.value = true; });
 
 const jcdHoverType = ref<'marketing' | 'birthday' | null>(null);
@@ -561,7 +561,11 @@ function panToJourneyBlock(type: 'marketing' | 'birthday') {
   const block = findJourneyBlock(type);
   if (!block || !mainStage.value) return;
   const s = mainStage.value.scaleX();
-  const newX = centerViewWidth.value / 2 - (block.x + block.width / 2) * s;
+  // The drawer overlays the left 260px (left:20 + width:240), so shift the
+  // target center rightward so the block lands in the visible area.
+  const JCD_OVERLAY = 260;
+  const visibleCenterX = (JCD_OVERLAY + centerViewWidth.value) / 2;
+  const newX = visibleCenterX - (block.x + block.width / 2) * s;
   const newY = centerViewHeight.value / 2 - (block.y + block.height / 2) * s;
   setMainStagePosition(newX, newY);
 }
