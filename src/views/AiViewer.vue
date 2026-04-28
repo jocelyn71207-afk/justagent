@@ -148,6 +148,7 @@
   <div ref="projectFnBox"
     :class="['AiViewr-ctrl-box project-fn-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
     :style="projectFnBoxStyle"
+    v-show="!conv1IsEmpty"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
     <!-- 常態功能按鈕 -->
@@ -321,7 +322,7 @@
       ref="AiViewerRightResizerDOM"
       @mousedown="onLRMouseStart('right', $event)"
       @touchstart="onLRTouchStart('right', $event)"
-      v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) && !conv1IsEmpty"
+      v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
     ></div>
     <AiViewerRightBox v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
       :rightWidth="rightWidth"
