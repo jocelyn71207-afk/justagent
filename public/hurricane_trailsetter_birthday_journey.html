@@ -74,6 +74,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .jnode-purple{border-left:3px solid #7c3aed}
 .jnode-pink  {border-left:3px solid #db2777}
 .jnode-teal  {border-left:3px solid #0891b2}
+.jnode-amber {border-left:3px solid #f59e0b}
 .jnode-green {border-left:3px solid #16a34a}
 
 /* Node header pill */
@@ -82,6 +83,7 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .hdr-purple{background:#f5f3ff;color:#7c3aed}
 .hdr-pink  {background:#fdf2f8;color:#db2777}
 .hdr-teal  {background:#f0fdfe;color:#0891b2}
+.hdr-amber {background:#fffbeb;color:#d97706}
 .hdr-green {background:#f0fdf4;color:#16a34a}
 
 /* Node body */
@@ -224,9 +226,9 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
     <div class="vline" data-prev="D1"></div>
 
     <!-- D7 -->
-    <div class="jnode jnode-teal pending" id="node-D7">
+    <div class="jnode jnode-amber pending" id="node-D7">
       <div class="done-badge" style="display:none">✓</div>
-      <div class="jnode-hdr hdr-teal">🛍️ 回購培育</div>
+      <div class="jnode-hdr hdr-amber">🛍️ 回購培育</div>
       <div class="jnode-body">
         <div class="jnode-title">壽星專屬回購培育 <span class="node-timing">生日後 7 天</span></div>
         <div class="jnode-sub">🛍️ 台北門市限定推薦 + 社群廣告</div>
@@ -280,6 +282,19 @@ function renderTree(journeys) {
     var pill = el.querySelector('.running-pill');
     if (pill) pill.style.display = status === 'running' ? 'inline-flex' : 'none';
   });
+  var vlines = document.querySelectorAll('.vline[data-prev]');
+  for (var j = 0; j < vlines.length; j++) {
+    var vl = vlines[j];
+    var prevKey = vl.getAttribute('data-prev');
+    var prevStatus = 'pending';
+    if (latest) {
+      for (var k = 0; k < latest.nodes.length; k++) {
+        if (latest.nodes[k].key === prevKey) { prevStatus = latest.nodes[k].status; break; }
+      }
+    }
+    vl.classList.remove('done');
+    if (prevStatus === 'done') vl.classList.add('done');
+  }
 }
 
 document.getElementById('btn-start').addEventListener('click', function() {
