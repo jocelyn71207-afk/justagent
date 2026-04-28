@@ -140,6 +140,9 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   // 目前選中的對話 ID
   const currentConversationId = ref('conv1') as Ref<string>;
 
+  // conv1 是否處於初始空白狀態（尚未送出任何訊息）
+  const conv1IsEmpty = ref(true);
+
   // 專案檔案清單資料
   const projectFiles = ref([
     { name: 'AW26 Product Descriptions_翻譯.xlsx', fileType: 'EXCEL', size: 2834016 },
@@ -165,26 +168,13 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
       }
     },
     {
-      id: 'init-excel-aw26-orig',
+      id: 'init-excel-aw26-trans',
       x: centerSpaceX,
       y: centerSpaceY + 340,
       width: 780,
       height: 420,
-      blockName: 'AW26 Product Descriptions.xlsx',
-      z: 2,
-      data: {
-        blockType: 'EXCEL',
-        data: { fileUrl: `${import.meta.env.BASE_URL}AW26%20Product%20Descriptions.xlsx` }
-      }
-    },
-    {
-      id: 'init-excel-aw26-trans',
-      x: centerSpaceX + 820,
-      y: centerSpaceY + 340,
-      width: 780,
-      height: 420,
       blockName: 'AW26 Product Descriptions_翻譯.xlsx',
-      z: 3,
+      z: 2,
       data: {
         blockType: 'EXCEL',
         data: { fileUrl: `${import.meta.env.BASE_URL}AW26%20Product%20Descriptions_%E7%BF%BB%E8%AD%AF.xlsx` }
@@ -192,6 +182,8 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     },
   ];
   const aiViewerBlocks = ref([...INITIAL_BLOCKS]) as Ref<any[]>;
+  // 新增 report block 後，通知 view 自動 pan 到該位置
+  const panToTarget = ref<{ x: number; y: number; width: number; height: number } | null>(null);
   // 目前選中的內容區塊 ID
   const nowChoiceAiViewerId = ref('') as Ref<string>;
   // 是否為多選模式
@@ -239,72 +231,45 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
    * @param tempBlock 臨時區塊資料
    * @param checkCount 檢查次數 (避免無限遞迴用)
   */
-  function checkCreatePos(tempBlock: AiViewerBlock, checkCount = 0): AiViewerBlock {
-    // 如果沒有其他區塊,直接返回
-    if (aiViewerBlocks.value.length === 0) {
-      return tempBlock;
-    }
+  function checkCreatePos(tempBlock: AiViewerBlock): AiViewerBlock {
+    const blocks = aiViewerBlocks.value as AiViewerBlock[];
+    if (blocks.length === 0) return tempBlock;
 
-    // 先取得當前可視範圍
-    const stage = mainStage.value;                // konva.js 主場景物件
-    if (!stage) return tempBlock;
-    const scale = stage.scaleX();                 // 目前縮放比例
-    const visibleWidth = stage.width() / scale;   // 可視寬度
-    const visibleHeight = stage.height() / scale; // 可視高度
-    const offsetX = stage.x() / scale;            // 目前偏移量 X
-    const offsetY = stage.y() / scale;            // 目前偏移量 Y
-    const viewLeft = -offsetX;                    // 可視區域左邊界 X
-    const viewTop = -offsetY;                     // 可視區域上邊界 Y
-    const viewRight = viewLeft + visibleWidth;    // 可視區域右邊界 X
-    const viewBottom = viewTop + visibleHeight;   // 可視區域下邊界 Y
+    // AABB 碰撞偵測
+    const isOverlapping = (a: AiViewerBlock, b: AiViewerBlock): boolean => (
+      a.x < b.x + b.width &&
+      a.x + a.width > b.x &&
+      a.y < b.y + b.height &&
+      a.y + a.height > b.y
+    );
 
-    console.log('取得當前可視範圍', {
-      '目前縮放比例': scale,
-      '可視寬度': visibleWidth,
-      '可視高度': visibleHeight,
-      '目前偏移量 X': offsetX,
-      '目前偏移量 Y': offsetY,
-      '可視區域左邊界 X': viewLeft,
-      '可視區域上邊界 Y': viewTop,
-      '可視區域右邊界': viewRight,
-      '可視區域下邊界 Y': viewBottom
-    });
+    // 已無重疊，直接返回
+    if (!blocks.some(item => isOverlapping(item, tempBlock))) return tempBlock;
 
-    let isOverlap = false;
-    aiViewerBlocks.value.forEach((item: AiViewerBlock) => {
-      // 檢查是否有跟其他區塊座標與大小完全重疊
-      if (
-        item.x === tempBlock.x &&
-        item.y === tempBlock.y &&
-        item.width === tempBlock.width &&
-        item.height === tempBlock.height
-      ) {
-        isOverlap = true;
-        console.log('有重疊', item.id);
-        // 如果有重疊，則將新區塊往右下角移動一定距離
-        tempBlock.x = item.x + 20;
-        tempBlock.y = item.y + 20;
-      }
-    });
+    const GAP = 20;
 
-    if (isOverlap) {
-      // 如果移動後超出可視範圍，則重置到畫面中央位置
-      if (tempBlock.x + tempBlock.width > viewRight) {
-        tempBlock.x = viewLeft + centerSpaceX;
-      }
-      if (tempBlock.y + tempBlock.height > viewBottom) {
-        tempBlock.y = viewTop + centerSpaceY;
-      }
-      if (checkCount <= 10) {
-        console.log('isOverlap=', isOverlap);
-        console.log('遞迴檢查: ', checkCount);
-        return checkCreatePos(tempBlock, checkCount+1); // 遞迴檢查
-      } else {
-        // 超過遞迴次數就不檢查了,強制使用左上角的位置
-        tempBlock.x = centerSpaceX;
-        tempBlock.y = centerSpaceY;
+    // 策略一：放在所有既有 block 最右邊的右側（viewport 放得下時優先）
+    // 數學保證：rightmost = max(b.x + b.width)，任何 block 右邊緣 ≤ rightmost < tryX
+    // ∴ X 軸上不可能和任何 block 重疊，無需額外 overlap check
+    const stage = mainStage.value;
+    if (stage) {
+      const scale     = stage.scaleX();
+      const viewRight = -(stage.x() / scale) + stage.width() / scale;
+      const rightmost = blocks.reduce((max, b) => Math.max(max, b.x + b.width), 0);
+      const tryX      = rightmost + GAP;
+      if (tryX + tempBlock.width <= viewRight) {
+        tempBlock.x = tryX;
+        return tempBlock;
       }
     }
+
+    // 策略二（保底）：放到所有既有 block 最底部的正下方
+    // 數學保證：新 block.y = maxBottom + GAP > max(b.y + b.height)
+    // ∴ Y 軸上不可能和任何既有 block 重疊
+    const maxBottom = blocks.reduce((max, b) => Math.max(max, b.y + b.height), 0);
+    const leftmost  = blocks.reduce((min, b) => Math.min(min, b.x), tempBlock.x);
+    tempBlock.x = leftmost;
+    tempBlock.y = maxBottom + GAP;
 
     return tempBlock;
   }
@@ -315,6 +280,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     const testIds = [
       'testHtmlFileA', 'testHtmlFileB', 'testHtmlFileC',
       'test_report_251210',
+      'journey_flow',
       'testForm',
       'chartA', 'chartB', 'chartC', 'chartD', 'chartE',
       'excelA', 'excelB', 'excelC', 'excelD', 'excelE',
@@ -422,24 +388,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
       });
       return;
     }
-    // 先假設是一般文字發話
-    let temp: AiViewerBlock = {
-      id: 'msg-' + Date.now(),
-      x: centerSpaceX - (mainStage.value?.x() ?? 0),
-      y: centerSpaceY - (mainStage.value?.y() ?? 0),
-      width: 200,
-      height: 200,
-      blockName: 'new block',
-      z: calcNextZindex(),
-      data: {
-        blockType: 'OTHER',
-        data: {
-          msg: userInputModal.value.msg
-        }
-      }
-    }
-    temp = checkCreatePos(temp);
-    aiViewerBlocks.value.push(temp);
+    userInputModal.value.msg = '';
   }
 
   // 貼上複製的 block 方法
@@ -891,6 +840,12 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
         fileUrl: 'https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/test_report_251210.html'
       }
     },
+    'journey_flow': {
+      blockType: 'HTML',
+      data: {
+        fileUrl: `${import.meta.env.BASE_URL}hurricane_trailsetter_journey_flow.html`
+      }
+    },
     'mdA': {
       blockType: 'MD',
       data: {
@@ -942,6 +897,9 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
 
     W = (testId === 'testHtmlFileA' || testId === 'testHtmlFileB' || testId === 'testHtmlFileC' || testId === 'test_report_251210') ? 640 : W;
     H = (testId === 'testHtmlFileA' || testId === 'testHtmlFileB' || testId === 'testHtmlFileC' || testId === 'test_report_251210') ? 480 : H;
+
+    W = (testId === 'journey_flow') ? 860 : W;
+    H = (testId === 'journey_flow') ? 600 : H;
 
     W = (testId === 'mdA' || testId === 'mdB') ? 500 : W;
     H = (testId === 'mdA' || testId === 'mdB') ? 300 : H;
@@ -997,34 +955,50 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   }
   // 報告生成後自動加入畫布
   function addReportBlock(fileUrl: string, blockName: string) {
-    let temp: any = {
+    const BLOCK_W = 640;
+    const BLOCK_H = 750;
+    const GAP = 24;
+    // All report blocks share the same y row, stacked horizontally
+    const slot = aiViewerBlocks.value.filter((b: any) => b.id?.startsWith('report-')).length;
+    // Row y = bottom of all non-report blocks + gap
+    const nonReportBottom = aiViewerBlocks.value
+      .filter((b: any) => !b.id?.startsWith('report-'))
+      .reduce((max: number, b: any) => Math.max(max, (b.y ?? 0) + (b.height ?? 0)), centerSpaceY);
+    const rowY = nonReportBottom + GAP;
+    const temp: any = {
       id: 'report-' + Date.now(),
-      x: centerSpaceX - (mainStage.value?.x() ?? 0),
-      y: centerSpaceY - (mainStage.value?.y() ?? 0),
-      width: 640,
-      height: 480,
+      x: centerSpaceX + slot * (BLOCK_W + GAP),
+      y: rowY,
+      width: BLOCK_W,
+      height: BLOCK_H,
       blockName,
       z: calcNextZindex(),
       data: { blockType: 'HTML', data: { fileUrl } }
     };
-    temp = checkCreatePos(temp);
     aiViewerBlocks.value.push(temp);
+    panToTarget.value = { x: temp.x, y: temp.y, width: temp.width, height: temp.height };
   }
 
   // 圖表生成後自動加入畫布
   let _chartIdSeq = 0;
   function addChartBlock(chartData: any, blockName: string) {
-    let temp: any = {
+    const BLOCK_W = 600;
+    const BLOCK_H = 400;
+    const GAP = 24;
+    const slot = aiViewerBlocks.value.filter((b: any) => b.id?.startsWith('chart-')).length;
+    const nonChartBottom = aiViewerBlocks.value
+      .filter((b: any) => !b.id?.startsWith('chart-'))
+      .reduce((max: number, b: any) => Math.max(max, (b.y ?? 0) + (b.height ?? 0)), centerSpaceY);
+    const temp: any = {
       id: 'chart-' + Date.now() + '-' + (++_chartIdSeq),
-      x: centerSpaceX - (mainStage.value?.x() ?? 0),
-      y: centerSpaceY - (mainStage.value?.y() ?? 0),
-      width: 600,
-      height: 400,
+      x: centerSpaceX + slot * (BLOCK_W + GAP),
+      y: nonChartBottom + GAP,
+      width: BLOCK_W,
+      height: BLOCK_H,
       blockName,
       z: calcNextZindex(),
       data: { blockType: 'CHART', data: chartData }
     };
-    temp = checkCreatePos(temp);
     aiViewerBlocks.value.push(temp);
   }
 
@@ -1071,8 +1045,11 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     isShowFileListView,
     isOpenConversationListModal,
     currentConversationId,
+    conv1IsEmpty,
     projectFiles,
+    INITIAL_BLOCKS,
     aiViewerBlocks,
+    panToTarget,
     nowChoiceAiViewerId,
     isMultiChoiceAiViewerMode,
     nowMultiChoiceAiViewerIds,
