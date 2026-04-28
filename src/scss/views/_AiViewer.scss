@@ -3791,9 +3791,9 @@
   transform: translateX(-20px);
 }
 
-// FAB (collapsed state) — absolute inside .center-box so it moves with the canvas area
+// FAB (collapsed state) — fixed so clip-path on .center-box does not clip it
 .journey-canvas-fab {
-  position: absolute;
+  position: fixed;
   top: 72px;
   left: 20px;
   width: 48px;
