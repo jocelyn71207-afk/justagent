@@ -930,7 +930,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
         temp = { blockType: 'IMAGE', data: { fileUrl: '/' + testId } }
       } else if (lowerId.endsWith('.html')) {
         temp = { blockType: 'HTML', data: { fileUrl: '/' + testId } }
-        W = 640; H = 480;
+        W = 640; H = 750;
       }
     }
 
