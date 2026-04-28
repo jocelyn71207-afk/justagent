@@ -23,6 +23,7 @@
     background-color: var(--color-background);
     position: relative;
     overflow: hidden;
+    clip-path: inset(0); // 讓 position:fixed 的子層也被裁切，防止畫布塊拖出邊界蓋住右側對話欄
     min-height: 100%;
     // border: 1px solid red; // 開發測試用
     // 網格背景  TODO.. 先不給
@@ -1394,8 +1395,9 @@
     transform: rotate(45deg);
     font-family: $font-family;
     cursor: pointer;
+    overflow: hidden;
     @include user-select-none;
-    // 小三角形
+    // 小三角形（隱藏於圓形內）
     &::after {
       content: "";
       position: absolute;
@@ -3278,34 +3280,14 @@
     padding: 0 !important;
   }
 
-  .conv1-tab-summary {
+  .conv1-tab-label {
     flex: 1;
     min-width: 0;
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--color-text-alpha70);
-    overflow: hidden;
-  }
-
-  .conv1-tab-file {
-    font-weight: 600;
-    color: var(--color-text);
-    max-width: 110px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .conv1-tab-sep { opacity: 0.4; flex-shrink: 0; }
-
-  .conv1-tab-truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
   }
 
   .conv1-tab-btns {
@@ -3812,7 +3794,7 @@
 // FAB (collapsed state) — absolute inside .center-box so it moves with the canvas area
 .journey-canvas-fab {
   position: absolute;
-  top: 20px;
+  top: 72px;
   left: 20px;
   width: 48px;
   height: 48px;
