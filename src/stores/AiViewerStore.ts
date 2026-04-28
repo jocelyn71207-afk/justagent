@@ -899,7 +899,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     H = (testId === 'testHtmlFileA' || testId === 'testHtmlFileB' || testId === 'testHtmlFileC' || testId === 'test_report_251210') ? 480 : H;
 
     W = (testId === 'journey_flow') ? 860 : W;
-    H = (testId === 'journey_flow') ? 600 : H;
+    H = (testId === 'journey_flow') ? 750 : H;
 
     W = (testId === 'mdA' || testId === 'mdB') ? 500 : W;
     H = (testId === 'mdA' || testId === 'mdB') ? 300 : H;
