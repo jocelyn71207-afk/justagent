@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hurricane Trailsetter AW26 — 行銷自動化旅程</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8faff;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --border-base: #e5e7eb;
+      --text: #1a1d23;
+      --text-2: #4b5563;
+      --text-3: #9ca3af;
+      --green: #16a34a;
+      --green-mid: #10b981;
+      --green-light: #dcfce7;
+      --green-xlight: #f0fdf4;
+      --green-deep: #166534;
+      --blue: #3b72f6;
+      --blue-light: #dbeafe;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --orange: #ea580c;
+      --orange-light: #ffedd5;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --yellow: #d97706;
+      --yellow-light: #fef3c7;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(circle, #c7d2fe 1px, transparent 1px);
+      background-size: 24px 24px;
+      font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+      color: var(--text);
+      padding: 24px 20px 48px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .report-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .report-brand {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #3b72f6;
+      margin-bottom: 3px;
+    }
+    .report-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .report-meta {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 3px;
+    }
+    .report-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #eff6ff;
+      color: #3b72f6;
+      border: 1px solid #bfdbfe;
+      white-space: nowrap;
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+
+    /* ── KPI strip ── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .kpi-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .kpi-value.green { color: var(--green); }
+    .kpi-value.blue  { color: var(--blue); }
+    .kpi-value.orange { color: var(--orange); }
+    .kpi-sub {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    /* ── Section label ── */
+    .sec-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 18px 0 10px;
+    }
+
+    /* ── Flow canvas ── */
+    .flow-canvas {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      position: relative;
+      box-shadow: 0 1px 8px rgba(0,0,0,.06);
+    }
+
+    /* column layout: Entry | Email branch | LINE branch | Ads branch */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: 110px 1fr 1fr 1fr;
+      gap: 0 16px;
+      align-items: start;
+    }
+
+    /* ── Node types ── */
+    .node {
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+      text-align: center;
+      position: relative;
+    }
+    .node-trigger {
+      background: #3b72f6;
+      color: #fff;
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-email {
+      background: var(--blue-light);
+      color: var(--blue);
+      border: 1px solid #93c5fd;
+    }
+    .node-line {
+      background: var(--green-light);
+      color: var(--green-deep);
+      border: 1px solid #86efac;
+    }
+    .node-ads {
+      background: var(--yellow-light);
+      color: var(--yellow);
+      border: 1px solid #fcd34d;
+    }
+    .node-condition {
+      background: var(--purple-light);
+      color: var(--purple);
+      border: 1px solid #c4b5fd;
+      border-radius: 6px;
+      font-size: 10px;
+    }
+    .node-action-yes {
+      background: var(--green-xlight);
+      color: var(--green-deep);
+      border: 1px solid #86efac;
+    }
+    .node-action-no {
+      background: var(--red-light);
+      color: var(--red);
+      border: 1px solid #fca5a5;
+    }
+    .node-convert {
+      background: var(--green);
+      color: #fff;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .node-end {
+      background: #f9fafb;
+      color: var(--text-2);
+      border: 1px dashed var(--border);
+      font-size: 10px;
+    }
+
+    /* ── Channel column header ── */
+    .ch-header {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding: 5px 8px;
+      border-radius: 6px;
+    }
+    .ch-email { background: var(--blue-light); color: var(--blue); }
+    .ch-line  { background: var(--green-light); color: var(--green-deep); }
+    .ch-ads   { background: var(--yellow-light); color: var(--yellow); }
+
+    .ch-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-blue   { background: var(--blue); }
+    .dot-green  { background: var(--green); }
+    .dot-yellow { background: var(--yellow); }
+
+    /* ── Arrow ── */
+    .arrow {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-3);
+      line-height: 1;
+      margin: 3px 0;
+    }
+    .arrow-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-align: center;
+      margin-bottom: 1px;
+    }
+
+    /* ── Branch row ── */
+    .branch-row {
+      display: flex;
+      gap: 6px;
+      margin: 3px 0;
+    }
+    .branch-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* ── Entry column ── */
+    .entry-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding-top: 28px;
+    }
+    .entry-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-align: center;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .trigger-sources {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+    .source-chip {
+      font-size: 9px;
+      font-weight: 600;
+      padding: 3px 6px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .source-chip.web    { background: var(--blue-light); color: var(--blue); }
+    .source-chip.social { background: var(--purple-light); color: var(--purple); }
+    .source-chip.store  { background: var(--orange-light); color: var(--orange); }
+
+    /* ── Channel column ── */
+    .ch-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .ch-col .node {
+      width: 100%;
+    }
+
+    /* ── Day badge ── */
+    .day-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #eff6ff;
+      color: #3b72f6;
+      border: 1px solid #bfdbfe;
+      display: inline-block;
+      margin-bottom: 3px;
+    }
+
+    /* ── Rate bar ── */
+    .rate-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 3px 0;
+    }
+    .rate-label { font-size: 10px; color: var(--text-3); flex-shrink: 0; }
+    .rate-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .rate-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+    .rate-val { font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+    /* ── Bottom section: timeline + metrics ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    /* Timeline */
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: 44px repeat(6, 1fr);
+      gap: 4px;
+      font-size: 9px;
+    }
+    .tg-header {
+      font-weight: 700;
+      color: var(--text-3);
+      text-align: center;
+      padding-bottom: 4px;
+    }
+    .tg-ch-label {
+      font-weight: 700;
+      color: var(--text-2);
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .tg-cell {
+      border-radius: 4px;
+      padding: 4px 2px;
+      text-align: center;
+      font-weight: 600;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tg-cell.email { background: var(--blue-light); color: var(--blue); }
+    .tg-cell.line  { background: var(--green-light); color: var(--green-deep); }
+    .tg-cell.ads   { background: var(--yellow-light); color: var(--yellow); }
+    .tg-cell.empty { background: transparent; }
+    .tg-sep { height: 3px; }
+
+    /* Metrics side */
+    .metrics-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-name { color: var(--text-2); }
+    .metric-val { font-weight: 700; color: var(--text); }
+    .metric-val.green { color: var(--green); }
+    .metric-val.blue  { color: var(--blue); }
+    .metric-val.orange { color: var(--orange); }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="report-header">
+  <div>
+    <div class="report-brand">Hurricane Trailsetter AW26 · 行銷自動化旅程</div>
+    <div class="report-title">自動化旅程流程圖</div>
+    <div class="report-meta">旅程週期 D1–D30 · 渠道 Email / LINE / 廣告 · AI 決策驅動</div>
+  </div>
+  <div class="report-tag">Flowchart 模式</div>
+</div>
+
+<!-- ── KPI Strip ── -->
+<div class="kpi-strip">
+  <div class="kpi-card">
+    <div class="kpi-label">預估觸及</div>
+    <div class="kpi-value blue">42,000</div>
+    <div class="kpi-sub">目標受眾人數</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">加購轉換率</div>
+    <div class="kpi-value green">8.4%</div>
+    <div class="kpi-sub">旅程末端購買</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">旅程觸點數</div>
+    <div class="kpi-value">14</div>
+    <div class="kpi-sub">跨渠道自動化節點</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">預估 ROAS</div>
+    <div class="kpi-value orange">3.7×</div>
+    <div class="kpi-sub">廣告支出回報</div>
+  </div>
+</div>
+
+<!-- ── Flowchart ── -->
+<div class="sec-label">自動化旅程流程</div>
+<div class="flow-canvas">
+  <div class="flow-grid">
+
+    <!-- Col 1: Entry -->
+    <div class="entry-col">
+      <div class="entry-label">入口觸發</div>
+      <div class="trigger-sources">
+        <div class="source-chip web">官網瀏覽</div>
+        <div class="source-chip social">社群廣告</div>
+        <div class="source-chip store">門市掃碼</div>
+      </div>
+      <div style="font-size:18px;color:var(--text-3);margin:2px 0;">→</div>
+      <div class="node node-trigger">加入旅程</div>
+      <div class="arrow">↓</div>
+      <div style="font-size:9px;color:var(--text-3);text-align:center;line-height:1.4;">分派至<br>各渠道</div>
+      <div style="font-size:18px;color:var(--text-3);margin:6px 0 0;">→</div>
+    </div>
+
+    <!-- Col 2: Email -->
+    <div class="ch-col">
+      <div class="ch-header ch-email">
+        <div class="ch-dot dot-blue"></div>Email 序列
+      </div>
+
+      <div class="day-badge">D1</div>
+      <div class="node node-email" style="width:100%">歡迎 Email<br><span style="font-size:9px;font-weight:400;opacity:.7">產品介紹 + 開箱影片</span></div>
+      <div class="arrow">↓</div>
+      <div class="arrow-label">開啟率偵測 (48h)</div>
+
+      <div class="branch-row">
+        <div class="branch-item">
+          <div class="node node-action-yes" style="width:100%;font-size:10px;">已開啟<br><span style="font-size:8px;color:var(--text-3);">≈38%</span></div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D3</div>
+          <div class="node node-email" style="width:100%;font-size:10px">優惠碼 Email<br><span style="font-size:9px;opacity:.7">-15% OFF</span></div>
+        </div>
+        <div class="branch-item">
+          <div class="node node-action-no" style="width:100%;font-size:10px;">未開啟<br><span style="font-size:8px;color:var(--text-3);">≈62%</span></div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D5</div>
+          <div class="node node-email" style="width:100%;font-size:10px">換主旨再推<br><span style="font-size:9px;opacity:.7">緊迫感版本</span></div>
+        </div>
+      </div>
+
+      <div class="arrow" style="margin-top:4px">↓</div>
+      <div class="arrow-label">購買行為偵測</div>
+
+      <div class="branch-row">
+        <div class="branch-item">
+          <div class="node node-convert" style="width:100%;font-size:10px;padding:6px">已購買 🎉</div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D7</div>
+          <div class="node node-line" style="width:100%;font-size:10px">感謝 + 保養建議</div>
+        </div>
+        <div class="branch-item">
+          <div class="node node-action-no" style="width:100%;font-size:10px;">放棄購物車</div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D7</div>
+          <div class="node node-email" style="width:100%;font-size:10px">棄單追蹤 Email<br><span style="font-size:9px;opacity:.7">查看理由</span></div>
+        </div>
+      </div>
+
+      <div class="arrow" style="margin-top:4px">↓</div>
+      <div class="day-badge">D30</div>
+      <div class="node node-end" style="width:100%">回購提醒<br><span style="font-size:9px;">AW26 新色上市</span></div>
+    </div>
+
+    <!-- Col 3: LINE -->
+    <div class="ch-col">
+      <div class="ch-header ch-line">
+        <div class="ch-dot dot-green"></div>LINE 推播
+      </div>
+
+      <div class="day-badge">D3</div>
+      <div class="node node-line" style="width:100%">歡迎推播<br><span style="font-size:9px;font-weight:400;opacity:.8">品牌官方帳號</span></div>
+      <div class="arrow">↓</div>
+
+      <div class="day-badge">D7</div>
+      <div class="node node-line" style="width:100%">限時閃購通知<br><span style="font-size:9px;opacity:.8">48h 倒數</span></div>
+      <div class="arrow">↓</div>
+      <div class="arrow-label">點擊行為</div>
+
+      <div class="branch-row">
+        <div class="branch-item">
+          <div class="node node-action-yes" style="width:100%;font-size:10px;">已點擊</div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D8</div>
+          <div class="node node-line" style="width:100%;font-size:10px">VIP 優先購連結</div>
+        </div>
+        <div class="branch-item">
+          <div class="node node-action-no" style="width:100%;font-size:10px;">未點擊</div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D10</div>
+          <div class="node node-line" style="width:100%;font-size:10px">KOL 開箱影片</div>
+        </div>
+      </div>
+
+      <div class="arrow" style="margin-top:4px">↓</div>
+      <div class="day-badge">D14</div>
+      <div class="node node-line" style="width:100%">門市試穿邀請<br><span style="font-size:9px;opacity:.8">最近門市 + 地圖</span></div>
+      <div class="arrow">↓</div>
+      <div class="day-badge">D30</div>
+      <div class="node node-end" style="width:100%">週年慶預告<br><span style="font-size:9px;">早鳥名單加入</span></div>
+    </div>
+
+    <!-- Col 4: Ads -->
+    <div class="ch-col">
+      <div class="ch-header ch-ads">
+        <div class="ch-dot dot-yellow"></div>廣告投放
+      </div>
+
+      <div class="day-badge">D1–D3</div>
+      <div class="node node-ads" style="width:100%">初始曝光廣告<br><span style="font-size:9px;font-weight:400;opacity:.8">IG / FB 輪播</span></div>
+      <div class="arrow">↓</div>
+      <div class="arrow-label">依互動分群</div>
+
+      <div class="branch-row">
+        <div class="branch-item">
+          <div class="node node-ads" style="width:100%;font-size:10px;">高互動</div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D5</div>
+          <div class="node node-ads" style="width:100%;font-size:10px">動態商品廣告<br><span style="font-size:9px;opacity:.8">瀏覽記錄追蹤</span></div>
+        </div>
+        <div class="branch-item">
+          <div class="node node-ads" style="width:100%;font-size:10px;">低互動</div>
+          <div class="arrow">↓</div>
+          <div class="day-badge">D7</div>
+          <div class="node node-ads" style="width:100%;font-size:10px">相似受眾擴展<br><span style="font-size:9px;opacity:.8">Lookalike 2%</span></div>
+        </div>
+      </div>
+
+      <div class="arrow" style="margin-top:4px">↓</div>
+      <div class="day-badge">D14</div>
+      <div class="node node-ads" style="width:100%">再行銷廣告<br><span style="font-size:9px;opacity:.8">棄單 / 停留 60s+</span></div>
+      <div class="arrow">↓</div>
+      <div class="day-badge">D30</div>
+      <div class="node node-end" style="width:100%">新客獲取廣告<br><span style="font-size:9px;">AW26 完整系列</span></div>
+    </div>
+
+  </div><!-- /flow-grid -->
+
+  <!-- Legend -->
+  <div style="display:flex;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-base);flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--green);"></div>觸發 / 轉換節點
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--blue-light);border:1px solid #93c5fd;"></div>Email 動作
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--green-light);border:1px solid #6ee7b7;"></div>LINE 推播
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--yellow-light);border:1px solid #fcd34d;"></div>廣告投放
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--purple-light);border:1px solid #c4b5fd;"></div>條件分流
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--surface2);border:1px dashed var(--border);"></div>旅程終點
+    </div>
+  </div>
+</div><!-- /flow-canvas -->
+
+<!-- ── Bottom: Timeline + Metrics ── -->
+<div class="bottom-grid">
+
+  <!-- Timeline -->
+  <div class="timeline-card">
+    <div class="sec-label" style="margin:0 0 10px;">節奏總覽（D1–D30）</div>
+    <div class="timeline-grid">
+      <div></div>
+      <div class="tg-header">D1</div>
+      <div class="tg-header">D3</div>
+      <div class="tg-header">D5–7</div>
+      <div class="tg-header">D8–10</div>
+      <div class="tg-header">D14</div>
+      <div class="tg-header">D30</div>
+
+      <div class="tg-ch-label">Email</div>
+      <div class="tg-cell email">歡迎</div>
+      <div class="tg-cell email">優惠碼</div>
+      <div class="tg-cell email">棄單追蹤</div>
+      <div class="tg-cell email">感謝信</div>
+      <div class="tg-cell empty"></div>
+      <div class="tg-cell email">回購提醒</div>
+
+      <div class="tg-sep" style="grid-column:1/-1;"></div>
+
+      <div class="tg-ch-label">LINE</div>
+      <div class="tg-cell empty"></div>
+      <div class="tg-cell line">推播</div>
+      <div class="tg-cell line">限時</div>
+      <div class="tg-cell line">KOL</div>
+      <div class="tg-cell line">試穿邀</div>
+      <div class="tg-cell line">週年慶</div>
+
+      <div class="tg-sep" style="grid-column:1/-1;"></div>
+
+      <div class="tg-ch-label">廣告</div>
+      <div class="tg-cell ads">初曝</div>
+      <div class="tg-cell ads">輪播</div>
+      <div class="tg-cell ads">動態</div>
+      <div class="tg-cell ads">相似</div>
+      <div class="tg-cell ads">再行銷</div>
+      <div class="tg-cell ads">新客</div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-card">
+    <div class="sec-label" style="margin:0 0 10px;">預期成效指標</div>
+    <div class="metric-row">
+      <div class="metric-name">Email 開啟率</div>
+      <div class="metric-val blue">38%</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-name">Email CTR</div>
+      <div class="metric-val blue">12%</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-name">LINE 點擊率</div>
+      <div class="metric-val green">21%</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-name">廣告 CTR</div>
+      <div class="metric-val orange">3.2%</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-name">最終轉換率</div>
+      <div class="metric-val green">8.4%</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-name">平均購買週期</div>
+      <div class="metric-val">7.3 天</div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-name">旅程完成率</div>
+      <div class="metric-val green">64%</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
