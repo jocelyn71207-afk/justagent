@@ -1,8 +1,7 @@
 // Dark mode — Jade Mist 02
 // Activated by: <html data-theme="dark"> or prefers-color-scheme
 
-// Mixin to DRY the token declarations
-@mixin dark-tokens {
+[data-theme="dark"] :root:not([data-theme="light"]) {
     // ── Brand ──────────────────────────────────────────────────────────────
     --primary:         #00A078;
     --primary-hover:   #00C896;  // hover becomes lighter in dark
@@ -79,12 +78,81 @@
     --color-switch-active-bg: var(--surface);
 }
 
-[data-theme="dark"] :root:not([data-theme="light"]) {
-  @include dark-tokens;
-}
-
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    @include dark-tokens;
+    // ── Brand ──────────────────────────────────────────────────────────────
+    --primary:         #00A078;
+    --primary-hover:   #00C896;
+    --primary-fg:      #FFFFFF;
+    --accent:          #00C896;
+    --accent-soft:     #0E3E32;
+
+    // ── Surfaces ───────────────────────────────────────────────────────────
+    --page-bg:         #0F1719;
+    --surface:         #152124;
+    --sidebar-bg:      #0B1315;
+    --sidebar-hover:   #162226;
+    --sidebar-active:  #1F2E32;
+    --divider:         #1F2C2F;
+
+    // ── Text ───────────────────────────────────────────────────────────────
+    --text:            #EAF3F2;
+    --text-muted:      #A4B6B9;
+    --text-faint:      #6F8589;
+    --sidebar-fg:      #EAF3F2;
+    --sidebar-muted:   #8AA0A4;
+
+    // ── Semantic ───────────────────────────────────────────────────────────
+    --success:         #00C896;
+    --warning:         #E0A24A;
+    --danger:          #EC6B5E;
+    --hint:            #0E3E32;
+    --hint-text:       #9CE9CB;
+
+    // ── Scrollbar ──────────────────────────────────────────────────────────
+    --scrollbar:       #2A3C40;
+
+    // ── Shadow base ────────────────────────────────────────────────────────
+    --shadow:          0,0,0;
+
+    // ── Derived alpha helpers ─────────────────────────────────────────────
+    --surface-a90:            rgba(21,33,36,0.9);
+    --surface-a70:            rgba(21,33,36,0.7);
+    --surface-a50:            rgba(21,33,36,0.5);
+    --text-a90:               rgba(234,243,242,0.9);
+    --text-a80:               rgba(234,243,242,0.8);
+    --text-a70:               rgba(234,243,242,0.7);
+    --text-a60:               rgba(234,243,242,0.6);
+    --text-a20:               rgba(234,243,242,0.2);
+    --divider-a50:            rgba(31,44,47,0.5);
+    --divider-a40:            rgba(31,44,47,0.4);
+    --divider-a30:            rgba(31,44,47,0.3);
+    --divider-a20:            rgba(31,44,47,0.2);
+    --sidebar-hover-a50:      rgba(22,34,38,0.5);
+    --sidebar-hover-a30:      rgba(22,34,38,0.3);
+    --sidebar-hover-a20:      rgba(22,34,38,0.2);
+    --accent-a70:             rgba(0,200,150,0.7);
+    --accent-a40:             rgba(0,200,150,0.4);
+    --accent-a30:             rgba(0,200,150,0.3);
+    --accent-a10:             rgba(0,200,150,0.1);
+    --scrollbar-a50:          rgba(42,60,64,0.5);
+
+    // ── Legacy badge / rank (dark overrides) ───────────────────────────────
+    --color-wise-badge-hot-bg:    #3a2a10;
+    --color-wise-badge-hot-text:  #e8a94a;
+    --color-wise-rank-bronze-bg:  #3a2a10;
+    --color-wise-rank-bronze-text:#e8a94a;
+    --color-wise-table-header-bg: #0E3E32;
+    --color-wise-empty-border:    #1F4038;
+    --color-explore-accent-light: #1e1c40;
+    --color-explore-accent-mid:   #9B96E8;
+    --color-explore-accent-hover: #2a2860;
+    --color-explore-accent-text:  #A09AF0;
+    --color-explore-accent-dark:  #C4C0F8;
+    --color-grey-1:               #5a6070;
+
+    // ── Compat aliases ────────────────────────────────────────────────────
+    --color-tab-active-bg:    var(--text);
+    --color-switch-active-bg: var(--surface);
   }
 }
