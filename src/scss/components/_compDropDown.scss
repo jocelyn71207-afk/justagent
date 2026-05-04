@@ -7,15 +7,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.25rem 0.5rem 0.25rem 0.6rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--divider);
     border-radius: $radius;
-    // background-color: var(--color-background);
+    // background-color: var(--page-bg);
     transition: all 0.2s;
     user-select: none;
     cursor: pointer;
 
     &:hover {
-      border-color: var(--color-wise-green);
+      border-color: var(--accent);
     }
 
     .selected-text {
@@ -24,7 +24,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 14px;
-      color: var(--color-text);
+      color: var(--text);
 
       // &:empty::before {
       //   content: attr(data-placeholder);
@@ -63,10 +63,10 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    // border: 1px solid var(--color-border);
+    // border: 1px solid var(--divider);
     border-radius: $radius;
-    background-color: var(--color-background);
-    box-shadow: 0 2px 12px rgba(from var(--color-shadow) r g b / 0.15);
+    background-color: var(--page-bg);
+    box-shadow: 0 2px 12px rgba(var(--shadow),0.15);
     overflow: hidden;
 
     &.dropup {
@@ -102,13 +102,13 @@
     overflow-x: hidden;
     padding: 8px;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar));
+    @include use-scroll-bar(var(--scrollbar));
 
     .no-match-data {
       padding: 16px;
       text-align: center;
       font-size: 14px;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
     }
   }
 }
@@ -126,11 +126,11 @@
     cursor: pointer;
 
     &:hover {
-      background-color: var(--color-background-1);
+      background-color: var(--surface);
     }
 
     &.selected {
-      color: var(--color-wise-dark-green);
+      color: var(--primary-hover);
       background-color: $color_main_6;
       font-weight: 500;
     }
@@ -143,7 +143,7 @@
       font-size: 18px;
       margin-right: 4px;
       transition: transform 0.2s;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
 
       &.expanded {
         transform: rotate(90deg);
@@ -160,7 +160,7 @@
     .check-icon {
       font-size: 18px;
       margin-left: 8px;
-      color: var(--color-wise-dark-green);
+      color: var(--primary-hover);
     }
   }
 

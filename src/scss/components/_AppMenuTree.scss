@@ -4,7 +4,7 @@
   left: 0;
   z-index: 10;
   background-color: #f8fafc;
-  // border-right: 1px solid var(--color-border);
+  // border-right: 1px solid var(--divider);
   width: $menuWidth;
   height: 100svh;
   transition: all $menutransition;
@@ -13,9 +13,9 @@
 
   .header-box {
     padding: 16px;
-    // background-color: var(--color-wise-card);
+    // background-color: var(--surface);
     height: $menuHeaderHeight;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--divider);
     .user-box {
       position: relative;
       display: flex;
@@ -53,7 +53,7 @@
       }
       &.active {
         .user-name > i {
-          background-color: var(--color-wise-surface);
+          background-color: var(--accent-soft);
         }
       }
       // 更多用戶選項選單
@@ -96,7 +96,7 @@
     height: 100%;
     padding: 16px;
     @include no-scroll-bar();
-    // @include use-scroll-bar(var(--color-scrollbar-alpha50));
+    // @include use-scroll-bar(var(--scrollbar-a50));
 
     .company-box {
       select {
@@ -112,12 +112,12 @@
         align-items: center;
         justify-content: start;
         font-size: 14px;
-        color: var(--color-text-alpha50);
+        color: var(--text-muted);
         border-radius: $radius;
         user-select: none;
         cursor: pointer;
         &:hover {
-          background-color: var(--color-bg-muted);
+          background-color: var(--sidebar-hover);
         }
         .group-name {
           max-width: 90%;
@@ -128,7 +128,7 @@
         }
         i {
           font-size: 19px;
-          color: var(--color-text-alpha50);
+          color: var(--text-muted);
         }
       }
       .group-btn-box {
@@ -141,19 +141,19 @@
           display: flex;
           align-items: center;
           font-size: 14px;
-          color: var(--color-text);
+          color: var(--text);
           padding: 9px 10px;
           border-radius: $radius;
           cursor: pointer;
           user-select: none;
           &:hover {
-            background-color: var(--color-bg-muted);
+            background-color: var(--sidebar-hover);
           }
           &.active {
-            background-color: var(--color-primary-subtle);
+            background-color: var(--accent-soft);
             box-shadow: none;
             border-radius: $radius;
-            color: var(--color-primary);
+            color: var(--primary);
             font-weight: 500;
           }
           > i:first-child {
@@ -163,14 +163,14 @@
           .sub-arrow {
             margin-left: auto;
             font-size: 17px;
-            color: var(--color-text-alpha50);
+            color: var(--text-muted);
           }
         }
         // 子選單縮排區
         .sub-menu-box {
           padding-left: 14px;
           margin-top: 2px;
-          border-left: 2px solid var(--color-border);
+          border-left: 2px solid var(--divider);
           margin-left: 19px;
           .one-btn-item {
             margin-bottom: 2px;
@@ -185,11 +185,11 @@
     // bottom: 0px;
     // z-index: 1;
     font-size: 12px;
-    color: var(--color-text-alpha50);
+    color: var(--text-muted);
     padding: 5px;
     height: $menuFooterHeight;
     width: $menuWidth;
-    // border-top: 1px solid var(--color-border);
+    // border-top: 1px solid var(--divider);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -212,14 +212,14 @@
     a {
       text-decoration: none;
       font-size: 14px;
-      color: var(--color-text);
+      color: var(--text);
       display: flex;
       align-items: center;
       padding: 9px 10px;
       border-radius: $radius;
       width: 100%;
       &:hover {
-        background-color: var(--color-bg-muted);
+        background-color: var(--sidebar-hover);
       }
       &:focus {
         outline: 1px solid transparent;
@@ -270,8 +270,8 @@
     justify-content: center;
     border: none;
     border-radius: $radius;
-    background-color: var(--color-wise-surface);
-    color: var(--color-text);
+    background-color: var(--accent-soft);
+    color: var(--text);
     cursor: pointer;
     transition: all $menutransition;
     i { font-size: 22px; }

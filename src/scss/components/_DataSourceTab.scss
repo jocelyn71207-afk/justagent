@@ -32,7 +32,7 @@
 
   .source-card {
     background: white;
-    border: 1.5px solid var(--color-wise-green);
+    border: 1.5px solid var(--accent);
     border-radius: 12px;
     padding: 16px;
     position: relative;
@@ -50,7 +50,7 @@
 
       &.status-failed {
         background: #fdecea;
-        color: var(--color-danger, #e53935);
+        color: var(--danger);
       }
 
       &.status-success {
@@ -62,13 +62,13 @@
     .source-icon {
       width: 36px;
       height: 36px;
-      background: var(--color-wise-mint);
+      background: var(--hint);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
-      color: var(--color-wise-dark-green);
+      color: var(--primary-hover);
     }
 
     .source-name {
@@ -96,7 +96,7 @@
       button {
         flex: 1;
         padding: 5px 0;
-        border: 1px solid var(--color-border, #e0e0e0);
+        border: 1px solid var(--divider);
         border-radius: 6px;
         font-size: 11px;
         background: white;
@@ -122,7 +122,7 @@
 
   .app-card {
     background: white;
-    border: 1.5px solid var(--color-border, #e0e0e0);
+    border: 1.5px solid var(--divider);
     border-radius: 12px;
     padding: 16px;
     cursor: pointer;
@@ -130,7 +130,7 @@
 
     &:hover:not(.app-card--disabled) {
       box-shadow: 0 4px 16px rgba($color-wise-green, 0.25);
-      border-color: var(--color-wise-green);
+      border-color: var(--accent);
     }
 
     &.app-card--disabled {
@@ -173,11 +173,11 @@
       cursor: pointer;
 
       &.btn-primary {
-        background: var(--color-wise-green);
-        color: var(--color-wise-dark-green);
+        background: var(--accent);
+        color: var(--primary-hover);
 
         &:hover {
-          background: var(--color-wise-dark-green);
+          background: var(--primary-hover);
           color: #fff;
         }
       }
@@ -240,13 +240,13 @@
       transition: background 0.2s, color 0.2s;
 
       &.is-done {
-        background: var(--color-wise-green);
-        color: var(--color-wise-dark-green);
+        background: var(--accent);
+        color: var(--primary-hover);
       }
 
       &.is-active {
-        background: var(--color-wise-green);
-        color: var(--color-wise-dark-green);
+        background: var(--accent);
+        color: var(--primary-hover);
       }
 
       &.is-pending {
@@ -261,7 +261,7 @@
       background: #e0e0e0;
 
       &.is-done {
-        background: var(--color-wise-green);
+        background: var(--accent);
       }
     }
   }
@@ -279,10 +279,10 @@
       font-size: 12px;
       font-weight: 600;
       margin-bottom: 5px;
-      color: var(--color-text);
+      color: var(--text);
 
       .required {
-        color: var(--color-danger, #e53935);
+        color: var(--danger);
         margin-left: 2px;
       }
 
@@ -294,7 +294,7 @@
 
     .form-error {
       font-size: 11px;
-      color: var(--color-danger, #e53935);
+      color: var(--danger);
       margin-top: 4px;
     }
   }
@@ -305,7 +305,7 @@
 
     .method-btn {
       padding: 7px 20px;
-      border: 1.5px solid var(--color-border, #e0e0e0);
+      border: 1.5px solid var(--divider);
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
@@ -313,9 +313,9 @@
       cursor: pointer;
 
       &.is-active {
-        border-color: var(--color-wise-green);
-        background: var(--color-wise-mint);
-        color: var(--color-wise-dark-green);
+        border-color: var(--accent);
+        background: var(--hint);
+        color: var(--primary-hover);
       }
     }
   }
@@ -337,7 +337,7 @@
         cursor: pointer;
         font-size: 16px;
 
-        &:hover { color: var(--color-danger, #e53935); }
+        &:hover { color: var(--danger); }
       }
     }
 
@@ -422,7 +422,7 @@
       align-items: center;
       gap: 6px;
       padding: 7px 16px;
-      border: 1.5px solid var(--color-border, #e0e0e0);
+      border: 1.5px solid var(--divider);
       border-radius: 20px;
       font-size: 12px;
       cursor: pointer;
@@ -431,9 +431,9 @@
       input[type='radio'] { display: none; }
 
       &.is-active {
-        border-color: var(--color-wise-green);
-        background: var(--color-wise-mint);
-        color: var(--color-wise-dark-green);
+        border-color: var(--accent);
+        background: var(--hint);
+        color: var(--primary-hover);
         font-weight: 600;
       }
     }

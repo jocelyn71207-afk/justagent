@@ -194,9 +194,9 @@
 // 全站共用: 次小介面共同樣式
 .next-option-box {
   padding: 4px;
-  background-color: var(--color-background);
-  box-shadow: 0 2px 8px rgba(from var(--color-shadow) r g b / 0.2);
-  border: 1px solid var(--color-border-alpha50);
+  background-color: var(--page-bg);
+  box-shadow: 0 2px 8px rgba(var(--shadow),0.2);
+  border: 1px solid var(--divider-a50);
   border-radius: 12px;
   z-index: 9;
   overflow: hidden;
@@ -217,7 +217,7 @@
       margin-right: 10px;
     }
     &:hover {
-      background-color: var(--color-background-1);
+      background-color: var(--surface);
     }
   }
 }

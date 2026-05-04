@@ -27,8 +27,8 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
+  color: var(--text);
+  background: var(--page-bg);
   // 發現用了在 F5 重整時會有閃爍, 先註解掉
   // transition:
   //   color $color-transition-duration,
@@ -44,30 +44,30 @@ body {
 
 // a link 先不走客製化樣式, 如果影響到第三方套件到時在調整
 a {
-  color: var(--color-link-text);
+  color: var(--primary);
   // transition: $transition-duration;
   &.active {
-    color: var(--color-link-text-active);
+    color: var(--primary-hover);
   }
   &:focus {
-    outline: 1px solid var(--color-link-text);
+    outline: 1px solid var(--primary);
   }
 }
 
 @mixin disabled() {
-  color: var(--color-text-alpha50);
-  border-color: var(--color-border-alpha50);
-  background-color: var(--color-background-1-alpha50);
+  color: var(--text-muted);
+  border-color: var(--divider-a50);
+  background-color: var(--surface-a50);
 }
 .custom-input {
   border-radius: $radius;
-  border: 1px solid var(--color-border);
-  background-color: var(--color-background);
+  border: 1px solid var(--divider);
+  background-color: var(--page-bg);
   padding: 0.532rem 0.4rem;
   font-size: $font-form-size;
   line-height: $line-height-base;
   font-family: $font-family;
-  color: var(--color-text);
+  color: var(--text);
   vertical-align: bottom;
   &:hover {
     border-color: $color_main_3;
@@ -91,10 +91,10 @@ a {
     padding: 0;
     // width: 100%; /* 滑動條寬度 */
     height: 10px; /* 滑動條高度 */
-    background: var(--color-background); /* 背景顏色 */
+    background: var(--page-bg); /* 背景顏色 */
     border-radius: 5px; /* 圓角 */
     border: 0;
-    box-shadow: inset 0 0 0 1px var(--color-border); /* 內部陰影模擬內邊框 */
+    box-shadow: inset 0 0 0 1px var(--divider); /* 內部陰影模擬內邊框 */
     &:hover {
       box-shadow: inset 0 0 0 1px $color_main_3;
       &::-webkit-slider-thumb {
@@ -114,8 +114,8 @@ a {
       appearance: none;
       width: 20px; /* 滑塊寬度 */
       height: 20px; /* 滑塊高度 */
-      background: var(--color-background-1); /* 滑塊顏色 */
-      border: 1px solid var(--color-border); /* 滑塊邊框 */
+      background: var(--surface); /* 滑塊顏色 */
+      border: 1px solid var(--divider); /* 滑塊邊框 */
       border-radius: 50%; /* 圓形滑塊 */
       cursor: pointer; /* 滑塊光標 */
     }
@@ -146,15 +146,15 @@ select.custom-select {
   -webkit-appearance: none;
   appearance: none;
   border-radius: $radius;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--divider);
   background-image: url($select_triangle);
   background-repeat: no-repeat;
   background-position: calc(100% - 0px) center;
   background-size: auto 19px;
-  // background-color: var(--color-background);
+  // background-color: var(--page-bg);
   background-color: transparent;
   padding: 0.532rem 2rem 0.532rem 0.6rem;
-  color: var(--color-text);
+  color: var(--text);
   width: auto;
   min-width: fit-content;
   font-size: $font-form-size;
@@ -181,29 +181,29 @@ select.custom-select {
     background-image: none;
     padding-right: 0.6rem;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar));
+    @include use-scroll-bar(var(--scrollbar));
   }
   // 列表樣式
   &[size] {
     background-image: none;
     padding-right: 0.6rem;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar));
+    @include use-scroll-bar(var(--scrollbar));
   }
 }
 
 .custom-textarea {
   padding: 4px 7px;
   border-radius: $radius;
-  border: 1px solid var(--color-border);
-  background-color: var(--color-background);
+  border: 1px solid var(--divider);
+  background-color: var(--page-bg);
   line-height: normal;
-  color: var(--color-text);
+  color: var(--text);
   font-size: $font-form-size;
   line-height: $line-height-base;
   vertical-align: middle;
   @include no-scroll-bar();
-  @include use-scroll-bar(var(--color-scrollbar));
+  @include use-scroll-bar(var(--scrollbar));
   &:hover {
     border-color: $color_main_3;
   }
@@ -230,12 +230,12 @@ select.custom-select {
       display: inline-flex;
       align-items: center;
       font-size: 14px;
-      color: var(--color-text);
+      color: var(--text);
       &::before {
         font-family: "unicons-line"; // 借用 iconscout 的字型
         content: $normalContent; // 借用 iconscout 的字體
         font-size: 20px;
-        color: var(--color-border-1);
+        color: var(--divider);
         margin-right: 5px;
       }
     }
@@ -247,9 +247,9 @@ select.custom-select {
     }
     &:disabled {
       & + span {
-        color: var(--color-text-alpha50);
+        color: var(--text-muted);
         &::before {
-          color: var(--color-border-1-alpha50);
+          color: var(--divider-a50);
         }
       }
     }

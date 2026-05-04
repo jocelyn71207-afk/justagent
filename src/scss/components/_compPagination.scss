@@ -5,7 +5,7 @@
   gap: 12px;
   flex-wrap: wrap;
   font-size: 14px;
-  color: var(--color-text);
+  color: var(--text);
   user-select: none;
 }
 
@@ -13,10 +13,10 @@
 .compPagination-info {
   // flex: 1;
   white-space: nowrap;
-  color: var(--color-text-alpha70);
+  color: var(--text-a70);
 
   .compPagination-info-highlight {
-    color: var(--color-text);
+    color: var(--text);
     font-weight: 500;
   }
 }
@@ -43,7 +43,7 @@
     min-height: 40px;
     padding: 0 6px;
     border-radius: $radius;
-    color: var(--color-text);
+    color: var(--text);
     font-size: 13px;
     transition:
       background-color 0.2s,
@@ -54,7 +54,7 @@
     }
     // 箭頭按鈕的樣式
     &.compPagination-btn--arrow {
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--divider);
       i {
         font-size: 23px;
         line-height: 1;
@@ -62,18 +62,18 @@
     }
 
     &:hover:not(:disabled) {
-      background-color: var(--color-background-2-alpha30);
+      background-color: var(--sidebar-hover-a30);
     }
 
     &:disabled {
-      color: var(--color-text-alpha30);
-      border-color: var(--color-background-2-alpha50);
+      color: var(--text-faint);
+      border-color: var(--sidebar-hover-a50);
       cursor: not-allowed;
     }
 
     &.is-active {
-      background-color: var(--color-background-2-alpha20);
-      border-color: var(--color-border);
+      background-color: var(--sidebar-hover-a20);
+      border-color: var(--divider);
       font-weight: 500;
     }
   }
@@ -86,7 +86,7 @@
     height: 30px;
     font-size: 14px;
     font-weight: 700;
-    color: var(--color-text-alpha50);
+    color: var(--text-muted);
   }
 }
 
@@ -103,7 +103,7 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: var(--color-text-alpha70);
+    color: var(--text-a70);
     white-space: nowrap;
   }
 
