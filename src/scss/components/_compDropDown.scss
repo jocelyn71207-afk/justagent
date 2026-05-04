@@ -41,14 +41,14 @@
 
     .clear-trigger-icon {
       font-size: 20px;
-      color: $color_grey_2;
+      color: var(--text-faint);
       font-weight: 600;
       cursor: pointer;
     }
 
     .arrow-icon {
       font-size: 30px;
-      color: $color_grey_2;
+      color: var(--text-faint);
       transition: transform 0.2s;
 
       &.open {
@@ -132,7 +132,7 @@
 
     &.selected {
       color: var(--primary-hover);
-      background-color: $color_main_6;
+      background-color: var(--accent-soft);
       font-weight: 500;
     }
 

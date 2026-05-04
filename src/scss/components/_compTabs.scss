@@ -34,6 +34,7 @@
     font-size: 14px;
     border-radius: 999px;
     color: var(--text-muted);
+    transition: background 0.2s, color 0.2s;
     > * {
       font-size: 14px;
       line-height: normal;
