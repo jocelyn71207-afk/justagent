@@ -19,22 +19,22 @@ $white: #ffffff;
 $black: #000000;
 
 // 灰色基調定義
-$grey-border: #e5e7eb; // 邊框
-$grey-font: #111827; // 文字
+$grey-border: #DDE4E5; // 邊框
+$grey-font: #09151A; // 文字
 $grey-shadow: #29323c; // 陰影
 
-// Wise 設計系統（Spring Green 配色）
-$color-wise-green: #34d399; // Spring 主色 emerald-400
-$color-wise-dark-green: #047857; // Spring 深綠（文字）
-$color-wise-mint-rgb: 209, 250, 229; // d1fae5（用於 rgba）
+// Wise 設計系統（Teal-Green 配色）
+$color-wise-green: #00C896; // Teal accent
+$color-wise-dark-green: #007F5F; // Primary hover / dark text
+$color-wise-mint-rgb: 207, 239, 226; // CFEFE2（用於 rgba）
 
 // Main
-$color_main_1: #059669; // 產品主色 emerald-600
-$color_main_2: #047857; // emerald-700
-$color_main_3: #34d399; // emerald-400 hover
-$color_main_4: #d1fae5; // emerald-100 light fill
-$color_main_5: #ecfdf5; // emerald-50
-$color_main_6: #f0fdf8; // lightest bg tint
+$color_main_1: #00A078; // 產品主色 primary
+$color_main_2: #007F5F; // primary hover / dark
+$color_main_3: #00C896; // accent
+$color_main_4: #CFEFE2; // accent soft / light fill
+$color_main_5: #E6F7F0; // very light tint
+$color_main_6: #F0FAF6; // lightest bg tint
 
 // 灰色
 $color_grey_1: #8b90a0;
@@ -53,14 +53,14 @@ $color_red_2: #dd4839;
 // Yellow
 $color_yellow_1: #fcfdcf;
 $color_yellow_2: #fbc000;
-$color-warning-amber: #f59e0b;  // 警示琥珀色（到期標籤 warning 狀態）
+$color-warning-amber: #CF8A1F;  // 警示琥珀色（到期標籤 warning 狀態）
 $color-warning-bg: #fffbeb;        // 警示背景（Info 橫幅）
 $color-warning-border: #fcd34d;    // 警示邊框（Info 橫幅）
 $color-warning-text: #78350f;      // 警示文字（Info 橫幅）
 $color-warning-text-dark: #7a4400; // 警示文字深色（到期標籤 warning 文字）
 
 // 瀏覽器 淺色主題語意色彩  (注意: 這幾個變數不應該在其他地方直接使用，其他地方請使用 _html.scss 內的CSS 變數)
-$color-background-light: $white; // 主背景顏色
+$color-background-light: #F3F6F7; // 主背景顏色
 $color-background-light-1: color.adjust($white, $lightness: -5%); // 次背景顏色 1
 $color-background-light-2: color.adjust($white, $lightness: -35%); // 次背景顏色 2
 $color-border-light: color.adjust($grey-border, $lightness: 0%); // 線顏色定義
@@ -108,22 +108,10 @@ $color-switch-active-bg-dark: color.adjust(
 $transition-duration: 0.4s;
 $color-transition-duration: 0.5s;
 
-$font-family:
-  "ui-sans-serif", "-apple-system", "system-ui", "Segoe UI", "Helvetica", "Apple Color Emoji",
-  "Arial", "sans-serif", "Segoe UI Emoji", "Segoe UI Symbol";
-
 // Typography
-// $font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-// $font-family: "Microsoft Jhenghei UI", Pmingliu, "Segoe UI", -apple-system, system-ui, Roboto, "Helvetica Neue", sans-serif;
-$font-family:
-  "Microsoft Jhenghei UI",
-  Pmingliu,
-  "Segoe UI",
-  -apple-system,
-  system-ui,
-  Roboto,
-  "Helvetica Neue",
-  sans-serif;
+$font-family: 'Noto Sans TC', system-ui, sans-serif;
+$font-family-heading: 'Public Sans', sans-serif;
+$font-family-mono: 'JetBrains Mono', monospace;
 $font-size-base: 16px;
 $font-form-size: 14px;
 $line-height-base: 1.5;
@@ -156,7 +144,7 @@ $color-status-failed-bg: rgba(229, 57, 53, 0.10);
 $color-status-failed-text: #c62828;
 
 // Danger / Error
-$color-danger: #e53935;
+$color-danger: #D14437;
 
 // ── Explore 頁面 Purple Accent ───────────────────────
 $color-explore-accent-light: #EEEDFE;   // 淺紫背景
@@ -166,9 +154,9 @@ $color-explore-accent-text: #534AB7;   // 紫色文字
 $color-explore-accent-dark: #3C3489;   // 深紫文字
 
 // Explore agent badge
-$color-badge-new-bg: #d1fae5;
-$color-badge-new-text: #059669;
+$color-badge-new-bg: #CFEFE2;
+$color-badge-new-text: #00A078;
 $color-badge-hot-bg: #FAEEDA;
 $color-badge-hot-text: #854F0B;
-$color-badge-sat-bg: #d1fae5;
-$color-badge-sat-text: #059669;
+$color-badge-sat-bg: #CFEFE2;
+$color-badge-sat-text: #00A078;
