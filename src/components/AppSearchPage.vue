@@ -163,7 +163,8 @@ const projectList = ref([
       id: 'companyB',
       name: '企業B'
     },
-    lastModify: '2026-03-04 15:30:00',
+    lastModify: '2026-04-27 12:05:00',
+    status: 'pending',
   },
   {
     showMoreOption: false, // TODO... 前端UI用, 之後後端吐的資料中, 前端要自己加上這個欄位來控制UI

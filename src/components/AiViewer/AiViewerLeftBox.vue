@@ -9,11 +9,11 @@
 
       https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/義美客服測試資料_題卡.xlsx
       <br><br>
-      https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/TEVA 銷售 all 2023(更改通路屬性)0204.xlsx
+      https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/UGG 銷售 all 2023(更改通路屬性)0204.xlsx
       <br><br>
-      https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/MONTHLY REPORT SALES DATA SAMPLE_TEVA_TW 0812_DAP update - 0213.xlsx
+      https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/MONTHLY REPORT SALES DATA SAMPLE_UGG_TW 0812_DAP update - 0213.xlsx
       <br><br>
-      https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/0101-0331 sales raw data for TEVA.xls
+      https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/0101-0331 sales raw data for UGG.xls
       <br><br>
 
       https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/Kopernio快速教學手冊.pdf

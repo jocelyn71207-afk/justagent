@@ -775,7 +775,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
       blockType: 'EXCEL',
       options: testExcelOptions,
       data: {
-        fileUrl: 'https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/0101-0331 sales raw data for TEVA.xls'
+        fileUrl: 'https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/0101-0331 sales raw data for UGG.xls'
       }
     },
     'excelD': {
@@ -807,7 +807,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     'txtA': {
       blockType: 'TXT',
       data: {
-        fileUrl: 'https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/Teva_AW26_GBC_GrowtheCore_JB_Final_agent_translated.txt',
+        fileUrl: 'https://cdn.justka.ai/sit/provisionSetting/json/lucas_test/UGG_AW26_GBC_GrowtheCore_JB_Final_agent_translated.txt',
       }
     },
     'txtB': {

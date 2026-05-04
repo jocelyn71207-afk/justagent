@@ -14,7 +14,7 @@ export const useRootStore = defineStore('rootStore', () => {
   const projectListMode = ref<'list' | 'card'>('card'); // 專案列表的顯示模式
 
   const nowMenuTreeCompanyId = ref(''); // 主選單目前選擇的公司 ID
-  const nowMenuTreeCompanyName = ref<string>('Teva')
+  const nowMenuTreeCompanyName = ref<string>('UGG')
 
   const isShowBuserModal = ref(false); // 是否顯示 Buser Modal
 
@@ -37,12 +37,12 @@ export const useRootStore = defineStore('rootStore', () => {
   const testGroups = ref([
     {
     id: 'testTeam1',
-      name: 'Teva電子商務',
+      name: 'UGG電子商務',
       isOpen: false,
     },
     {
       id: 'testTeam2',
-      name: 'Teva實體門市',
+      name: 'UGG實體門市',
       isOpen: false,
     }
   ]) as any;

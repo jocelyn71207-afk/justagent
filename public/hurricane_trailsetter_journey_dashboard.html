@@ -111,6 +111,43 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .branch-card{width:100%;border-radius:7px;padding:7px 9px;border:1px solid #e5e7eb;
   background:#fff;font-size:10px;color:#6b7280}
 .branch-card-label{font-size:9px;font-weight:700;margin-bottom:3px;color:#1a1d23}
+
+/* ── Tab bar ── */
+.tab-bar{background:#fff;border-bottom:1px solid #e5e7eb;display:none;align-items:center;flex-shrink:0;padding:0 16px}
+.tab-item{height:36px;line-height:36px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;padding:0 14px;transition:color .15s,border-color .15s;user-select:none}
+.tab-item.active{color:#3b72f6;border-bottom-color:#3b72f6}
+/* ── Exec panel ── */
+.exec-panel{flex:1;min-height:0;overflow-y:auto;padding:12px 16px 32px;display:none;flex-direction:column;gap:10px}
+.exec-hero{background:#fff;border:1px solid #e5e7eb;border-radius:10px;display:flex;padding:14px 0}
+.exec-hero-stat{flex:1;text-align:center;padding:0 8px}
+.exec-hero-stat+.exec-hero-stat{border-left:1px solid #e5e7eb}
+.exec-hero-val{font-size:22px;font-weight:800;color:#1a1d23;margin-bottom:2px}
+.exec-hero-lbl{font-size:9px;color:#6b7280;font-weight:600;letter-spacing:.05em}
+.exec-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px}
+.exec-card-title{font-size:10px;font-weight:700;color:#374151;margin-bottom:8px}
+.exec-node-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.exec-node-key{font-size:9px;font-weight:700;color:#6b7280;width:32px;flex-shrink:0}
+.exec-bar-wrap{flex:1;height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;display:flex}
+.exec-bar-done{height:100%;background:#16a34a;transition:width .5s}
+.exec-bar-run{height:100%;background:#3b72f6;transition:width .5s}
+.exec-node-cnt{font-size:9px;color:#6b7280;width:24px;text-align:right;flex-shrink:0}
+.exec-jrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f3f4f6}
+.exec-jrow:last-child{border-bottom:none}
+.exec-jrow-name{font-size:10px;color:#374151;width:48px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exec-jrow-dots{display:flex;gap:3px;flex:1}
+.exec-rdot{width:8px;height:8px;border-radius:50%;background:#e5e7eb}
+.exec-rdot.running{background:#3b72f6;animation:dp 1s ease-in-out infinite}
+.exec-rdot.done{background:#16a34a}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
+.exec-badge{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;background:#f3f4f6;color:#6b7280}
+.exec-badge.done{background:#dcfce7;color:#166534}
+.exec-badge.run{background:#eff6ff;color:#2563eb}
+.exec-more{font-size:10px;color:#9ca3af;text-align:center;padding:5px 0}
+.exec-chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.exec-chart-title{font-size:10px;font-weight:700;color:#374151}
+.exec-chart-legend{display:flex;gap:10px}
+.exec-legend{display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280}
+.exec-legend-dot{width:8px;height:8px;border-radius:50%}
 </style>
 </head>
 <body>
@@ -125,6 +162,12 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
     <button class="btn-modify" id="btn-modify">＋ 新增旅程修改需求</button>
     <button class="btn-start" id="btn-start">▶ 啟動旅程</button>
   </div>
+</div>
+
+<!-- Tab bar (shown after journey starts) -->
+<div class="tab-bar" id="tabBar">
+  <div class="tab-item active" id="tab-map" onclick="switchTab('map')">🗺️ 旅程地圖</div>
+  <div class="tab-item" id="tab-exec" onclick="switchTab('exec')">📊 執行狀態</div>
 </div>
 
 <!-- Canvas -->
@@ -232,6 +275,46 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
     </div>
 
   </div>
+
+  <!-- Execution status panel (tab 2) -->
+  <div class="exec-panel" id="execPanel">
+    <div class="exec-hero">
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-total">0</div>
+        <div class="exec-hero-lbl">觸發人數</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-running" style="color:#3b72f6">0</div>
+        <div class="exec-hero-lbl">執行中</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-done" style="color:#16a34a">0</div>
+        <div class="exec-hero-lbl">已完成</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-rate">0%</div>
+        <div class="exec-hero-lbl">完成率</div>
+      </div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-title">節點分佈</div>
+      <div id="execNodeBars"></div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-title">個別旅程</div>
+      <div id="execJourneyList"></div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-chart-hdr">
+        <span class="exec-chart-title">旅程分析</span>
+        <div class="exec-chart-legend">
+          <div class="exec-legend"><div class="exec-legend-dot" style="background:#3b72f6"></div><span>觸發次數</span></div>
+          <div class="exec-legend"><div class="exec-legend-dot" style="background:#f97316"></div><span>發送訊息數</span></div>
+        </div>
+      </div>
+      <canvas id="analyticsChart" height="100" style="width:100%"></canvas>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -287,8 +370,15 @@ function renderTree(journeys) {
 }
 
 // ── Event wiring ─────────────────────────────────────────────────
+function _showJourneyTab() {
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-modify').style.display = 'none';
+  document.getElementById('tabBar').style.display = 'flex';
+}
+
 document.getElementById('btn-start').addEventListener('click', function() {
   window.parent.postMessage({ type: 'journey-start-request' }, '*');
+  _showJourneyTab();
 });
 
 document.getElementById('btn-modify').addEventListener('click', function() {
@@ -300,11 +390,102 @@ window.addEventListener('message', function(e) {
   if (e.data.type === 'journey-state-sync') {
     if (!Array.isArray(e.data.journeys)) return;
     _journeys = e.data.journeys;
+    if (_journeys.length > 0) _showJourneyTab();
     renderTree(_journeys);
+    renderExecStats();
+  }
+  if (e.data.type === 'journey-started') {
+    _showJourneyTab();
   }
 });
 
 window.parent.postMessage({ type: 'journey-state-request' }, '*');
+
+// ── Tab switching ─────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-map').classList.toggle('active', tab === 'map');
+  document.getElementById('tab-exec').classList.toggle('active', tab === 'exec');
+  var flow = document.getElementById('treePanel');
+  var exec = document.getElementById('execPanel');
+  if (tab === 'map') {
+    flow.style.display = 'flex';
+    exec.style.display = 'none';
+  } else {
+    flow.style.display = 'none';
+    exec.style.display = 'flex';
+    window.parent.postMessage({ type: 'journey-state-request' }, '*');
+    renderExecStats();
+    if (!_chartDrawn) drawChart();
+  }
+}
+
+// ── Execution status ──────────────────────────────────
+var NODE_LABELS = {D0:'觸發加入',D1:'歡迎序列',D3:'條件分流',D7:'產品培育',D14:'轉換衝刺',D30:'購後回購'};
+
+function renderExecStats() {
+  var journeys = _journeys;
+  var total = journeys.length;
+  var done = journeys.filter(function(j){return j.status==='done';}).length;
+  var running = total - done;
+  document.getElementById('es-total').textContent = total.toLocaleString();
+  document.getElementById('es-running').textContent = running.toLocaleString();
+  document.getElementById('es-done').textContent = done.toLocaleString();
+  document.getElementById('es-rate').textContent = total > 0 ? (done/total*100).toFixed(1)+'%' : '0%';
+
+  var nodeHtml = '';
+  NODE_KEYS.forEach(function(key) {
+    var dc=0,rc=0;
+    journeys.forEach(function(j){j.nodes.forEach(function(n){if(n.key!==key)return;if(n.status==='done')dc++;else if(n.status==='running')rc++;});});
+    var dp=total>0?dc/total*100:0, rp=total>0?rc/total*100:0;
+    nodeHtml+='<div class="exec-node-row"><span class="exec-node-key">'+key+'</span>'+
+      '<div class="exec-bar-wrap"><div class="exec-bar-done" style="width:'+dp.toFixed(1)+'%"></div>'+
+      '<div class="exec-bar-run" style="width:'+rp.toFixed(1)+'%"></div></div>'+
+      '<span class="exec-node-cnt">'+(rc>0?rc:dc)+'</span></div>';
+  });
+  document.getElementById('execNodeBars').innerHTML = nodeHtml;
+
+  var listHtml = '';
+  journeys.slice(0,8).forEach(function(j){
+    var dots=j.nodes.map(function(n){return'<span class="exec-rdot '+n.status+'"></span>';}).join('');
+    var dc=j.nodes.filter(function(n){return n.status==='done';}).length;
+    var cls=j.status==='done'?'done':'run', txt=j.status==='done'?'✓':dc+'/'+j.nodes.length;
+    listHtml+='<div class="exec-jrow"><span class="exec-jrow-name">'+j.userName+'</span>'+
+      '<div class="exec-jrow-dots">'+dots+'</div><span class="exec-badge '+cls+'">'+txt+'</span></div>';
+  });
+  if(journeys.length>8) listHtml+='<div class="exec-more">+ '+(journeys.length-8)+' 人</div>';
+  document.getElementById('execJourneyList').innerHTML = listHtml;
+}
+
+// ── Analytics chart ───────────────────────────────────
+var _chartDrawn = false;
+function drawChart() {
+  _chartDrawn = true;
+  var canvas = document.getElementById('analyticsChart');
+  if (!canvas) return;
+  var dpr = window.devicePixelRatio||1;
+  var cw = canvas.offsetWidth||220, ch = 100;
+  canvas.width = cw*dpr; canvas.height = ch*dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  var tD=[920,770,1000,890,1100,650,710,930,510,950,670,730];
+  var mD=[490,600,600,640,580,850,830,670,830,650,570,920];
+  var mo=['1','2','3','4','5','6','7','8','9','10','11','12'];
+  var pL=28,pR=8,pT=8,pB=18,w=cw,h=ch,gw=w-pL-pR,gh=h-pT-pB,maxV=1200;
+  ctx.strokeStyle='#f3f4f6';ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){var gy=pT+gh-gh*g/4;ctx.beginPath();ctx.moveTo(pL,gy);ctx.lineTo(pL+gw,gy);ctx.stroke();}
+  ctx.fillStyle='#9ca3af';ctx.font='7px sans-serif';ctx.textAlign='right';
+  for(var g=0;g<=4;g++){var gy=pT+gh-gh*g/4;ctx.fillText((maxV*g/4/1000).toFixed(1)+'k',pL-2,gy+3);}
+  ctx.textAlign='center';
+  for(var i=0;i<mo.length;i++){ctx.fillText(mo[i],pL+i*gw/(mo.length-1),h-2);}
+  function line(data,color){
+    var pts=data.map(function(v,i){return[pL+i*gw/(data.length-1),pT+gh-gh*v/maxV];});
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=color;pts.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],2,0,Math.PI*2);ctx.fill();});
+  }
+  line(tD,'#3b72f6'); line(mD,'#f97316');
+}
 </script>
 </body>
 </html>

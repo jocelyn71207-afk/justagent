@@ -144,10 +144,7 @@
           'has-comment': memoData.length && memoData[0].list.length > 0
         }]"
         :style="{
-          transform: `
-            scale(${1 / mainStage.scale().x})
-            rotate(45deg)
-          `
+          transform: 'rotate(45deg)'
         }"
         @click="isShowCommentView = true; showCommentByBlockId = '';">
         <span v-if="memoData.length">{{ memoData[0].list.length }}</span>

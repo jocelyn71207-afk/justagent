@@ -34,25 +34,22 @@
           <span class="tc-info-label">翻譯範圍</span>
           <span class="tc-info-value">{{ props.source.range }}</span>
         </div>
+        <div class="tc-info-row" v-if="props.source.columns">
+          <span class="tc-info-label">翻譯欄位</span>
+          <span class="tc-info-value">{{ props.source.columns }}</span>
+        </div>
+        <div class="tc-info-row" v-else-if="props.source.range && props.source.range !== '全部工作表'">
+          <span class="tc-info-label">翻譯欄位</span>
+          <span class="tc-info-value tc-info-value--muted">全部欄位</span>
+        </div>
         <div class="tc-info-row">
           <span class="tc-info-label">翻譯語言</span>
           <span class="tc-info-value">{{ props.source.lang }}</span>
         </div>
-        <div class="tc-btn-row">
-          <button class="tc-btn tc-btn--secondary" :disabled="props.source.confirmed">重新選擇</button>
-          <button :class="['tc-btn', 'tc-btn--primary', { 'is-confirmed': props.source.confirmed }]">
-            <i class="material-symbols-outlined" v-if="props.source.confirmed">check</i>
-            開始翻譯
-          </button>
-        </div>
       </div>
 
-      <!-- 翻譯設定尚未確認（等待使用者操作面板） -->
-      <div class="tc-pending-card" v-else-if="props.source.cardType === 'translationConfirm' && !props.source.confirmed">
-        <div class="tc-pending-icon">📄</div>
-        <div class="tc-pending-text">點擊下方按鈕設定翻譯參數</div>
-        <button class="tc-setup-btn" data-action="conv1-open-transl-panel">設定翻譯參數 →</button>
-      </div>
+      <!-- 翻譯設定尚未確認：河道上不顯示任何內容，面板由 AI 回覆後自動開啟 -->
+      <template v-else-if="props.source.cardType === 'translationConfirm' && !props.source.confirmed"></template>
 
       <!-- 翻譯完成（AI 訊息含下載檔案） -->
       <template v-else-if="props.source.cardType === 'translationComplete'">
@@ -85,6 +82,14 @@
         </div>
       </template>
 
+      <!-- 處理中訊息（含 loading 動畫） -->
+      <template v-else-if="props.source.isProcessing">
+        <div v-html="displayMsg"></div>
+        <div class="ai-processing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </template>
+
       <!-- 一般訊息 -->
       <div v-html="displayMsg" v-else-if="!props.source.isThinking"></div>
 
@@ -107,10 +112,11 @@
 <script lang="ts" setup>
   import { ref, watchEffect } from 'vue';
   import { formatFileSize } from '@/utils/file';
-  import excelIcon from '@/assets/fileTypeIcon/excel.png';
-  import txtIcon from '@/assets/fileTypeIcon/txt.png';
-  import htmlIcon from '@/assets/fileTypeIcon/html.png';
-  import pdfIcon from '@/assets/fileTypeIcon/pdf.png';
+  import excelIcon from '@/assets/fileTypeIcon/excel.svg';
+  import txtIcon from '@/assets/fileTypeIcon/txt.svg';
+  import htmlIcon from '@/assets/fileTypeIcon/html.svg';
+  import pdfIcon from '@/assets/fileTypeIcon/pdf.svg';
+  import jsonIcon from '@/assets/fileTypeIcon/json.svg';
 
   const props = defineProps<{
     source: any,
@@ -128,6 +134,7 @@
       XLSX: excelIcon,
       EXCEL: excelIcon,
       TXT: txtIcon,
+      JSON: jsonIcon,
       HTML: htmlIcon,
       PDF: pdfIcon,
     };

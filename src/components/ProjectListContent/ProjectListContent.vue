@@ -99,7 +99,7 @@
 
           <!-- 長條圖區（hover 時顯示） -->
           <div class="card-chart" v-show="item.isHovered">
-            <span class="chart-title">近一週使用次數</span>
+            <div class="chart-project-name">{{ item.name }}</div>
             <div class="chart-bars">
               <div class="bar-wrap" v-for="(count, di) in item.weeklyUsage" :key="di">
                 <span class="bar-count">{{ count }}</span>
@@ -114,7 +114,7 @@
 
           <!-- 卡片 footer -->
           <div class="card-footer">
-            <div class="card-name">{{ item.name }}</div>
+            <div class="card-name" v-show="!item.isHovered">{{ item.name }}</div>
             <div class="card-meta">
               <div class="card-meta-left">
                 <span :class="['status-badge', `status-${item.status}`]">
@@ -345,7 +345,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: { id: 'testTeam1', name: 'Teva電子商務' },
+    team: { id: 'testTeam1', name: 'UGG電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -370,14 +370,14 @@ function getProjectList() {
       userId: 'user2',
       uaerName: '滷卡酥'
     },
-    team: { id: 'testTeam2', name: 'Teva實體門市' },
+    team: { id: 'testTeam2', name: 'UGG實體門市' },
     company: {
       id: 'companyA',
       name: '企業A'
     },
-    lastModify: '2026-03-05 12:05:00',
+    lastModify: '2026-04-27 12:05:00',
     isHovered: false,
-    status: 'review',
+    status: 'pending',
     collaborators: [
       { userId: 'user1', name: 'Lucas' },
       { userId: 'user2', name: '滷卡酥' },
@@ -395,7 +395,7 @@ function getProjectList() {
       userId: 'user3',
       uaerName: '小烏龜'
     },
-    team: { id: 'testTeam2', name: 'Teva實體門市' },
+    team: { id: 'testTeam2', name: 'UGG實體門市' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -420,7 +420,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: { id: 'testTeam1', name: 'Teva電子商務' },
+    team: { id: 'testTeam1', name: 'UGG電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -445,7 +445,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: { id: 'testTeam1', name: 'Teva電子商務' },
+    team: { id: 'testTeam1', name: 'UGG電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'
@@ -468,7 +468,7 @@ function getProjectList() {
       userId: 'user1',
       uaerName: 'Lucas'
     },
-    team: { id: 'testTeam1', name: 'Teva電子商務' },
+    team: { id: 'testTeam1', name: 'UGG電子商務' },
     company: {
       id: 'companyA',
       name: '企業A'

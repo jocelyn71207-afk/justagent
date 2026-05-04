@@ -4,6 +4,32 @@
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
 
+    <!-- conv1 空白開始狀態全螢幕遮罩 -->
+    <div class="conv1-empty-overlay" v-if="currentConversationId === 'conv1' && conv1Msgs.length === 0"
+      @click.stop @wheel.stop @touchmove.stop>
+      <div class="conv1-empty-content">
+        <div class="conv1-empty-title">我可以幫你什麼呢？</div>
+        <div class="conv1-empty-input-box">
+          <textarea
+            class="conv1-empty-textarea"
+            v-model="conv1OverlayInput"
+            placeholder="請輸入您的需求"
+            @keydown.enter.exact.prevent="submitConv1Overlay"
+            rows="1"
+          ></textarea>
+          <div class="conv1-empty-input-actions">
+            <div class="conv1-empty-input-left">
+              <button><i class="material-symbols-outlined">add</i></button>
+              <button><i class="material-symbols-outlined">bolt</i></button>
+            </div>
+            <button class="conv1-empty-send-btn" @click="submitConv1Overlay">
+              <i class="material-symbols-outlined">send</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 對話標題大區域 -->
     <div class="AiAgentHeaderArea">
       <div class="chat-header-box">
@@ -48,8 +74,10 @@
 
     </div>
 
+    <!-- 對話訊息大區域 wrapper -->
+    <div class="rbox-main-wrapper">
+
     <!-- 對話訊息大區域 -->
-    <!-- <div class="AiAgentChatArea" @wheel.stop="handleContentWheel($event); stopWhellZoomEvent($event);"> -->
     <VirtualList class="AiAgentChatArea"
       ref="AiAgentChatList"
       :data-key="'id'"
@@ -63,8 +91,134 @@
     >
       <template #footer></template>
     </VirtualList>
-    <!-- </div> -->
 
+    <!-- [journey tab removed — execution status lives inside the HTML iframes] -->
+    <div v-if="false" class="rbox-journey-area" style="display:none">
+      <div class="rbox-jcd-body">
+        <template v-if="jcdStats.marketing.total > 0">
+          <div class="rbox-jcd-section" @click="openJourneyFullscreen('marketing')">
+            <div class="jcd-type-hdr">
+              <span class="jcd-type-dot jcd-type-dot--marketing"></span>
+              <span class="jcd-type-name">行銷自動化旅程</span>
+              <span class="rbox-view-chip">↗ 查看</span>
+            </div>
+            <div class="jcd-stat-row">
+              <div class="jcd-stat"><div class="jcd-stat-val blue">{{ jcdStats.marketing.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">完成</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.marketing.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.marketing.total - jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
+            </div>
+            <div v-for="nc in jcdStats.marketing.nodeCounts" :key="nc.key" class="jcd-node-dist">
+              <div class="jcd-node-dist-hdr">
+                <span class="jcd-node-dist-key">{{ nc.key }}</span>
+                <span class="jcd-node-dist-label">{{ nc.label }}</span>
+                <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
+                  {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+                </span>
+              </div>
+              <div class="jcd-dist-bar" v-if="jcdStats.marketing.total > 0">
+                <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.marketing.total * 100) + '%' }"></div>
+                <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.marketing.total * 100) + '%' }"></div>
+              </div>
+            </div>
+            <div class="jcd-rows-title">個別旅程</div>
+            <div v-for="journey in jcdStats.marketing.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
+              <span class="jcd-row-name">{{ journey.userName }}</span>
+              <div class="jcd-row-dots">
+                <span v-for="node in journey.nodes" :key="node.key"
+                  :class="['jcd-rdot', node.status]"
+                  :title="node.key + ' ' + node.label"></span>
+              </div>
+              <span :class="['jcd-row-badge', journey.status]">
+                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
+              </span>
+            </div>
+            <div v-if="jcdStats.marketing.total > 8" class="jcd-rows-more">+{{ jcdStats.marketing.total - 8 }} 人</div>
+          </div>
+        </template>
+
+        <div class="jcd-divider" v-if="jcdStats.marketing.total > 0 && jcdStats.birthday.total > 0"></div>
+
+        <template v-if="jcdStats.birthday.total > 0">
+          <div class="rbox-jcd-section" @click="openJourneyFullscreen('birthday')">
+            <div class="jcd-type-hdr">
+              <span class="jcd-type-dot jcd-type-dot--birthday"></span>
+              <span class="jcd-type-name">5月壽星專屬旅程</span>
+              <span class="rbox-view-chip" style="background:#f5f3ff;color:#7c3aed;">↗ 查看</span>
+            </div>
+            <div class="jcd-stat-row">
+              <div class="jcd-stat"><div class="jcd-stat-val violet">{{ jcdStats.birthday.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">完成</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.birthday.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
+              <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.birthday.total - jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
+            </div>
+            <div v-for="nc in jcdStats.birthday.nodeCounts" :key="nc.key" class="jcd-node-dist">
+              <div class="jcd-node-dist-hdr">
+                <span class="jcd-node-dist-key">{{ nc.key }}</span>
+                <span class="jcd-node-dist-label">{{ nc.label }}</span>
+                <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
+                  {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
+                </span>
+              </div>
+              <div class="jcd-dist-bar" v-if="jcdStats.birthday.total > 0">
+                <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.birthday.total * 100) + '%' }"></div>
+                <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.birthday.total * 100) + '%' }"></div>
+              </div>
+            </div>
+            <div class="jcd-rows-title">個別旅程</div>
+            <div v-for="journey in jcdStats.birthday.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
+              <span class="jcd-row-name">{{ journey.userName }}</span>
+              <div class="jcd-row-dots">
+                <span v-for="node in journey.nodes" :key="node.key"
+                  :class="['jcd-rdot', node.status]"
+                  :title="node.key + ' ' + node.label"></span>
+              </div>
+              <span :class="['jcd-row-badge', journey.status]">
+                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
+              </span>
+            </div>
+            <div v-if="jcdStats.birthday.total > 8" class="jcd-rows-more">+{{ jcdStats.birthday.total - 8 }} 人</div>
+          </div>
+        </template>
+      </div><!-- /rbox-jcd-body -->
+
+      <!-- 成效報告 (analytics) -->
+      <div class="rbox-analytics">
+        <!-- 大數字 stats 卡 -->
+        <div class="rbox-analytics-hero-card">
+          <div class="rbox-analytics-hero-stat">
+            <div class="rbox-hero-val">{{ jcdStats.total.toLocaleString() }}</div>
+            <div class="rbox-hero-lbl">總觸發人數</div>
+          </div>
+          <div class="rbox-analytics-hero-divider"></div>
+          <div class="rbox-analytics-hero-stat">
+            <div class="rbox-hero-val">{{ (jcdStats.done * 5 + Math.floor(jcdStats.total * 0.7)).toLocaleString() }}</div>
+            <div class="rbox-hero-lbl">總送訊息數</div>
+          </div>
+          <div class="rbox-analytics-hero-divider"></div>
+          <div class="rbox-analytics-hero-stat">
+            <div class="rbox-hero-val">{{ jcdStats.total > 0 ? (jcdStats.done / jcdStats.total * 100).toFixed(1) : '0.0' }}%</div>
+            <div class="rbox-hero-lbl">旅程完成率</div>
+          </div>
+        </div>
+
+        <!-- 旅程分析圖表 -->
+        <div class="rbox-analytics-chart-card">
+          <div class="rbox-analytics-chart-hdr">
+            <span class="rbox-analytics-chart-title">旅程分析</span>
+            <span class="rbox-analytics-date-chip">
+              <i class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;">calendar_month</i>
+              2025/01/01 – 2025/12/31
+            </span>
+          </div>
+          <div class="rbox-analytics-chart-wrap">
+            <canvas ref="analyticsChartRef"></canvas>
+          </div>
+        </div>
+      </div>
+    </div><!-- /rbox-journey-area -->
+
+    </div><!-- /rbox-main-wrapper -->
 
     <!-- user 輸入大區域  TODO... 思考是否要拔出去成為組件 -->
     <div :class="['AiViewrUserInputArea', { enterCannedTask: isShowCannedTaskListBox }]">
@@ -187,14 +341,12 @@
           <div v-show="conv2CurStep === 1">
             <div class="conv2-info-note" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <span>✦ 圖片選填；商品名稱與描述為必填</span>
-              <div class="conv2-ghost-btns">
-                <button class="conv2-ghost-btn" @click.stop="conv2S1FillDemo()">帶入範例商品</button>
-                <button class="conv2-ghost-btn" @click.stop="conv2S1ShowSkuInput = !conv2S1ShowSkuInput; conv2S1SkuInput = ''">輸入貨號帶入</button>
-              </div>
+              <button v-if="!conv2S1ShowSkuInput" class="conv2-ghost-btn" @click.stop="conv2S1ShowSkuInput = true">從商品貨號帶入</button>
             </div>
             <div v-if="conv2S1ShowSkuInput" class="conv2-sku-prompt" @click.stop>
               <input class="conv2-fi" v-model="conv2S1SkuInput" placeholder="輸入貨號，如 UG1166915BLK" @click.stop style="flex:1;min-width:0" />
               <button class="conv2-fp-btn" style="flex-shrink:0" @click.stop="conv2S1ApplySku()">帶入</button>
+              <button class="conv2-fp-sec-btn" style="flex-shrink:0;padding:4px 8px" @click.stop="conv2S1ShowSkuInput = false; conv2S1SkuInput = ''">✕</button>
             </div>
             <div :class="['conv2-up-img-box', {'conv2-up-img-box--empty': !conv2S1ImgLoaded}]" style="margin-bottom:10px" @click.stop="conv2S1ImgLoaded = true">
               <img v-if="conv2S1ImgLoaded" :src="DEMO_IMG" />
@@ -204,11 +356,11 @@
               </div>
             </div>
             <div class="conv2-fg">
-              <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop /></div>
-              <div><div class="conv2-fl">定價 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Price" @click.stop /></div>
+              <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop="!conv2S2Brand && (conv2S2Brand = 'UGG')" /></div>
+              <div><div class="conv2-fl">定價 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Price" @click.stop="!conv2S2Price && (conv2S2Price = 'NT$5,980')" /></div>
             </div>
-            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--color-error,#dc2626)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop /></div>
-            <div><div class="conv2-fl">商品描述 <span style="color:var(--color-error,#dc2626)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop></textarea></div>
+            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--color-error,#dc2626)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop="!conv2S2Name && (conv2S2Name = DEMO_NAME)" /></div>
+            <div><div class="conv2-fl">商品描述 <span style="color:var(--color-error,#dc2626)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop="!conv2S2Desc && (conv2S2Desc = DEMO_DESC)"></textarea></div>
             <div class="conv2-err">{{ conv2S2Err }}</div>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-btn" @click.stop="conv2GoStep1to2()">確認 →</button>
@@ -406,27 +558,29 @@
             <!-- Step 1: 選擇翻譯文件 -->
             <div v-show="conv1TranslStep === 1">
               <div class="conv2-info-note">✦ 選擇要翻譯的 Excel 檔案</div>
-              <div :class="['conv1-transl-file-card', { 'conv1-transl-file-card--selected': conv1TranslFile === 'AW26 Product Descriptions.xlsx' }]"
-                   @click.stop="conv1TranslFile = 'AW26 Product Descriptions.xlsx'">
+              <!-- 空狀態：上傳 zone -->
+              <div v-if="!conv1TranslFile" class="conv1-transl-upload-zone" @click.stop="conv1TranslFile = 'AW26 Product Descriptions.xlsx'">
+                <i class="material-symbols-outlined conv1-transl-upload-zone-icon">upload_file</i>
+                <div class="conv1-transl-upload-zone-text">點擊上傳本地端檔案</div>
+                <div class="conv1-transl-upload-zone-hint">支援 .xlsx、.xls</div>
+              </div>
+              <!-- 已選擇：顯示檔案卡片 -->
+              <div v-else class="conv1-transl-file-card conv1-transl-file-card--selected" @click.stop>
                 <span class="conv1-transl-file-icon">📊</span>
                 <div class="conv1-transl-file-info">
-                  <div class="conv1-transl-file-name">AW26 Product Descriptions.xlsx</div>
+                  <div class="conv1-transl-file-name">{{ conv1TranslFile }}</div>
                   <div class="conv1-transl-file-meta">XLSX · 2.7 MB · 已上傳</div>
                 </div>
-                <i class="material-symbols-outlined conv1-transl-file-check" v-if="conv1TranslFile === 'AW26 Product Descriptions.xlsx'">check_circle</i>
-              </div>
-              <div class="conv1-transl-upload-hint" @click.stop>
-                <i class="material-symbols-outlined" style="font-size:14px">add</i>
-                上傳其他檔案
+                <i class="material-symbols-outlined conv1-transl-file-check">check_circle</i>
               </div>
             </div>
             <!-- Step 2: 選擇翻譯範圍 -->
             <div v-show="conv1TranslStep === 2">
-              <div class="conv2-info-note">✦ 選擇翻譯範圍</div>
+              <div class="conv2-info-note">✦ 選擇工作表</div>
               <div class="conv1-transl-range-list">
                 <div v-for="(opt, i) in conv1RangeOptions" :key="i"
                      :class="['conv1-transl-range-item', { 'conv1-transl-range-item--selected': conv1TranslRange === opt.value }]"
-                     @click.stop="conv1TranslRange = opt.value">
+                     @click.stop="conv1TranslRange = opt.value; conv1TranslColumns = ''">
                   <div :class="['conv1-transl-radio', { 'conv1-transl-radio--sel': conv1TranslRange === opt.value }]"></div>
                   <div>
                     <div class="conv1-transl-range-title">{{ opt.label }}</div>
@@ -434,6 +588,16 @@
                   </div>
                 </div>
               </div>
+              <!-- 指定欄位（僅當選擇特定工作表時顯示） -->
+              <template v-if="conv1TranslRange && conv1TranslRange !== '全部工作表'">
+                <div class="conv2-info-note" style="margin-top: 12px">✦ 翻譯欄位 <span class="conv1-transl-optional">（選填）</span></div>
+                <input
+                  class="conv1-transl-col-input"
+                  v-model="conv1TranslColumns"
+                  placeholder="留空則翻譯該工作表全部欄位"
+                  @click.stop
+                />
+              </template>
             </div>
             <!-- Step 3: 選擇目標語言 -->
             <div v-show="conv1TranslStep === 3">
@@ -474,6 +638,23 @@
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出 →</button>
             </div>
+          </div>
+        </div>
+        <!-- Conv1 翻譯確認動作列 -->
+        <div v-if="conv1TranslConfirmed && currentConversationId === 'conv1'" class="conv1-transl-action-bar" @click.stop>
+          <div class="conv1-tab-info">
+            <i class="material-symbols-outlined conv1-tab-icon">translate</i>
+            <div class="conv1-tab-text">
+              <div class="conv1-tab-label">翻譯設定已確認</div>
+              <div class="conv1-tab-sub">點擊「開始翻譯」即可啟動</div>
+            </div>
+          </div>
+          <div class="conv1-tab-btns">
+            <button class="conv1-tab-btn conv1-tab-btn--sec" @click.stop="conv1OpenTranslPanel()">重新設定</button>
+            <button class="conv1-tab-btn conv1-tab-btn--primary" @click.stop="conv1StartTranslation()">
+              <i class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">play_arrow</i>
+              開始翻譯
+            </button>
           </div>
         </div>
         <!-- fp 互動模式時完全移除輸入框 -->
@@ -575,6 +756,7 @@ import blockListArea from '@/components/AiViewer/blockListArea.vue';
 import popDialog from '@/services/popDialog';
 import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions } from '@/utils/file';
 import htmlIcon from '@/assets/fileTypeIcon/html.png';
+import { Chart } from 'chart.js/auto';
 
 const props = defineProps<{
   rightWidth: number;
@@ -584,19 +766,179 @@ const props = defineProps<{
 const aiviewerStore = useAiviewerStore();
 const { nowChoiceAiViewerId, copyAiViewerBlock, isStopCopyPasteAiViewerBlock, isMultiChoiceAiViewerMode, nowMultiChoiceAiViewerIds, isShowFileListView } = storeToRefs(aiviewerStore);
 const { fullAiViewerBlockId, isAspectRatioMode } = storeToRefs(aiviewerStore);
-const { aiViewerBlocks } = storeToRefs(aiviewerStore);
+const { aiViewerBlocks, panToTarget } = storeToRefs(aiviewerStore);
 const { sendUserInput, addReportBlock, addChartBlock } = aiviewerStore;
 const journeyStore = useJourneyStore()
+const { journeyStarted } = storeToRefs(journeyStore)
 const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
 const showJourneyModifyPill = ref(false)
-const { isOpenConversationListModal, currentConversationId } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
+const activeRightTab = ref<'chat' | 'journey'>('chat')
+
+// ── jcd stats (mirrored from AiViewer.vue) ──────────────────────────────────
+const JOURNEY_TYPE_NODES = {
+  marketing: [
+    { key: 'D0',  label: '觸發加入旅程' },
+    { key: 'D1',  label: '歡迎序列啟動' },
+    { key: 'D3',  label: '行為條件分流' },
+    { key: 'D7',  label: '產品深度培育' },
+    { key: 'D14', label: '購買轉換衝刺' },
+    { key: 'D30', label: '購後回購培育' },
+  ],
+  birthday: [
+    { key: 'PRE7', label: '壽星名單篩選' },
+    { key: 'D0',   label: '生日驚喜觸發' },
+    { key: 'D1',   label: '生日禮追蹤' },
+    { key: 'D7',   label: '壽星回購培育' },
+    { key: 'D30',  label: '旅程成效報告' },
+  ],
+} as const;
+
+function getTypeStats(type: 'marketing' | 'birthday') {
+  const list = journeyStore.journeys.filter(j => j.journeyType === type);
+  const total = list.length;
+  const done = list.filter(j => j.status === 'done').length;
+  const completion = total > 0 ? Math.round(done / total * 100) : 0;
+  const nodeCounts = JOURNEY_TYPE_NODES[type].map(({ key, label }) => {
+    let doneCount = 0, runningCount = 0;
+    for (const j of list) {
+      const node = j.nodes.find(n => n.key === key);
+      if (!node) continue;
+      if (node.status === 'done') doneCount++;
+      else if (node.status === 'running') runningCount++;
+    }
+    return { key, label, done: doneCount, running: runningCount };
+  });
+  return { total, done, completion, journeys: list, nodeCounts };
+}
+
+const jcdStats = computed(() => {
+  const total = journeyStore.journeys.length;
+  const done = journeyStore.journeys.filter(j => j.status === 'done').length;
+  return {
+    total,
+    done,
+    running: total - done,
+    marketing: getTypeStats('marketing'),
+    birthday: getTypeStats('birthday'),
+  };
+});
+
+function openJourneyFullscreen(type: 'marketing' | 'birthday') {
+  const keyword = type === 'marketing' ? 'journey_dashboard' : 'birthday_journey';
+  const block = (aiViewerBlocks.value as any[]).find(
+    (b: any) => b.data?.data?.fileUrl?.includes(keyword)
+  );
+  if (block) fullAiViewerBlockId.value = block.id;
+}
+
+// ── Analytics chart ──────────────────────────────────────────────────────────
+const analyticsChartRef = ref<HTMLCanvasElement | null>(null);
+let analyticsChart: Chart | null = null;
+
+const ANALYTICS_MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const ANALYTICS_TRIGGER_DATA = [920, 770, 1000, 890, 1100, 650, 710, 930, 510, 950, 670, 730];
+const ANALYTICS_MSG_DATA     = [490, 600, 600,  640, 580,  850, 830, 670, 830, 650, 570, 920];
+
+function initAnalyticsChart() {
+  if (!analyticsChartRef.value) return;
+  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
+  analyticsChart = new Chart(analyticsChartRef.value, {
+    type: 'line',
+    data: {
+      labels: ANALYTICS_MONTHS,
+      datasets: [
+        {
+          label: '觸發次數',
+          data: ANALYTICS_TRIGGER_DATA,
+          borderColor: '#3b72f6',
+          backgroundColor: 'transparent',
+          fill: false,
+          tension: 0,
+          pointRadius: 4,
+          pointBackgroundColor: '#3b72f6',
+          borderWidth: 2,
+        },
+        {
+          label: '發送訊息數',
+          data: ANALYTICS_MSG_DATA,
+          borderColor: '#f97316',
+          backgroundColor: 'transparent',
+          fill: false,
+          tension: 0,
+          pointRadius: 4,
+          pointBackgroundColor: '#f97316',
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'start',
+          labels: { font: { size: 11 }, boxWidth: 10, padding: 12, color: '#374151' },
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: '#111827',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 10,
+          callbacks: {
+            title: (items) => items[0]?.label ?? '',
+            label: (item) => `${item.dataset.label}：${item.parsed.y.toLocaleString()}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 }, color: '#6b7280' },
+          title: { display: true, text: '月份', font: { size: 11 }, color: '#6b7280' },
+        },
+        y: {
+          grid: { color: '#f3f4f6' },
+          ticks: { font: { size: 11 }, color: '#6b7280' },
+          title: { display: true, text: '觸發次數', font: { size: 11 }, color: '#6b7280' },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+}
+
+function switchToJourneyTab() {
+  activeRightTab.value = 'journey';
+  nextTick(initAnalyticsChart);
+}
+
+watch(activeRightTab, (tab) => {
+  if (tab === 'journey') nextTick(initAnalyticsChart);
+});
+
+const { isOpenConversationListModal, currentConversationId, conv1IsEmpty } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
 const conv2Title = ref('');
+const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
-  return '2026商品文件翻譯';
+  return conv1Title.value;
 });
+
+watch(currentConversationId, (id) => {
+  if (id === 'conv1') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv2') {
+    aiViewerBlocks.value = [...aiviewerStore.INITIAL_BLOCKS];
+  }
+}, { immediate: true });
+
+
 
 const { isTouchDevice } = storeToRefs(aiviewerStore);
 
@@ -873,96 +1215,28 @@ const tempDebugMsg = computed(() => {
     </p>
   `;
 });
-const conv1Msgs = ref([
-  // 1. 使用者發起請求
-  {
-    id: 'id_1',
-    forUser: true,
-    msg: '我有一份 AW26 的英文商品文件，需要翻成繁體中文，可以幫我處理嗎？',
-  },
-  // 2. AI 熱情確認，一次詢問必要資訊
-  {
-    id: 'id_2',
-    msg: '當然可以！🙌 幫我確認幾個細節，就可以馬上開始：<br><br>📄 <strong>翻譯文件</strong>：請上傳或指定 Excel 檔案<br>📌 <strong>翻譯範圍</strong>：全文 or 特定工作表 / 欄位？<br>🌐 <strong>目標語言</strong>：繁體中文、簡體、日文……？<br><br>確認後我會立刻開工 💪',
-  },
-  // 3. 使用者以確認卡片樣式回覆（confirmed=false 代表使用者尚未點擊「開始翻譯」）
-  {
-    id: 'id_3',
-    forUser: true,
-    cardType: 'translationConfirm',
-    confirmed: false,
-    file: '',
-    fileSize: 2834016,
-    range: '',
-    lang: '',
-    msg: '',
-  },
-  // 4. AI 確認並說明進度
-  {
-    id: 'id_4',
-    msg: '收到！✅ 檔案已讀取，開始處理囉～<br><br>我會依照以下順序進行：<br>① 載入產品文件翻譯的專業流程規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式，輸出對齊版本<br><br>稍等一下，馬上好 ⚡',
-  },
-  // 5. AI 翻譯完成（含下載檔案卡片）
-  {
-    id: 'id_5',
-    finishResponse: true,
-    cardType: 'translationComplete',
-    msg: '✅ 翻譯完成！共處理 <strong>143 個產品欄位</strong>，品牌術語保留原文並附對照表。<br>另外幫你標出了 <strong>12 個商標詞</strong>，整理在 .txt 檔供你核對。',
-    files: [
-      { name: 'AW26 Product Descriptions_翻譯.xlsx', type: 'XLSX', size: 2834016 },
-      { name: 'AW26 Product Descriptions_trade_mark.txt', type: 'TXT', size: 133 },
-    ],
-  },
-  // 6. 使用者追問日文
-  {
-    id: 'id_6',
-    forUser: true,
-    msg: '很好！同一份檔案可以也翻成日文嗎？',
-  },
-  // 7. AI 回覆日文翻譯完成
-  {
-    id: 'id_7',
-    finishResponse: false,
-    cardType: 'translationComplete',
-    msg: '🇯🇵 日文版翻譯完成！同樣處理了 <strong>143 個欄位</strong>，針對日本市場慣用的敬語語氣做了調整，請確認風格是否符合需求。',
-    files: [
-      { name: 'AW26 Product Descriptions_日本語.xlsx', type: 'XLSX', size: 2901234 },
-    ],
-  },
-  // 8. 使用者追問 Hurricane Trailsetter 銷售數據
-  {
-    id: 'id_8',
-    forUser: true,
-    msg: '幫我從這份文件裡抓出 Hurricane Trailsetter 系列的所有鞋款，順便給我歷年銷售數據跟今年的預測',
-  },
-  // 9. AI 回覆：Hurricane Trailsetter 銷售數據（附 HTML 報告到畫布）
-  {
-    id: 'id_9',
-    finishResponse: true,
-    cardType: 'translationComplete',
-    msg: '📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>（Sandal 男女 + Mid 男女），2022 年起連續三年成長 20%+。<br>完整數據與 2026 預測報告已加到右側畫布，點一下就能展開看。',
-    files: [
-      { name: 'hurricane_trailsetter_sales_report.html', type: 'HTML', size: 6800 },
-    ],
-  },
-  // 10. AI 主動詢問下一步
-  {
-    id: 'id_10',
-    cardType: 'nextStepPrompt',
-    msg: '接下來想做什麼？',
-    nextSteps: [
-      { label: '🎯 生成行銷策略', msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
-      { label: '👤 目標客群用戶畫像', msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
-      { label: '📊 產出圖表', msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
-      { label: '🗺️ 生成行銷自動化旅程', msg: '生成 Hurricane Trailsetter AW26 行銷自動化旅程' },
-    ],
-  },
-]) as Ref<any[]>;
+const conv1Msgs = ref<any[]>([]);
+// conv1IsEmpty 由實際訊息狀態推導，避免 HMR 殘留舊狀態
+watch(
+  () => currentConversationId.value === 'conv1' && conv1Msgs.value.length === 0,
+  (isEmpty) => { conv1IsEmpty.value = isEmpty; },
+  { immediate: true }
+);
+const conv1OverlayInput = ref('');
+
+function submitConv1Overlay() {
+  const msg = conv1OverlayInput.value.trim();
+  if (!msg) return;
+  conv1Msgs.value.push({ id: 'user-' + Date.now(), forUser: true, msg });
+  conv1OverlayInput.value = '';
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+  processConv1Msg(msg);
+}
 
 // ── Conv1 翻譯設定選項 ──
 const conv1RangeOptions = [
-  { value: 'Features and Benefits (Product Bullets)', label: 'Features and Benefits (Product Bullets)', sub: 'Line Sheet · Teva Footwear Fall · 143 欄位' },
   { value: '全部工作表', label: '全部工作表', sub: '所有 Sheet 完整翻譯' },
+  { value: 'Features and Benefits (Product Bullets)', label: 'Features and Benefits (Product Bullets)', sub: 'Line Sheet · UGG Footwear Fall · 143 欄位' },
   { value: 'Line Sheet only', label: 'Line Sheet only', sub: '僅翻譯 Line Sheet 頁' },
 ];
 const conv1LangOptions = [
@@ -988,7 +1262,7 @@ function pushConv1NextStepPrompt(doneKey: string) {
   conv1Msgs.value.push({
     id: 'next-step-' + Date.now(),
     cardType: 'nextStepPrompt',
-    msg: '還有什麼需要幫你做的？',
+    msg: '請問接下來還有什麼我可以為您服務的嗎？',
     nextSteps: remaining,
   });
   nextTick(() => AiAgentChatListScrollTo('ASC'));
@@ -1023,6 +1297,33 @@ function c1PushThinkingThenReply(
 }
 
 function processConv1Msg(msg: string) {
+  // 初始翻譯請求：對話尚未開始（id_3 尚未出現）
+  if (!conv1Msgs.value.some((m: any) => m.cardType === 'translationConfirm')) {
+    const thinkingId = 'thinking-' + Date.now()
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+      conv1Title.value = '2026商品文件翻譯'
+      conv1Msgs.value.push({ id: 'id_2', msg: '當然可以，麻煩你幫我確認 以下翻譯條件內容，確認後我會立刻開工 💪' })
+      conv1Msgs.value.push({
+        id: 'id_3',
+        forUser: true,
+        cardType: 'translationConfirm',
+        confirmed: false,
+        translationStarted: false,
+        file: '',
+        fileSize: 2834016,
+        range: '',
+        lang: '',
+        msg: '',
+      })
+      conv1OpenTranslPanel()
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+    }, 1000)
+    return
+  }
   if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
     conv1Msgs.value.push({ id: thinkingId, isThinking: true });
@@ -1041,7 +1342,7 @@ function processConv1Msg(msg: string) {
             labels: ['2022', '2023', '2024', '2025', '2026F'],
             values: [{ '銷售量（雙）': [1240, 1580, 1920, 2310, 2775] }],
           },
-        }, '年度銷售量.chart');
+        }, '年度銷售量.json');
       } catch (e) { /* ignore */ }
 
       // 圖表 2：年成長率 line
@@ -1054,7 +1355,7 @@ function processConv1Msg(msg: string) {
             labels: ['2023', '2024', '2025', '2026F'],
             values: [{ '年成長率 (%)': [27.4, 21.5, 20.3, 20.0] }],
           },
-        }, '年成長率趨勢.chart');
+        }, '年成長率趨勢.json');
       } catch (e) { /* ignore */ }
 
       // 圖表 3：各鞋款銷售量 bar
@@ -1071,13 +1372,19 @@ function processConv1Msg(msg: string) {
               { 'Mid 女款': [248, 316, 384, 461] },
             ],
           },
-        }, '各鞋款銷售量.chart');
+        }, '各鞋款銷售量.json');
       } catch (e) { /* ignore */ }
 
       conv1Msgs.value.push({
         id: 'ai-charts-' + Date.now(),
         finishResponse: true,
+        cardType: 'translationComplete',
         msg: '📊 已幫你產出 <strong>3 張銷售分析圖表</strong>，已加到右側畫布：<br>・年度銷售量（長條圖）<br>・年成長率趨勢（折線圖）<br>・各鞋款銷售拆分（堆疊長條圖）<br><br>可直接在畫布上調整大小、截圖使用。',
+        files: [
+          { name: '年度銷售量.json', type: 'JSON', size: 312 },
+          { name: '年成長率趨勢.json', type: 'JSON', size: 248 },
+          { name: '各鞋款銷售量.json', type: 'JSON', size: 420 },
+        ],
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
       pushConv1NextStepPrompt('圖表');
@@ -1112,15 +1419,15 @@ function processConv1Msg(msg: string) {
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
-        files: [],
+        files: [{ name: 'hurricane_trailsetter_journey_dashboard.html', type: 'HTML', size: 11986 }],
       })
+      if (!journeyDashboardAdded.value) {
+        addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
+        journeyDashboardAdded.value = true
+      }
       nextTick(() => AiAgentChatListScrollTo('ASC'))
       pushConv1NextStepPrompt('行銷自動化旅程')
     }, 2000)
-    if (!journeyDashboardAdded.value) {
-      addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
-      journeyDashboardAdded.value = true
-    }
   } else if (msg.includes('旅程過於單一') || msg.includes('更豐富的旅程')) {
     const thinkingId = 'thinking-' + Date.now()
     conv1Msgs.value.push({ id: thinkingId, isThinking: true })
@@ -1132,8 +1439,8 @@ function processConv1Msg(msg: string) {
         id: 'ai-reply-' + Date.now(),
         finishResponse: true,
         cardType: 'translationComplete',
-        msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預估提升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
-        files: [],
+        msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
+        files: [{ name: 'hurricane_trailsetter_journey_dashboard-1.html', type: 'HTML', size: 13065 }],
       })
       addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard-1.html', '旅程總覽-1')
       nextTick(() => AiAgentChatListScrollTo('ASC'))
@@ -1150,7 +1457,7 @@ function processConv1Msg(msg: string) {
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已從 CDP 篩選出台北地區 <strong>1,284 位 5 月壽星</strong>，完成專屬行銷自動化旅程設計。旅程從生日前 7 天預熱啟動，整合 Email、LINE、SMS 三大渠道，並在 D+1 依兌換行為進行分流，預估轉換提升 38%，請在畫布中查閱。',
-        files: [],
+        files: [{ name: 'hurricane_trailsetter_birthday_journey.html', type: 'HTML', size: 13530 }],
       })
       addReportBlock('/justagent/hurricane_trailsetter_birthday_journey.html', '5月壽星專屬旅程')
       nextTick(() => AiAgentChatListScrollTo('ASC'))
@@ -1253,21 +1560,90 @@ function processConv1Msg(msg: string) {
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
     }, 1800);
+  } else if (msg.includes('日文')) {
+    const thinkingId = 'thinking-' + Date.now()
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+      conv1Msgs.value.push({ id: 'id_4b', isProcessing: true, msg: '收到！正在啟動日文翻譯引擎，針對品牌術語與敬語表達進行優化處理，請稍候⋯' })
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+    }, 900)
+    setTimeout(() => {
+      conv1Msgs.value.push({
+        id: 'id_7',
+        finishResponse: true,
+        cardType: 'translationComplete',
+        msg: '🇯🇵 日文版翻譯完成！同樣處理了 <strong>143 個欄位</strong>，針對日本市場慣用的敬語表達進行了調整與優化，建議確認品牌術語的語氣風格是否符合需求後即可使用。📋 <strong>AW26 Product Descriptions_日本語.xlsx</strong> 已加入左側畫布，請點開查閱。',
+        files: [{ name: 'AW26 Product Descriptions_日本語.xlsx', type: 'XLSX', size: 2901234 }],
+      })
+      nextTick(() => {
+        AiAgentChatListScrollTo('ASC')
+        pushConv1NextStepPrompt('翻譯完成')
+      })
+      const jaTemplate = aiviewerStore.INITIAL_BLOCKS.find((b: any) => b.id === 'init-excel-aw26-trans')
+      if (jaTemplate) {
+        const jaBlock = {
+          ...jaTemplate,
+          id: 'conv1-excel-ja-' + Date.now(),
+          blockName: 'AW26 Product Descriptions_日本語.xlsx',
+          x: jaTemplate.x + jaTemplate.width + 40,
+          data: {
+            ...jaTemplate.data,
+            data: { fileUrl: `${import.meta.env.BASE_URL}AW26%20Product%20Descriptions_%E6%97%A5%E6%96%87.xlsx` }
+          }
+        }
+        aiViewerBlocks.value.push(jaBlock)
+        panToTarget.value = { x: jaBlock.x, y: jaBlock.y, width: jaBlock.width, height: jaBlock.height }
+      }
+    }, 3200)
+  } else if (msg.includes('Hurricane') || msg.includes('鞋款') || msg.includes('銷售數據')) {
+    const thinkingId = 'thinking-' + Date.now()
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+    setTimeout(() => {
+      const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
+      if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+      conv1Msgs.value.push({ id: 'id_8b', msg: '正在從商品文件中提取 Hurricane Trailsetter 系列資料，並比對歷年銷售數據⋯' })
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+    }, 900)
+    setTimeout(() => {
+      conv1Msgs.value.push({
+        id: 'id_9',
+        finishResponse: true,
+        cardType: 'translationComplete',
+        msg: '📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>（Sandal 男女 + Mid 男女），2022 年起連續三年成長 20%+。<br>完整數據與 2026 預測報告已加到右側畫布，點一下就能展開看。',
+        files: [{ name: 'hurricane_trailsetter_sales_report.html', type: 'HTML', size: 6800 }],
+      })
+      try { addReportBlock('/justagent/hurricane_trailsetter_sales_report.html', 'hurricane_trailsetter_sales_report.html') } catch (e) { /* ignore */ }
+      nextTick(() => AiAgentChatListScrollTo('ASC'))
+      pushConv1NextStepPrompt('Hurricane')
+    }, 3200)
   }
 }
 
 function syncJourneyToIframe() {
-  const marketingJourneys = journeyStore.journeys.filter(j => j.journeyType === 'marketing')
-  document.querySelectorAll<HTMLIFrameElement>('iframe[src*="journey_dashboard"]').forEach(iframe => {
-    iframe.contentWindow?.postMessage(
-      { type: 'journey-state-sync', journeys: marketingJourneys }, '*'
-    )
-  })
-  const birthdayJourneys = journeyStore.journeys.filter(j => j.journeyType === 'birthday')
-  const bdIframe = document.querySelector('iframe[src*="birthday_journey"]') as HTMLIFrameElement | null
-  bdIframe?.contentWindow?.postMessage(
-    { type: 'birthday-journey-state-sync', journeys: birthdayJourneys }, '*'
-  )
+  const rawJourneys = JSON.parse(JSON.stringify(journeyStore.journeys))
+  const marketingJourneys = rawJourneys.filter((j: any) => j.journeyType === 'marketing')
+  if (marketingJourneys.length > 0) {
+    document.querySelectorAll<HTMLIFrameElement>('iframe[src*="journey_dashboard"]').forEach(iframe => {
+      iframe.contentWindow?.postMessage(
+        { type: 'journey-state-sync', journeys: marketingJourneys }, '*'
+      )
+    })
+  }
+  const birthdayJourneys = rawJourneys.filter((j: any) => j.journeyType === 'birthday')
+  console.log('[syncJourney] birthday count:', birthdayJourneys.length)
+  const bdIframes = document.querySelectorAll<HTMLIFrameElement>('iframe[src*="birthday_journey"]')
+  console.log('[syncJourney] birthday iframes found:', bdIframes.length, Array.from(bdIframes).map(f => f.src))
+  if (birthdayJourneys.length > 0) {
+    bdIframes.forEach(iframe => {
+      iframe.contentWindow?.postMessage(
+        { type: 'birthday-journey-state-sync', journeys: birthdayJourneys }, '*'
+      )
+    })
+  }
 }
 
 const JOURNEY_SCHEDULES = {
@@ -1321,6 +1697,7 @@ const DEMO_NAMES = [
 ]
 
 function startJourneyBatch(type: 'marketing' | 'birthday') {
+  journeyStore.isJcdCollapsed = false
   const BATCH = 64
   const STAGGER = 120 // ms between each person's journey offset
   for (let i = 0; i < BATCH; i++) {
@@ -1339,6 +1716,11 @@ function startJourneyBatch(type: 'marketing' | 'birthday') {
 function handleJourneyStartRequest(event: MessageEvent) {
   if (event.data?.type !== 'journey-start-request') return
   const jType = event.data.journeyType === 'birthday' ? 'birthday' : 'marketing'
+  journeyStarted.value = true
+  const selector = jType === 'birthday' ? 'iframe[src*="birthday_journey"]' : 'iframe[src*="journey_dashboard"]'
+  document.querySelectorAll<HTMLIFrameElement>(selector).forEach(iframe => {
+    iframe.contentWindow?.postMessage({ type: 'journey-started' }, '*')
+  })
   startJourneyBatch(jType)
 }
 
@@ -1353,13 +1735,17 @@ function handleJourneyModifyRequest(event: MessageEvent) {
   nextTick(() => userInputRef.value?.focus());
 }
 
+const _journeySyncStamp = computed(() => {
+  const j = journeyStore.journeys
+  const mDone = j.filter(x => x.journeyType === 'marketing' && x.status === 'done').length
+  const bDone = j.filter(x => x.journeyType === 'birthday' && x.status === 'done').length
+  const mRun = j.filter(x => x.journeyType === 'marketing').reduce((s, jj) => s + jj.nodes.filter(n => n.status !== 'pending').length, 0)
+  const bRun = j.filter(x => x.journeyType === 'birthday').reduce((s, jj) => s + jj.nodes.filter(n => n.status !== 'pending').length, 0)
+  return `${j.length}:${mDone}:${mRun}:${bDone}:${bRun}`
+})
+watch(_journeySyncStamp, () => syncJourneyToIframe())
+
 onMounted(() => {
-  try {
-    addReportBlock(
-      '/justagent/hurricane_trailsetter_sales_report.html',
-      'hurricane_trailsetter_sales_report.html'
-    );
-  } catch (e) { /* canvas 尚未初始化時略過 */ }
   window.addEventListener('message', handleHurricaneChipMsg)
   window.addEventListener('message', handleJourneyStateRequest)
   window.addEventListener('message', handleJourneyStartRequest)
@@ -1373,11 +1759,13 @@ onUnmounted(() => {
   window.removeEventListener('message', handleJourneyStartRequest)
   window.removeEventListener('message', handleJourneyModifyRequest)
   window.removeEventListener('message', handleBirthdayStateRequest)
+  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
 })
 
 // -------- Conversation 2 流程 --------
 const DEMO_IMG = 'https://d12ro2iv4p7r0b.cloudfront.net/media/catalog/product/u/g/ug1183390sndc-1.jpg';
 const DEMO_DESC = '淺褐色毛絨室內拖鞋，動物臉設計，具有柔潤立體造型和寬闊防滑底，前頭設計，毛茸茸的感覺適合屋家穿著。';
+const DEMO_NAME = "Women's Elea Pooch Slip-on";
 
 let conv2IdCounter = 2;
 const conv2Mode = ref('');
@@ -1426,18 +1814,24 @@ const conv2FpActive = computed(() =>
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
 const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
+const conv1TranslConfirmed = computed(() => {
+  const record = conv1Msgs.value.find((m: any) => m.id === 'id_3');
+  return !!(record?.confirmed && !record?.translationStarted);
+});
 
 const conv1TranslPanelVisible = ref(false);
 const conv1TranslStep = ref(1);
-const conv1TranslFile = ref('AW26 Product Descriptions.xlsx');
+const conv1TranslFile = ref('');
 const conv1TranslRange = ref('');
-const conv1TranslLang = ref('');
+const conv1TranslColumns = ref('');
+const conv1TranslLang = ref('繁體中文');
 
 function conv1OpenTranslPanel() {
   conv1TranslStep.value = 1
-  conv1TranslFile.value = 'AW26 Product Descriptions.xlsx'
+  conv1TranslFile.value = ''
   conv1TranslRange.value = ''
-  conv1TranslLang.value = ''
+  conv1TranslColumns.value = ''
+  conv1TranslLang.value = '繁體中文'
   conv1TranslPanelVisible.value = true
 }
 
@@ -1448,9 +1842,71 @@ function conv1TranslSubmit() {
     record.confirmed = true
     record.file = conv1TranslFile.value
     record.range = conv1TranslRange.value
+    record.columns = conv1TranslColumns.value
     record.lang = conv1TranslLang.value
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'))
+}
+
+function conv1StartTranslation() {
+  const record = conv1Msgs.value.find((m: any) => m.id === 'id_3')
+  if (!record || record.translationStarted) return
+  record.translationStarted = true
+  const lang = record.lang || conv1TranslLang.value
+
+  const thinkingId = 'thinking-' + Date.now()
+  conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+  nextTick(() => AiAgentChatListScrollTo('ASC'))
+
+  setTimeout(() => {
+    const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
+    if (idx !== -1) conv1Msgs.value.splice(idx, 1)
+    conv1Msgs.value.push({ id: 'id_4', isProcessing: true, msg: '收到！✅ 檔案讀取成功，正在開始處理。<br><br>將依照以下順序進行：<br>① 載入產品文件翻譯的專業規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式並輸出對齊版本<br><br>請稍候，即將為您完成 ⚡' })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+  }, 900)
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'id_5',
+      finishResponse: true,
+      cardType: 'translationComplete',
+      msg: `✅ 翻譯完成！此次共處理 <strong>143 個產品欄位</strong>，品牌術語已保留原文並附上對照表，另外也為您標出了 <strong>12 個商標詞</strong>，整理在 .txt 檔中方便核對。<br><br>📋 <strong>AW26 Product Descriptions_${lang}.xlsx</strong> 已加入左側畫布，隨時可點開查閱。`,
+      files: [
+        { name: `AW26 Product Descriptions_${lang}.xlsx`, type: 'XLSX', size: 2834016 },
+        { name: 'AW26 Product Descriptions_trade_mark.txt', type: 'TXT', size: 133 },
+      ],
+    })
+    const blocks = aiviewerStore.INITIAL_BLOCKS.map((b: any) =>
+      b.id === 'init-excel-aw26-trans'
+        ? {
+            ...b,
+            id: 'conv1-excel-trans-' + Date.now(),
+            blockName: `AW26 Product Descriptions_${lang}.xlsx`,
+            data: {
+              ...b.data,
+              data: {
+                fileUrl: lang === '日文'
+                  ? `${import.meta.env.BASE_URL}AW26%20Product%20Descriptions_%E6%97%A5%E6%96%87.xlsx`
+                  : b.data.data.fileUrl
+              }
+            }
+          }
+        : { ...b }
+    )
+    aiViewerBlocks.value = blocks
+    const excelBlock = blocks.find((b: any) => b.id?.startsWith('conv1-excel-trans-'))
+    if (excelBlock) panToTarget.value = { x: excelBlock.x, y: excelBlock.y, width: excelBlock.width, height: excelBlock.height }
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+  }, 3200)
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'id_5b',
+      finishResponse: true,
+      msg: '請問接下來還有什麼可以為您服務的嗎？',
+    })
+    nextTick(() => AiAgentChatListScrollTo('ASC'))
+  }, 3600)
 }
 
 const conv2StepTitleMap: Record<string, string> = {
@@ -1494,14 +1950,6 @@ const conv2S2Name = ref('');
 const conv2S2Desc = ref('');
 const conv2S2Err = ref('');
 
-function conv2S1FillDemo() {
-  conv2S1ImgLoaded.value = true;
-  conv2S2Brand.value = 'UGG';
-  conv2S2Price.value = 'NT$5,980';
-  conv2S2Name.value = "Women's Elea Pooch Slip-on";
-  conv2S2Desc.value = DEMO_DESC;
-  conv2S1ShowSkuInput.value = false;
-}
 function conv2S1ApplySku() {
   if (!conv2S1SkuInput.value.trim()) return;
   conv2S1ImgLoaded.value = true;
@@ -1662,6 +2110,11 @@ function handleChatAreaClick(e: MouseEvent) {
     return
   }
 
+  if (action === 'conv1-start-translation') {
+    conv1StartTranslation()
+    return
+  }
+
   if (currentConversationId.value !== 'conv2') return;
 
   // more-button 開關：直接操作 DOM，不走 reactive 流程
@@ -1716,6 +2169,8 @@ function conv2SelectMode(mode: string) {
       c2Push({ msg: '好的！請在下方面板完成深度分析設定。' });
       c2Scroll();
       conv2CurStep.value = 1;
+      conv2S1ShowSkuInput.value = false;
+      conv2S1SkuInput.value = '';
       conv2StepFpVisible.value = true;
       conv2ShowStepPill.value = true;
     }, 400);
@@ -1816,6 +2271,8 @@ function conv2InitToDeep() {
   c2Push({ msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
   c2Scroll();
   conv2CurStep.value = 1;
+  conv2S1ShowSkuInput.value = false;
+  conv2S1SkuInput.value = '';
   conv2StepFpVisible.value = true;
   conv2ShowStepPill.value = true;
 }
@@ -1928,9 +2385,11 @@ function conv2ShowReport() {
 }
 // -------- end Conversation 2 流程 --------
 
-const testMsgs = computed(() =>
-  currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value
-);
+const testMsgs = computed(() => {
+  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value;
+  // 未確認的 translationConfirm 不在河道上顯示任何泡泡
+  return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
+});
 
 function resetConversation() {
   if (currentConversationId.value === 'conv2') {

@@ -59,7 +59,7 @@
       <!-- 企業 -->
       <div class="company-box">
         <select class="custom-select w-100" v-model="rootStore.nowMenuTreeCompanyName">
-          <option value="Teva">Teva</option>
+          <option value="UGG">UGG</option>
           <option value="UGG">UGG</option>
         </select>
         <div class="one-btn-item">

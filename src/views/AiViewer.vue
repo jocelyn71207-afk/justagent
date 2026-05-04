@@ -308,13 +308,6 @@
         }"
       ></div>
 
-      <!-- 收合狀態：懸浮 FAB（在 center-box 內，跟著畫布區域移動）-->
-      <Transition name="jcd-fab-pop">
-        <div class="journey-canvas-fab" v-if="showJourneyDrawer && isJcdCollapsed" @click="isJcdCollapsed = false" title="展開旅程狀態">
-          <i class="material-symbols-outlined jcd-fab-icon">account_tree</i>
-          <span class="jcd-fab-badge" v-if="jcdStats.running > 0">{{ jcdStats.running }}</span>
-        </div>
-      </Transition>
     </div>
 
     <!-- 右區塊 -->
@@ -352,6 +345,14 @@
   <!-- 對話列表 Modal -->
   <conversationListModal />
 
+  <!-- 旅程執行狀態 FAB (收合狀態) -->
+  <Transition name="jcd-fab-pop">
+    <div class="journey-canvas-fab" v-if="showJourneyDrawer && isJcdCollapsed" @click="isJcdCollapsed = false" title="展開旅程狀態">
+      <i class="material-symbols-outlined jcd-fab-icon">account_tree</i>
+      <span class="jcd-fab-badge" v-if="jcdStats.running > 0">{{ jcdStats.running }}</span>
+    </div>
+  </Transition>
+
   <!-- 旅程執行狀態 Drawer (canvas overlay) -->
   <Transition name="jcd-slide">
     <div class="journey-canvas-drawer" v-if="showJourneyDrawer && !isJcdCollapsed">
@@ -368,6 +369,7 @@
           <div
             class="jcd-section"
             :class="{ 'jcd-section--hover-marketing': jcdHoverType === 'marketing' }"
+            @click="openJourneyFullscreen('marketing')"
             @mouseenter="onJcdSectionEnter('marketing')"
             @mouseleave="onJcdSectionLeave()"
           >
@@ -418,6 +420,7 @@
           <div
             class="jcd-section"
             :class="{ 'jcd-section--hover-birthday': jcdHoverType === 'birthday' }"
+            @click="openJourneyFullscreen('birthday')"
             @mouseenter="onJcdSectionEnter('birthday')"
             @mouseleave="onJcdSectionLeave()"
           >
@@ -498,9 +501,8 @@ const router = useRouter();
 
 // ── 旅程執行狀態 Drawer ──────────────────────────────────────────
 const journeyStore = useJourneyStore();
-const showJourneyDrawer = ref(false);
+const showJourneyDrawer = computed(() => journeyStore.journeys.length > 0);
 const { isJcdCollapsed } = storeToRefs(journeyStore);
-watch(() => journeyStore.journeys.length, (n) => { if (n > 0) showJourneyDrawer.value = true; });
 
 const jcdHoverType = ref<'marketing' | 'birthday' | null>(null);
 let jcdHoverTimer: ReturnType<typeof setTimeout> | null = null;
@@ -587,6 +589,11 @@ function clearJourneyBlockHighlight() {
     .forEach(el => {
       el.classList.remove('jcd-highlight-marketing', 'jcd-highlight-birthday', 'jcd-dimmed');
     });
+}
+
+function openJourneyFullscreen(type: 'marketing' | 'birthday') {
+  const block = findJourneyBlock(type);
+  if (block) fullAiViewerBlockId.value = block.id;
 }
 
 function onJcdSectionEnter(type: 'marketing' | 'birthday') {
