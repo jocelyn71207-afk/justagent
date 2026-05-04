@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   z-index: 10;
-  background-color: #f8fafc;
+  background-color: var(--sidebar-bg);
   // border-right: 1px solid var(--divider);
   width: $menuWidth;
   height: 100svh;
@@ -22,16 +22,17 @@
       align-items: center;
       .user-avatar {
         font-weight: bold;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
         margin-right: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         user-select: none;
-        background-color: #34d399;
-        color: #fff;
+        background-color: var(--primary);
+        color: var(--primary-fg);
+        font-size: 14px;
       }
       .user-name {
         font-size: 16px;
@@ -68,11 +69,14 @@
     .universal-search-box {
       position: relative;
       margin: 12px 0;
+      background: var(--sidebar-hover);
+      border-radius: 8px;
       i {
         position: absolute;
         left: 11px;
         top: 8px;
         font-size: 21px;
+        color: var(--sidebar-muted);
         &.clear-btn {
           left: auto;
           right: 11px;
@@ -81,6 +85,12 @@
       }
       input {
         padding-left: 40px;
+        background: transparent;
+        border: none;
+        color: var(--sidebar-muted);
+        &::placeholder {
+          color: var(--sidebar-muted);
+        }
       }
     }
   }
@@ -212,29 +222,35 @@
     a {
       text-decoration: none;
       font-size: 14px;
-      color: var(--text);
+      color: var(--sidebar-muted);
       display: flex;
       align-items: center;
-      padding: 9px 10px;
-      border-radius: $radius;
+      padding: 9px 12px;
+      border-radius: 8px;
       width: 100%;
+      gap: 12px;
       &:hover {
-        background-color: var(--sidebar-hover);
+        background: var(--sidebar-hover);
       }
       &:focus {
         outline: 1px solid transparent;
       }
       &.router-link-active,
       &.active {
-        background-color: #d1fae5;
+        background: var(--sidebar-active);
         box-shadow: none;
-        border-radius: 999px;
-        color: #059669;
-        font-weight: 600;
+        border-radius: 8px;
+        color: var(--sidebar-fg);
+        font-weight: 500;
       }
       i {
-        margin: 0 10px 0 0;
-        font-size: 19px;
+        margin: 0;
+        font-size: 18px;
+        color: var(--sidebar-muted);
+      }
+      &.router-link-active i,
+      &.active i {
+        color: var(--sidebar-fg);
       }
     }
   }
