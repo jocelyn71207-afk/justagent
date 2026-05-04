@@ -1,7 +1,7 @@
 // Dark mode — Jade Mist 02
 // Activated by: <html data-theme="dark"> or prefers-color-scheme
 
-[data-theme="dark"] :root:not([data-theme="light"]) {
+[data-theme="dark"]:root:not([data-theme="light"]) {
     // ── Brand ──────────────────────────────────────────────────────────────
     --primary:         #00A078;
     --primary-hover:   #00C896;  // hover becomes lighter in dark
