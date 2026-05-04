@@ -1,5 +1,9 @@
 // Dark mode — Jade Mist 02
 // Activated by: <html data-theme="dark"> or prefers-color-scheme
+//
+// NOTE: Both blocks below are intentionally identical.
+// SCSS cannot combine an @media rule with a regular selector in a comma group.
+// Any token value change must be applied to BOTH blocks.
 
 [data-theme="dark"]:root:not([data-theme="light"]) {
     // ── Brand ──────────────────────────────────────────────────────────────
