@@ -1,113 +1,90 @@
-@use "sass:color";
+// Dark mode — Jade Mist 02
+// Activated by: <html data-theme="dark"> or prefers-color-scheme
 
-// Dark mode styles (如果產品規劃上沒有 dark mode, 可以刪掉這段)
+// Mixin to DRY the token declarations
+@mixin dark-tokens {
+    // ── Brand ──────────────────────────────────────────────────────────────
+    --primary:         #00A078;
+    --primary-hover:   #00C896;  // hover becomes lighter in dark
+    --primary-fg:      #FFFFFF;
+    --accent:          #00C896;
+    --accent-soft:     #0E3E32;
+
+    // ── Surfaces ───────────────────────────────────────────────────────────
+    --page-bg:         #0F1719;
+    --surface:         #152124;
+    --sidebar-bg:      #0B1315;
+    --sidebar-hover:   #162226;
+    --sidebar-active:  #1F2E32;
+    --divider:         #1F2C2F;
+
+    // ── Text ───────────────────────────────────────────────────────────────
+    --text:            #EAF3F2;
+    --text-muted:      #A4B6B9;
+    --text-faint:      #6F8589;
+    --sidebar-fg:      #EAF3F2;
+    --sidebar-muted:   #8AA0A4;
+
+    // ── Semantic ───────────────────────────────────────────────────────────
+    --success:         #00C896;
+    --warning:         #E0A24A;
+    --danger:          #EC6B5E;
+    --hint:            #0E3E32;
+    --hint-text:       #9CE9CB;
+
+    // ── Scrollbar ──────────────────────────────────────────────────────────
+    --scrollbar:       #2A3C40;
+
+    // ── Shadow base ────────────────────────────────────────────────────────
+    --shadow:          0,0,0;
+
+    // ── Derived alpha helpers ─────────────────────────────────────────────
+    --surface-a90:            rgba(21,33,36,0.9);
+    --surface-a70:            rgba(21,33,36,0.7);
+    --surface-a50:            rgba(21,33,36,0.5);
+    --text-a90:               rgba(234,243,242,0.9);
+    --text-a80:               rgba(234,243,242,0.8);
+    --text-a70:               rgba(234,243,242,0.7);
+    --text-a60:               rgba(234,243,242,0.6);
+    --text-a20:               rgba(234,243,242,0.2);
+    --divider-a50:            rgba(31,44,47,0.5);
+    --divider-a40:            rgba(31,44,47,0.4);
+    --divider-a30:            rgba(31,44,47,0.3);
+    --divider-a20:            rgba(31,44,47,0.2);
+    --sidebar-hover-a50:      rgba(22,34,38,0.5);
+    --sidebar-hover-a30:      rgba(22,34,38,0.3);
+    --sidebar-hover-a20:      rgba(22,34,38,0.2);
+    --accent-a70:             rgba(0,200,150,0.7);
+    --accent-a40:             rgba(0,200,150,0.4);
+    --accent-a30:             rgba(0,200,150,0.3);
+    --accent-a10:             rgba(0,200,150,0.1);
+    --scrollbar-a50:          rgba(42,60,64,0.5);
+
+    // ── Legacy badge / rank (dark overrides) ───────────────────────────────
+    --color-wise-badge-hot-bg:    #3a2a10;
+    --color-wise-badge-hot-text:  #e8a94a;
+    --color-wise-rank-bronze-bg:  #3a2a10;
+    --color-wise-rank-bronze-text:#e8a94a;
+    --color-wise-table-header-bg: #0E3E32;
+    --color-wise-empty-border:    #1F4038;
+    --color-explore-accent-light: #1e1c40;
+    --color-explore-accent-mid:   #9B96E8;
+    --color-explore-accent-hover: #2a2860;
+    --color-explore-accent-text:  #A09AF0;
+    --color-explore-accent-dark:  #C4C0F8;
+    --color-grey-1:               #5a6070;
+
+    // ── Compat aliases ────────────────────────────────────────────────────
+    --color-tab-active-bg:    var(--text);
+    --color-switch-active-bg: var(--surface);
+}
+
+[data-theme="dark"] :root:not([data-theme="light"]) {
+  @include dark-tokens;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #{$color-background-dark}; // 主背景顏色
-    --color-background-alpha90: #{rgba($color-background-dark, 0.9)}; // 主背景顏色 90% 不透明度
-    --color-background-alpha80: #{rgba($color-background-dark, 0.8)}; // 主背景顏色 80% 不透明度
-    --color-background-alpha70: #{rgba($color-background-dark, 0.7)}; // 主背景顏色 70% 不透明度
-    --color-background-alpha60: #{rgba($color-background-dark, 0.6)}; // 主背景顏色 60% 不透明度
-    --color-background-alpha50: #{rgba($color-background-dark, 0.5)}; // 主背景顏色 50% 不透明度
-    --color-background-alpha40: #{rgba($color-background-dark, 0.4)}; // 主背景顏色 40% 不透明度
-    --color-background-alpha30: #{rgba($color-background-dark, 0.3)}; // 主背景顏色 30% 不透明度
-    --color-background-alpha20: #{rgba($color-background-dark, 0.2)}; // 主背景顏色 20% 不透明度
-    --color-background-alpha10: #{rgba($color-background-dark, 0.1)}; // 主背景顏色 10% 不透明度
-
-    --color-background-1: #{$color-background-dark-1}; // 次背景顏色 1
-    --color-background-1-alpha90: #{rgba($color-background-dark-1, 0.9)}; // 次背景顏色 1 90% 不透明度
-    --color-background-1-alpha80: #{rgba($color-background-dark-1, 0.8)}; // 次背景顏色 1 80% 不透明度
-    --color-background-1-alpha70: #{rgba($color-background-dark-1, 0.7)}; // 次背景顏色 1 70% 不透明度
-    --color-background-1-alpha60: #{rgba($color-background-dark-1, 0.6)}; // 次背景顏色 1 60% 不透明度
-    --color-background-1-alpha50: #{rgba($color-background-dark-1, 0.5)}; // 次背景顏色 1 50% 不透明度
-    --color-background-1-alpha40: #{rgba($color-background-dark-1, 0.4)}; // 次背景顏色 1 40% 不透明度
-    --color-background-1-alpha30: #{rgba($color-background-dark-1, 0.3)}; // 次背景顏色 1 30% 不透明度
-    --color-background-1-alpha20: #{rgba($color-background-dark-1, 0.2)}; // 次背景顏色 1 20% 不透明度
-    --color-background-1-alpha10: #{rgba($color-background-dark-1, 0.1)}; // 次背景顏色 1 10% 不透明度
-
-    --color-background-2: #{$color-background-dark-2}; // 次背景顏色 2
-    --color-background-2-alpha90: #{rgba($color-background-dark-2, 0.9)}; // 次背景顏色 2 90% 不透明度
-    --color-background-2-alpha80: #{rgba($color-background-dark-2, 0.8)}; // 次背景顏色 2 80% 不透明度
-    --color-background-2-alpha70: #{rgba($color-background-dark-2, 0.7)}; // 次背景顏色 2 70% 不透明度
-    --color-background-2-alpha60: #{rgba($color-background-dark-2, 0.6)}; // 次背景顏色 2 60% 不透明度
-    --color-background-2-alpha50: #{rgba($color-background-dark-2, 0.5)}; // 次背景顏色 2 50% 不透明度
-    --color-background-2-alpha40: #{rgba($color-background-dark-2, 0.4)}; // 次背景顏色 2 40% 不透明度
-    --color-background-2-alpha30: #{rgba($color-background-dark-2, 0.3)}; // 次背景顏色 2 30% 不透明度
-    --color-background-2-alpha20: #{rgba($color-background-dark-2, 0.2)}; // 次背景顏色 2 20% 不透明度
-    --color-background-2-alpha10: #{rgba($color-background-dark-2, 0.1)}; // 次背景顏色 2 10% 不透明度
-
-    --color-border: #{$color-border-dark}; // 線顏色
-    --color-border-alpha90: #{rgba($color-border-dark, 0.9)}; // 線顏色 90% 不透明度
-    --color-border-alpha80: #{rgba($color-border-dark, 0.8)}; // 線顏色 80% 不透明度
-    --color-border-alpha70: #{rgba($color-border-dark, 0.7)}; // 線顏色 70% 不透明度
-    --color-border-alpha60: #{rgba($color-border-dark, 0.6)}; // 線顏色 60% 不透明度
-    --color-border-alpha50: #{rgba($color-border-dark, 0.5)}; // 線顏色 50% 不透明度
-    --color-border-alpha40: #{rgba($color-border-dark, 0.4)}; // 線顏色 40% 不透明度
-    --color-border-alpha30: #{rgba($color-border-dark, 0.3)}; // 線顏色 30% 不透明度
-    --color-border-alpha20: #{rgba($color-border-dark, 0.2)}; // 線顏色 20% 不透明度
-    --color-border-alpha10: #{rgba($color-border-dark, 0.1)}; // 線顏色 10% 不透明度
-
-    --color-border-1: #{$color-border-dark-1}; // 線顏色 1
-    --color-border-1-alpha90: #{rgba($color-border-dark-1, 0.9)}; // 線顏色 1 90% 不透明度
-    --color-border-1-alpha80: #{rgba($color-border-dark-1, 0.8)}; // 線顏色 1 80% 不透明度
-    --color-border-1-alpha70: #{rgba($color-border-dark-1, 0.7)}; // 線顏色 1 70% 不透明度
-    --color-border-1-alpha60: #{rgba($color-border-dark-1, 0.6)}; // 線顏色 1 60% 不透明度
-    --color-border-1-alpha50: #{rgba($color-border-dark-1, 0.5)}; // 線顏色 1 50% 不透明度
-    --color-border-1-alpha40: #{rgba($color-border-dark-1, 0.4)}; // 線顏色 1 40% 不透明度
-    --color-border-1-alpha30: #{rgba($color-border-dark-1, 0.3)}; // 線顏色 1 30% 不透明度
-    --color-border-1-alpha20: #{rgba($color-border-dark-1, 0.2)}; // 線顏色 1 20% 不透明度
-    --color-border-1-alpha10: #{rgba($color-border-dark-1, 0.1)}; // 線顏色 1 10% 不透明度
-
-    --color-heading: #{$color-heading-dark}; // 標題文字顏色
-
-    --color-text: #{$color-text-dark}; // 文字顏色
-    --color-text-alpha90: #{rgba($color-text-dark, 0.9)}; // 文字顏色 90% 不透明度
-    --color-text-alpha80: #{rgba($color-text-dark, 0.8)}; // 文字顏色 80% 不透明度
-    --color-text-alpha70: #{rgba($color-text-dark, 0.7)}; // 文字顏色 70% 不透明度
-    --color-text-alpha60: #{rgba($color-text-dark, 0.6)}; // 文字顏色 60% 不透明度
-    --color-text-alpha50: #{rgba($color-text-dark, 0.5)}; // 文字顏色 50% 不透明度
-    --color-text-alpha40: #{rgba($color-text-dark, 0.4)}; // 文字顏色 40% 不透明度
-    --color-text-alpha30: #{rgba($color-text-dark, 0.3)}; // 文字顏色 30% 不透明度
-    --color-text-alpha20: #{rgba($color-text-dark, 0.2)}; // 文字顏色 20% 不透明度
-    --color-text-alpha10: #{rgba($color-text-dark, 0.1)}; // 文字顏色 10% 不透明度
-
-    --color-link-text: #{$color-text-link-dark}; // 連結文字顏色
-    --color-link-text-active: #{$color-text-link-active-dark}; // 連結文字懸停顏色
-
-    --color-shadow: #{$color-shadow-dark}; // 陰影顏色
-
-    --color-scrollbar: #{$color-scrollbar-dark}; // 滾動條顏色
-    --color-scrollbar-alpha50: #{rgba($color-scrollbar-dark, 0.5)}; // 滾動條顏色 50% 不透明度
-
-    --color-userSay-record: #{$color-userSay-record-dark}; // user 角度的對話紀錄背景色
-
-    --color-tab-active-bg: #{$color-tab-active-bg-dark}; // 頁籤 active 的背景顏色
-    --color-switch-active-bg: #{$color-switch-active-bg-dark}; // switch active 的背景顏色
-
-    // ── Linear 設計系統 Dark mode 覆寫 ──────────────────────────────────────────
-
-    // 主色語意別名（dark mode 下主色不變）
-    --color-primary:         #059669;
-    --color-primary-hover:   #10b981;
-    --color-primary-muted:   rgba(5, 150, 105, 0.15);
-    --color-primary-subtle:  rgba(5, 150, 105, 0.08);
-
-    // 中性背景層次（deep dark）
-    --color-bg:              #111827;
-    --color-bg-subtle:       #1f2937;
-    --color-bg-muted:        #374151;
-
-    // 強化邊框
-    --color-border-strong:   #4b5563;
-
-    // 文字層次
-    --color-text-muted:      #9ca3af;
-    --color-text-disabled:   #6b7280;
-
-    // 陰影系統（dark mode 陰影更深）
-    --shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-md:     0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-lg:     0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
-    --shadow-focus:  0 0 0 3px rgba(5, 150, 105, 0.25);
+  :root:not([data-theme="light"]) {
+    @include dark-tokens;
   }
 }
