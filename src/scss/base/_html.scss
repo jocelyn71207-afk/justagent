@@ -62,7 +62,7 @@ a {
 .custom-input {
   border-radius: $radius;
   border: 1px solid var(--divider);
-  background-color: var(--page-bg);
+  background-color: var(--surface);
   padding: 0.532rem 0.4rem;
   font-size: $font-form-size;
   line-height: $line-height-base;
@@ -70,12 +70,12 @@ a {
   color: var(--text);
   vertical-align: bottom;
   &:hover {
-    border-color: $color_main_3;
+    border-color: var(--accent);
   }
   &:focus {
-    border-color: $color_main_2;
+    border-color: var(--primary-hover);
     outline: none;
-    box-shadow: none;
+    box-shadow: 0 0 0 2px rgba(0,160,120,0.15);
   }
   &.error {
     border-color: $color_red_2;
