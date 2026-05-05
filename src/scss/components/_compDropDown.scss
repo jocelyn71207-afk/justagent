@@ -113,6 +113,19 @@
   }
 }
 
+// ── Dark mode: Jade Mist 02 · Dark shadow overrides ───────
+@mixin dropdown-menu-dark {
+  .compDropDown .dropdown-menu {
+    box-shadow: 0 12px 36px -8px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02);
+  }
+}
+
+[data-theme="dark"] { @include dropdown-menu-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dropdown-menu-dark; }
+}
+
 .dropdown-item-wrapper {
   .dropdown-item {
     display: flex;
