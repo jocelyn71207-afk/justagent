@@ -16,6 +16,8 @@
       <AppBuserModal />
 
     </div>
+
+    <AppThemeToggle />
   </div>
 </template>
 
@@ -28,6 +30,7 @@ import AppMenuTree from '@/components/AppMenuTree.vue';
 import AppSearchPage from '@/components/AppSearchPage.vue';
 import AppBatchUpload from '@/components/AppBatchUpload.vue';
 import AppBuserModal from '@/components/AppBuserModal.vue';
+import AppThemeToggle from '@/components/AppThemeToggle.vue';
 
 const route = useRoute();
 const rootStore = useRootStore();
