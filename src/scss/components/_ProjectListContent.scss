@@ -17,9 +17,9 @@ $plc-emerald-dark:  #047857;
   // ── Banner ──────────────────────────────────────────
   .plc-banner {
     padding: 24px 46px 20px;
-    background: #fff;
+    background: var(--page-bg);
     border-left: 3px solid $plc-emerald;
-    border-bottom: 1px solid var(--accent-soft);
+    border-bottom: 1px solid var(--divider);
     flex-shrink: 0;
     display: flex;
     align-items: flex-start;
@@ -145,8 +145,8 @@ $plc-emerald-dark:  #047857;
   // ── Agent filter tabs ────────────────────────────────
   > .compTabs {
     padding: 0 46px;
-    background: #fff;
-    border-bottom: 1px solid var(--accent-soft);
+    background: var(--page-bg);
+    border-bottom: 1px solid var(--divider);
   }
 
   // ── 卡片格線：固定 4 欄 ─────────────────────────────
