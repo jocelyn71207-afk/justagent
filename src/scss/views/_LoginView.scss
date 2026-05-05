@@ -1,0 +1,387 @@
+.login-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--page-bg);
+  font-family: 'Microsoft JhengHei', sans-serif;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 8px 24px rgba(var(--shadow), 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+
+  img {
+    height: 36px;
+    filter: brightness(0.2);
+  }
+}
+
+.login-header {
+  text-align: center;
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+}
+
+.social-login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 9999px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+
+  &:hover {
+    background: var(--sidebar-bg);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--shadow), 0.08);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  span {
+    padding: 0 12px;
+  }
+}
+
+// ── HTML element conflict: keep .divider class working too ───
+.login-card .divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  span {
+    padding: 0 12px;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .material-symbols-rounded {
+    position: absolute;
+    left: 16px;
+    color: var(--text-muted);
+    font-size: 20px;
+    font-family: 'Material Symbols Rounded';
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    height: 48px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider);
+    border-radius: 9999px;
+    padding: 0 48px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    &::placeholder {
+      color: var(--text-faint);
+    }
+
+    &:focus {
+      outline: none;
+      background: var(--surface);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 160, 120, 0.15);
+    }
+  }
+
+  .visibility-toggle {
+    left: auto;
+    right: 16px;
+    cursor: pointer;
+    pointer-events: auto;
+
+    &:hover {
+      color: var(--primary);
+    }
+  }
+}
+
+// Fallback for old .input-group class name used in template
+.login-card .input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .material-symbols-rounded {
+    position: absolute;
+    left: 16px;
+    color: var(--text-muted);
+    font-size: 20px;
+    font-family: 'Material Symbols Rounded';
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    height: 48px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider);
+    border-radius: 9999px;
+    padding: 0 48px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    &::placeholder {
+      color: var(--text-faint);
+    }
+
+    &:focus {
+      outline: none;
+      background: var(--surface);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 160, 120, 0.15);
+    }
+  }
+
+  .visibility-toggle {
+    left: auto;
+    right: 16px;
+    cursor: pointer;
+    pointer-events: auto;
+
+    &:hover {
+      color: var(--primary);
+    }
+  }
+}
+
+.login-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+// Also support old .form-actions class used in template
+.login-card .form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.login-remember-me,
+.login-card .remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--text);
+  }
+
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+  }
+}
+
+.login-forgot-password,
+.login-card .forgot-password {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.login-submit-btn {
+  width: 100%;
+  height: 52px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--primary);
+  border: none;
+  border-radius: 9999px;
+  color: var(--primary-fg);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  margin-top: 8px;
+
+  &:hover {
+    background: var(--primary-hover);
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(var(--shadow), 0.18);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.login-footer {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+
+  .create-account {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.login-company-info,
+.login-wrapper .company-info {
+  margin-top: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    align-items: center;
+
+    a {
+      color: var(--text-muted);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--text);
+      }
+    }
+
+    .sep {
+      opacity: 0.3;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    max-width: 90%;
+    padding: 30px 20px;
+  }
+
+  .social-login {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Dark mode overrides ────────────────────────────────────
+@mixin login-dark {
+  .login-logo img {
+    filter: brightness(5);
+  }
+
+  .login-card {
+    box-shadow: 0 24px 80px -16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .login-submit-btn {
+    box-shadow: 0 1px 2px rgba(0,200,150,0.20);
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0,200,150,0.25), 0 8px 20px rgba(0,0,0,0.3);
+    }
+  }
+}
+
+[data-theme="dark"] { @include login-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include login-dark; }
+}
