@@ -104,26 +104,26 @@
       width: 72px;
       height: 72px;
       border-radius: 50%;
-      background: var(--color-background-2);
+      background: var(--sidebar-hover);
       display: flex;
       align-items: center;
       justify-content: center;
 
       .material-symbols-outlined {
         font-size: 34px;
-        color: var(--color-text-alpha50);
+        color: var(--text-muted);
       }
     }
 
     .empty-title {
       font-size: 16px;
       font-weight: 600;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
     }
 
     .empty-sub {
       font-size: 13px;
-      color: var(--color-text-alpha30);
+      color: var(--text-faint);
     }
   }
 }

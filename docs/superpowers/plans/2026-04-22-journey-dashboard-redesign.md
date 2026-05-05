@@ -1,0 +1,603 @@
+# Journey Dashboard HTML Redesign Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Redesign `hurricane_trailsetter_journey_dashboard.html` to a light-theme tree flowchart with a right-side Drawer for live journey status, and wire a "啟動旅程" button in the HTML that triggers new journey execution via postMessage.
+
+**Architecture:** The HTML is a self-contained standalone page served as a Canvas iframe. It holds a static tree DOM (node classes updated dynamically) and a collapsible Drawer panel. Clicking "啟動旅程" posts `journey-start-request` to the parent Vue frame; the parent creates a new journey in the Pinia store, starts the execution chain, and pushes back `journey-state-sync` updates. The HTML renders those updates into both the tree and the Drawer.
+
+**Tech Stack:** Vanilla HTML/CSS/JS (no frameworks), Vue 3 + TypeScript for the parent-side handler addition.
+
+---
+
+## File Map
+
+| File | Action | Responsibility |
+|---|---|---|
+| `public/hurricane_trailsetter_journey_dashboard.html` | Rewrite | Light-theme tree + Drawer HTML |
+| `src/components/AiViewer/AiViewerRightBox.vue` | Modify (lines 1108–1127) | Add `handleJourneyStartRequest` listener |
+
+---
+
+## Task 1: Rewrite `hurricane_trailsetter_journey_dashboard.html`
+
+**Files:**
+- Modify: `public/hurricane_trailsetter_journey_dashboard.html`
+
+No unit tests exist for standalone HTML files. Verification is visual (browser) and postMessage integration.
+
+- [ ] **Step 1: Replace the entire file with the new implementation**
+
+Replace the full contents of `public/hurricane_trailsetter_journey_dashboard.html` with:
+
+```html
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅程總覽</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7fa;--surface:#fff;--border:#e5e7eb;
+  --text:#1a1d23;--text2:#6b7280;--text3:#9ca3af;
+  --blue:#3b72f6;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --teal:#0891b2;--teal-bg:#f0fdfe;--teal-border:#a5f3fc;
+  --amber:#f59e0b;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+}
+html,body{height:100%;background:var(--bg);font-family:'Helvetica Neue','PingFang TC',sans-serif;font-size:12px;color:var(--text)}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
+.topbar-title{font-size:13px;font-weight:800;letter-spacing:-.3px}
+.btn-start{background:var(--blue);color:#fff;border:none;border-radius:8px;
+  padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;
+  transition:background .2s}
+.btn-start:hover{background:#2563eb}
+
+/* ── Layout ── */
+.layout{display:flex;flex:1;min-height:0}
+
+/* ── Tree panel ── */
+.tree-panel{flex:1;overflow-y:auto;padding:20px 16px 40px;
+  display:flex;flex-direction:column;align-items:center}
+
+/* ── Connector lines ── */
+.vline{width:2px;height:14px;background:var(--border);flex-shrink:0}
+.vline.done{background:var(--green)}
+
+/* ── Nodes ── */
+.node-wrap{width:100%;max-width:240px;display:flex;flex-direction:column;align-items:center}
+.node{width:100%;border-radius:10px;padding:10px 14px;border:1.5px solid var(--border);
+  background:var(--surface);position:relative;
+  transition:box-shadow .3s,opacity .3s}
+.node.type-setup{border-color:var(--blue-border);background:var(--blue-bg)}
+.node.type-msg{border-color:var(--teal-border);background:var(--teal-bg)}
+.node.type-cond{border-color:var(--amber-border);background:var(--amber-bg)}
+.node.type-end{border-color:var(--green-border);background:var(--green-bg)}
+.node.pending{opacity:.45}
+.node.running{box-shadow:0 0 0 3px rgba(59,114,246,.18)}
+.node.done{opacity:.8}
+.node.done .node-label{text-decoration:line-through;color:var(--text3)}
+
+.node-key{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text3);margin-bottom:3px}
+.node.running .node-key{color:var(--blue)}
+.node-label{font-size:11px;font-weight:700}
+.node-sub{font-size:10px;color:var(--text2);margin-top:3px}
+
+.done-badge{position:absolute;top:-5px;right:-5px;width:15px;height:15px;
+  border-radius:50%;background:var(--green);color:#fff;font-size:9px;
+  display:flex;align-items:center;justify-content:center;font-weight:700}
+.running-pill{display:inline-flex;align-items:center;gap:3px;font-size:9px;
+  color:var(--blue);font-weight:600;margin-top:5px}
+.running-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);
+  animation:journey-blink 1s ease-in-out infinite}
+@keyframes journey-blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── D3 branch ── */
+.branch-area{width:100%;max-width:240px;display:flex;flex-direction:column;align-items:center}
+.branch-connector{display:flex;width:50%;justify-content:space-between;position:relative;margin-bottom:0}
+.branch-connector::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--border)}
+.branch-v{width:1.5px;height:14px;background:var(--border)}
+.branch-row{display:flex;width:100%;gap:8px}
+.branch-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.branch-tag{font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px}
+.branch-tag.yes{background:#dcfce7;color:#166534}
+.branch-tag.no{background:#fef9c3;color:#92400e}
+.branch-card{width:100%;border-radius:7px;padding:7px 9px;border:1px solid var(--border);
+  background:var(--surface);font-size:10px;color:var(--text2)}
+.branch-card-label{font-size:9px;font-weight:700;margin-bottom:3px;color:var(--text)}
+
+/* ── Drawer ── */
+.drawer{width:0;overflow:hidden;transition:width .3s ease;
+  border-left:1px solid var(--border);background:#f8faff;
+  display:flex;flex-direction:column;flex-shrink:0}
+.drawer.open{width:200px}
+.drawer-hdr{padding:10px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drawer-hdr-title{font-size:11px;font-weight:700;color:var(--blue)}
+.drawer-close{color:var(--text3);font-size:16px;cursor:pointer;line-height:1;
+  padding:0 2px;transition:color .2s}
+.drawer-close:hover{color:var(--text)}
+.drawer-body{padding:10px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px}
+
+/* ── Journey block (inside drawer) ── */
+.journey-block{background:var(--surface);border-radius:8px;padding:10px;border:1px solid var(--border)}
+.jb-name{font-size:10px;font-weight:700;color:var(--text);margin-bottom:6px;
+  display:flex;align-items:center;justify-content:space-between;gap:4px}
+.jb-status{font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;flex-shrink:0}
+.jb-status.running{background:rgba(59,114,246,.12);color:var(--blue)}
+.jb-status.done{background:rgba(22,163,74,.12);color:var(--green)}
+
+.jb-node{display:flex;align-items:center;gap:6px;font-size:9px;margin-bottom:3px}
+.jb-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:8px}
+.jb-dot.done{background:var(--green);color:#fff}
+.jb-dot.running{background:var(--blue);color:#fff}
+.jb-dot.pending{background:var(--border)}
+
+.jb-progress-wrap{background:var(--border);border-radius:3px;height:3px;margin:6px 0 2px}
+.jb-progress-bar{background:var(--blue);height:100%;border-radius:3px;transition:width .4s ease}
+.jb-count{font-size:8px;color:var(--text3);text-align:right;margin-bottom:8px}
+
+.stats-divider{border:none;border-top:1px solid var(--border);margin:4px 0 6px}
+.stats-title{font-size:9px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.stats-row{display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px}
+.stats-label{color:var(--text3)}
+.stats-val{font-weight:700;color:var(--text)}
+.stats-val.blue{color:var(--blue)}
+.stats-val.green{color:var(--green)}
+
+/* ── Empty / hint ── */
+.drawer-hint{font-size:11px;color:var(--text3);text-align:center;padding:20px 12px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div>
+    <div class="topbar-label">Hurricane Trailsetter · AW26</div>
+    <div class="topbar-title">🗺️ 行銷自動化旅程</div>
+  </div>
+  <button class="btn-start" id="btn-start">▶ 啟動旅程</button>
+</div>
+
+<!-- Main layout -->
+<div class="layout">
+
+  <!-- Journey tree (static DOM, classes updated by renderTree) -->
+  <div class="tree-panel" id="treePanel">
+
+    <!-- D0 -->
+    <div class="node-wrap">
+      <div class="node type-setup pending" id="node-D0">
+        <div class="done-badge" style="display:none">✓</div>
+        <div class="node-key">D0</div>
+        <div class="node-label">觸發加入旅程</div>
+        <div class="node-sub">🚀 首次訪問 / 加入購物車</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D0"></div>
+
+    <!-- D1 -->
+    <div class="node-wrap">
+      <div class="node type-msg pending" id="node-D1">
+        <div class="done-badge" style="display:none">✓</div>
+        <div class="node-key">D1</div>
+        <div class="node-label">歡迎序列啟動</div>
+        <div class="node-sub">💌 Email + LINE 歡迎</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D1"></div>
+
+    <!-- D3 -->
+    <div class="node-wrap">
+      <div class="node type-cond pending" id="node-D3">
+        <div class="done-badge" style="display:none">✓</div>
+        <div class="node-key">D3</div>
+        <div class="node-label">行為條件分流</div>
+        <div class="node-sub">🔀 Email 開啟條件</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <!-- D3 branches -->
+    <div class="branch-area">
+      <div class="branch-connector">
+        <div class="branch-v"></div>
+        <div class="branch-v"></div>
+      </div>
+      <div class="branch-row">
+        <div class="branch-side">
+          <span class="branch-tag yes">是 ✓</span>
+          <div class="branch-card">
+            <div class="branch-card-label">已開啟 Email</div>
+            <div>限時優惠碼 + LINE 提醒</div>
+          </div>
+        </div>
+        <div class="branch-side">
+          <span class="branch-tag no">否 ✗</span>
+          <div class="branch-card">
+            <div class="branch-card-label">未開啟</div>
+            <div>換標題重發 + 再行銷</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D3"></div>
+
+    <!-- D7 -->
+    <div class="node-wrap">
+      <div class="node type-msg pending" id="node-D7">
+        <div class="done-badge" style="display:none">✓</div>
+        <div class="node-key">D7</div>
+        <div class="node-label">產品深度培育</div>
+        <div class="node-sub">📖 Email + IG 廣告</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D7"></div>
+
+    <!-- D14 -->
+    <div class="node-wrap">
+      <div class="node type-msg pending" id="node-D14">
+        <div class="done-badge" style="display:none">✓</div>
+        <div class="node-key">D14</div>
+        <div class="node-label">購買轉換衝刺</div>
+        <div class="node-sub">⚡ 未結帳提醒</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D14"></div>
+
+    <!-- D30 -->
+    <div class="node-wrap">
+      <div class="node type-end pending" id="node-D30">
+        <div class="done-badge" style="display:none">✓</div>
+        <div class="node-key">D30</div>
+        <div class="node-label">購後回購培育</div>
+        <div class="node-sub">⭐ 完成購買 / 回購</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+
+  </div><!-- /tree-panel -->
+
+  <!-- Right-side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-hdr">
+      <span class="drawer-hdr-title">執行狀態</span>
+      <span class="drawer-close" id="btn-close">×</span>
+    </div>
+    <div class="drawer-body" id="drawerBody">
+      <div class="drawer-hint">點「▶ 啟動旅程」<br>開始執行並追蹤進度</div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<script>
+var _journeys = [];
+var _drawerOpen = false;
+
+// ── Drawer open / close ──────────────────────────────────────────
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  _drawerOpen = true;
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  _drawerOpen = false;
+}
+
+// ── Tree rendering ───────────────────────────────────────────────
+// Updates node CSS classes based on the latest (newest-first) journey.
+// If no journeys exist, all nodes stay 'pending'.
+var NODE_KEYS = ['D0','D1','D3','D7','D14','D30'];
+
+function renderTree(journeys) {
+  var latest = (journeys && journeys.length > 0) ? journeys[0] : null;
+
+  NODE_KEYS.forEach(function(key) {
+    var el = document.getElementById('node-' + key);
+    if (!el) return;
+
+    var status = 'pending';
+    if (latest) {
+      var found = null;
+      for (var i = 0; i < latest.nodes.length; i++) {
+        if (latest.nodes[i].key === key) { found = latest.nodes[i]; break; }
+      }
+      if (found) {
+        status = (found.status === 'running' || found.status === 'done') ? found.status : 'pending';
+      }
+    }
+
+    el.classList.remove('pending', 'running', 'done');
+    el.classList.add(status);
+
+    var badge = el.querySelector('.done-badge');
+    if (badge) badge.style.display = status === 'done' ? 'flex' : 'none';
+
+    var pill = el.querySelector('.running-pill');
+    if (pill) pill.style.display = status === 'running' ? 'inline-flex' : 'none';
+  });
+
+  // Update connector vlines: colour by the status of the preceding node
+  var vlines = document.querySelectorAll('.vline[data-prev]');
+  for (var j = 0; j < vlines.length; j++) {
+    var vl = vlines[j];
+    var prevKey = vl.getAttribute('data-prev');
+    var prevStatus = 'pending';
+    if (latest) {
+      for (var k = 0; k < latest.nodes.length; k++) {
+        if (latest.nodes[k].key === prevKey) {
+          prevStatus = latest.nodes[k].status;
+          break;
+        }
+      }
+    }
+    vl.classList.remove('done');
+    if (prevStatus === 'done') vl.classList.add('done');
+  }
+}
+
+// ── Drawer rendering ─────────────────────────────────────────────
+function renderDrawer(journeys) {
+  var body = document.getElementById('drawerBody');
+  if (!journeys || journeys.length === 0) {
+    body.innerHTML = '<div class="drawer-hint">點「▶ 啟動旅程」<br>開始執行並追蹤進度</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < journeys.length; i++) {
+    html += renderJourneyBlock(journeys[i]);
+  }
+  body.innerHTML = html;
+}
+
+function renderJourneyBlock(journey) {
+  var nodes = journey.nodes;
+  var doneCount = 0;
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].status === 'done') doneCount++;
+  }
+  var total = nodes.length;
+  var pct = total > 0 ? Math.round(doneCount / total * 100) : 0;
+
+  var statusClass = journey.status === 'done' ? 'done' : 'running';
+  var statusLabel = journey.status === 'done' ? '已完成 ✓' : '執行中';
+
+  var pendingCount = 0;
+  for (var j = 0; j < nodes.length; j++) {
+    if (nodes[j].status === 'pending') pendingCount++;
+  }
+  var estTime = pendingCount > 0 ? (pendingCount * 2.5).toFixed(0) + 's' : '—';
+  var completionRate = journey.status === 'done' ? '100%' : '—';
+
+  var nodesHtml = '';
+  for (var k = 0; k < nodes.length; k++) {
+    var node = nodes[k];
+    var safeStatus = (node.status === 'running' || node.status === 'done') ? node.status : 'pending';
+    var dotContent = safeStatus === 'done' ? '✓' : (safeStatus === 'running' ? '▶' : '');
+    var textStyle = '';
+    if (safeStatus === 'done') textStyle = 'style="color:#9ca3af;text-decoration:line-through"';
+    else if (safeStatus === 'running') textStyle = 'style="font-weight:700;color:#3b72f6"';
+    else textStyle = 'style="color:#c4c9d4"';
+    nodesHtml +=
+      '<div class="jb-node">' +
+        '<div class="jb-dot ' + safeStatus + '">' + dotContent + '</div>' +
+        '<span ' + textStyle + '>' + escHtml(node.key) + ' ' + escHtml(node.label) + '</span>' +
+      '</div>';
+  }
+
+  return (
+    '<div class="journey-block">' +
+      '<div class="jb-name">' +
+        escHtml(journey.userName) +
+        '<span class="jb-status ' + statusClass + '">' + statusLabel + '</span>' +
+      '</div>' +
+      nodesHtml +
+      '<div class="jb-progress-wrap"><div class="jb-progress-bar" style="width:' + pct + '%"></div></div>' +
+      '<div class="jb-count">' + doneCount + ' / ' + total + ' 節點</div>' +
+      '<hr class="stats-divider">' +
+      '<div class="stats-title">數據概覽</div>' +
+      '<div class="stats-row"><span class="stats-label">旅程觸發</span><span class="stats-val blue">1</span></div>' +
+      '<div class="stats-row"><span class="stats-label">訊息發送</span><span class="stats-val">' + doneCount + '</span></div>' +
+      '<div class="stats-row"><span class="stats-label">完成率</span><span class="stats-val green">' + completionRate + '</span></div>' +
+      '<div class="stats-row"><span class="stats-label">預估完成</span><span class="stats-val">' + estTime + '</span></div>' +
+    '</div>'
+  );
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Event wiring ─────────────────────────────────────────────────
+document.getElementById('btn-start').addEventListener('click', function() {
+  openDrawer();
+  window.parent.postMessage({ type: 'journey-start-request' }, '*');
+});
+
+document.getElementById('btn-close').addEventListener('click', closeDrawer);
+
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'journey-state-sync') {
+    if (!Array.isArray(e.data.journeys)) return;
+    _journeys = e.data.journeys;
+    renderTree(_journeys);
+    renderDrawer(_journeys);
+    if (_journeys.length > 0 && !_drawerOpen) openDrawer();
+  }
+});
+
+// Request initial state from parent on load
+window.parent.postMessage({ type: 'journey-state-request' }, '*');
+</script>
+</body>
+</html>
+```
+
+- [ ] **Step 2: Visually verify the static tree in browser**
+
+Open `http://localhost:5173/justagent/hurricane_trailsetter_journey_dashboard.html` directly (or start dev server with `npm run dev` first).
+
+Expected:
+- White background, light theme
+- 6 nodes visible top-to-bottom: D0 (blue), D1 (teal), D3 (amber) with yes/no branch cards, D7 (teal), D14 (teal), D30 (green)
+- All nodes appear faded (opacity .45, `pending` class)
+- "▶ 啟動旅程" button visible in top-right
+- Clicking "▶ 啟動旅程" opens the right-side Drawer (slides in from right)
+- Drawer shows "點「▶ 啟動旅程」開始執行並追蹤進度" hint text
+- Clicking "×" closes the Drawer
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add public/hurricane_trailsetter_journey_dashboard.html
+git commit -m "feat: redesign journey dashboard HTML — light theme tree + drawer"
+```
+
+---
+
+## Task 2: Add `handleJourneyStartRequest` to `AiViewerRightBox.vue`
+
+**Files:**
+- Modify: `src/components/AiViewer/AiViewerRightBox.vue` (around lines 1108–1127)
+
+- [ ] **Step 1: Add the `handleJourneyStartRequest` function**
+
+In `src/components/AiViewer/AiViewerRightBox.vue`, find the existing `handleJourneyStateRequest` function (currently at line 1108):
+
+```typescript
+function handleJourneyStateRequest(event: MessageEvent) {
+  if (event.data?.type !== 'journey-state-request') return
+  syncJourneyToIframe()
+}
+```
+
+Insert the new function immediately **after** it (before the `onMounted` at line 1113):
+
+```typescript
+function handleJourneyStartRequest(event: MessageEvent) {
+  if (event.data?.type !== 'journey-start-request') return
+  _journeyUserCount++  // shared module-level counter with the chip handler
+  const journeyId = journeyStore.createJourney(`User #${_journeyUserCount}`)
+  startJourneyExecution(journeyId)
+  syncJourneyToIframe()
+}
+```
+
+- [ ] **Step 2: Register and unregister `handleJourneyStartRequest` in `onMounted`/`onUnmounted`**
+
+Find the existing `onMounted` and `onUnmounted` blocks (lines 1113–1127):
+
+```typescript
+onMounted(() => {
+  try {
+    addReportBlock(
+      '/justagent/hurricane_trailsetter_sales_report.html',
+      'hurricane_trailsetter_sales_report.html'
+    );
+  } catch (e) { /* canvas 尚未初始化時略過 */ }
+  window.addEventListener('message', handleHurricaneChipMsg)
+  window.addEventListener('message', handleJourneyStateRequest)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleHurricaneChipMsg)
+  window.removeEventListener('message', handleJourneyStateRequest)
+})
+```
+
+Add the new listener to both hooks:
+
+```typescript
+onMounted(() => {
+  try {
+    addReportBlock(
+      '/justagent/hurricane_trailsetter_sales_report.html',
+      'hurricane_trailsetter_sales_report.html'
+    );
+  } catch (e) { /* canvas 尚未初始化時略過 */ }
+  window.addEventListener('message', handleHurricaneChipMsg)
+  window.addEventListener('message', handleJourneyStateRequest)
+  window.addEventListener('message', handleJourneyStartRequest)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleHurricaneChipMsg)
+  window.removeEventListener('message', handleJourneyStateRequest)
+  window.removeEventListener('message', handleJourneyStartRequest)
+})
+```
+
+- [ ] **Step 3: Run type-check**
+
+```bash
+npm run type-check
+```
+
+Expected: no errors.
+
+- [ ] **Step 4: Run unit tests**
+
+```bash
+npm run test:unit
+```
+
+Expected: all 37 tests pass (no changes to store or tested logic).
+
+- [ ] **Step 5: Integration test in browser**
+
+Start the dev server (`npm run dev`) and open the AiViewer. Click the "生成行銷自動化旅程" chip in the chat to add the Canvas HTML block.
+
+Expected:
+1. Canvas HTML loads showing the light-theme tree (all nodes faded/pending)
+2. Click "▶ 啟動旅程" in the Canvas HTML → Drawer slides in
+3. A new journey record appears in the Drawer ("User #2" if chip already fired "User #1")
+4. Nodes animate through D0→D1→D3→D7→D14→D30 over ~18 seconds
+5. Tree node classes update: `pending` → `running` → `done` as the journey progresses
+6. Done nodes show ✓ badge, connector vlines turn green, running node has blue glow
+7. Drawer shows progress bar advancing and node list updating
+8. After all done: Drawer shows "已完成 ✓" badge, progress bar at 100%, 完成率 → 100%
+9. Also confirm: clicking chip starts "User #1" automatically (existing chip behavior preserved)
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/components/AiViewer/AiViewerRightBox.vue
+git commit -m "feat: add journey-start-request handler to AiViewerRightBox"
+```
+
+---
+
+## Self-Review
+
+**Spec coverage:**
+- ✅ Section 1 — complete journey tree always visible: Task 1 static DOM
+- ✅ Section 3.1 — four node colour types (setup/msg/cond/end): Task 1 CSS + HTML
+- ✅ Section 3.2 — D3 branch with yes/no cards: Task 1 `.branch-area` HTML
+- ✅ Section 3.3 — header + drawer layout: Task 1 `.topbar` + `.layout` + `.drawer`
+- ✅ Section 5 — drawer with per-journey blocks, progress bar, stats: Task 1 `renderJourneyBlock`
+- ✅ Section 6.1 — `journey-start-request` postMessage + immediate drawer open: Task 1 click handler
+- ✅ Section 6.2 — existing `journey-state-sync` / `journey-state-request` preserved: Task 1 message listener
+- ✅ Section 6.3 — `handleJourneyStartRequest` in Vue + `_journeyUserCount` note: Task 2
+- ✅ Section 9 — `journeyStore.ts`, `JourneyDashboard.vue`, router not touched: confirmed by file map
+
+**Placeholder scan:** None found.
+
+**Type consistency:** `handleJourneyStartRequest` signature `(event: MessageEvent) => void` matches `handleJourneyStateRequest` pattern. `_journeyUserCount` is a module-level `let` defined at line 473 of `AiViewerRightBox.vue`.

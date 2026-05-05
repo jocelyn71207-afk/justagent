@@ -3,14 +3,15 @@
   font-size: 13px;
   user-select: none;
 
-  --v-popover-border-arrow-color: #272626; // 邊框與箭頭
-  --v-popover-bg-color: #272626; // 背景色
-  --v-popover-font-color: #ffffff; // 文字顏色
+  --v-popover-border-arrow-color: var(--divider); // 邊框與箭頭
+  --v-popover-bg-color: var(--surface); // 背景色
+  --v-popover-font-color: var(--text); // 文字顏色
 
   .v-popper__inner {
     background: var(--v-popover-bg-color);
     border-color: var(--v-popover-border-arrow-color);
     color: var(--v-popover-font-color);
+    box-shadow: 0 8px 28px -6px rgba(15, 23, 42, 0.22);
   }
   .v-popper__arrow-inner,
   .v-popper__arrow-outer {

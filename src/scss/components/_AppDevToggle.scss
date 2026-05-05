@@ -15,7 +15,7 @@
     height: 40px;
     border-radius: 50%;
     border: none;
-    background: var(--color-main);
+    background: var(--accent);
     color: #fff;
     cursor: pointer;
     display: flex;
@@ -30,8 +30,8 @@
   }
 
   .dev-toggle-panel {
-    background: var(--color-background);
-    border: 1px solid var(--color-border-1-alpha50);
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     width: 240px;
@@ -45,14 +45,14 @@
     padding: 12px 16px;
     font-size: 13px;
     font-weight: 700;
-    background: var(--color-background-1);
-    border-bottom: 1px solid var(--color-border-1-alpha30);
-    color: var(--color-text);
+    background: var(--surface);
+    border-bottom: 1px solid var(--divider-a30);
+    color: var(--text);
   }
 
   .dev-toggle-section {
     padding: 12px 16px;
-    border-bottom: 1px solid var(--color-border-1-alpha20);
+    border-bottom: 1px solid var(--divider-a20);
 
     &:last-child { border-bottom: none; }
   }
@@ -60,7 +60,7 @@
   .dev-toggle-label {
     font-size: 11px;
     font-weight: 700;
-    color: var(--color-text-alpha40);
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -76,9 +76,9 @@
     align-items: center;
     gap: 4px;
     font-size: 13px;
-    color: var(--color-text);
+    color: var(--text);
     cursor: pointer;
 
-    input[type='radio'] { cursor: pointer; accent-color: var(--color-main); }
+    input[type='radio'] { cursor: pointer; accent-color: var(--accent); }
   }
 }

@@ -12,8 +12,8 @@
     padding: 10px 18px;
     border-radius: 9999px;
     border: none;
-    background: var(--color-wise-green);
-    color: var(--color-wise-dark-green);
+    background: var(--accent);
+    color: var(--primary-hover);
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
@@ -40,7 +40,7 @@
     > i {
       position: absolute;
       left: 8px;
-      color: var(--color-wise-gray);
+      color: var(--text-faint);
       pointer-events: none;
     }
 
@@ -54,17 +54,17 @@
     }
 
     .owner-icon {
-      color: var(--color-wise-gray);
+      color: var(--text-faint);
       vertical-align: middle;
       margin-right: 4px;
     }
 
     .action-btn {
-      color: var(--color-wise-gray);
+      color: var(--text-faint);
       cursor: pointer;
       border-radius: 4px;
       padding: 2px;
-      &:hover { background-color: var(--color-wise-surface); color: var(--color-wise-black); }
+      &:hover { background-color: var(--accent-soft); color: var(--text); }
     }
   }
 
@@ -92,9 +92,9 @@
     border-radius: 9999px;
     font-size: 13px;
     font-weight: 600;
-    background-color: var(--color-wise-bg);
+    background-color: var(--page-bg);
     border: 1px solid rgba(14, 15, 12, 0.12);
-    color: var(--color-wise-warm-dark);
+    color: var(--text-muted);
   }
 
   .stats-bar {
@@ -104,7 +104,7 @@
     flex-wrap: wrap;
     padding: 12px 16px;
     margin-bottom: 16px;
-    background-color: var(--color-wise-card);
+    background-color: var(--surface);
     border: 1px solid rgba(14, 15, 12, 0.10);
     border-radius: 14px;
   }
@@ -115,7 +115,7 @@
     gap: 6px;
     padding: 4px 12px;
     border-radius: 9999px;
-    background-color: var(--color-wise-bg);
+    background-color: var(--page-bg);
     border: 1px solid rgba(14, 15, 12, 0.10);
   }
 
@@ -126,8 +126,8 @@
     flex-shrink: 0;
   }
 
-  .stat-label { font-size: 13px; color: var(--color-wise-warm-dark); }
-  .stat-count { font-size: 13px; font-weight: 700; color: var(--color-wise-black); }
+  .stat-label { font-size: 13px; color: var(--text-muted); }
+  .stat-count { font-size: 13px; font-weight: 700; color: var(--text); }
 
   .new-table-box {
     border-radius: 14px;
@@ -148,12 +148,12 @@
     }
 
     .action-btn {
-      color: var(--color-wise-gray);
+      color: var(--text-faint);
       cursor: pointer;
       border-radius: 6px;
       padding: 3px;
       font-size: 18px;
-      &:hover { background-color: var(--color-wise-surface); color: var(--color-wise-black); }
+      &:hover { background-color: var(--accent-soft); color: var(--text); }
       & + .action-btn { margin-left: 4px; }
     }
   }
@@ -184,9 +184,9 @@
 
   // 角色色彩對應（Wise 配色）
   .role-owner {
-    background-color: var(--color-wise-green);
-    color: var(--color-wise-dark-green);
-    &.stat-dot { background-color: var(--color-wise-dark-green); }
+    background-color: var(--accent);
+    color: var(--primary-hover);
+    &.stat-dot { background-color: var(--primary-hover); }
   }
 
   .role-admin {
@@ -202,15 +202,15 @@
   }
 
   .role-staff {
-    background-color: var(--color-wise-mint);
-    color: var(--color-wise-badge-sat-text);
-    &.stat-dot { background-color: var(--color-wise-badge-sat-text); }
+    background-color: var(--hint);
+    color: var(--primary);
+    &.stat-dot { background-color: var(--primary); }
   }
 
   .role-viewer {
-    background-color: var(--color-wise-bg);
-    color: var(--color-wise-gray);
+    background-color: var(--page-bg);
+    color: var(--text-faint);
     border: 1px solid rgba(14, 15, 12, 0.10);
-    &.stat-dot { background-color: var(--color-wise-gray); }
+    &.stat-dot { background-color: var(--text-faint); }
   }
 }

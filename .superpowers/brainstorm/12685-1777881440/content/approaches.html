@@ -1,0 +1,87 @@
+<h2>實作策略選擇</h2>
+<p class="subtitle">三種方式將 Jade Mist 02 套用到整個產品，請選一個</p>
+
+<div class="options" style="flex-direction:column;gap:16px;">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="align-items:flex-start;padding:20px;">
+    <div class="letter">A</div>
+    <div class="content" style="width:100%;">
+      <h3>漸進式疊加 — 新 token + 更新元件 <span style="font-size:12px;background:#CFEFE2;color:#00A078;padding:2px 8px;border-radius:999px;margin-left:8px;">推薦</span></h3>
+      <p style="margin:8px 0 12px;">在 <code>_theme.scss</code> 新增 Jade Mist 02 的 CSS 變數（<code>--page-bg</code>、<code>--surface</code>、<code>--sidebar-bg</code>… 含 dark），同時把現有元件的硬碼色值 &amp; 舊 token 改指向新 token。舊的 <code>--color-*</code> 保留作相容橋接，後續逐步清除。</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:#F0FAF6;border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;">優點</div>
+          <ul style="font-size:13px;color:#3F565E;padding-left:16px;margin:0;line-height:1.8;">
+            <li>風險低，元件不會突然跑版</li>
+            <li>AiViewer 可以最後再單獨處理</li>
+            <li>Dark mode 一次到位</li>
+            <li>字體、shadow、間距同步更新</li>
+          </ul>
+        </div>
+        <div style="background:#FEF2F2;border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:600;color:#D14437;margin-bottom:6px;">缺點</div>
+          <ul style="font-size:13px;color:#3F565E;padding-left:16px;margin:0;line-height:1.8;">
+            <li>短期內新舊 token 並存</li>
+            <li>需要手動更新每個元件</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px 14px;background:#FAFCFC;border:1px solid #E8EDEE;border-radius:8px;font-size:13px;color:#3F565E;">
+        <strong>工作量：</strong>大（涵蓋全產品）。改動 <code>_theme.scss</code>、<code>_variables.scss</code>、<code>_layout.scss</code>、所有 components/*.scss、views/*.scss，加上 <code>index.html</code> 字體載入。
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="align-items:flex-start;padding:20px;">
+    <div class="letter">B</div>
+    <div class="content" style="width:100%;">
+      <h3>全量替換 — 直接覆寫所有 token 命名</h3>
+      <p style="margin:8px 0 12px;">完全用 Jade Mist 02 的 token 名稱取代現有的 <code>--color-*</code> 系統，全域搜尋替換所有引用。</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:#F0FAF6;border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;">優點</div>
+          <ul style="font-size:13px;color:#3F565E;padding-left:16px;margin:0;line-height:1.8;">
+            <li>最乾淨，無殘留舊 token</li>
+            <li>token 命名完全符合 design.md</li>
+          </ul>
+        </div>
+        <div style="background:#FEF2F2;border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:600;color:#D14437;margin-bottom:6px;">缺點</div>
+          <ul style="font-size:13px;color:#3F565E;padding-left:16px;margin:0;line-height:1.8;">
+            <li>風險最高，容易漏改造成白屏</li>
+            <li>第三方套件樣式可能失效</li>
+            <li>AiViewer 複雜度高，容易出錯</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)" style="align-items:flex-start;padding:20px;">
+    <div class="letter">C</div>
+    <div class="content" style="width:100%;">
+      <h3>只改值，不改名 — 原地更新色值</h3>
+      <p style="margin:8px 0 12px;">維持現有 <code>--color-*</code> 變數名稱，只把顏色值改成 Jade Mist 02 的色值，然後只補上少數 design.md 特有的新 token。</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:#F0FAF6;border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;">優點</div>
+          <ul style="font-size:13px;color:#3F565E;padding-left:16px;margin:0;line-height:1.8;">
+            <li>改動範圍最小</li>
+            <li>零破壞性</li>
+          </ul>
+        </div>
+        <div style="background:#FEF2F2;border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:600;color:#D14437;margin-bottom:6px;">缺點</div>
+          <ul style="font-size:13px;color:#3F565E;padding-left:16px;margin:0;line-height:1.8;">
+            <li>token 語意與 design.md 不一致</li>
+            <li>元件細節（shadow、間距、字體）未更新</li>
+            <li>不符合「全面調整」的需求</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:20px;font-size:13px;color:#7F929A;text-align:center;">點選後在 terminal 確認，或直接說「選 A」</p>

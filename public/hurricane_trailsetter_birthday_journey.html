@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5月壽星專屬旅程</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Helvetica Neue','PingFang TC',sans-serif;font-size:12px;color:#1a1d23}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7c3aed;margin-bottom:2px}
+.topbar-title{font-size:13px;font-weight:800;letter-spacing:-.3px}
+.topbar-badge{display:inline-block;font-size:8px;font-weight:700;background:#fdf2f8;
+  color:#db2777;border:1px solid #fbcfe8;border-radius:4px;
+  padding:1px 6px;margin-left:6px;vertical-align:middle}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.btn-start{background:#7c3aed;color:#fff;border:none;border-radius:8px;
+  padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-start:hover{background:#6d28d9}
+.btn-modify{background:#fff;color:#7c3aed;border:1.5px solid #ddd6fe;border-radius:8px;
+  padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s,color .2s}
+.btn-modify:hover{background:#f5f3ff}
+
+/* ── Segment bar ── */
+.segment-bar{background:#f5f3ff;border-bottom:1px solid #ddd6fe;padding:8px 16px;
+  display:flex;gap:16px;flex-shrink:0}
+.seg-stat{text-align:center}
+.seg-val{font-size:14px;font-weight:800;color:#7c3aed}
+.seg-label{font-size:9px;color:#9ca3af;margin-top:1px}
+
+/* ── Canvas ── */
+.canvas-area{
+  flex:1;min-height:0;position:relative;
+  background-color:#faf5ff;
+  background-image:radial-gradient(circle,#ddd6fe 1px,transparent 1px);
+  background-size:24px 24px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ── Zoom controls ── */
+.zoom-ctrl{
+  position:absolute;top:10px;right:10px;
+  background:#fff;border:1px solid #e5e7eb;border-radius:8px;
+  display:flex;align-items:center;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:10;
+}
+.zoom-btn{background:none;border:none;color:#6b7280;width:28px;height:28px;
+  cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.zoom-btn:hover{background:#f3f4f6}
+.zoom-val{font-size:11px;color:#374151;padding:0 8px;font-weight:600;
+  border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;
+  height:28px;display:flex;align-items:center}
+
+/* ── Flow ── */
+.flow{
+  flex:1;min-height:0;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 16px 40px;
+}
+
+/* ── Node card ── */
+.jnode{
+  width:260px;background:#fff;border:1px solid #e5e7eb;
+  border-radius:10px;overflow:hidden;position:relative;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);transition:box-shadow .3s;
+}
+.jnode.running{box-shadow:0 0 0 3px rgba(124,58,237,.2)}
+.jnode.done{opacity:.8}
+
+/* Node accent borders */
+.jnode-purple{border-left:3px solid #7c3aed}
+.jnode-pink  {border-left:3px solid #db2777}
+.jnode-teal  {border-left:3px solid #0891b2}
+.jnode-amber {border-left:3px solid #f59e0b}
+.jnode-green {border-left:3px solid #16a34a}
+
+/* Node header pill */
+.jnode-hdr{padding:5px 10px 4px;display:flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:700;letter-spacing:.03em}
+.hdr-purple{background:#f5f3ff;color:#7c3aed}
+.hdr-pink  {background:#fdf2f8;color:#db2777}
+.hdr-teal  {background:#f0fdfe;color:#0891b2}
+.hdr-amber {background:#fffbeb;color:#d97706}
+.hdr-green {background:#f0fdf4;color:#16a34a}
+
+/* Node body */
+.jnode-body{padding:7px 10px 9px}
+.jnode-title{font-size:11px;font-weight:700;color:#1a1d23;margin-bottom:2px}
+.jnode-sub{font-size:10px;color:#6b7280;line-height:1.4}
+.node-timing{font-size:8px;font-weight:600;background:#f3f4f6;color:#9ca3af;
+  border-radius:4px;padding:0 5px;line-height:16px;display:inline-block;margin-left:4px}
+.node-channels{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.ch-tag{font-size:8px;font-weight:600;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.05);color:#6b7280}
+
+/* Done badge */
+.done-badge{
+  position:absolute;top:-5px;right:-5px;width:15px;height:15px;
+  border-radius:50%;background:#16a34a;color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;border:2px solid #fff;
+}
+
+/* Running pill (purple for birthday) */
+.running-pill{display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;color:#7c3aed;font-weight:600;margin-top:5px}
+.running-dot{width:5px;height:5px;border-radius:50%;background:#7c3aed;
+  animation:bday-blink 1s ease-in-out infinite}
+@keyframes bday-blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* Connector */
+.vline{width:2px;height:14px;background:#d1d5db;flex-shrink:0}
+.vline.done{background:#16a34a}
+
+/* Branch */
+.branch-area{width:100%;max-width:260px;display:flex;flex-direction:column;align-items:center}
+.branch-connector{display:flex;width:55%;justify-content:space-between;position:relative;margin-bottom:0}
+.branch-connector::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:#d1d5db}
+.branch-v{width:1.5px;height:14px;background:#d1d5db}
+.branch-row{display:flex;width:100%;gap:6px}
+.branch-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.branch-tag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px}
+.branch-tag.yes{background:#dcfce7;color:#166534}
+.branch-tag.no{background:#fce7f3;color:#9d174d}
+.branch-card{width:100%;border-radius:7px;padding:6px 8px;border:1px solid #e5e7eb;
+  background:#fff;font-size:9px;color:#6b7280}
+.branch-card-label{font-size:8px;font-weight:700;margin-bottom:3px;color:#1a1d23}
+
+/* ── Tab bar ── */
+.tab-bar{background:#fff;border-bottom:1px solid #e5e7eb;display:none;align-items:center;flex-shrink:0;padding:0 16px}
+.tab-item{height:36px;line-height:36px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;padding:0 14px;transition:color .15s,border-color .15s;user-select:none}
+.tab-item.active{color:#7c3aed;border-bottom-color:#7c3aed}
+/* ── Exec panel ── */
+.exec-panel{flex:1;min-height:0;overflow-y:auto;padding:12px 16px 32px;display:none;flex-direction:column;gap:10px}
+.exec-hero{background:#fff;border:1px solid #e5e7eb;border-radius:10px;display:flex;padding:14px 0}
+.exec-hero-stat{flex:1;text-align:center;padding:0 8px}
+.exec-hero-stat+.exec-hero-stat{border-left:1px solid #e5e7eb}
+.exec-hero-val{font-size:22px;font-weight:800;color:#1a1d23;margin-bottom:2px}
+.exec-hero-lbl{font-size:9px;color:#6b7280;font-weight:600;letter-spacing:.05em}
+.exec-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px}
+.exec-card-title{font-size:10px;font-weight:700;color:#374151;margin-bottom:8px}
+.exec-node-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.exec-node-key{font-size:9px;font-weight:700;color:#6b7280;width:36px;flex-shrink:0}
+.exec-bar-wrap{flex:1;height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;display:flex}
+.exec-bar-done{height:100%;background:#16a34a;transition:width .5s}
+.exec-bar-run{height:100%;background:#7c3aed;transition:width .5s}
+.exec-node-cnt{font-size:9px;color:#6b7280;width:24px;text-align:right;flex-shrink:0}
+.exec-jrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f3f4f6}
+.exec-jrow:last-child{border-bottom:none}
+.exec-jrow-name{font-size:10px;color:#374151;width:48px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exec-jrow-dots{display:flex;gap:3px;flex:1}
+.exec-rdot{width:8px;height:8px;border-radius:50%;background:#e5e7eb}
+.exec-rdot.running{background:#7c3aed;animation:dp 1s ease-in-out infinite}
+.exec-rdot.done{background:#16a34a}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
+.exec-badge{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;background:#f3f4f6;color:#6b7280}
+.exec-badge.done{background:#dcfce7;color:#166534}
+.exec-badge.run{background:#f5f3ff;color:#7c3aed}
+.exec-more{font-size:10px;color:#9ca3af;text-align:center;padding:5px 0}
+.exec-chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.exec-chart-title{font-size:10px;font-weight:700;color:#374151}
+.exec-chart-legend{display:flex;gap:10px}
+.exec-legend{display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280}
+.exec-legend-dot{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div>
+    <div class="topbar-label">Hurricane Trailsetter · 台北地區</div>
+    <div class="topbar-title">🎂 5月壽星專屬旅程<span class="topbar-badge">AI 生成</span></div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-modify" id="btn-modify">＋ 新增旅程修改需求</button>
+    <button class="btn-start" id="btn-start">▶ 啟動旅程</button>
+  </div>
+</div>
+
+<!-- Tab bar (shown after journey starts) -->
+<div class="tab-bar" id="tabBar">
+  <div class="tab-item active" id="tab-map" onclick="switchTab('map')">🗺️ 旅程地圖</div>
+  <div class="tab-item" id="tab-exec" onclick="switchTab('exec')">📊 執行狀態</div>
+</div>
+
+<!-- Segment stats -->
+<div class="segment-bar">
+  <div class="seg-stat"><div class="seg-val">1,284</div><div class="seg-label">目標用戶</div></div>
+  <div class="seg-stat"><div class="seg-val">台北市</div><div class="seg-label">地區</div></div>
+  <div class="seg-stat"><div class="seg-val">5月</div><div class="seg-label">生日月份</div></div>
+  <div class="seg-stat"><div class="seg-val">+38%</div><div class="seg-label">預估轉換提升</div></div>
+</div>
+
+<!-- Canvas -->
+<div class="canvas-area">
+  <div class="zoom-ctrl">
+    <button class="zoom-btn">−</button>
+    <span class="zoom-val">100%</span>
+    <button class="zoom-btn">+</button>
+  </div>
+
+  <div class="flow" id="treePanel">
+
+    <!-- PRE7 -->
+    <div class="jnode jnode-purple pending" id="node-PRE7">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-purple">🎯 篩選過濾</div>
+      <div class="jnode-body">
+        <div class="jnode-title">壽星名單篩選啟動 <span class="node-timing">生日前 7 天</span></div>
+        <div class="jnode-sub">🎯 台北 · 5月生日 · 近6個月活躍</div>
+        <div class="node-channels">
+          <span class="ch-tag">CDP 篩選</span><span class="ch-tag">Email</span><span class="ch-tag">LINE</span>
+        </div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="PRE7"></div>
+
+    <!-- D0 -->
+    <div class="jnode jnode-pink pending" id="node-D0">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-pink">🎂 生日觸發</div>
+      <div class="jnode-body">
+        <div class="jnode-title">生日驚喜觸發 <span class="node-timing">生日當天</span></div>
+        <div class="jnode-sub">🎁 多渠道生日祝福 + 專屬優惠碼</div>
+        <div class="node-channels">
+          <span class="ch-tag">Email</span><span class="ch-tag">LINE</span><span class="ch-tag">SMS</span>
+        </div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D0"></div>
+
+    <!-- D1 -->
+    <div class="jnode jnode-teal pending" id="node-D1">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-teal">📊 使用追蹤</div>
+      <div class="jnode-body">
+        <div class="jnode-title">生日禮使用追蹤 <span class="node-timing">生日後 1 天</span></div>
+        <div class="jnode-sub">📊 是否開啟優惠碼條件判斷</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <!-- D1 branch -->
+    <div class="branch-area">
+      <div class="branch-connector">
+        <div class="branch-v"></div>
+        <div class="branch-v"></div>
+      </div>
+      <div class="branch-row">
+        <div class="branch-side">
+          <span class="branch-tag yes">已使用 ✓</span>
+          <div class="branch-card">
+            <div class="branch-card-label">已兌換生日優惠</div>
+            <div>VIP感謝訊息<br>推薦獎勵邀請</div>
+          </div>
+        </div>
+        <div class="branch-side">
+          <span class="branch-tag no">未使用 ✗</span>
+          <div class="branch-card">
+            <div class="branch-card-label">尚未使用優惠碼</div>
+            <div>延長優惠期限<br>LINE 再提醒</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D1"></div>
+
+    <!-- D7 -->
+    <div class="jnode jnode-amber pending" id="node-D7">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-amber">🛍️ 回購培育</div>
+      <div class="jnode-body">
+        <div class="jnode-title">壽星專屬回購培育 <span class="node-timing">生日後 7 天</span></div>
+        <div class="jnode-sub">🛍️ 台北門市限定推薦 + 社群廣告</div>
+        <div class="node-channels">
+          <span class="ch-tag">Email</span><span class="ch-tag">IG Ads</span><span class="ch-tag">LINE</span>
+        </div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D7"></div>
+
+    <!-- D30 -->
+    <div class="jnode jnode-green pending" id="node-D30">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-green">📈 旅程終點</div>
+      <div class="jnode-body">
+        <div class="jnode-title">旅程成效報告 <span class="node-timing">旅程總結</span></div>
+        <div class="jnode-sub">📈 轉換率統計 → 下月壽星預備</div>
+        <div class="node-channels">
+          <span class="ch-tag">報表匯出</span><span class="ch-tag">下月預備</span>
+        </div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Execution status panel (tab 2) -->
+  <div class="exec-panel" id="execPanel">
+    <div class="exec-hero">
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-total">0</div>
+        <div class="exec-hero-lbl">觸發人數</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-running" style="color:#7c3aed">0</div>
+        <div class="exec-hero-lbl">執行中</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-done" style="color:#16a34a">0</div>
+        <div class="exec-hero-lbl">已完成</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-rate">0%</div>
+        <div class="exec-hero-lbl">完成率</div>
+      </div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-title">節點分佈</div>
+      <div id="execNodeBars"></div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-title">個別旅程</div>
+      <div id="execJourneyList"></div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-chart-hdr">
+        <span class="exec-chart-title">旅程分析</span>
+        <div class="exec-chart-legend">
+          <div class="exec-legend"><div class="exec-legend-dot" style="background:#7c3aed"></div><span>觸發次數</span></div>
+          <div class="exec-legend"><div class="exec-legend-dot" style="background:#f97316"></div><span>發送訊息數</span></div>
+        </div>
+      </div>
+      <canvas id="analyticsChart" height="100" style="width:100%"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+var _journeys = [];
+var NODE_KEYS = ['PRE7','D0','D1','D7','D30'];
+
+function renderTree(journeys) {
+  var latest = (journeys && journeys.length > 0) ? journeys[0] : null;
+  NODE_KEYS.forEach(function(key) {
+    var el = document.getElementById('node-' + key);
+    if (!el) return;
+    var status = 'pending';
+    if (latest) {
+      for (var i = 0; i < latest.nodes.length; i++) {
+        if (latest.nodes[i].key === key) {
+          var s = latest.nodes[i].status;
+          status = (s === 'running' || s === 'done') ? s : 'pending';
+          break;
+        }
+      }
+    }
+    el.classList.remove('pending','running','done');
+    el.classList.add(status);
+    var badge = el.querySelector('.done-badge');
+    if (badge) badge.style.display = status === 'done' ? 'flex' : 'none';
+    var pill = el.querySelector('.running-pill');
+    if (pill) pill.style.display = status === 'running' ? 'inline-flex' : 'none';
+  });
+  var vlines = document.querySelectorAll('.vline[data-prev]');
+  for (var j = 0; j < vlines.length; j++) {
+    var vl = vlines[j];
+    var prevKey = vl.getAttribute('data-prev');
+    var prevStatus = 'pending';
+    if (latest) {
+      for (var k = 0; k < latest.nodes.length; k++) {
+        if (latest.nodes[k].key === prevKey) { prevStatus = latest.nodes[k].status; break; }
+      }
+    }
+    vl.classList.remove('done');
+    if (prevStatus === 'done') vl.classList.add('done');
+  }
+}
+
+function _showJourneyTab() {
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-modify').style.display = 'none';
+  document.getElementById('tabBar').style.display = 'flex';
+}
+
+document.getElementById('btn-start').addEventListener('click', function() {
+  window.parent.postMessage({ type: 'journey-start-request', journeyType: 'birthday' }, '*');
+  _showJourneyTab();
+});
+
+document.getElementById('btn-modify').addEventListener('click', function() {
+  window.parent.postMessage({ type: 'journey-modify-request' }, '*');
+});
+
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'birthday-journey-state-sync') {
+    if (!Array.isArray(e.data.journeys)) return;
+    _journeys = e.data.journeys;
+    if (_journeys.length > 0) _showJourneyTab();
+    renderTree(_journeys);
+    renderExecStats();
+  }
+  if (e.data.type === 'journey-started') {
+    _showJourneyTab();
+  }
+});
+
+window.parent.postMessage({ type: 'birthday-journey-state-request' }, '*');
+
+// ── Tab switching ─────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-map').classList.toggle('active', tab === 'map');
+  document.getElementById('tab-exec').classList.toggle('active', tab === 'exec');
+  var flow = document.getElementById('treePanel');
+  var exec = document.getElementById('execPanel');
+  if (tab === 'map') {
+    flow.style.display = 'flex';
+    exec.style.display = 'none';
+  } else {
+    flow.style.display = 'none';
+    exec.style.display = 'flex';
+    window.parent.postMessage({ type: 'birthday-journey-state-request' }, '*');
+    renderExecStats();
+    if (!_chartDrawn) drawChart();
+  }
+}
+
+// ── Execution status ──────────────────────────────────
+var NODE_LABELS = {PRE7:'壽星篩選',D0:'生日觸發',D1:'使用追蹤',D7:'回購培育',D30:'旅程終點'};
+
+function renderExecStats() {
+  var journeys = _journeys;
+  var total = journeys.length;
+  var done = journeys.filter(function(j){return j.status==='done';}).length;
+  var running = total - done;
+  document.getElementById('es-total').textContent = total.toLocaleString();
+  document.getElementById('es-running').textContent = running.toLocaleString();
+  document.getElementById('es-done').textContent = done.toLocaleString();
+  document.getElementById('es-rate').textContent = total > 0 ? (done/total*100).toFixed(1)+'%' : '0%';
+
+  var nodeHtml = '';
+  NODE_KEYS.forEach(function(key) {
+    var dc=0,rc=0;
+    journeys.forEach(function(j){j.nodes.forEach(function(n){if(n.key!==key)return;if(n.status==='done')dc++;else if(n.status==='running')rc++;});});
+    var dp=total>0?dc/total*100:0, rp=total>0?rc/total*100:0;
+    nodeHtml+='<div class="exec-node-row"><span class="exec-node-key">'+key+'</span>'+
+      '<div class="exec-bar-wrap"><div class="exec-bar-done" style="width:'+dp.toFixed(1)+'%"></div>'+
+      '<div class="exec-bar-run" style="width:'+rp.toFixed(1)+'%"></div></div>'+
+      '<span class="exec-node-cnt">'+(rc>0?rc:dc)+'</span></div>';
+  });
+  document.getElementById('execNodeBars').innerHTML = nodeHtml;
+
+  var listHtml = '';
+  journeys.slice(0,8).forEach(function(j){
+    var dots=j.nodes.map(function(n){return'<span class="exec-rdot '+n.status+'"></span>';}).join('');
+    var dc=j.nodes.filter(function(n){return n.status==='done';}).length;
+    var cls=j.status==='done'?'done':'run', txt=j.status==='done'?'✓':dc+'/'+j.nodes.length;
+    listHtml+='<div class="exec-jrow"><span class="exec-jrow-name">'+j.userName+'</span>'+
+      '<div class="exec-jrow-dots">'+dots+'</div><span class="exec-badge '+cls+'">'+txt+'</span></div>';
+  });
+  if(journeys.length>8) listHtml+='<div class="exec-more">+ '+(journeys.length-8)+' 人</div>';
+  document.getElementById('execJourneyList').innerHTML = listHtml;
+}
+
+// ── Analytics chart ───────────────────────────────────
+var _chartDrawn = false;
+function drawChart() {
+  _chartDrawn = true;
+  var canvas = document.getElementById('analyticsChart');
+  if (!canvas) return;
+  var dpr = window.devicePixelRatio||1;
+  var cw = canvas.offsetWidth||220, ch = 100;
+  canvas.width = cw*dpr; canvas.height = ch*dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  var tD=[480,520,610,590,740,680,550,620,470,590,510,640];
+  var mD=[310,380,420,390,510,460,390,440,330,410,360,480];
+  var mo=['1','2','3','4','5','6','7','8','9','10','11','12'];
+  var pL=28,pR=8,pT=8,pB=18,w=cw,h=ch,gw=w-pL-pR,gh=h-pT-pB,maxV=900;
+  ctx.strokeStyle='#f3f4f6';ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){var gy=pT+gh-gh*g/4;ctx.beginPath();ctx.moveTo(pL,gy);ctx.lineTo(pL+gw,gy);ctx.stroke();}
+  ctx.fillStyle='#9ca3af';ctx.font='7px sans-serif';ctx.textAlign='right';
+  for(var g=0;g<=4;g++){var gy=pT+gh-gh*g/4;ctx.fillText((maxV*g/4/1000).toFixed(1)+'k',pL-2,gy+3);}
+  ctx.textAlign='center';
+  for(var i=0;i<mo.length;i++){ctx.fillText(mo[i],pL+i*gw/(mo.length-1),h-2);}
+  function line(data,color){
+    var pts=data.map(function(v,i){return[pL+i*gw/(data.length-1),pT+gh-gh*v/maxV];});
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=color;pts.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],2,0,Math.PI*2);ctx.fill();});
+  }
+  line(tD,'#7c3aed'); line(mD,'#f97316');
+}
+</script>
+</body>
+</html>

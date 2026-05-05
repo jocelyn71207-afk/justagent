@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅程總覽</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Helvetica Neue','PingFang TC',sans-serif;font-size:12px;color:#1a1d23}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#3b72f6;margin-bottom:2px}
+.topbar-title{font-size:13px;font-weight:800;letter-spacing:-.3px}
+.btn-start{background:#3b72f6;color:#fff;border:none;border-radius:8px;
+  padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-start:hover{background:#2563eb}
+.btn-modify{background:#fff;color:#3b72f6;border:1.5px solid #bfdbfe;border-radius:8px;
+  padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s,color .2s}
+.btn-modify:hover{background:#eff6ff}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+
+/* ── Canvas ── */
+.canvas-area{
+  flex:1;min-height:0;position:relative;
+  background-color:#f8faff;
+  background-image:radial-gradient(circle,#c7d2fe 1px,transparent 1px);
+  background-size:24px 24px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ── Zoom controls (visual only) ── */
+.zoom-ctrl{
+  position:absolute;top:10px;right:10px;
+  background:#fff;border:1px solid #e5e7eb;border-radius:8px;
+  display:flex;align-items:center;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:10;
+}
+.zoom-btn{background:none;border:none;color:#6b7280;width:28px;height:28px;
+  cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.zoom-btn:hover{background:#f3f4f6}
+.zoom-val{font-size:11px;color:#374151;padding:0 8px;font-weight:600;
+  border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;
+  height:28px;display:flex;align-items:center}
+
+/* ── Flow (scrollable) ── */
+.flow{
+  flex:1;min-height:0;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 16px 40px;
+}
+
+/* ── Node card ── */
+.jnode{
+  width:240px;background:#fff;border:1px solid #e5e7eb;
+  border-radius:10px;overflow:hidden;position:relative;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);transition:box-shadow .3s;
+}
+.jnode.running{box-shadow:0 0 0 3px rgba(59,114,246,.2)}
+.jnode.done{opacity:.8}
+
+/* Node accent border */
+.jnode-blue  {border-left:3px solid #3b72f6}
+.jnode-teal  {border-left:3px solid #0891b2}
+.jnode-purple{border-left:3px solid #7c3aed}
+.jnode-green {border-left:3px solid #16a34a}
+
+/* Node header pill */
+.jnode-hdr{padding:5px 10px 4px;display:flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:700;letter-spacing:.03em}
+.hdr-blue  {background:#eff6ff;color:#2563eb}
+.hdr-teal  {background:#f0fdfe;color:#0891b2}
+.hdr-purple{background:#f5f3ff;color:#7c3aed}
+.hdr-green {background:#f0fdf4;color:#16a34a}
+
+/* Node body */
+.jnode-body{padding:7px 10px 9px}
+.jnode-title{font-size:11px;font-weight:700;color:#1a1d23;margin-bottom:2px}
+.jnode-sub{font-size:10px;color:#6b7280;line-height:1.4}
+
+/* Done badge */
+.done-badge{
+  position:absolute;top:-5px;right:-5px;width:15px;height:15px;
+  border-radius:50%;background:#16a34a;color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;border:2px solid #fff;
+}
+
+/* Running pill */
+.running-pill{display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;color:#3b72f6;font-weight:600;margin-top:5px}
+.running-dot{width:5px;height:5px;border-radius:50%;background:#3b72f6;
+  animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* Connector */
+.vline{width:2px;height:14px;background:#d1d5db;flex-shrink:0}
+.vline.done{background:#16a34a}
+
+/* Branch */
+.branch-area{width:100%;max-width:240px;display:flex;flex-direction:column;align-items:center}
+.branch-connector{display:flex;width:50%;justify-content:space-between;position:relative;margin-bottom:0}
+.branch-connector::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:#d1d5db}
+.branch-v{width:1.5px;height:14px;background:#d1d5db}
+.branch-row{display:flex;width:100%;gap:8px}
+.branch-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.branch-tag{font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px}
+.branch-tag.yes{background:#dcfce7;color:#166534}
+.branch-tag.no{background:#fef9c3;color:#92400e}
+.branch-card{width:100%;border-radius:7px;padding:7px 9px;border:1px solid #e5e7eb;
+  background:#fff;font-size:10px;color:#6b7280}
+.branch-card-label{font-size:9px;font-weight:700;margin-bottom:3px;color:#1a1d23}
+
+/* ── Tab bar ── */
+.tab-bar{background:#fff;border-bottom:1px solid #e5e7eb;display:none;align-items:center;flex-shrink:0;padding:0 16px}
+.tab-item{height:36px;line-height:36px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;padding:0 14px;transition:color .15s,border-color .15s;user-select:none}
+.tab-item.active{color:#3b72f6;border-bottom-color:#3b72f6}
+/* ── Exec panel ── */
+.exec-panel{flex:1;min-height:0;overflow-y:auto;padding:12px 16px 32px;display:none;flex-direction:column;gap:10px}
+.exec-hero{background:#fff;border:1px solid #e5e7eb;border-radius:10px;display:flex;padding:14px 0}
+.exec-hero-stat{flex:1;text-align:center;padding:0 8px}
+.exec-hero-stat+.exec-hero-stat{border-left:1px solid #e5e7eb}
+.exec-hero-val{font-size:22px;font-weight:800;color:#1a1d23;margin-bottom:2px}
+.exec-hero-lbl{font-size:9px;color:#6b7280;font-weight:600;letter-spacing:.05em}
+.exec-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px}
+.exec-card-title{font-size:10px;font-weight:700;color:#374151;margin-bottom:8px}
+.exec-node-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.exec-node-key{font-size:9px;font-weight:700;color:#6b7280;width:32px;flex-shrink:0}
+.exec-bar-wrap{flex:1;height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;display:flex}
+.exec-bar-done{height:100%;background:#16a34a;transition:width .5s}
+.exec-bar-run{height:100%;background:#3b72f6;transition:width .5s}
+.exec-node-cnt{font-size:9px;color:#6b7280;width:24px;text-align:right;flex-shrink:0}
+.exec-jrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f3f4f6}
+.exec-jrow:last-child{border-bottom:none}
+.exec-jrow-name{font-size:10px;color:#374151;width:48px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exec-jrow-dots{display:flex;gap:3px;flex:1}
+.exec-rdot{width:8px;height:8px;border-radius:50%;background:#e5e7eb}
+.exec-rdot.running{background:#3b72f6;animation:dp 1s ease-in-out infinite}
+.exec-rdot.done{background:#16a34a}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
+.exec-badge{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;background:#f3f4f6;color:#6b7280}
+.exec-badge.done{background:#dcfce7;color:#166534}
+.exec-badge.run{background:#eff6ff;color:#2563eb}
+.exec-more{font-size:10px;color:#9ca3af;text-align:center;padding:5px 0}
+.exec-chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.exec-chart-title{font-size:10px;font-weight:700;color:#374151}
+.exec-chart-legend{display:flex;gap:10px}
+.exec-legend{display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280}
+.exec-legend-dot{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div>
+    <div class="topbar-label">Hurricane Trailsetter · AW26</div>
+    <div class="topbar-title">🗺️ 行銷自動化旅程</div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-modify" id="btn-modify">＋ 新增旅程修改需求</button>
+    <button class="btn-start" id="btn-start">▶ 啟動旅程</button>
+  </div>
+</div>
+
+<!-- Tab bar (shown after journey starts) -->
+<div class="tab-bar" id="tabBar">
+  <div class="tab-item active" id="tab-map" onclick="switchTab('map')">🗺️ 旅程地圖</div>
+  <div class="tab-item" id="tab-exec" onclick="switchTab('exec')">📊 執行狀態</div>
+</div>
+
+<!-- Canvas -->
+<div class="canvas-area">
+  <div class="zoom-ctrl">
+    <button class="zoom-btn">−</button>
+    <span class="zoom-val">100%</span>
+    <button class="zoom-btn">+</button>
+  </div>
+
+  <div class="flow" id="treePanel">
+
+    <!-- D0 -->
+    <div class="jnode jnode-blue pending" id="node-D0">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-blue">⚡ 旅程起點：觸發</div>
+      <div class="jnode-body">
+        <div class="jnode-title">觸發加入旅程</div>
+        <div class="jnode-sub">🚀 首次訪問 / 加入購物車</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D0"></div>
+
+    <!-- D1 -->
+    <div class="jnode jnode-teal pending" id="node-D1">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-teal">✉ 訊息發送</div>
+      <div class="jnode-body">
+        <div class="jnode-title">歡迎序列啟動</div>
+        <div class="jnode-sub">💌 Email + LINE 歡迎</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D1"></div>
+
+    <!-- D3 -->
+    <div class="jnode jnode-purple pending" id="node-D3">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-purple">⑂ 條件分流</div>
+      <div class="jnode-body">
+        <div class="jnode-title">行為條件分流</div>
+        <div class="jnode-sub">🔀 Email 開啟條件</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <!-- D3 branches -->
+    <div class="branch-area">
+      <div class="branch-connector">
+        <div class="branch-v"></div>
+        <div class="branch-v"></div>
+      </div>
+      <div class="branch-row">
+        <div class="branch-side">
+          <span class="branch-tag yes">是 ✓</span>
+          <div class="branch-card">
+            <div class="branch-card-label">已開啟 Email</div>
+            <div>限時優惠碼 + LINE 提醒</div>
+          </div>
+        </div>
+        <div class="branch-side">
+          <span class="branch-tag no">否 ✗</span>
+          <div class="branch-card">
+            <div class="branch-card-label">未開啟</div>
+            <div>換標題重發 + 再行銷</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D3"></div>
+
+    <!-- D7 -->
+    <div class="jnode jnode-teal pending" id="node-D7">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-teal">📖 產品培育</div>
+      <div class="jnode-body">
+        <div class="jnode-title">產品深度培育</div>
+        <div class="jnode-sub">📖 Email + IG 廣告</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D7"></div>
+
+    <!-- D14 -->
+    <div class="jnode jnode-teal pending" id="node-D14">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-teal">⚡ 轉換衝刺</div>
+      <div class="jnode-body">
+        <div class="jnode-title">購買轉換衝刺</div>
+        <div class="jnode-sub">⚡ 未結帳提醒</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+    <div class="vline" data-prev="D14"></div>
+
+    <!-- D30 -->
+    <div class="jnode jnode-green pending" id="node-D30">
+      <div class="done-badge" style="display:none">✓</div>
+      <div class="jnode-hdr hdr-green">⭐ 旅程終點</div>
+      <div class="jnode-body">
+        <div class="jnode-title">購後回購培育</div>
+        <div class="jnode-sub">⭐ 完成購買 / 回購</div>
+        <div class="running-pill" style="display:none"><span class="running-dot"></span>執行中</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Execution status panel (tab 2) -->
+  <div class="exec-panel" id="execPanel">
+    <div class="exec-hero">
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-total">0</div>
+        <div class="exec-hero-lbl">觸發人數</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-running" style="color:#3b72f6">0</div>
+        <div class="exec-hero-lbl">執行中</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-done" style="color:#16a34a">0</div>
+        <div class="exec-hero-lbl">已完成</div>
+      </div>
+      <div class="exec-hero-stat">
+        <div class="exec-hero-val" id="es-rate">0%</div>
+        <div class="exec-hero-lbl">完成率</div>
+      </div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-title">節點分佈</div>
+      <div id="execNodeBars"></div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-title">個別旅程</div>
+      <div id="execJourneyList"></div>
+    </div>
+    <div class="exec-card">
+      <div class="exec-chart-hdr">
+        <span class="exec-chart-title">旅程分析</span>
+        <div class="exec-chart-legend">
+          <div class="exec-legend"><div class="exec-legend-dot" style="background:#3b72f6"></div><span>觸發次數</span></div>
+          <div class="exec-legend"><div class="exec-legend-dot" style="background:#f97316"></div><span>發送訊息數</span></div>
+        </div>
+      </div>
+      <canvas id="analyticsChart" height="100" style="width:100%"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+var _journeys = [];
+
+// ── Tree rendering ───────────────────────────────────────────────
+var NODE_KEYS = ['D0','D1','D3','D7','D14','D30'];
+
+function renderTree(journeys) {
+  var latest = (journeys && journeys.length > 0) ? journeys[0] : null;
+
+  NODE_KEYS.forEach(function(key) {
+    var el = document.getElementById('node-' + key);
+    if (!el) return;
+
+    var status = 'pending';
+    if (latest) {
+      var found = null;
+      for (var i = 0; i < latest.nodes.length; i++) {
+        if (latest.nodes[i].key === key) { found = latest.nodes[i]; break; }
+      }
+      if (found) {
+        status = (found.status === 'running' || found.status === 'done') ? found.status : 'pending';
+      }
+    }
+
+    el.classList.remove('pending', 'running', 'done');
+    el.classList.add(status);
+
+    var badge = el.querySelector('.done-badge');
+    if (badge) badge.style.display = status === 'done' ? 'flex' : 'none';
+
+    var pill = el.querySelector('.running-pill');
+    if (pill) pill.style.display = status === 'running' ? 'inline-flex' : 'none';
+  });
+
+  var vlines = document.querySelectorAll('.vline[data-prev]');
+  for (var j = 0; j < vlines.length; j++) {
+    var vl = vlines[j];
+    var prevKey = vl.getAttribute('data-prev');
+    var prevStatus = 'pending';
+    if (latest) {
+      for (var k = 0; k < latest.nodes.length; k++) {
+        if (latest.nodes[k].key === prevKey) {
+          prevStatus = latest.nodes[k].status;
+          break;
+        }
+      }
+    }
+    vl.classList.remove('done');
+    if (prevStatus === 'done') vl.classList.add('done');
+  }
+}
+
+// ── Event wiring ─────────────────────────────────────────────────
+function _showJourneyTab() {
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-modify').style.display = 'none';
+  document.getElementById('tabBar').style.display = 'flex';
+}
+
+document.getElementById('btn-start').addEventListener('click', function() {
+  window.parent.postMessage({ type: 'journey-start-request' }, '*');
+  _showJourneyTab();
+});
+
+document.getElementById('btn-modify').addEventListener('click', function() {
+  window.parent.postMessage({ type: 'journey-modify-request' }, '*');
+});
+
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'journey-state-sync') {
+    if (!Array.isArray(e.data.journeys)) return;
+    _journeys = e.data.journeys;
+    if (_journeys.length > 0) _showJourneyTab();
+    renderTree(_journeys);
+    renderExecStats();
+  }
+  if (e.data.type === 'journey-started') {
+    _showJourneyTab();
+  }
+});
+
+window.parent.postMessage({ type: 'journey-state-request' }, '*');
+
+// ── Tab switching ─────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-map').classList.toggle('active', tab === 'map');
+  document.getElementById('tab-exec').classList.toggle('active', tab === 'exec');
+  var flow = document.getElementById('treePanel');
+  var exec = document.getElementById('execPanel');
+  if (tab === 'map') {
+    flow.style.display = 'flex';
+    exec.style.display = 'none';
+  } else {
+    flow.style.display = 'none';
+    exec.style.display = 'flex';
+    window.parent.postMessage({ type: 'journey-state-request' }, '*');
+    renderExecStats();
+    if (!_chartDrawn) drawChart();
+  }
+}
+
+// ── Execution status ──────────────────────────────────
+var NODE_LABELS = {D0:'觸發加入',D1:'歡迎序列',D3:'條件分流',D7:'產品培育',D14:'轉換衝刺',D30:'購後回購'};
+
+function renderExecStats() {
+  var journeys = _journeys;
+  var total = journeys.length;
+  var done = journeys.filter(function(j){return j.status==='done';}).length;
+  var running = total - done;
+  document.getElementById('es-total').textContent = total.toLocaleString();
+  document.getElementById('es-running').textContent = running.toLocaleString();
+  document.getElementById('es-done').textContent = done.toLocaleString();
+  document.getElementById('es-rate').textContent = total > 0 ? (done/total*100).toFixed(1)+'%' : '0%';
+
+  var nodeHtml = '';
+  NODE_KEYS.forEach(function(key) {
+    var dc=0,rc=0;
+    journeys.forEach(function(j){j.nodes.forEach(function(n){if(n.key!==key)return;if(n.status==='done')dc++;else if(n.status==='running')rc++;});});
+    var dp=total>0?dc/total*100:0, rp=total>0?rc/total*100:0;
+    nodeHtml+='<div class="exec-node-row"><span class="exec-node-key">'+key+'</span>'+
+      '<div class="exec-bar-wrap"><div class="exec-bar-done" style="width:'+dp.toFixed(1)+'%"></div>'+
+      '<div class="exec-bar-run" style="width:'+rp.toFixed(1)+'%"></div></div>'+
+      '<span class="exec-node-cnt">'+(rc>0?rc:dc)+'</span></div>';
+  });
+  document.getElementById('execNodeBars').innerHTML = nodeHtml;
+
+  var listHtml = '';
+  journeys.slice(0,8).forEach(function(j){
+    var dots=j.nodes.map(function(n){return'<span class="exec-rdot '+n.status+'"></span>';}).join('');
+    var dc=j.nodes.filter(function(n){return n.status==='done';}).length;
+    var cls=j.status==='done'?'done':'run', txt=j.status==='done'?'✓':dc+'/'+j.nodes.length;
+    listHtml+='<div class="exec-jrow"><span class="exec-jrow-name">'+j.userName+'</span>'+
+      '<div class="exec-jrow-dots">'+dots+'</div><span class="exec-badge '+cls+'">'+txt+'</span></div>';
+  });
+  if(journeys.length>8) listHtml+='<div class="exec-more">+ '+(journeys.length-8)+' 人</div>';
+  document.getElementById('execJourneyList').innerHTML = listHtml;
+}
+
+// ── Analytics chart ───────────────────────────────────
+var _chartDrawn = false;
+function drawChart() {
+  _chartDrawn = true;
+  var canvas = document.getElementById('analyticsChart');
+  if (!canvas) return;
+  var dpr = window.devicePixelRatio||1;
+  var cw = canvas.offsetWidth||220, ch = 100;
+  canvas.width = cw*dpr; canvas.height = ch*dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  var tD=[920,770,1000,890,1100,650,710,930,510,950,670,730];
+  var mD=[490,600,600,640,580,850,830,670,830,650,570,920];
+  var mo=['1','2','3','4','5','6','7','8','9','10','11','12'];
+  var pL=28,pR=8,pT=8,pB=18,w=cw,h=ch,gw=w-pL-pR,gh=h-pT-pB,maxV=1200;
+  ctx.strokeStyle='#f3f4f6';ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){var gy=pT+gh-gh*g/4;ctx.beginPath();ctx.moveTo(pL,gy);ctx.lineTo(pL+gw,gy);ctx.stroke();}
+  ctx.fillStyle='#9ca3af';ctx.font='7px sans-serif';ctx.textAlign='right';
+  for(var g=0;g<=4;g++){var gy=pT+gh-gh*g/4;ctx.fillText((maxV*g/4/1000).toFixed(1)+'k',pL-2,gy+3);}
+  ctx.textAlign='center';
+  for(var i=0;i<mo.length;i++){ctx.fillText(mo[i],pL+i*gw/(mo.length-1),h-2);}
+  function line(data,color){
+    var pts=data.map(function(v,i){return[pL+i*gw/(data.length-1),pT+gh-gh*v/maxV];});
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=color;pts.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],2,0,Math.PI*2);ctx.fill();});
+  }
+  line(tD,'#3b72f6'); line(mD,'#f97316');
+}
+</script>
+</body>
+</html>

@@ -7,15 +7,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.25rem 0.5rem 0.25rem 0.6rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--divider);
     border-radius: $radius;
-    // background-color: var(--color-background);
+    // background-color: var(--page-bg);
     transition: all 0.2s;
     user-select: none;
     cursor: pointer;
 
     &:hover {
-      border-color: var(--color-wise-green);
+      border-color: var(--accent);
     }
 
     .selected-text {
@@ -24,7 +24,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 14px;
-      color: var(--color-text);
+      color: var(--text);
 
       // &:empty::before {
       //   content: attr(data-placeholder);
@@ -41,14 +41,14 @@
 
     .clear-trigger-icon {
       font-size: 20px;
-      color: $color_grey_2;
+      color: var(--text-faint);
       font-weight: 600;
       cursor: pointer;
     }
 
     .arrow-icon {
       font-size: 30px;
-      color: $color_grey_2;
+      color: var(--text-faint);
       transition: transform 0.2s;
 
       &.open {
@@ -63,11 +63,11 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    // border: 1px solid var(--color-border);
-    border-radius: $radius;
-    background-color: var(--color-background);
-    box-shadow: 0 2px 12px rgba(from var(--color-shadow) r g b / 0.15);
-    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 10px;
+    box-shadow: 0 8px 28px -6px rgba(var(--shadow),0.22);
+    padding: 6px;
 
     &.dropup {
       top: auto;
@@ -102,37 +102,55 @@
     overflow-x: hidden;
     padding: 8px;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar));
+    @include use-scroll-bar(var(--scrollbar));
 
     .no-match-data {
       padding: 16px;
       text-align: center;
       font-size: 14px;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
     }
   }
+}
+
+// ── Dark mode: Jade Mist 02 · Dark shadow overrides ───────
+@mixin dropdown-menu-dark {
+  .compDropDown .dropdown-menu {
+    box-shadow: 0 12px 36px -8px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02);
+  }
+}
+
+[data-theme="dark"] { @include dropdown-menu-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dropdown-menu-dark; }
 }
 
 .dropdown-item-wrapper {
   .dropdown-item {
     display: flex;
     align-items: center;
-    padding: 10px 12px;
+    padding: 9px 12px;
     font-size: 14px;
-    transition: background-color 0.2s;
+    transition: background 0.15s;
     user-select: none;
     position: relative;
-    border-radius: $radius;
+    border-radius: 6px;
+    color: var(--text);
     cursor: pointer;
 
     &:hover {
-      background-color: var(--color-background-1);
+      background: var(--accent-soft);
     }
 
     &.selected {
-      color: var(--color-wise-dark-green);
-      background-color: $color_main_6;
+      color: var(--primary-hover);
+      background-color: var(--accent-soft);
       font-weight: 500;
+    }
+
+    &.danger, &.is-danger {
+      color: var(--danger);
     }
 
     &.has-children {
@@ -143,7 +161,7 @@
       font-size: 18px;
       margin-right: 4px;
       transition: transform 0.2s;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
 
       &.expanded {
         transform: rotate(90deg);
@@ -160,7 +178,7 @@
     .check-icon {
       font-size: 18px;
       margin-left: 8px;
-      color: var(--color-wise-dark-green);
+      color: var(--primary-hover);
     }
   }
 

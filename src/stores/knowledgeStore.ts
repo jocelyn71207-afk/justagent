@@ -135,13 +135,13 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           status: 'PUBLISHED',
           title: '2025產品總表-Q3',
           summary: '新增Q3選品資料',
-          content: '## Teva 鞋款庫存資料\n\n| Model | SC | 年份 | 系列 | 類別 | 子類 | 鞋型 | 價格 | 銷售日期 | 銷售量 | ... |\n|-------|----|------|------|------|------|------|------|----------|--------|-----|\n| TV4038BKBR | TV | 4038BKBR | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110722 | 234 |\n| TV4038BNGC | TV | 4038BNGC | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110824 | 252 |\n| TV4045LURK | TV | 4045LURK | 2011F | Forge Pro eVent Ws | Performance | Trail | Performance Shoe | 4980 | 20110816 | 144 |',
+          content: '## UGG 鞋款庫存資料\n\n| Model | SC | 年份 | 系列 | 類別 | 子類 | 鞋型 | 價格 | 銷售日期 | 銷售量 | ... |\n|-------|----|------|------|------|------|------|------|----------|--------|-----|\n| TV4038BKBR | TV | 4038BKBR | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110722 | 234 |\n| TV4038BNGC | TV | 4038BNGC | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110824 | 252 |\n| TV4045LURK | TV | 4045LURK | 2011F | Forge Pro eVent Ws | Performance | Trail | Performance Shoe | 4980 | 20110816 | 144 |',
           category: '商品文件',
           tags: ['產品'],
           lastUpdateBy: 'Lucas',
           lastUpdateTime: '2026-08-13 10:30',
-          updateNote: '更新為 Teva 鞋款庫存資料',
-          sourceFiles: [{ fileId: 'res3', fileName: 'Teva2025商品總表.xlsx', linkedVersion: 1 }],
+          updateNote: '更新為 UGG 鞋款庫存資料',
+          sourceFiles: [{ fileId: 'res3', fileName: 'UGG2025商品總表.xlsx', linkedVersion: 1 }],
         }
       ]
     },
@@ -220,9 +220,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
 | 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
 |---|---|---|---|---|
-| Teva Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 142 | 上架中 |
-| Teva Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,280 | 87 | 上架中 |
-| Teva Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 203 | 上架中 |
+| UGG Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 142 | 上架中 |
+| UGG Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,280 | 87 | 上架中 |
+| UGG Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 203 | 上架中 |
 
 ## 備註
 - 資料來源：商品目錄 API（https://api.example.com/products）
@@ -246,24 +246,24 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
 | 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
 |---|---|---|---|---|
-| Teva Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 98 | 上架中 |
-| Teva Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 65 | 上架中（降價） |
-| Teva Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 180 | 上架中 |
+| UGG Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 98 | 上架中 |
+| UGG Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 65 | 上架中（降價） |
+| UGG Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 180 | 上架中 |
 
 ## 春季新品（新增）
 
 | 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
 |---|---|---|---|---|
-| Teva Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 120 | 預購中 |
-| Teva Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 250 | 上架中 |
-| Teva Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 75 | 預購中 |
-| Teva Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 90 | 上架中 |
-| Teva Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 45 | 預購中 |
+| UGG Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 120 | 預購中 |
+| UGG Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 250 | 上架中 |
+| UGG Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 75 | 預購中 |
+| UGG Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 90 | 上架中 |
+| UGG Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 45 | 預購中 |
 
 ## 備註
 - 資料來源：商品目錄 API（https://api.example.com/products）
 - 同步時間：2026-04-11 09:00
-- 本次異動：新增 5 筆春季新品；Teva Tirra 女款售價由 2,280 調整為 2,180`,
+- 本次異動：新增 5 筆春季新品；UGG Tirra 女款售價由 2,280 調整為 2,180`,
           category: '商品文件',
           tags: ['商品', 'API'],
           lastUpdateBy: 'API 同步',
@@ -283,29 +283,29 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
 | 商品名稱 | 商品編號 | 售價 | 庫存 | 類別 |
 |---|---|---|---|---|
-| Teva Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 72 | 涼鞋 |
-| Teva Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 43 | 涼鞋 |
-| Teva Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 155 | 涼鞋 |
-| Teva Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 218 | 拖鞋 |
-| Teva Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 108 | 厚底涼鞋 |
-| Teva Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 77 | 休閒鞋 |
+| UGG Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 72 | 涼鞋 |
+| UGG Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 43 | 涼鞋 |
+| UGG Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 155 | 涼鞋 |
+| UGG Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 218 | 拖鞋 |
+| UGG Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 108 | 厚底涼鞋 |
+| UGG Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 77 | 休閒鞋 |
 
 ## 預購中
 
 | 商品名稱 | 商品編號 | 售價 | 庫存（預計） | 類別 |
 |---|---|---|---|---|
-| Teva Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 60 | 戶外涼鞋 |
-| Teva Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 40 | 防水涼鞋 |
-| Teva Crocband Pro 夏季款 | TV-CRO-U-BLU | NT$1,880 | 200 | 拖鞋 |
-| Teva Terra Fi Lite 輕量款 | TV-TFL-M-TAN | NT$3,480 | 30 | 健行涼鞋 |
+| UGG Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 60 | 戶外涼鞋 |
+| UGG Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 40 | 防水涼鞋 |
+| UGG Crocband Pro 夏季款 | TV-CRO-U-BLU | NT$1,880 | 200 | 拖鞋 |
+| UGG Terra Fi Lite 輕量款 | TV-TFL-M-TAN | NT$3,480 | 30 | 健行涼鞋 |
 
 ## 已下架
 
 | 商品名稱 | 商品編號 | 下架原因 |
 |---|---|---|
-| Teva Hurricane XLT2 冬季限定色 | TV-HUR-M-NVY | 季末清倉結束 |
-| Teva Classic Flip 冬季款 | TV-CLS-U-BRN | 庫存清零 |
-| Teva Tirra 冬季厚底 | TV-TIR-W-BLK | 款式停產 |
+| UGG Hurricane XLT2 冬季限定色 | TV-HUR-M-NVY | 季末清倉結束 |
+| UGG Classic Flip 冬季款 | TV-CLS-U-BRN | 庫存清零 |
+| UGG Tirra 冬季厚底 | TV-TIR-W-BLK | 款式停產 |
 
 ## 備註
 - 資料來源：商品目錄 API（https://api.example.com/products）

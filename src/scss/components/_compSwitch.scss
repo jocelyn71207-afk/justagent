@@ -3,8 +3,8 @@
   gap: 8px;
   padding: 5px 8px;
   border-radius: 8px;
-  background: var(--color-background-2-alpha20);
-  border: 1px solid var(--color-border);
+  background: var(--sidebar-hover-a20);
+  border: 1px solid var(--divider);
 
   .compSwitch-item {
     border: 0;
@@ -19,8 +19,8 @@
       color 0.2s ease;
 
     &.is-active {
-      background: var(--color-wise-green);
-      color: var(--color-wise-dark-green);
+      background: var(--accent);
+      color: var(--primary-hover);
     }
 
     &.is-disabled {
@@ -29,7 +29,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--color-wise-green);
+      outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
   }

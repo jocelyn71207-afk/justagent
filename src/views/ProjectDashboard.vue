@@ -14,8 +14,8 @@
         <!-- 建立新專案選單小介面 -->
         <div class="createProjectOptionBox next-option-box" ref="createProjectOptionBox" v-show="isOpenCreateProjectOptionBox">
           <div class="fs-14 p-1 description">請選擇要在哪個團隊建立</div>
-          <div class="option-item" @click="openProjectSettingModal(null, true, 'testTeam1')">Teva電子商務</div>
-          <div class="option-item" @click="openProjectSettingModal(null, true, 'testTeam2')">Teva實體門市</div>
+          <div class="option-item" @click="openProjectSettingModal(null, true, 'testTeam1')">UGG電子商務</div>
+          <div class="option-item" @click="openProjectSettingModal(null, true, 'testTeam2')">UGG實體門市</div>
         </div>
       </template>
     </ProjectListContent>

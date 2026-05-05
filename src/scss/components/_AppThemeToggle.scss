@@ -1,0 +1,55 @@
+.AppThemeToggle {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  padding: 5px 10px;
+  box-shadow: 0 2px 8px rgba(var(--shadow), 0.08);
+  cursor: pointer;
+  user-select: none;
+
+  .AppThemeToggle-icon {
+    font-size: 16px;
+    line-height: 1;
+    color: var(--text);
+    transition: opacity 0.2s;
+
+    &.is-inactive {
+      opacity: 0.4;
+    }
+  }
+
+  .AppThemeToggle-track {
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--sidebar-hover);
+    position: relative;
+    transition: background 0.2s;
+
+    &.is-dark {
+      background: var(--primary);
+    }
+  }
+
+  .AppThemeToggle-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--primary-fg);
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+
+    &.is-dark {
+      transform: translateX(14px);
+    }
+  }
+}

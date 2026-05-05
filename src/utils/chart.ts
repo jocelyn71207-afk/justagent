@@ -52,7 +52,7 @@ export function chartAdapter(source: SourceChart): ChartConfiguration {
       maintainAspectRatio: false,
       plugins: {
         title: {
-          display: !!title,
+          display: false,
           text: title
         },
         legend: {

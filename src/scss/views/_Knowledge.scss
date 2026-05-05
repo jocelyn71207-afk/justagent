@@ -22,7 +22,7 @@
     width: 36px;
     height: 36px;
     background: rgba($color-wise-green, 0.1);
-    color: var(--color-wise-dark-green);
+    color: var(--primary-hover);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -52,7 +52,7 @@
   .kb-tab-nav {
     display: flex;
     gap: 0;
-    border-bottom: 2px solid var(--color-border, #e8e8e8);
+    border-bottom: 2px solid var(--divider);
     margin-bottom: 24px;
     padding: 0 0 0 2px;
   }
@@ -73,37 +73,38 @@
     transition: color 0.15s, border-color 0.15s;
 
     &:hover {
-      color: var(--color-text);
+      color: var(--text);
     }
 
     &.is-active {
-      color: var(--color-wise-dark-green);
+      color: var(--primary-hover);
       font-weight: 600;
-      border-bottom-color: var(--color-wise-green);
+      border-bottom-color: var(--accent);
     }
   }
 
   // ── 狀態標籤 (依照資源庫配色邏輯) ──
   .status-badge {
     &--PUBLISHED {
-      background: rgba(52, 211, 153, 0.10);
-      color: #059669;
+      background: rgba(0, 160, 120, 0.10);
+      color: var(--success);
     }
     &--REVIEWING {
-      background: rgba(251, 192, 0, 0.15);
-      color: #b07d00;
+      background: rgba(207, 138, 31, 0.12);
+      color: var(--warning);
     }
     &--DRAFT {
-      background: rgba(30, 136, 229, 0.10);
-      color: #1565c0;
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      color: var(--text-muted);
     }
     &--REJECTED {
-      background: rgba(229, 57, 53, 0.10);
-      color: #c62828;
+      background: rgba(209, 68, 55, 0.10);
+      color: var(--danger);
     }
     &--HISTORY {
-      background: var(--color-background-2-alpha10);
-      color: var(--color-text-alpha50);
+      background: rgba(232,238,240,0.1);
+      color: var(--text-muted);
     }
   }
 
@@ -113,9 +114,9 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
-    background: var(--color-background-1);
-    border: 1px solid var(--color-border-1-alpha50);
-    color: var(--color-text-alpha70);
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    color: var(--text-a70);
 
     &.major {
       background: rgba(138, 63, 252, 0.10);
@@ -126,8 +127,8 @@
 
   // ── 詳情頁詳情 ──
   .detail-header-card {
-    background: var(--color-background);
-    border: 1px solid var(--color-border-1-alpha50);
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
     border-radius: 16px;
     padding: 24px;
     margin-bottom: 24px;
@@ -143,7 +144,7 @@
       
       .info-label {
         font-size: 13px;
-        color: var(--color-text-alpha50);
+        color: var(--text-muted);
         margin-bottom: 4px;
       }
       .info-value {
@@ -155,8 +156,8 @@
 
   // ── 草稿編輯器 Banner ──
   .editor-banner {
-    background: rgba(30, 136, 229, 0.05);
-    border-left: 4px solid #1565c0;
+    background: var(--accent-soft);
+    border-left: 4px solid var(--primary);
     padding: 12px 16px;
     margin-bottom: 24px;
     border-radius: 0 8px 8px 0;
@@ -164,7 +165,7 @@
     align-items: center;
     gap: 12px;
     font-size: 14px;
-    color: #1565c0;
+    color: var(--hint-text);
 
     i { font-size: 20px; }
   }
@@ -179,7 +180,7 @@
       h6 {
         margin-bottom: 12px;
         padding-bottom: 8px;
-        border-bottom: 1px solid var(--color-border-1-alpha50);
+        border-bottom: 1px solid var(--divider-a50);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -190,26 +191,26 @@
       margin-bottom: 20px;
       .diff-label {
         font-size: 12px;
-        color: var(--color-text-alpha40);
+        color: var(--text-faint);
         margin-bottom: 6px;
       }
       .diff-content {
         padding: 8px 12px;
         border-radius: 6px;
-        background: var(--color-background-1);
+        background: var(--surface);
         font-size: 14px;
         line-height: 1.6;
         min-height: 40px;
         
         &.is-added {
-          background-color: rgba(52, 211, 153, 0.08);
-          border: 1px dashed rgba(52, 211, 153, 0.3);
+          background-color: rgba(0, 160, 120, 0.08);
+          border: 1px dashed rgba(0, 160, 120, 0.3);
         }
         &.is-removed {
-          background-color: rgba(229, 57, 53, 0.08);
-          border: 1px dashed rgba(229, 57, 53, 0.3);
+          background-color: rgba(209, 68, 55, 0.08);
+          border: 1px dashed rgba(209, 68, 55, 0.3);
           text-decoration: line-through;
-          color: var(--color-text-alpha50);
+          color: var(--text-muted);
         }
       }
     }
@@ -218,9 +219,9 @@
   // ── 關聯附件：API 來源卡片 ──
   .api-source-card {
     padding: 12px 16px;
-    border: 1px solid var(--color-border-1);
+    border: 1px solid var(--divider);
     border-radius: 10px;
-    background: var(--color-bg-white);
+    background: var(--surface);
 
     .api-source-icon {
       width: 36px;
@@ -237,13 +238,13 @@
     .api-source-name {
       font-size: 13px;
       font-weight: 600;
-      color: var(--color-text-primary);
+      color: var(--primary);
       margin-bottom: 2px;
     }
 
     .api-source-meta {
       font-size: 11.5px;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
     }
   }
 
@@ -251,12 +252,12 @@
   .history-item {
     padding: 16px;
     border-radius: 12px;
-    border: 1px solid var(--color-border-1-alpha50);
+    border: 1px solid var(--divider-a50);
     margin-bottom: 12px;
     transition: background 0.15s ease;
     
     &:hover {
-      background: var(--color-background-1);
+      background: var(--surface);
     }
 
     .history-header {
@@ -267,8 +268,8 @@
 
     .history-note {
       font-size: 13px;
-      color: var(--color-text-alpha80);
-      background: var(--color-background);
+      color: var(--text-a80);
+      background: var(--page-bg);
       padding: 8px;
       border-radius: 6px;
       margin-top: 8px;

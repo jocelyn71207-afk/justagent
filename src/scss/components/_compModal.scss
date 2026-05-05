@@ -10,8 +10,8 @@
 .compModal-mask {
   position: absolute;
   inset: 0;
-  // background: rgba(from var(--color-background) r g b / 0.2);
-  background: rgba(#000, 0.4);
+  // background: rgba(from var(--page-bg) r g b / 0.2);
+  background: rgba(#09151A, 0.45);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -21,11 +21,11 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--surface);
+  color: var(--text);
   border-radius: 16px;
   margin: 10px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 24px 80px -16px rgba(var(--shadow),0.28), 0 8px 20px -8px rgba(var(--shadow),0.12);
   max-height: 92svh;
   overflow: hidden;
 
@@ -48,7 +48,7 @@
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
-    color: var(--color-text);
+    color: var(--text);
     padding: 2px 6px;
   }
 
@@ -56,7 +56,7 @@
     padding: 24px;
     overflow: auto;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar-alpha50));
+    @include use-scroll-bar(var(--scrollbar-a50));
   }
   .compModal-footer {
     display: flex;

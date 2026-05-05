@@ -24,13 +24,13 @@
     border-radius: 9999px;
 
     &--stored {
-      background: var(--color-wise-mint);
-      color: var(--color-wise-dark-green);
+      background: var(--hint);
+      color: var(--primary-hover);
     }
 
     &--saved {
-      background: var(--color-wise-mint);
-      color: var(--color-wise-dark-green);
+      background: var(--hint);
+      color: var(--primary-hover);
     }
   }
 
@@ -40,13 +40,13 @@
     font-weight: 600;
 
     &.badge--ai {
-      background: var(--color-wise-mint);
-      color: var(--color-wise-dark-green);
+      background: var(--hint);
+      color: var(--primary-hover);
     }
 
     &.badge--raw {
-      background: var(--color-wise-bg);
-      color: var(--color-wise-warm-dark);
+      background: var(--page-bg);
+      color: var(--text-muted);
       border: 1px solid rgba(14, 15, 12, 0.10);
     }
   }

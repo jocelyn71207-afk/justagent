@@ -8,9 +8,9 @@
 %skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    var(--color-border-1-alpha30) 25%,
-    var(--color-border-1-alpha50) 50%,
-    var(--color-border-1-alpha30) 75%
+    var(--divider-a30) 25%,
+    var(--divider-a50) 50%,
+    var(--divider-a30) 75%
   );
   background-size: 400px 100%;
   animation: shimmer 1.4s infinite linear;
@@ -26,7 +26,7 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    border-bottom: 1px solid var(--color-border-1-alpha20);
+    border-bottom: 1px solid var(--divider-a20);
   }
 
   .skeleton-cell-group {
@@ -57,15 +57,15 @@
   .skeleton-spinner {
     width: 36px;
     height: 36px;
-    border: 3px solid var(--color-border-1-alpha30);
-    border-top-color: var(--color-main);
+    border: 3px solid var(--divider-a30);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
 
   .skeleton-spinner-label {
     font-size: 13px;
-    color: var(--color-text-alpha50);
+    color: var(--text-muted);
   }
 }
 
@@ -102,13 +102,13 @@
 
   &__icon {
     font-size: 48px;
-    color: var(--color-text-alpha30);
+    color: var(--text-faint);
     margin-bottom: 12px;
   }
 
   &__message {
     font-size: 14px;
-    color: var(--color-text-alpha60);
+    color: var(--text-a60);
     max-width: 320px;
     line-height: 1.6;
   }

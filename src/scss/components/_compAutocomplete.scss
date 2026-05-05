@@ -32,12 +32,12 @@
     padding: 8px;
     max-height: 200px;
     overflow-y: auto;
-    background-color: var(--color-background);
-    box-shadow: 0 2px 12px rgba(from var(--color-shadow) r g b / 0.15);
+    background-color: var(--page-bg);
+    box-shadow: 0 2px 12px rgba(var(--shadow),0.15);
     border-radius: $radius;
     z-index: 1000;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar));
+    @include use-scroll-bar(var(--scrollbar));
 
     &.dropup {
       top: auto;
@@ -54,7 +54,7 @@
 
     &:hover,
     &.highlighted {
-      background-color: var(--color-background-1);
+      background-color: var(--surface);
     }
 
     mark {
@@ -68,6 +68,6 @@
     padding: 16px;
     text-align: center;
     font-size: 14px;
-    color: var(--color-text-alpha50);
+    color: var(--text-muted);
   }
 }

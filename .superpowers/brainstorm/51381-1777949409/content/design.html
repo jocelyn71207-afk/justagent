@@ -1,0 +1,79 @@
+<h2>Dark Mode Toggle — 設計方案</h2>
+<p class="subtitle">請確認後我們就開始實作</p>
+
+<div class="section">
+  <h3>視覺預覽</h3>
+  <div class="mockup" style="position:relative;overflow:visible;">
+    <div class="mockup-header">Full.vue — 右上角固定</div>
+    <div class="mockup-body" style="display:flex;height:180px;background:#FAFCFC;position:relative;padding:0;overflow:hidden;">
+      <!-- Sidebar -->
+      <div style="width:52px;background:#F2F6F7;border-right:1px solid #E8EDEE;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;flex-shrink:0;">
+        <div style="width:26px;height:26px;border-radius:999px;background:#00A078;"></div>
+        <div style="width:20px;height:3px;background:#D9E2E4;border-radius:2px;"></div>
+        <div style="width:20px;height:3px;background:#D9E2E4;border-radius:2px;"></div>
+        <div style="width:20px;height:3px;background:#D9E2E4;border-radius:2px;"></div>
+        <div style="flex:1;"></div>
+      </div>
+      <!-- Content -->
+      <div style="flex:1;padding:10px;position:relative;">
+        <div style="height:10px;background:#E8EDEE;border-radius:4px;margin-bottom:6px;width:60%;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;">
+          <div style="height:50px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+          <div style="height:50px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+          <div style="height:50px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+        </div>
+      </div>
+      <!-- Toggle fixed top-right -->
+      <div style="position:absolute;top:10px;right:12px;display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #E8EDEE;border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(15,23,42,0.08);z-index:10;">
+        <span style="font-size:14px;">☀️</span>
+        <div style="width:32px;height:18px;border-radius:999px;background:#00A078;position:relative;cursor:pointer;">
+          <div style="width:12px;height:12px;border-radius:999px;background:#fff;position:absolute;right:3px;top:3px;transition:transform 0.2s;"></div>
+        </div>
+        <span style="font-size:14px;opacity:0.4;">🌙</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>實作細節</h3>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+
+    <div style="background:var(--surface,#fff);border:1px solid #E8EDEE;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">新增檔案</div>
+      <div style="font-size:13px;color:#3F565E;line-height:1.9;">
+        <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">src/components/AppThemeToggle.vue</code> — toggle 元件<br>
+        <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">src/scss/components/_AppThemeToggle.scss</code> — 樣式
+      </div>
+    </div>
+
+    <div style="background:var(--surface,#fff);border:1px solid #E8EDEE;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">修改檔案</div>
+      <div style="font-size:13px;color:#3F565E;line-height:1.9;">
+        <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">src/container/Full.vue</code> — 插入 <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">&lt;AppThemeToggle /&gt;</code><br>
+        <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">src/scss/components/_index.scss</code> — 加 <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">@forward '_AppThemeToggle'</code>
+      </div>
+    </div>
+
+    <div style="background:var(--surface,#fff);border:1px solid #E8EDEE;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">行為邏輯</div>
+      <div style="font-size:13px;color:#3F565E;line-height:1.9;">
+        點擊 toggle → 切換 <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">document.documentElement.dataset.theme</code> 為 <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">"dark"</code> 或 <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">"light"</code><br>
+        初始狀態：light（不讀 localStorage）<br>
+        icon：Material Symbols Rounded — <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">light_mode</code> / <code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">dark_mode</code>
+      </div>
+    </div>
+
+    <div style="background:var(--surface,#fff);border:1px solid #E8EDEE;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:600;color:#00A078;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">樣式 token</div>
+      <div style="font-size:13px;color:#3F565E;line-height:1.9;">
+        容器：<code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">position: fixed; top: 16px; right: 20px</code>，<code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">z-index: 200</code><br>
+        背景：<code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">var(--surface)</code>，邊框：<code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">var(--divider)</code><br>
+        Switch off：<code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">var(--sidebar-hover)</code>，Switch on（dark）：<code style="background:#F2F6F7;padding:2px 6px;border-radius:4px;">var(--primary)</code>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<p style="margin-top:20px;font-size:13px;color:#7F929A;text-align:center;">這個設計 OK 嗎？在 terminal 說「ok」就開始實作</p>

@@ -23,7 +23,7 @@
   overflow-y: auto;
   scroll-behavior: smooth;
   @include no-scroll-bar();
-  @include use-scroll-bar(var(--color-scrollbar-alpha50));
+  @include use-scroll-bar(var(--scrollbar-a50));
 }
 
 // 包住主要內容區域 (不包含 header/footer) (注意: 這main不提供給 AiViewer 單元使用)
@@ -41,15 +41,15 @@
   // 登入後每一個單元共用的樣式 (排除畫布那一個單元)
   .views-page {
     flex: 1;
-    padding: 46px;
-    background-color: var(--color-background);
+    padding: 36px 40px;
+    background-color: var(--page-bg);
     // max-width: 100%;
     // min-width: 600px;
     width: calc(100vw - #{$menuWidth});
     overflow: hidden;
     overflow-x: auto;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar-alpha50));
+    @include use-scroll-bar(var(--scrollbar-a50));
 
     // AppBreadcrumb 元件樣式（適用於所有 banner 類型，包含 plc-banner）
     .banner-crumb {
@@ -57,7 +57,7 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #059669;
+      color: var(--accent);
       margin-bottom: 4px;
       font-family: 'JetBrains Mono', monospace;
       &::before { content: '>_ '; opacity: 0.5; }
@@ -98,7 +98,7 @@
         > .secondary-box {
           font-size: 1rem;
           font-weight: normal;
-          color: var(--color-text-alpha50);
+          color: var(--text-muted);
         }
       }
       .header-right-box {
@@ -116,20 +116,20 @@
       gap: 16px;
       padding-left: 16px;
       padding-bottom: 20px;
-      border-left: 3px solid #059669;
-      border-bottom: 1px solid var(--color-wise-surface);
+      border-left: 3px solid var(--accent);
+      border-bottom: 1px solid var(--accent-soft);
       margin-bottom: 24px;
 
       .banner-title {
         font-size: 24px;
         font-weight: 900;
-        color: #111;
+        color: var(--text);
         letter-spacing: -0.4px;
       }
 
       .banner-sub {
         font-size: 11px;
-        color: var(--color-wise-gray);
+        color: var(--text-faint);
         margin-top: 3px;
         font-family: 'JetBrains Mono', monospace;
       }
@@ -148,11 +148,11 @@
   .AppSearchPage {
     flex: 1;
     padding: 46px;
-    background-color: var(--color-background);
+    background-color: var(--page-bg);
     width: calc(100vw - #{$menuWidth});
     overflow: auto;
     @include no-scroll-bar();
-    @include use-scroll-bar(var(--color-scrollbar-alpha50));
+    @include use-scroll-bar(var(--scrollbar-a50));
   }
 }
 // 處理手機尺寸時
@@ -189,7 +189,7 @@
   // 單一張卡片的共用樣式
   .one-card-box {
     border-radius: 16px;
-    background-color: var(--color-background);
+    background-color: var(--page-bg);
     user-select: none;
     width: 100%;
     max-width: 362px;
@@ -202,14 +202,14 @@
       border: 1px solid rgba(14, 15, 12, 0.08);
       &:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--color-border-strong);
+        box-shadow: 0 24px 80px -16px rgba(var(--shadow),0.28), 0 8px 20px -8px rgba(var(--shadow),0.12);
+        border-color: var(--divider);
       }
       .team-name-box {
         position: absolute;
         left: 10px;
         top: 10px;
-        background-color: var(--color-background-1);
+        background-color: var(--surface);
         border-radius: 8px;
         padding: 6px 8px;
         font-size: 12px;
@@ -221,20 +221,20 @@
         top: 10px;
         cursor: pointer;
         z-index: 3;
-        background-color: var(--color-background-1);
-        color: var(--color-text-alpha50);
+        background-color: var(--surface);
+        color: var(--text-muted);
         border-radius: 8px;
         padding: 6px;
         font-size: 20px;
         &.active {
           color: $color_yellow_2;
-          background-color: var(--color-background-1);
+          background-color: var(--surface);
         }
       }
       .img-box {
         border-radius: 16px;
-        border: 1px solid var(--color-border-1-alpha50);
-        box-shadow: 0 4px 10px -6px rgba(from var(--color-shadow) r g b / 0.5);
+        border: 1px solid var(--divider-a50);
+        box-shadow: 0 4px 10px -6px rgba(var(--shadow),0.5);
         height: 205px;
         overflow: hidden;
         position: relative;
@@ -258,7 +258,7 @@
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            border: 2px solid var(--color-background);
+            border: 2px solid var(--page-bg);
             font-size: 9px;
             font-weight: 700;
             color: $white;
@@ -292,7 +292,7 @@
       }
       .chart-box {
         height: 205px;
-        background: var(--color-background-1);
+        background: var(--surface);
         border-radius: 16px 16px 0 0;
         display: flex;
         flex-direction: column;
@@ -302,7 +302,7 @@
         .chart-title {
           font-size: 11px;
           font-weight: 700;
-          color: var(--color-text-alpha50);
+          color: var(--text-muted);
           margin-bottom: 8px;
         }
         .chart-bars {
@@ -321,11 +321,11 @@
         .bar {
           width: 100%;
           border-radius: 4px 4px 0 0;
-          background: var(--color-wise-green);
+          background: var(--accent);
           min-height: 4px;
         }
-        .bar-label { font-size: 9px; color: var(--color-text-alpha50); }
-        .bar-count  { font-size: 9px; color: var(--color-text-alpha50); }
+        .bar-label { font-size: 9px; color: var(--text-muted); }
+        .bar-count  { font-size: 9px; color: var(--text-muted); }
       }
       .footer-box {
         position: relative;
@@ -340,7 +340,7 @@
           .project-name {
             font-size: 14px;
             font-weight: 500;
-            color: var(--color-text);
+            color: var(--text);
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
@@ -354,14 +354,14 @@
             padding: 2px 10px;
             font-size: 11px;
             font-weight: 600;
-            &.status-pending { background: var(--color-background-2); color: var(--color-text-alpha50); }
+            &.status-pending { background: var(--sidebar-hover); color: var(--text-muted); }
             &.status-active  { background: rgba(74, 222, 128, 0.15);  color: #16a34a; }
             &.status-review  { background: rgba(251, 191, 36, 0.15);  color: #ca8a04; }
             &.status-done    { background: rgba(139, 92, 246, 0.15);  color: #7c3aed; }
           }
           .lastModify {
             font-size: 14px;
-            color: var(--color-text-alpha50);
+            color: var(--text-muted);
             margin-top: 5px;
           }
         }
@@ -382,14 +382,14 @@
         }
         .more-btn {
           font-size: 18px;
-          color: var(--color-text-alpha50);
+          color: var(--text-muted);
           padding: 4px;
           border-radius: 4px;
           margin-left: 10px;
           cursor: pointer;
           &:hover {
-            background-color: var(--color-background-1);
-            color: var(--color-text);
+            background-color: var(--surface);
+            color: var(--text);
           }
         }
         .next-option-box {
@@ -406,7 +406,7 @@
     // for 檔案的卡片樣式
     &.file-card {
       cursor: default;
-      border: 1px solid var(--color-border-1-alpha50);
+      border: 1px solid var(--divider-a50);
 
       .card-header-box {
         display: flex;
@@ -428,14 +428,14 @@
           flex-shrink: 0;
           .more-btn {
             font-size: 20px;
-            color: var(--color-text-alpha50);
+            color: var(--text-muted);
             cursor: pointer;
             border-radius: 4px;
             padding: 2px;
             display: block;
             &:hover {
-              background-color: var(--color-background-1);
-              color: var(--color-text);
+              background-color: var(--surface);
+              color: var(--text);
             }
           }
           .next-option-box {
@@ -468,7 +468,7 @@
         }
         .other-file-icon {
           font-size: 48px;
-          color: var(--color-text-alpha50);
+          color: var(--text-muted);
         }
       }
 
@@ -478,7 +478,7 @@
         justify-content: space-between;
         gap: 8px;
         font-size: 12px;
-        color: var(--color-text-alpha50);
+        color: var(--text-muted);
         padding: 10px 14px 14px;
       }
     }
@@ -495,7 +495,7 @@
 // 通用表格列表的樣式 (依賴於 .custom-table 的樣式)
 .table-list-box {
   border-radius: 16px;
-  background-color: var(--color-background);
+  background-color: var(--page-bg);
   padding: 12px;
   .custom-table {
     th,
@@ -515,7 +515,7 @@
         border-bottom-right-radius: 8px;
       }
       td {
-        background-color: var(--color-background-2-alpha20);
+        background-color: var(--sidebar-hover-a20);
       }
     }
   }
@@ -536,7 +536,7 @@
     }
     .favorite-btn {
       display: inline-block;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
       background-color: transparent;
       border-radius: 8px;
       padding: 6px;
@@ -546,14 +546,14 @@
       // visibility: hidden;
       &.active {
         color: $color_yellow_2;
-        background-color: var(--color-background-1);
+        background-color: var(--surface);
         // visibility: visible;
       }
     }
     .img-box {
       display: inline-block;
       border-radius: 4px;
-      border: 1px solid var(--color-border-1);
+      border: 1px solid var(--divider);
       height: 32px;
       width: 32px;
       vertical-align: middle;
@@ -585,13 +585,13 @@
     .more-btn {
       display: inline-flex;
       font-size: 20px;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
       padding: 4px;
       border-radius: 4px;
       cursor: pointer;
       &:hover {
-        background-color: var(--color-background-2-alpha30);
-        color: var(--color-text);
+        background-color: var(--sidebar-hover-a30);
+        color: var(--text);
       }
     }
     .next-option-box {
@@ -621,7 +621,7 @@
       align-items: center;
       justify-content: center;
       border-radius: 4px;
-      // border: 1px solid var(--color-border-1);
+      // border: 1px solid var(--divider);
       height: 32px;
       width: 32px;
       vertical-align: middle;
@@ -637,13 +637,13 @@
     .more-btn {
       display: inline-flex;
       font-size: 20px;
-      color: var(--color-text-alpha50);
+      color: var(--text-muted);
       padding: 4px;
       border-radius: 4px;
       cursor: pointer;
       &:hover {
-        background-color: var(--color-background-2-alpha30);
-        color: var(--color-text);
+        background-color: var(--sidebar-hover-a30);
+        color: var(--text);
       }
     }
     .next-option-box {
@@ -664,7 +664,7 @@
   top: 0;
   left: 0;
   height: 3px;
-  background: var(--color-main);
+  background: var(--accent);
   z-index: 9998;
   transition: width 0.25s ease, opacity 0.3s ease;
   pointer-events: none;
