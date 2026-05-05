@@ -11,23 +11,32 @@
           {{ displayProjectList.length }} projects
         </div>
       </div>
-      <!-- KPI 數字 -->
-      <div v-if="!isLoading && !hasError && displayProjectList.length" class="plc-banner-kpi">
-        <div class="kpi-item">
-          <div class="kpi-num">{{ kpiActive }}</div>
-          <div class="kpi-label">Active</div>
-        </div>
-        <div class="kpi-item kpi-review">
-          <div class="kpi-num review">{{ kpiReview }}</div>
-          <div class="kpi-label">Review</div>
+      <div class="plc-banner-right">
+        <slot name="createBtnSlot" :openProjectSettingModal="openProjectSettingModal" />
+        <!-- KPI 數字 -->
+        <div v-if="!isLoading && !hasError && displayProjectList.length" class="plc-banner-kpi">
+          <div class="kpi-item">
+            <div class="kpi-num">{{ kpiActive }}</div>
+            <div class="kpi-label">Active</div>
+          </div>
+          <div class="kpi-item kpi-review">
+            <div class="kpi-num review">{{ kpiReview }}</div>
+            <div class="kpi-label">Review</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Toolbar -->
+    <!-- Tabs + 工具列合併為單行 -->
     <div class="plc-toolbar">
       <div class="plc-toolbar-left">
-        <slot name="createBtnSlot" :openProjectSettingModal="openProjectSettingModal" />
+        <compTabs
+          v-if="mode === 'recent'"
+          v-model="filterAgent"
+          :tabs="agentTabs"
+        />
+      </div>
+      <div class="plc-toolbar-right">
         <compDropDown
           v-if="!isLoading && !hasError && projectList.length"
           :options="[
@@ -45,18 +54,9 @@
             sortFn();
           }"
         />
-      </div>
-      <div class="plc-toolbar-right">
         <compListCardSwitch v-model="projectListMode"/>
       </div>
     </div>
-
-    <!-- Agent 過濾 Tabs (只有 recent 模式才有) -->
-    <compTabs class="mb-2"
-      v-if="mode === 'recent'"
-      v-model="filterAgent"
-      :tabs="agentTabs"
-    />
 
     <div class="plc-content">
     <AppSkeleton v-if="isLoading" type="list" class="mt-4" />

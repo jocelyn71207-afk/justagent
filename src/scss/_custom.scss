@@ -2,7 +2,7 @@
 .swal2-container {
   // 背景半透明遮罩
   &.swal2-center {
-    background: rgba(#000, 0.3);
+    background: rgba(#09151A, 0.3);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
@@ -44,7 +44,7 @@
   box-shadow: 0 24px 80px -16px rgba(var(--shadow),0.28),
               0 8px 20px -8px rgba(var(--shadow),0.12) !important;
   &.modalList {
-    background-color: #000 !important;
+    background-color: var(--page-bg) !important;
   }
   .swal2-title {
     font-size: 24px !important;

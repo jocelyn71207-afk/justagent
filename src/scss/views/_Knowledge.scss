@@ -86,20 +86,21 @@
   // ── 狀態標籤 (依照資源庫配色邏輯) ──
   .status-badge {
     &--PUBLISHED {
-      background: rgba(52, 211, 153, 0.10);
-      color: #059669;
+      background: rgba(0, 160, 120, 0.10);
+      color: var(--success);
     }
     &--REVIEWING {
-      background: rgba(251, 192, 0, 0.15);
-      color: #b07d00;
+      background: rgba(207, 138, 31, 0.12);
+      color: var(--warning);
     }
     &--DRAFT {
-      background: rgba(30, 136, 229, 0.10);
-      color: #1565c0;
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      color: var(--text-muted);
     }
     &--REJECTED {
-      background: rgba(229, 57, 53, 0.10);
-      color: #c62828;
+      background: rgba(209, 68, 55, 0.10);
+      color: var(--danger);
     }
     &--HISTORY {
       background: rgba(232,238,240,0.1);
@@ -155,8 +156,8 @@
 
   // ── 草稿編輯器 Banner ──
   .editor-banner {
-    background: rgba(30, 136, 229, 0.05);
-    border-left: 4px solid #1565c0;
+    background: var(--accent-soft);
+    border-left: 4px solid var(--primary);
     padding: 12px 16px;
     margin-bottom: 24px;
     border-radius: 0 8px 8px 0;
@@ -164,7 +165,7 @@
     align-items: center;
     gap: 12px;
     font-size: 14px;
-    color: #1565c0;
+    color: var(--hint-text);
 
     i { font-size: 20px; }
   }
@@ -202,12 +203,12 @@
         min-height: 40px;
         
         &.is-added {
-          background-color: rgba(52, 211, 153, 0.08);
-          border: 1px dashed rgba(52, 211, 153, 0.3);
+          background-color: rgba(0, 160, 120, 0.08);
+          border: 1px dashed rgba(0, 160, 120, 0.3);
         }
         &.is-removed {
-          background-color: rgba(229, 57, 53, 0.08);
-          border: 1px dashed rgba(229, 57, 53, 0.3);
+          background-color: rgba(209, 68, 55, 0.08);
+          border: 1px dashed rgba(209, 68, 55, 0.3);
           text-decoration: line-through;
           color: var(--text-muted);
         }

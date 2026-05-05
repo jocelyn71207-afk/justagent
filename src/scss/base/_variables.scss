@@ -54,7 +54,7 @@ $color_red_2: #dd4839;
 $color_yellow_1: #fcfdcf;
 $color_yellow_2: #fbc000;
 $color-warning-amber: #CF8A1F;  // 警示琥珀色（到期標籤 warning 狀態）
-$color-warning-bg: #fffbeb;        // 警示背景（Info 橫幅）
+$color-warning-bg: rgba(207,138,31,0.12); // 警示背景（Info 橫幅）
 $color-warning-border: #fcd34d;    // 警示邊框（Info 橫幅）
 $color-warning-text: #78350f;      // 警示文字（Info 橫幅）
 $color-warning-text-dark: #7a4400; // 警示文字深色（到期標籤 warning 文字）
@@ -140,7 +140,7 @@ $color-status-stored-bg: rgba(2, 195, 0, 0.10);
 $color-status-stored-text: #02a100;
 $color-status-saved-bg: rgba(0, 150, 136, 0.10);
 $color-status-saved-text: #00695c;
-$color-status-failed-bg: rgba(229, 57, 53, 0.10);
+$color-status-failed-bg: rgba(209, 68, 55, 0.10);
 $color-status-failed-text: #c62828;
 
 // Danger / Error

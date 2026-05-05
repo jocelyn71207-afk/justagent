@@ -57,7 +57,7 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #059669;
+      color: var(--accent);
       margin-bottom: 4px;
       font-family: 'JetBrains Mono', monospace;
       &::before { content: '>_ '; opacity: 0.5; }
@@ -116,14 +116,14 @@
       gap: 16px;
       padding-left: 16px;
       padding-bottom: 20px;
-      border-left: 3px solid #059669;
+      border-left: 3px solid var(--accent);
       border-bottom: 1px solid var(--accent-soft);
       margin-bottom: 24px;
 
       .banner-title {
         font-size: 24px;
         font-weight: 900;
-        color: #111;
+        color: var(--text);
         letter-spacing: -0.4px;
       }
 

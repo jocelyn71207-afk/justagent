@@ -223,8 +223,8 @@
 
     &--success {
       background: #ecfdf5;
-      color: #059669;
-      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--primary);
+      border: 1px solid rgba(0, 160, 120, 0.2);
     }
 
     &--warning {
@@ -596,7 +596,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      i { font-size: 22px; color: #059669; }
+      i { font-size: 22px; color: var(--primary); }
     }
 
     &__name {
@@ -628,9 +628,9 @@
     }
 
     &--new {
-      background: rgba(52, 211, 153, 0.10);
-      color: #059669;
-      border: 1px solid rgba(52, 211, 153, 0.20);
+      background: rgba(0, 160, 120, 0.10);
+      color: var(--primary);
+      border: 1px solid rgba(0, 160, 120, 0.20);
     }
   }
 
@@ -741,7 +741,7 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 6px;
-      i { font-size: 16px; color: #059669; }
+      i { font-size: 16px; color: var(--primary); }
     }
 
     &__note {
@@ -876,7 +876,7 @@
         i { color: var(--primary-hover); }
       }
       &--green {
-        background: rgba(52, 211, 153, 0.12);
+        background: rgba(0, 160, 120, 0.12);
         i { color: #34d399; }
       }
       &--yellow {
@@ -932,8 +932,8 @@
     i { font-size: 14px; }
 
     &--PUBLISHED {
-      background: rgba(52, 211, 153, 0.10);
-      color: #059669;
+      background: rgba(0, 160, 120, 0.10);
+      color: var(--primary);
     }
     &--REVIEWING {
       background: rgba(251, 192, 0, 0.15);
@@ -944,7 +944,7 @@
       color: #1565c0;
     }
     &--REJECTED {
-      background: rgba(229, 57, 53, 0.10);
+      background: rgba(209, 68, 55, 0.10);
       color: #c62828;
     }
     &--HISTORY {
@@ -1163,11 +1163,11 @@
     white-space: nowrap;
 
     &--added {
-      background: rgba(52, 211, 153, 0.10);
-      color: #059669;
+      background: rgba(0, 160, 120, 0.10);
+      color: var(--primary);
     }
     &--removed {
-      background: rgba(229, 57, 53, 0.10);
+      background: rgba(209, 68, 55, 0.10);
       color: #c62828;
       text-decoration: line-through;
     }
@@ -1228,13 +1228,13 @@
         word-break: break-word;
         
         &.is-added {
-          background-color: rgba(52, 211, 153, 0.08);
-          border: 1px solid rgba(52, 211, 153, 0.2);
-          color: #059669;
+          background-color: rgba(0, 160, 120, 0.08);
+          border: 1px solid rgba(0, 160, 120, 0.2);
+          color: var(--primary);
         }
         &.is-removed {
-          background-color: rgba(229, 57, 53, 0.08);
-          border: 1px solid rgba(229, 57, 53, 0.2);
+          background-color: rgba(209, 68, 55, 0.08);
+          border: 1px solid rgba(209, 68, 55, 0.2);
           text-decoration: line-through;
           color: #c62828;
         }
@@ -1309,7 +1309,7 @@
     }
     
     &.is-published {
-      border-left: 5px solid #059669;
+      border-left: 5px solid var(--primary);
     }
   }
 
@@ -1708,7 +1708,7 @@
     flex-shrink: 0;
 
     &--submitted  { background: #1565c0; }
-    &--approved   { background: #059669; }
+    &--approved   { background: var(--primary); }
     &--rejected   { background: #c62828; }
     &--withdrawn  { background: var(--text-faint); }
   }

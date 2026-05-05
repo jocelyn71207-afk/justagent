@@ -865,19 +865,19 @@
   top: calc($header-AiViewer-height + 11px);
   z-index: 8;
   background: rgba(255, 255, 255, 0.80);
-  border: 1px solid rgba(52, 211, 153, 0.20);
+  border: 1px solid rgba(0, 160, 120, 0.20);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0 8px;
   border-radius: 28px;
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.07),
-    0 0 0 1px rgba(52, 211, 153, 0.08);
+    0 0 0 1px rgba(0, 160, 120, 0.08);
   color: var(--text);
   @include user-select-none;
   @media (prefers-color-scheme: dark) {
     background: rgba(30, 32, 36, 0.85);
-    border-color: rgba(52, 211, 153, 0.15);
+    border-color: rgba(0, 160, 120, 0.15);
   }
 
   .ctrl-btn {
@@ -893,12 +893,12 @@
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: rgba(52, 211, 153, 0.10);
+      background: rgba(0, 160, 120, 0.10);
       color: var(--primary-hover);
     }
 
     &.active {
-      background: rgba(52, 211, 153, 0.15);
+      background: rgba(0, 160, 120, 0.15);
       color: var(--primary-hover);
     }
   }
@@ -1160,9 +1160,9 @@
       border-radius: 12px; // 與 AiViewerContentBox 同步
     }
     .AiViewerContentBox {
-      border-color: rgba(52, 211, 153, 0.60);
+      border-color: rgba(0, 160, 120, 0.60);
       box-shadow:
-        0 0 0 2px rgba(52, 211, 153, 0.20),
+        0 0 0 2px rgba(0, 160, 120, 0.20),
         0 4px 20px rgba(5, 150, 105, 0.10);
     }
     // 提升內容區塊避免拖曳時誤觸內容區塊為 iframe 時造成的卡頓問題
@@ -1232,18 +1232,18 @@
   height: 100%;
   padding: 0px;
   background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(52, 211, 153, 0.28);
+  border: 1px solid rgba(0, 160, 120, 0.28);
   border-radius: 12px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow:
     0 4px 20px rgba(5, 150, 105, 0.09),
     0 1px 4px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(52, 211, 153, 0.10);
+    0 0 0 1px rgba(0, 160, 120, 0.10);
   // box-shadow: 0 2px 8px rgba(var(--shadow),0.2);
   @media (prefers-color-scheme: dark) {
     background: rgba(40, 42, 46, 0.82);
-    border-color: rgba(52, 211, 153, 0.22);
+    border-color: rgba(0, 160, 120, 0.22);
   }
   display: flex;
   flex-direction: column;
@@ -1446,7 +1446,7 @@
 
   @media (prefers-color-scheme: dark) {
     background: rgba(40, 42, 46, 0.82);
-    border-color: rgba(52, 211, 153, 0.22);
+    border-color: rgba(0, 160, 120, 0.22);
   }
 }
 
@@ -2564,7 +2564,7 @@
   font-size: 12px;
 
   &--sel { background: #eff6ff; }
-  &--fn  { background: #fffbeb; }
+  &--fn  { background: rgba(207,138,31,0.12); }
   &--rank { background: var(--surface); }
 
   .conv2-comp-rank {
@@ -2580,7 +2580,7 @@
     justify-content: center;
     flex-shrink: 0;
     margin-top: 2px;
-    &--fn { background: #fffbeb; color: #92400e; border-color: rgba(146,64,14,.28); }
+    &--fn { background: rgba(207,138,31,0.12); color: var(--warning); border-color: rgba(207,138,31,0.28); }
   }
   // 新格式：body 包含 brand / title / feat
   .conv2-comp-body {
@@ -2991,7 +2991,7 @@
   .conv2-ft { font-size: 12px; font-weight: 500; }
   .conv2-fd { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
   .conv2-err { font-size: 11px; color: #dc2626; margin-top: 4px; min-height: 13px; }
-  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: #fffbeb; color: #92400e; }
+  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: rgba(207,138,31,0.12); color: var(--warning); }
   .conv2-review-grid {
     background: var(--surface); border-radius: 7px; padding: 9px 11px;
     display: flex; flex-direction: column; gap: 0;
