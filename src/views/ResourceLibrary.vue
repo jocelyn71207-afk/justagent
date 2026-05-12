@@ -171,8 +171,6 @@
 
   <CreateKnowledgeWizardModal
     v-model="isWizardOpen"
-    :file="wizardFile"
-    @confirm="handleWizardConfirm"
   />
 
   <SourceUpdateModal
@@ -185,7 +183,6 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import type { Ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import compTabs from '@/components/compTabs/compTabs.vue';
@@ -194,7 +191,6 @@ import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import compPagination from '@/components/compPagination/compPagination.vue';
 import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
 import popDialog from '@/services/popDialog';
-import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import { useResourceStore } from '@/stores/resourceStore';
 import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWizardModal.vue';
 import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
@@ -202,8 +198,6 @@ import AppSkeleton from '@/components/AppSkeleton.vue';
 import AppErrorState from '@/components/AppErrorState.vue';
 import { useApiCall } from '@/composables/useApiCall';
 
-const router = useRouter();
-const knowledgeStore = useKnowledgeStore();
 const resourceStore = useResourceStore();
 
 const {
@@ -216,7 +210,6 @@ const {
 
 // 知識建立精靈
 const isWizardOpen = ref(false);
-const wizardFile = ref<{ id: string; fileName: string; fileType: string } | null>(null);
 
 // 來源更新 Modal
 const isSourceUpdateModalOpen = ref(false);
@@ -337,20 +330,7 @@ function saveModifyFileName() {
 // 建立為知識內容：開啟精靈
 function createKnowledge(item: any) {
   item.showMoreOption = false;
-  wizardFile.value = { id: item.id, fileName: item.fileName, fileType: item.fileType };
   isWizardOpen.value = true;
-}
-
-function handleWizardConfirm(data: { template: string; content: string; category: string }) {
-  if (!wizardFile.value) return;
-  const { knowledgeId, versionId } = knowledgeStore.createFromFile({
-    fileId: wizardFile.value.id,
-    fileName: wizardFile.value.fileName,
-    template: data.template,
-    content: data.content,
-    category: data.category,
-  });
-  router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } });
 }
 
 // 刪除資源

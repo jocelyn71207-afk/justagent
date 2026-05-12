@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
@@ -185,6 +185,19 @@ const canSubmit = computed(() => {
   return false
 })
 
+// ── 表單重置 ──
+watch(isOpenModal, (open) => {
+  if (!open) {
+    selectedSourceType.value = 'FILE'
+    uploadedFile.value = null
+    selectedApiSourceId.value = ''
+    manualTitle.value = ''
+    selectedCategory.value = ''
+    selectedTags.value = []
+    tagInput.value = ''
+  }
+})
+
 // ── 送出 ──
 function handleSubmit() {
   if (!canSubmit.value) return
@@ -230,16 +243,14 @@ function handleSubmit() {
 }
 
 function simulatePipeline(id: string) {
-  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; duration: number }> = [
-    { stage: 'chunking', duration: 1500 },
-    { stage: 'embedding', duration: 2000 },
-    { stage: 'indexing', duration: 1000 },
+  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
+    { stage: 'chunking',   startPct: 0,   delay: 0    },
+    { stage: 'embedding',  startPct: 33,  delay: 1500 },
+    { stage: 'indexing',   startPct: 67,  delay: 3500 },
   ]
 
-  let elapsed = 0
-  stages.forEach(({ stage, duration }) => {
-    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, Math.round((elapsed / 4500) * 100)), elapsed)
-    elapsed += duration
+  stages.forEach(({ stage, startPct, delay }) => {
+    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
   })
 
   setTimeout(() => {
@@ -247,6 +258,6 @@ function simulatePipeline(id: string) {
       { index: 1, content: '（Pipeline 完成，實際分段由後端提供）', tokenCount: 0 },
     ])
     popDialog.toast('Pipeline 處理完成！可前往編輯草稿', 3000)
-  }, elapsed)
+  }, 4500)
 }
 </script>
