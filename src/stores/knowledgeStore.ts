@@ -409,7 +409,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     };
 
     k.versions.push(newVersion);
-    k.status = 'pending';
+    // item status stays unchanged — only changes when draft is submitted for review
     return newVersion.id;
   };
 
@@ -800,6 +800,163 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     })
   }
 
+  // ── Upload-first 建立 ──
+  function createFromUpload(params: {
+    fileName: string
+    category: string
+    tags: string[]
+  }): string {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    const newId = `k-${Date.now()}`
+    const baseName = params.fileName.replace(/\.[^.]+$/, '')
+
+    const newItem: KnowledgeItem = {
+      id: newId,
+      title: baseName,
+      category: params.category,
+      status: 'pending',
+      sourceType: 'FILE',
+      pipelineProgress: 0,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
+      lastUpdateTime: now,
+      lastUpdateBy: 'Current User',
+      versions: [{
+        id: `${newId}-v1.0`,
+        knowledgeId: newId,
+        versionNumber: 'v1.0',
+        versionType: null,
+        status: 'draft',
+        title: baseName,
+        summary: '',
+        content: '',
+        tags: params.tags,
+        systemTags: [],
+        lastUpdateBy: 'Current User',
+        lastUpdateTime: now,
+        updateNote: `從檔案「${params.fileName}」建立`,
+        sourceFiles: [{ fileId: `file-${Date.now()}`, fileName: params.fileName, linkedVersion: 1 }],
+        chunks: [],
+        embeddingModel: null,
+        embeddingDimension: null,
+        embeddingCount: 0,
+      }],
+    }
+
+    knowledgeList.value.unshift(newItem)
+    return newId
+  }
+
+  // ── MANUAL 直接建立草稿（跳過 pipeline）──
+  function createManualDraft(params: { title: string; category: string; tags: string[] }): { knowledgeId: string; versionId: string } {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    const newId = `k-${Date.now()}`
+    const draftId = `${newId}-v1.0`
+
+    const newItem: KnowledgeItem = {
+      id: newId,
+      title: params.title,
+      category: params.category,
+      status: 'active',
+      sourceType: 'MANUAL',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
+      lastUpdateTime: now,
+      lastUpdateBy: 'Current User',
+      versions: [{
+        id: draftId,
+        knowledgeId: newId,
+        versionNumber: 'v1.0',
+        versionType: null,
+        status: 'draft',
+        title: params.title,
+        summary: '',
+        content: '',
+        tags: params.tags,
+        systemTags: [],
+        lastUpdateBy: 'Current User',
+        lastUpdateTime: now,
+        updateNote: '手動建立',
+        sourceFiles: [],
+        chunks: [],
+        embeddingModel: null,
+        embeddingDimension: null,
+        embeddingCount: 0,
+      }],
+    }
+
+    knowledgeList.value.unshift(newItem)
+    return { knowledgeId: newId, versionId: draftId }
+  }
+
+  function updatePipelineProgress(id: string, stage: PipelineStage, progress: number) {
+    const item = knowledgeList.value.find(k => k.id === id)
+    if (!item) return
+    item.status = 'processing'
+    item.pipelineStage = stage
+    item.pipelineProgress = progress
+  }
+
+  function markPipelineDone(id: string, chunks: ChunkPreview[]) {
+    const item = knowledgeList.value.find(k => k.id === id)
+    if (!item) return
+    item.status = 'active'
+    item.pipelineProgress = 100
+    item.pipelineStage = null
+    item.pipelineError = null
+    const draft = item.versions[0]
+    if (draft) {
+      draft.status = 'draft'
+      draft.chunks = chunks
+      draft.embeddingModel = 'text-embedding-3-large'
+      draft.embeddingDimension = 3072
+      draft.embeddingCount = chunks.length
+    }
+  }
+
+  function markPipelineFailed(id: string, error: string) {
+    const item = knowledgeList.value.find(k => k.id === id)
+    if (!item) return
+    item.status = 'failed'
+    item.pipelineError = error
+    item.pipelineStage = null
+  }
+
+  function retriggerPipeline(id: string) {
+    const item = knowledgeList.value.find(k => k.id === id)
+    if (!item) return
+    item.status = 'processing'
+    item.pipelineProgress = 0
+    item.pipelineStage = 'chunking'
+    item.pipelineError = null
+    item.sourceStale = false
+    item.staleSourceFileIds = []
+  }
+
+  function archiveKnowledge(id: string) {
+    const item = knowledgeList.value.find(k => k.id === id)
+    if (item) item.status = 'archived'
+  }
+
+  function batchArchive(ids: string[]) {
+    for (const id of ids) archiveKnowledge(id)
+  }
+
+  function batchDelete(ids: string[]) {
+    knowledgeList.value = knowledgeList.value.filter(k => !ids.includes(k.id))
+  }
+
   return {
     knowledgeList,
     getKnowledgeById,
@@ -822,5 +979,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     deleteApiSource,
     toggleApiSourceEnabled,
     triggerSync,
+    createFromUpload,
+    createManualDraft,
+    updatePipelineProgress,
+    markPipelineDone,
+    markPipelineFailed,
+    retriggerPipeline,
+    archiveKnowledge,
+    batchArchive,
+    batchDelete,
   };
 });
