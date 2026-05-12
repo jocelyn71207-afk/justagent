@@ -26,6 +26,11 @@
               <i class="material-symbols-outlined">rate_review</i>開始審核
             </button>
           </template>
+          <template v-else-if="draftVersion">
+            <button class="custom-btn custom-main-btn" @click="goToEditor">
+              <i class="material-symbols-outlined">edit</i>繼續編輯草稿
+            </button>
+          </template>
           <template v-else-if="knowledge.status === 'needs_update' || knowledge.status === 'failed'">
             <button class="custom-btn custom-main-btn" @click="knowledgeStore.retriggerPipeline(props.id)">
               <i class="material-symbols-outlined">refresh</i>重新觸發 Pipeline
@@ -37,14 +42,6 @@
               處理中，請稍候
             </span>
           </template>
-          <!-- For items with draft/rejected versions (item may be 'active' but has a draft version) -->
-          <button
-            v-if="draftVersion"
-            class="custom-btn ml-2"
-            @click="goToEditor"
-          >
-            <i class="material-symbols-outlined">edit</i>繼續編輯草稿
-          </button>
         </div>
       </div>
 
