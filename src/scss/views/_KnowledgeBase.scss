@@ -994,6 +994,15 @@
     }
   }
 
+  // ── Category tag (作用在頁面層級) ──
+  .category-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+  }
+
   // ── 表格內的顯示 ──
   .custom-table {
     .entry-title {

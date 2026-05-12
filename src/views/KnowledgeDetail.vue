@@ -32,7 +32,7 @@
             </button>
           </template>
           <template v-else-if="knowledge.status === 'needs_update' || knowledge.status === 'failed'">
-            <button class="custom-btn custom-main-btn" @click="knowledgeStore.retriggerPipeline(props.id)">
+            <button class="custom-btn custom-main-btn" @click="handleRetriggerPipeline">
               <i class="material-symbols-outlined">refresh</i>重新觸發 Pipeline
             </button>
           </template>
@@ -370,6 +370,12 @@ function handleWithdraw() {
     knowledgeStore.withdrawReview(props.id, v.id)
     popDialog.toast('已撤回審核', 2000)
   })
+}
+
+// ── 重新觸發 Pipeline ──
+function handleRetriggerPipeline() {
+  knowledgeStore.retriggerPipeline(props.id)
+  popDialog.toast('已送出重新處理請求', 2000)
 }
 
 // ── 審核 ──
