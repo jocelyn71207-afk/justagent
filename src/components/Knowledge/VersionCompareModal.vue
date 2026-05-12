@@ -169,10 +169,10 @@ const tagsChanged = computed(() => {
 });
 
 const statusLabelMap: Record<string, string> = {
-  PUBLISHED: '正式發布',
-  REVIEWING: '審核中',
-  DRAFT:     '草稿版本',
-  HISTORY:   '歷史紀錄',
-  REJECTED:  '已退回',
+  active:    '正式發布',
+  reviewing: '審核中',
+  draft:     '草稿版本',
+  history:   '歷史紀錄',
+  rejected:  '已退回',
 };
 </script>

@@ -88,7 +88,7 @@
             <div class="stat-label">編輯中草稿</div>
           </div>
         </div>
-        <div class="stat-card" style="cursor: pointer;" @click="filterStatus = 'REVIEWING'">
+        <div class="stat-card" style="cursor: pointer;" @click="filterStatus = 'reviewing'">
           <div class="stat-icon stat-icon--orange">
             <i class="material-symbols-outlined">pending_actions</i>
           </div>
@@ -117,10 +117,10 @@
           <compDropDown
             :options="[
               { name: '所有狀態', value: '' },
-              { name: '已發布', value: 'PUBLISHED' },
-              { name: '審核中', value: 'REVIEWING' },
-              { name: '草稿', value: 'DRAFT' },
-              { name: '已退回', value: 'REJECTED' },
+              { name: '已發布', value: 'active' },
+              { name: '審核中', value: 'reviewing' },
+              { name: '草稿', value: 'draft' },
+              { name: '已退回', value: 'rejected' },
             ]"
             :show-search="false"
             :showClearTriggerIcon="false"
@@ -426,7 +426,7 @@ const reviewKnowledgeId = ref('');
 const reviewVersionId = ref('');
 
 function openReviewDrawer(item: any) {
-  const reviewingVersion = item.versions.find((v: any) => v.status === 'REVIEWING');
+  const reviewingVersion = item.versions.find((v: any) => v.status === 'reviewing');
   if (!reviewingVersion) return;
   reviewKnowledgeId.value = item.id;
   reviewVersionId.value = reviewingVersion.id;
