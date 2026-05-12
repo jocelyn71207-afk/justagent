@@ -43,7 +43,7 @@
             v-for="v in [...knowledge.versions].reverse()"
           :key="v.id"
           class="history-item"
-          :class="{ 'is-published': v.status === 'PUBLISHED' }"
+          :class="{ 'is-published': v.status === 'active' }"
         >
           <div class="history-header">
             <div class="d-flex align-items-center gap-2">
@@ -72,7 +72,7 @@
                 </div>
                 <!-- 僅草稿可刪除 -->
                 <div
-                  v-if="v.status === 'DRAFT'"
+                  v-if="v.status === 'draft'"
                   class="option-item option-item--danger divider"
                   @click="handleDeleteDraft(v.id)"
                 >
@@ -81,7 +81,7 @@
                 </div>
                 <!-- 僅歷史版本可還原 -->
                 <div
-                  v-if="v.status === 'HISTORY'"
+                  v-if="v.status === 'history'"
                   class="option-item divider"
                   @click="handleRestore(v.id)"
                 >
@@ -157,11 +157,11 @@ const {
 const knowledge = computed(() => knowledgeData.value ?? null);
 
 const statusLabelMap: Record<string, string> = {
-  PUBLISHED: '正式發布',
-  REVIEWING: '審核中',
-  DRAFT:     '草稿版本',
-  HISTORY:   '歷史紀錄',
-  REJECTED:  '已退回',
+  active:    '正式發布',
+  reviewing: '審核中',
+  draft:     '草稿版本',
+  history:   '歷史紀錄',
+  rejected:  '已退回',
 };
 
 const reviewActionLabel: Record<string, string> = {
@@ -180,7 +180,7 @@ function toggleMenu(id: string) {
 // 草稿/退回 → 進編輯器；其餘 → 返回詳情頁（已顯示當前版本）
 function handleView(v: KnowledgeVersion) {
   openMenuId.value = '';
-  if (v.status === 'DRAFT' || v.status === 'REJECTED') {
+  if (v.status === 'draft' || v.status === 'rejected') {
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId: props.knowledgeId, versionId: v.id } });
     emit('update:modelValue', false);
   } else {
@@ -207,8 +207,8 @@ function handleDeleteDraft(id: string) {
     if (!k) return;
     k.versions = k.versions.filter(v => v.id !== id);
     // 若沒有草稿了，狀態恢復為已發布（若有發布版）
-    const hasPublished = k.versions.some(v => v.status === 'PUBLISHED');
-    if (hasPublished) k.status = 'PUBLISHED';
+    const hasPublished = k.versions.some(v => v.status === 'active');
+    if (hasPublished) k.status = 'active';
   });
 }
 </script>

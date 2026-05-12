@@ -179,8 +179,8 @@
                 <span class="category-tag">{{ item.category }}</span>
               </td>
               <td>
-                <span class="version-badge" :class="{ major: item.currentVersion.endsWith('.0') }">
-                  {{ item.currentVersion }}
+                <span class="version-badge" :class="{ major: (item.versions.find(v => v.status === 'active') ?? item.versions[item.versions.length - 1])?.versionNumber.endsWith('.0') }">
+                  {{ (item.versions.find(v => v.status === 'active') ?? item.versions[item.versions.length - 1])?.versionNumber ?? '—' }}
                 </span>
               </td>
               <td>
@@ -206,10 +206,10 @@
                   </div>
                   <div class="option-item" @click="handleEditAction(item)">
                     <i class="material-symbols-outlined">edit</i>
-                    {{ item.status === 'PUBLISHED' ? '建立新版本' : '繼續編輯' }}
+                    {{ item.status === 'active' ? '建立新版本' : '繼續編輯' }}
                   </div>
                   <div
-                    v-if="item.status === 'REVIEWING'"
+                    v-if="item.status === 'reviewing'"
                     class="option-item"
                     @click="openReviewDrawer(item)"
                   >
@@ -349,26 +349,32 @@ const filterStatus = ref('');
 const activeMenuId = ref('');
 
 const statusLabelMap: Record<string, string> = {
-  PUBLISHED: '已發布',
-  REVIEWING: '審核中',
-  DRAFT:     '草稿',
-  REJECTED:  '已退回',
+  active:       '已發布',
+  reviewing:    '審核中',
+  pending:      '草稿',
+  needs_update: '需更新',
+  processing:   '處理中',
+  failed:       '失敗',
+  archived:     '已封存',
 };
 
 const statusIconMap: Record<string, string> = {
-  PUBLISHED: 'verified',
-  REVIEWING: 'pending_actions',
-  DRAFT:     'edit_note',
-  REJECTED:  'error',
+  active:       'verified',
+  reviewing:    'pending_actions',
+  pending:      'edit_note',
+  needs_update: 'update',
+  processing:   'sync',
+  failed:       'error',
+  archived:     'archive',
 };
 
 const stats = computed(() => {
   const list = knowledgeListData.value ?? [];
   return {
     total:     list.length,
-    published: list.filter(k => k.status === 'PUBLISHED').length,
-    draft:     list.filter(k => k.status === 'DRAFT').length,
-    reviewing: list.filter(k => k.status === 'REVIEWING').length,
+    published: list.filter(k => k.status === 'active').length,
+    draft:     list.filter(k => k.status === 'pending').length,
+    reviewing: list.filter(k => k.status === 'reviewing').length,
   };
 });
 
@@ -401,13 +407,13 @@ function goToDetail(id: string) {
 }
 
 function handleEditAction(item: any) {
-  if (item.status === 'PUBLISHED') {
+  if (item.status === 'active') {
     // 觸發建立新版本 Modal (待實作)
     console.log('跳轉至詳情頁以建立新版本');
     goToDetail(item.id);
   } else {
     // 尋找該項目的草稿版 ID 並跳轉編輯器
-    const draft = item.versions.find((v: any) => v.status === 'DRAFT' || v.status === 'REJECTED');
+    const draft = item.versions.find((v: any) => v.status === 'draft' || v.status === 'rejected');
     if (draft) {
       router.push({ name: 'KnowledgeEditor', params: { knowledgeId: item.id, versionId: draft.id } });
     }

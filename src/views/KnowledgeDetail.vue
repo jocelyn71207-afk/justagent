@@ -25,7 +25,7 @@
             版本紀錄
           </button>
           <button
-            v-if="knowledge.status === 'PUBLISHED'"
+            v-if="knowledge.status === 'active'"
             class="custom-btn custom-main-btn ml-2"
             @click="isCreateModalOpen = true"
           >
@@ -33,7 +33,7 @@
             建立新版本
           </button>
           <!-- 審核中 -->
-          <template v-else-if="knowledge.status === 'REVIEWING'">
+          <template v-else-if="knowledge.status === 'reviewing'">
             <button class="custom-btn ml-2" @click="handleWithdraw">
               <i class="material-symbols-outlined">undo</i>
               撤回審核
@@ -45,7 +45,7 @@
           </template>
           <!-- 草稿 / 已退回：繼續編輯 -->
           <button
-            v-else-if="knowledge.status === 'DRAFT' || knowledge.status === 'REJECTED'"
+            v-else-if="knowledge.status === 'pending' || knowledge.status === 'needs_update'"
             class="custom-btn custom-main-btn ml-2"
             @click="goToEditor"
           >
@@ -243,10 +243,10 @@ const apiSourceDetail = computed(() =>
     : null
 );
 
-// 詳情頁預設顯示「已發布」版本；若無則顯示最後一個版本
+// 詳情頁預設顯示「active」版本；若無則顯示最後一個版本
 const versionToShow = computed(() => {
   if (!knowledge.value) return {} as any;
-  const published = knowledge.value.versions.find(v => v.status === 'PUBLISHED');
+  const published = knowledge.value.versions.find(v => v.status === 'active');
   return published ?? knowledge.value.versions[knowledge.value.versions.length - 1];
 });
 
@@ -257,26 +257,26 @@ watch(versionToShow, (val) => {
 }, { immediate: true })
 
 const statusLabelMap: Record<string, string> = {
-  PUBLISHED: '目前發布版',
-  REVIEWING: '審核中',
-  DRAFT:     '草稿版本',
-  HISTORY:   '歷史封存版本',
-  REJECTED:  '已退回',
+  active:    '目前發布版',
+  reviewing: '審核中',
+  draft:     '草稿版本',
+  history:   '歷史封存版本',
+  rejected:  '已退回',
 };
 
 const statusIconMap: Record<string, string> = {
-  PUBLISHED: 'verified',
-  REVIEWING: 'pending_actions',
-  DRAFT:     'edit_note',
-  HISTORY:   'history',
-  REJECTED:  'error',
+  active:    'verified',
+  reviewing: 'pending_actions',
+  draft:     'edit_note',
+  history:   'history',
+  rejected:  'error',
 };
 
 // ── 審核 Drawer ──
 const isReviewDrawerOpen = ref(false);
 
 const reviewVersionId = computed(() => {
-  return knowledge.value?.versions.find(v => v.status === 'REVIEWING')?.id ?? '';
+  return knowledge.value?.versions.find(v => v.status === 'reviewing')?.id ?? '';
 });
 
 // ── 建立新版本 ──
@@ -291,7 +291,7 @@ function handleCreateVersion(data: { type: 'MINOR' | 'MAJOR', note: string }) {
 
 // ── 撤回審核 ──
 function handleWithdraw() {
-  const v = knowledge.value?.versions.find(ver => ver.status === 'REVIEWING');
+  const v = knowledge.value?.versions.find(ver => ver.status === 'reviewing');
   if (!v) return;
   popDialog.confirm('確定要撤回此審核申請嗎？版本將退回為草稿狀態。', () => {
     knowledgeStore.withdrawReview(props.id, v.id);
@@ -301,7 +301,7 @@ function handleWithdraw() {
 
 // ── 繼續編輯草稿 ──
 function goToEditor() {
-  const draft = knowledge.value?.versions.find(v => v.status === 'DRAFT' || v.status === 'REJECTED');
+  const draft = knowledge.value?.versions.find(v => v.status === 'draft' || v.status === 'rejected');
   if (draft) {
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId: props.id, versionId: draft.id } });
   }

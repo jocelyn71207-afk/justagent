@@ -28,7 +28,7 @@
         <i class="material-symbols-outlined">info</i>
         <div>
           您正在編輯 <strong>{{ draft.versionNumber }}</strong> 草稿版本。
-          目前的正式發布版本仍為 <strong>{{ knowledge?.currentVersion }}</strong>，
+          目前的正式發布版本仍為 <strong>{{ knowledge?.versions.find(v => v.status === 'active')?.versionNumber ?? '—' }}</strong>，
           在審核通過並發布前，所有使用者看到的內容均不會改變。
         </div>
       </div>
@@ -195,7 +195,7 @@
               </div>
               <div class="meta-info-item">
                 <span class="meta-label">前一版本</span>
-                <span class="fc-grey-1 fs-13">{{ knowledge?.currentVersion ?? '—' }}</span>
+                <span class="fc-grey-1 fs-13">{{ knowledge?.versions.find(v => v.status === 'active')?.versionNumber ?? '—' }}</span>
               </div>
               <div class="meta-info-item">
                 <span class="meta-label">最後編輯</span>
@@ -257,8 +257,8 @@ watch(knowledge, (val) => {
 }, { immediate: true });
 
 const statusLabelMap: Record<string, string> = {
-  DRAFT:    '草稿',
-  REJECTED: '已退回',
+  draft:    '草稿',
+  rejected: '已退回',
 };
 
 const formData = reactive({
@@ -307,9 +307,9 @@ onMounted(() => {
     formData.title = draft.value.title;
     formData.summary = draft.value.summary;
     formData.content = draft.value.content;
-    formData.category = draft.value.category;
+    formData.category = knowledge.value?.category ?? '';
     formData.tags = [...(draft.value.tags ?? [])];
-    formData.visibility = draft.value.visibility ?? 'ALL';
+    formData.visibility = 'ALL';
     formData.sourceFiles = [...(draft.value.sourceFiles ?? [])];
     formData.updateNote = draft.value.updateNote;
   }

@@ -71,7 +71,7 @@
                 </div>
                 <div class="diff-item">
                   <div class="diff-label">分類</div>
-                  <div class="diff-content" :class="{ 'is-removed': v1.category !== v2.category }">{{ v1.category }}</div>
+                  <div class="diff-content">{{ knowledge?.category }}</div>
                 </div>
                 <div class="diff-item">
                   <div class="diff-label">標籤</div>
@@ -104,7 +104,7 @@
                 </div>
                 <div class="diff-item">
                   <div class="diff-label">分類</div>
-                  <div class="diff-content" :class="{ 'is-added': v1.category !== v2.category }">{{ v2.category }}</div>
+                  <div class="diff-content">{{ knowledge?.category }}</div>
                 </div>
                 <div class="diff-item">
                   <div class="diff-label">標籤</div>

@@ -47,7 +47,7 @@
               <div class="affected-item__title">{{ item.title }}</div>
               <div class="affected-item__meta">
                 <span class="category-tag">{{ item.category }}</span>
-                <span class="fc-grey-1 fs-12">目前版本 {{ item.currentVersion }}</span>
+                <span class="fc-grey-1 fs-12">目前版本 {{ (item.versions.find((v: any) => v.status === 'active') ?? item.versions[item.versions.length - 1])?.versionNumber ?? '—' }}</span>
               </div>
             </div>
             <div class="affected-item__actions">

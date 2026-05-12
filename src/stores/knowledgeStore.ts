@@ -1,46 +1,59 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
+export type ItemStatus =
+  | 'pending'
+  | 'processing'
+  | 'reviewing'
+  | 'active'
+  | 'needs_update'
+  | 'failed'
+  | 'archived'
+
+export type VersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
+export type VersionType = 'MAJOR' | 'MINOR'
+export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
+export type SourceType = 'FILE' | 'API' | 'MANUAL'
+
 export interface ApiSourceHeader {
-  key: string;
-  value: string;
+  key: string
+  value: string
 }
 
 export interface WizardPayload {
-  url: string;
-  authorization: string;
-  method: 'GET' | 'POST';
-  headers: ApiSourceHeader[];
-  body: string;
-  titleField: string;
-  contentField: string;
-  name: string;
-  category: string;
-  schedule: 'MANUAL' | 'DAILY' | 'WEEKLY';
+  url: string
+  authorization: string
+  method: 'GET' | 'POST'
+  headers: ApiSourceHeader[]
+  body: string
+  titleField: string
+  contentField: string
+  name: string
+  category: string
+  schedule: 'MANUAL' | 'DAILY' | 'WEEKLY'
 }
 
 export interface ApiSource {
-  id: string;
-  name: string;
-  url: string;
-  method: 'GET' | 'POST';
-  headers: ApiSourceHeader[];
-  body: string;
-  titleField: string;
-  contentField: string;
-  schedule: 'MANUAL' | 'DAILY' | 'WEEKLY';
-  enabled: boolean;
-  lastSyncAt: string | null;
-  lastSyncStatus: 'SUCCESS' | 'FAILED' | null;
-  lastSyncCount: number;
-  lastSyncError: string | null;
+  id: string
+  name: string
+  url: string
+  method: 'GET' | 'POST'
+  headers: ApiSourceHeader[]
+  body: string
+  titleField: string
+  contentField: string
+  schedule: 'MANUAL' | 'DAILY' | 'WEEKLY'
+  enabled: boolean
+  lastSyncAt: string | null
+  lastSyncStatus: 'SUCCESS' | 'FAILED' | null
+  lastSyncCount: number
+  lastSyncError: string | null
 }
 
-// 來源檔案參照：記錄關聯時的版本號，以便偵測更新
 export interface SourceFileRef {
-  fileId: string;
-  fileName: string;
-  linkedVersion: number; // 建立/上次同步時的檔案版本號
+  fileId: string
+  fileName: string
+  linkedVersion: number
 }
 
 export interface ReviewRecord {
@@ -50,21 +63,31 @@ export interface ReviewRecord {
   note?: string
 }
 
+export interface ChunkPreview {
+  index: number
+  content: string
+  tokenCount: number
+}
+
 export interface KnowledgeVersion {
-  id: string;
-  knowledgeId: string;
-  versionNumber: string; // e.g. "v1.2"
-  status: 'DRAFT' | 'REVIEWING' | 'PUBLISHED' | 'HISTORY' | 'REJECTED';
-  title: string;
-  summary: string;
-  content: string;
-  category: string;
-  tags: string[];
-  visibility?: 'ALL' | 'TEAM' | 'MANAGERS'; // 可見範圍
-  lastUpdateBy: string;
-  lastUpdateTime: string;
-  updateNote: string; // 本次更新說明
-  sourceFiles?: SourceFileRef[]; // 關聯來源檔案（含版本追蹤）
+  id: string
+  knowledgeId: string
+  versionNumber: string
+  versionType: VersionType | null
+  status: VersionStatus
+  title: string
+  summary: string
+  content: string
+  tags: string[]
+  systemTags: string[]
+  lastUpdateBy: string
+  lastUpdateTime: string
+  updateNote: string
+  sourceFiles: SourceFileRef[]
+  chunks: ChunkPreview[]
+  embeddingModel: string | null
+  embeddingDimension: number | null
+  embeddingCount: number
   reviewNote?: string
   reviewedBy?: string
   reviewedTime?: string
@@ -73,19 +96,22 @@ export interface KnowledgeVersion {
 }
 
 export interface KnowledgeItem {
-  id: string;
-  title: string;
-  category: string;
-  currentVersion: string; // 當前發布的版本號
-  status: 'PUBLISHED' | 'REVIEWING' | 'DRAFT' | 'REJECTED';
-  lastUpdateTime: string;
-  lastUpdateBy: string;
-  versions: KnowledgeVersion[];
-  sourceStale?: boolean;       // 有來源檔案已更新，尚未處理
-  staleSourceFileIds?: string[]; // 哪些來源檔案觸發了 stale
-  sourceType?: 'API' | 'FILE';
-  apiSourceId?: string;
-  apiSourceName?: string;
+  id: string
+  title: string
+  category: string
+  status: ItemStatus
+  sourceType: SourceType
+  pipelineProgress: number
+  pipelineStage: PipelineStage | null
+  pipelineError: string | null
+  sourceStale: boolean
+  staleSourceFileIds: string[]
+  lastSyncAt: string | null
+  apiSourceId: string | null
+  apiSourceName: string | null
+  versions: KnowledgeVersion[]
+  lastUpdateTime: string
+  lastUpdateBy: string
 }
 
 export const useKnowledgeStore = defineStore('knowledge', () => {
@@ -95,230 +121,222 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       id: 'k1',
       title: '2025產品總表-Q3',
       category: '商品文件',
-      currentVersion: 'v1.2',
-      status: 'PUBLISHED',
+      status: 'active',
+      sourceType: 'FILE',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
       lastUpdateTime: '2025-08-13 10:30',
       lastUpdateBy: 'Lucas',
       versions: [
         {
-          id: 'v1.0',
+          id: 'k1-v1.0',
           knowledgeId: 'k1',
           versionNumber: 'v1.0',
-          status: 'HISTORY',
+          versionType: null,
+          status: 'history',
           title: '2025產品總表-Q1',
           summary: '2025延續品',
           content: '這是 v1.0 的內容...',
-          category: '商品文件',
           tags: ['產品'],
+          systemTags: [],
           lastUpdateBy: 'Admin',
           lastUpdateTime: '2025-01-01 09:00',
           updateNote: '初始建立',
+          sourceFiles: [],
+          chunks: [],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 5,
         },
         {
-          id: 'v1.1',
-          knowledgeId: 'k1',
-          versionNumber: 'v1.1',
-          status: 'HISTORY',
-          title: '2025產品總表-Q2',
-          summary: '新增Q2選品資料',
-          content: '這是 v1.1 的內容...',
-          category: '商品文件',
-          tags: ['產品'],
-          lastUpdateBy: 'Admin',
-          lastUpdateTime: '2025-03-01 14:00',
-          updateNote: '新增Q2選品資料(含延續款調整）',
-        },
-        {
-          id: 'v1.2',
+          id: 'k1-v1.2',
           knowledgeId: 'k1',
           versionNumber: 'v1.2',
-          status: 'PUBLISHED',
+          versionType: 'MINOR',
+          status: 'active',
           title: '2025產品總表-Q3',
           summary: '新增Q3選品資料',
-          content: '## UGG 鞋款庫存資料\n\n| Model | SC | 年份 | 系列 | 類別 | 子類 | 鞋型 | 價格 | 銷售日期 | 銷售量 | ... |\n|-------|----|------|------|------|------|------|------|----------|--------|-----|\n| TV4038BKBR | TV | 4038BKBR | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110722 | 234 |\n| TV4038BNGC | TV | 4038BNGC | 2011F | Forge Pro eVent Ms | Performance | Trail | Performance Shoe | 4980 | 20110824 | 252 |\n| TV4045LURK | TV | 4045LURK | 2011F | Forge Pro eVent Ws | Performance | Trail | Performance Shoe | 4980 | 20110816 | 144 |',
-          category: '商品文件',
+          content: '## UGG 鞋款庫存資料\n\n| Model | SC | 年份 |\n|---|---|---|\n| TV4038BKBR | TV | 2011F |',
           tags: ['產品'],
+          systemTags: ['商品文件'],
           lastUpdateBy: 'Lucas',
           lastUpdateTime: '2026-08-13 10:30',
           updateNote: '更新為 UGG 鞋款庫存資料',
           sourceFiles: [{ fileId: 'res3', fileName: 'UGG2025商品總表.xlsx', linkedVersion: 1 }],
-        }
-      ]
+          chunks: [
+            { index: 1, content: 'UGG 鞋款庫存資料...', tokenCount: 312 },
+            { index: 2, content: 'TV4038BKBR 冬季款...', tokenCount: 287 },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 2,
+        },
+      ],
     },
     {
       id: 'k2',
       title: '後台角色權限說明',
       category: '系統文件',
-      currentVersion: 'v2.0',
-      status: 'REVIEWING',
+      status: 'reviewing',
+      sourceType: 'MANUAL',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
       lastUpdateTime: '2026-04-01 11:00',
       lastUpdateBy: 'Rita',
       versions: [
         {
-          id: 'v2.0-review',
+          id: 'k2-v2.0',
           knowledgeId: 'k2',
           versionNumber: 'v2.0',
-          status: 'REVIEWING',
+          versionType: 'MAJOR',
+          status: 'reviewing',
           title: '後台角色權限說明 (新版)',
           summary: '重構權限體系後的說明文件',
           content: '這是一份關於新版權限體系的詳細說明...',
-          category: '系統文件',
           tags: ['權限', '安全'],
+          systemTags: ['系統文件'],
           lastUpdateBy: 'Rita',
           lastUpdateTime: '2026-04-01 11:00',
           updateNote: '大版本升級，移除舊有角色',
-        }
-      ]
+          sourceFiles: [],
+          chunks: [],
+          embeddingModel: null,
+          embeddingDimension: null,
+          embeddingCount: 0,
+        },
+      ],
     },
     {
       id: 'k3',
       title: '客服 FAQ：退貨流程',
       category: '客服知識',
-      currentVersion: 'v1.0',
-      status: 'DRAFT',
+      status: 'processing',
+      sourceType: 'FILE',
+      pipelineProgress: 60,
+      pipelineStage: 'embedding',
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
       lastUpdateTime: '2026-04-01 15:00',
       lastUpdateBy: 'Jocelyn',
       versions: [
         {
-          id: 'v1.0-draft',
+          id: 'k3-v1.0',
           knowledgeId: 'k3',
           versionNumber: 'v1.0',
-          status: 'DRAFT',
+          versionType: null,
+          status: 'draft',
           title: '客服 FAQ：退貨流程',
           summary: '草擬退貨 SOP',
           content: '1. 收到申請\n2. 審核照片\n3. 安排退貨...',
-          category: '客服知識',
           tags: ['客服', '退貨'],
+          systemTags: [],
           lastUpdateBy: 'Jocelyn',
           lastUpdateTime: '2026-04-01 15:00',
           updateNote: '初始草稿',
-        }
-      ]
+          sourceFiles: [],
+          chunks: [],
+          embeddingModel: null,
+          embeddingDimension: null,
+          embeddingCount: 0,
+        },
+      ],
     },
     {
       id: 'k4',
-      title: '商品目錄即時資料',
-      category: '商品文件',
-      currentVersion: 'v3.0',
-      status: 'PUBLISHED',
+      title: '信用卡申辦資格說明',
+      category: '產品資訊',
+      status: 'needs_update',
+      sourceType: 'FILE',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: true,
+      staleSourceFileIds: ['res-cc-1'],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
       lastUpdateTime: '2026-04-12 09:00',
-      lastUpdateBy: 'API 同步',
-      sourceType: 'API',
-      apiSourceId: 'api-1',
-      apiSourceName: '商品目錄 API',
+      lastUpdateBy: 'Alice',
       versions: [
         {
-          id: 'k4-v1.0',
+          id: 'k4-v1.3',
           knowledgeId: 'k4',
-          versionNumber: 'v1.0',
-          status: 'HISTORY',
-          title: '商品目錄即時資料',
-          summary: '初次同步，涵蓋冬季主力款',
-          content: `# 商品目錄（2026-04-10 初次同步）
-
-## 冬季主力款
-
-| 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
-|---|---|---|---|---|
-| UGG Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 142 | 上架中 |
-| UGG Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,280 | 87 | 上架中 |
-| UGG Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 203 | 上架中 |
-
-## 備註
-- 資料來源：商品目錄 API（https://api.example.com/products）
-- 同步時間：2026-04-10 09:00`,
-          category: '商品文件',
-          tags: ['商品', 'API'],
-          lastUpdateBy: 'API 同步',
-          lastUpdateTime: '2026-04-10 09:00',
-          updateNote: '由 API 來源「商品目錄 API」自動建立（初次同步）',
-        },
-        {
-          id: 'k4-v2.0',
-          knowledgeId: 'k4',
-          versionNumber: 'v2.0',
-          status: 'HISTORY',
-          title: '商品目錄即時資料',
-          summary: '新增春季新品 5 筆，調整 2 筆售價',
-          content: `# 商品目錄（2026-04-11 更新）
-
-## 冬季主力款
-
-| 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
-|---|---|---|---|---|
-| UGG Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 98 | 上架中 |
-| UGG Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 65 | 上架中（降價） |
-| UGG Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 180 | 上架中 |
-
-## 春季新品（新增）
-
-| 商品名稱 | 商品編號 | 售價 | 庫存 | 狀態 |
-|---|---|---|---|---|
-| UGG Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 120 | 預購中 |
-| UGG Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 250 | 上架中 |
-| UGG Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 75 | 預購中 |
-| UGG Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 90 | 上架中 |
-| UGG Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 45 | 預購中 |
-
-## 備註
-- 資料來源：商品目錄 API（https://api.example.com/products）
-- 同步時間：2026-04-11 09:00
-- 本次異動：新增 5 筆春季新品；UGG Tirra 女款售價由 2,280 調整為 2,180`,
-          category: '商品文件',
-          tags: ['商品', 'API'],
-          lastUpdateBy: 'API 同步',
-          lastUpdateTime: '2026-04-11 09:00',
-          updateNote: '由 API 來源「商品目錄 API」自動同步（新增春季新品 5 筆，售價異動 2 筆）',
-        },
-        {
-          id: 'k4-v3.0',
-          knowledgeId: 'k4',
-          versionNumber: 'v3.0',
-          status: 'PUBLISHED',
-          title: '商品目錄即時資料',
-          summary: '補充夏季選品 4 筆，冬季款 3 筆下架',
-          content: `# 商品目錄（2026-04-12 最新）
-
-## 上架中
-
-| 商品名稱 | 商品編號 | 售價 | 庫存 | 類別 |
-|---|---|---|---|---|
-| UGG Hurricane XLT2 男款 | TV-HUR-M-BLK | NT$2,480 | 72 | 涼鞋 |
-| UGG Tirra 女款涼鞋 | TV-TIR-W-LAV | NT$2,180 | 43 | 涼鞋 |
-| UGG Original Universal 中性款 | TV-UNI-U-BRN | NT$1,980 | 155 | 涼鞋 |
-| UGG Voya Flip 人字拖 | TV-VOY-U-AQU | NT$1,480 | 218 | 拖鞋 |
-| UGG Flatform Universal 女款 | TV-FLT-W-WHT | NT$2,680 | 108 | 厚底涼鞋 |
-| UGG Ember Court 女款 | TV-EMB-W-RSE | NT$2,380 | 77 | 休閒鞋 |
-
-## 預購中
-
-| 商品名稱 | 商品編號 | 售價 | 庫存（預計） | 類別 |
-|---|---|---|---|---|
-| UGG Strata 戶外涼鞋 | TV-STR-M-OLV | NT$2,880 | 60 | 戶外涼鞋 |
-| UGG Hydratrek 中性款 | TV-HYD-U-GRY | NT$3,280 | 40 | 防水涼鞋 |
-| UGG Crocband Pro 夏季款 | TV-CRO-U-BLU | NT$1,880 | 200 | 拖鞋 |
-| UGG Terra Fi Lite 輕量款 | TV-TFL-M-TAN | NT$3,480 | 30 | 健行涼鞋 |
-
-## 已下架
-
-| 商品名稱 | 商品編號 | 下架原因 |
-|---|---|---|
-| UGG Hurricane XLT2 冬季限定色 | TV-HUR-M-NVY | 季末清倉結束 |
-| UGG Classic Flip 冬季款 | TV-CLS-U-BRN | 庫存清零 |
-| UGG Tirra 冬季厚底 | TV-TIR-W-BLK | 款式停產 |
-
-## 備註
-- 資料來源：商品目錄 API（https://api.example.com/products）
-- 同步時間：2026-04-12 09:00
-- 本次異動：新增夏季選品 4 筆（預購）；3 筆冬季款轉為下架`,
-          category: '商品文件',
-          tags: ['商品', 'API'],
-          lastUpdateBy: 'API 同步',
+          versionNumber: 'v1.3',
+          versionType: 'MINOR',
+          status: 'active',
+          title: '信用卡申辦資格說明',
+          summary: '說明各卡種申辦條件',
+          content: '## 申辦資格\n\n年滿 20 歲，年收入 30 萬以上...',
+          tags: ['信用卡', '申辦'],
+          systemTags: ['產品資訊'],
+          lastUpdateBy: 'Alice',
           lastUpdateTime: '2026-04-12 09:00',
-          updateNote: '由 API 來源「商品目錄 API」自動同步（補充夏季選品 4 筆，冬季款 3 筆下架）',
+          updateNote: '更新年收入門檻',
+          sourceFiles: [{ fileId: 'res-cc-1', fileName: '信用卡申辦規則_2026Q1.pdf', linkedVersion: 1 }],
+          chunks: [
+            { index: 1, content: '申辦資格：年滿 20 歲...', tokenCount: 198 },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 1,
         },
       ],
-    }
+    },
+    {
+      id: 'k5',
+      title: '商品目錄即時資料',
+      category: '商品文件',
+      status: 'active',
+      sourceType: 'API',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: '2026-04-12 09:00',
+      apiSourceId: 'api-1',
+      apiSourceName: '商品目錄 API',
+      lastUpdateTime: '2026-04-12 09:00',
+      lastUpdateBy: 'API 同步',
+      versions: [
+        {
+          id: 'k5-v3.0',
+          knowledgeId: 'k5',
+          versionNumber: 'v3.0',
+          versionType: 'MAJOR',
+          status: 'active',
+          title: '商品目錄即時資料',
+          summary: '補充夏季選品 4 筆',
+          content: '# 商品目錄（2026-04-12 最新）\n\n...',
+          tags: ['商品', 'API'],
+          systemTags: ['商品文件'],
+          lastUpdateBy: 'API 同步',
+          lastUpdateTime: '2026-04-12 09:00',
+          updateNote: 'API 自動同步',
+          sourceFiles: [],
+          chunks: [],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 8,
+        },
+      ],
+    },
   ]);
 
   const apiSources = ref<ApiSource[]>([
@@ -372,7 +390,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
 
-    const published = k.versions.find(v => v.status === 'PUBLISHED');
+    const published = k.versions.find(v => v.status === 'active');
     if (!published) return;
 
     // 計算新版本號
@@ -384,14 +402,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       ...JSON.parse(JSON.stringify(published)),
       id: `${newNum}-draft-${Date.now()}`,
       versionNumber: newNum,
-      status: 'DRAFT',
+      status: 'draft' as VersionStatus,
       lastUpdateBy: 'Current User', // 正常應從 userStore 拿
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
       updateNote: updateNote,
     };
 
     k.versions.push(newVersion);
-    k.status = 'DRAFT';
+    k.status = 'pending';
     return newVersion.id;
   };
 
@@ -400,7 +418,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
-    if (v && v.status === 'DRAFT') {
+    if (v && v.status === 'draft') {
       Object.assign(v, data);
       v.lastUpdateTime = new Date().toISOString().replace('T', ' ').slice(0, 16);
       k.lastUpdateTime = v.lastUpdateTime;
@@ -412,8 +430,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
-    if (v && (v.status === 'DRAFT' || v.status === 'REJECTED')) {
-      v.status = 'REVIEWING';
+    if (v && (v.status === 'draft' || v.status === 'rejected')) {
+      v.status = 'reviewing';
       v.reviewNote = note;
       v.reviewHistory = [
         ...(v.reviewHistory ?? []),
@@ -424,7 +442,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           note,
         },
       ];
-      k.status = 'REVIEWING';
+      k.status = 'reviewing';
     }
   };
 
@@ -436,7 +454,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     if (!oldVersion) return;
 
     // 基於當前發布版本號遞增
-    const published = k.versions.find(v => v.status === 'PUBLISHED');
+    const published = k.versions.find(v => v.status === 'active');
     const baseNum = published ? published.versionNumber : oldVersion.versionNumber;
     const [major, minor] = baseNum.replace('v', '').split('.').map(Number);
     const newNum = `v${major}.${minor + 1}`;
@@ -445,13 +463,13 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       ...JSON.parse(JSON.stringify(oldVersion)),
       id: `${newNum}-restore-${Date.now()}`,
       versionNumber: newNum,
-      status: 'DRAFT',
+      status: 'draft' as VersionStatus,
       updateNote: `還原自 ${oldVersion.versionNumber}：${note}`,
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
     };
 
     k.versions.push(newVersion);
-    k.status = 'DRAFT';
+    k.status = 'pending';
     return newVersion.id;
   };
 
@@ -459,16 +477,16 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
-    if (!v || v.status !== 'REVIEWING') return;
+    if (!v || v.status !== 'reviewing') return;
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    // Previous PUBLISHED version becomes HISTORY
+    // Previous active version becomes history
     for (const ver of k.versions) {
-      if (ver.status === 'PUBLISHED') ver.status = 'HISTORY';
+      if (ver.status === 'active') ver.status = 'history';
     }
 
-    v.status = 'PUBLISHED';
+    v.status = 'active';
     v.reviewedBy = 'Current User';
     v.reviewedTime = now;
     v.reviewHistory = [
@@ -476,8 +494,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       { action: 'APPROVED', by: 'Current User', time: now },
     ];
 
-    k.status = 'PUBLISHED';
-    k.currentVersion = v.versionNumber;
+    k.status = 'active';
     k.lastUpdateTime = now;
   };
 
@@ -485,35 +502,35 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
-    if (!v || v.status !== 'REVIEWING') return;
+    if (!v || v.status !== 'reviewing') return;
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    v.status = 'REJECTED';
+    v.status = 'rejected';
     v.reviewFeedback = feedback;
     v.reviewHistory = [
       ...(v.reviewHistory ?? []),
       { action: 'REJECTED', by: 'Current User', time: now, note: feedback },
     ];
 
-    k.status = 'REJECTED';
+    k.status = 'needs_update';
   };
 
   const withdrawReview = (knowledgeId: string, versionId: string) => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
-    if (!v || v.status !== 'REVIEWING') return;
+    if (!v || v.status !== 'reviewing') return;
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    v.status = 'DRAFT';
+    v.status = 'draft';
     v.reviewHistory = [
       ...(v.reviewHistory ?? []),
       { action: 'WITHDRAWN', by: 'Current User', time: now },
     ];
 
-    k.status = 'DRAFT';
+    k.status = 'pending';
   };
 
   // 從共用檔案建立新的知識條目草稿
@@ -533,25 +550,37 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       id: newId,
       title: baseName,
       category: params.category,
-      currentVersion: 'v1.0',
-      status: 'DRAFT',
+      status: 'pending',
+      sourceType: 'FILE',
+      pipelineProgress: 0,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
       lastUpdateTime: now,
       lastUpdateBy: 'AI 生成',
       versions: [{
         id: draftId,
         knowledgeId: newId,
         versionNumber: 'v1.0',
-        status: 'DRAFT',
+        versionType: null,
+        status: 'draft',
         title: baseName,
         summary: `由「${params.fileName}」生成的知識條目草稿`,
         content: params.content,
-        category: params.category,
         tags: [],
-        visibility: 'ALL',
+        systemTags: [],
         lastUpdateBy: 'AI 生成',
         lastUpdateTime: now,
         updateNote: `從共用檔案「${params.fileName}」建立，使用模板：${params.template}`,
         sourceFiles: [{ fileId: params.fileId, fileName: params.fileName, linkedVersion: 1 }],
+        chunks: [],
+        embeddingModel: null,
+        embeddingDimension: null,
+        embeddingCount: 0,
       }],
     };
 
@@ -562,14 +591,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   // 來源檔案更新後，將關聯此檔案的所有知識條目標記為 stale
   function markFileStale(fileId: string, newVersion: number) {
     for (const k of knowledgeList.value) {
-      const activeVersion = k.versions.find(v => v.status === 'PUBLISHED' || v.status === 'REVIEWING' || v.status === 'DRAFT');
+      const activeVersion = k.versions.find(v => v.status === 'active' || v.status === 'reviewing' || v.status === 'draft');
       if (!activeVersion?.sourceFiles) continue;
       const isLinked = activeVersion.sourceFiles.some(
         ref => ref.fileId === fileId && ref.linkedVersion < newVersion
       );
       if (isLinked) {
         k.sourceStale = true;
-        k.staleSourceFileIds = [...(k.staleSourceFileIds ?? []).filter(id => id !== fileId), fileId];
+        k.staleSourceFileIds = [...k.staleSourceFileIds.filter(id => id !== fileId), fileId];
       }
     }
   }
@@ -582,17 +611,17 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
 
-    const base = k.versions.find(v => v.status === 'PUBLISHED') ?? k.versions[k.versions.length - 1];
+    const base = k.versions.find(v => v.status === 'active') ?? k.versions[k.versions.length - 1];
     const [major, minor] = base.versionNumber.replace('v', '').split('.').map(Number);
     const newNum = `v${major}.${minor + 1}`;
 
     // 更新 sourceFiles 的 linkedVersion 到最新
-    const updatedSourceFiles = (base.sourceFiles ?? []).map(ref => {
+    const updatedSourceFiles = base.sourceFiles.map(ref => {
       const file = getFile(ref.fileId);
       return file ? { ...ref, linkedVersion: file.version } : ref;
     });
 
-    const staleFileNames = (k.staleSourceFileIds ?? [])
+    const staleFileNames = k.staleSourceFileIds
       .map(id => getFile(id)?.fileName ?? id)
       .join('、');
 
@@ -600,7 +629,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       ...JSON.parse(JSON.stringify(base)),
       id: `${newNum}-source-update-${Date.now()}`,
       versionNumber: newNum,
-      status: 'DRAFT',
+      status: 'draft' as VersionStatus,
       updateNote: `根據來源檔案更新（${staleFileNames}）由 AI 自動建立草稿`,
       lastUpdateBy: 'AI 生成',
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
@@ -608,7 +637,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     };
 
     k.versions.push(newVersion);
-    k.status = 'DRAFT';
+    k.status = 'pending';
     k.sourceStale = false;
     k.staleSourceFileIds = [];
     return newVersion.id;
@@ -650,26 +679,37 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       id: newId,
       title: params.name,
       category: params.category,
-      currentVersion: 'v1.0',
-      status: 'DRAFT',
-      lastUpdateTime: now,
-      lastUpdateBy: 'API 同步',
+      status: 'pending',
       sourceType: 'API',
+      pipelineProgress: 0,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
       apiSourceId: params.apiSourceId,
       apiSourceName: params.apiSourceName,
+      lastUpdateTime: now,
+      lastUpdateBy: 'API 同步',
       versions: [{
         id: draftId,
         knowledgeId: newId,
         versionNumber: 'v1.0',
-        status: 'DRAFT',
+        versionType: null,
+        status: 'draft',
         title: params.name,
         summary: `由 API 來源「${params.apiSourceName}」同步建立`,
         content: '',
-        category: params.category,
         tags: [],
+        systemTags: [],
         lastUpdateBy: 'API 同步',
         lastUpdateTime: now,
         updateNote: `由 API 來源「${params.apiSourceName}」自動建立`,
+        sourceFiles: [],
+        chunks: [],
+        embeddingModel: null,
+        embeddingDimension: null,
+        embeddingCount: 0,
       }],
     }
 
@@ -712,7 +752,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           const linked = knowledgeList.value.find(k => k.apiSourceId === id)
           if (linked) {
             const base =
-              linked.versions.find(v => v.status === 'PUBLISHED') ??
+              linked.versions.find(v => v.status === 'active') ??
               linked.versions[linked.versions.length - 1]
             const [major, minor] = base.versionNumber.replace('v', '').split('.').map(Number)
             const newNum = `v${major}.${minor + 1}`
@@ -726,19 +766,25 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
               id: `${newNum}-api-${Date.now()}`,
               knowledgeId: linked.id,
               versionNumber: newNum,
-              status: 'DRAFT',
+              versionType: 'MINOR',
+              status: 'draft',
               title: linked.title,
               summary: `由 API 來源「${source.name}」同步更新（${count} 筆資料）`,
               content,
-              category: linked.category,
               tags: [],
+              systemTags: [],
               lastUpdateBy: 'API 同步',
               lastUpdateTime: now,
               updateNote: `API 同步（${source.name}），共 ${count} 筆`,
+              sourceFiles: [],
+              chunks: [],
+              embeddingModel: null,
+              embeddingDimension: null,
+              embeddingCount: 0,
             }
 
             linked.versions.push(newVersion)
-            linked.status = 'DRAFT'
+            linked.status = 'pending'
             linked.lastUpdateTime = now
             linked.lastUpdateBy = 'API 同步'
           }
