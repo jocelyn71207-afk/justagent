@@ -1766,3 +1766,279 @@
     transition: transform 0.2s ease;
   }
 }
+
+// ── 新狀態 badge（小寫，對齊 store ItemStatus） ──
+.status-badge--active {
+  background: var(--color-success-bg, #dcfce7);
+  color: var(--color-success, #16a34a);
+}
+.status-badge--processing {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+.status-badge--reviewing {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.status-badge--needs_update {
+  background: #fef3c7;
+  color: #b45309;
+}
+.status-badge--pending {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.status-badge--failed {
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-danger, #dc2626);
+}
+.status-badge--archived {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+// ── Version status badge（小寫） ──
+.status-badge--draft {
+  background: #fef9c3;
+  color: #92400e;
+}
+.status-badge--history {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.status-badge--rejected {
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-danger, #dc2626);
+}
+
+// ── Pipeline 進度條（列表列內用）──
+.pipeline-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.pipeline-progress-bar {
+  width: 80px;
+  height: 4px;
+  background: #e9d5ff;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pipeline-progress-fill {
+  height: 100%;
+  background: #7c3aed;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.pipeline-stage-label {
+  font-size: 11px;
+  color: #7c3aed;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// ── 批次操作工具列 ──
+.batch-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #1e40af;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+
+  .batch-count {
+    font-weight: 600;
+  }
+
+  .batch-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .batch-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(255, 255, 255, 0.25); }
+    &.is-danger { background: #dc2626; border-color: transparent; }
+    &.is-danger:hover { background: #b91c1c; }
+  }
+
+  .batch-cancel {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+}
+
+// ── KnowledgeDetail 4-Tab ──
+.detail-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border, #e2e8f0);
+  margin-bottom: 16px;
+}
+
+.detail-tab-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--color-grey-1, #94a3b8);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  &.is-active {
+    color: var(--primary, #2563eb);
+    border-bottom-color: var(--primary, #2563eb);
+    font-weight: 600;
+  }
+
+  &:hover:not(.is-active) {
+    color: var(--text, #1e293b);
+  }
+}
+
+.detail-tab-panel {
+  display: none;
+  &.is-active { display: block; }
+}
+
+// 概覽 Tab 58/42 分割
+.detail-overview-grid {
+  display: grid;
+  grid-template-columns: 58fr 42fr;
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// 版本時間軸
+.version-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.version-timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, #f1f5f9);
+
+  &:last-child { border-bottom: none; }
+}
+
+.version-timeline-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 12px;
+
+  .node-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    margin-top: 3px;
+    flex-shrink: 0;
+
+    &.is-active { background: #16a34a; }
+  }
+
+  .node-line {
+    width: 1px;
+    flex: 1;
+    background: #e2e8f0;
+    margin-top: 4px;
+    min-height: 24px;
+  }
+}
+
+.version-timeline-body { flex: 1; }
+
+// Chunk 卡片（分段預覽 Tab）
+.chunk-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+
+  .chunk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text, #1e293b);
+  }
+
+  .chunk-token {
+    font-size: 11px;
+    color: var(--color-grey-1, #94a3b8);
+    font-weight: 400;
+  }
+
+  .chunk-content {
+    font-size: 12px;
+    color: var(--text-secondary, #475569);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Needs-update 列高亮
+.table-row--needs-update {
+  background: #fffbeb;
+}
+
+// Pipeline 徽章群（Detail 頁 Pipeline 三階段）
+.pipeline-stages {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.pipeline-stage-badge {
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: #f1f5f9;
+  color: #64748b;
+
+  &.is-done {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+
+  &.is-active {
+    background: #ede9fe;
+    color: #7c3aed;
+  }
+}
