@@ -192,8 +192,7 @@
     <!-- 新增知識 Modal -->
     <CreateKnowledgeWizardModal
       v-model="isCreateModalOpen"
-      :file="null"
-      @confirm="handleCreated"
+      @created="handleKnowledgeCreated"
     />
 
     <!-- 建立新版本 Modal -->
@@ -436,8 +435,8 @@ function handleCreateVersion(data: { type: 'MINOR' | 'MAJOR', note: string }) {
 // ── 新增知識 ──
 const isCreateModalOpen = ref(false)
 
-function handleCreated(_data: { template: string; content: string; category: string }) {
-  isCreateModalOpen.value = false
+function handleKnowledgeCreated(_id: string) {
+  // no-op — pipeline progress auto-updates via store
 }
 
 // ── 狀態輔助 ──
