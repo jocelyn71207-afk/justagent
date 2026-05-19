@@ -844,7 +844,7 @@
 
   // 統計卡片列
   .stats-row {
-    display: flex;
+    display: grid;
     gap: 12px;
     margin-bottom: 24px;
   }
@@ -915,6 +915,38 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+  }
+
+  // 分類快篩 Tab
+  .category-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .category-tab-btn {
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    &.is-active {
+      background: rgba($color-wise-green, 0.10);
+      color: var(--primary-hover);
+      border-color: rgba($color-wise-green, 0.20);
+      font-weight: 600;
     }
   }
 
@@ -1056,17 +1088,49 @@
     td {
       position: relative;
     }
-    
+
+    // ops-menu-wrap: 相對定位容器，讓 dropdown 可以 absolute 定位
+    .ops-menu-wrap {
+      position: relative;
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    // ⋮ 按鈕
+    .ops-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-faint);
+      transition: background 0.15s, color 0.15s;
+
+      &:hover {
+        background: var(--sidebar-hover-a20);
+        color: var(--text);
+      }
+
+      i { font-size: 20px; }
+    }
+
     .next-option-box {
       position: absolute;
-      top: 80%;
-      right: 12px;
-      display: none;
-      min-width: 140px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      
-      &.show {
-        display: block;
+      top: calc(100% + 4px);
+      right: 0;
+      min-width: 160px;
+      z-index: 99;
+
+      // v-if 控制顯示，不需要 display:none / .show
+      &.show { display: block; }
+
+      .option-item--danger {
+        color: var(--color-danger, #dc2626);
+        &:hover { background: var(--color-danger-bg, #fee2e2); }
       }
     }
   }
@@ -1077,7 +1141,6 @@
     border: 1px solid var(--divider-a50);
     border-radius: 16px;
     padding: 28px;
-    margin-bottom: 24px;
     position: relative;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 
