@@ -52,7 +52,7 @@ describe('knowledgeStore — pipeline actions', () => {
       ])
 
       const item = store.knowledgeList.find(k => k.id === id)!
-      expect(item.status).toBe('active')
+      expect(item.status).toBe('pending')
       expect(item.pipelineProgress).toBe(100)
       expect(item.pipelineStage).toBeNull()
       expect(item.versions[0].status).toBe('draft')

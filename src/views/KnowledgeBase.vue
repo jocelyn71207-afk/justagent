@@ -148,7 +148,7 @@
                           <i class="material-symbols-outlined">inventory_2</i>封存
                         </div>
                       </template>
-                      <template v-if="isEditableStatus(item.status)">
+                      <template v-if="isEditableStatus(item)">
                         <div class="option-item" @click="goToEditor(item); closeOps()">
                           <i class="material-symbols-outlined">edit</i>繼續編輯
                         </div>
@@ -440,8 +440,10 @@ function handleKnowledgeCreated(_id: string) {
 }
 
 // ── 狀態輔助 ──
-function isEditableStatus(status: string): boolean {
-  return status === 'draft' || status === 'rejected'
+function isEditableStatus(item: KnowledgeItem): boolean {
+  return item.versions.some(v => v.status === 'draft' || v.status === 'rejected')
+    && item.status !== 'active'
+    && item.status !== 'reviewing'
 }
 
 // ── 版本比較 ──

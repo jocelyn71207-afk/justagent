@@ -513,7 +513,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       { action: 'REJECTED', by: 'Current User', time: now, note: feedback },
     ];
 
-    k.status = 'needs_update';
+    k.status = 'pending';
   };
 
   const withdrawReview = (knowledgeId: string, versionId: string) => {
@@ -862,9 +862,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       id: newId,
       title: params.title,
       category: params.category,
-      status: 'active',
+      status: 'pending',
       sourceType: 'MANUAL',
-      pipelineProgress: 100,
+      pipelineProgress: 0,
       pipelineStage: null,
       pipelineError: null,
       sourceStale: false,
@@ -911,7 +911,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   function markPipelineDone(id: string, chunks: ChunkPreview[]) {
     const item = knowledgeList.value.find(k => k.id === id)
     if (!item) return
-    item.status = 'active'
+    item.status = 'pending'
     item.pipelineProgress = 100
     item.pipelineStage = null
     item.pipelineError = null
