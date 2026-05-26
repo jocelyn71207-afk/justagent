@@ -54,5 +54,34 @@ export const useResourceStore = defineStore('resource', () => {
     if (idx !== -1) resourceList.value.splice(idx, 1);
   }
 
-  return { resourceList, getFileById, uploadNewVersion, addFile, deleteFile };
+  function deriveFileType(name: string): ResourceFile['fileType'] {
+    const ext = name.split('.').pop()?.toLowerCase()
+    const map: Record<string, ResourceFile['fileType']> = {
+      pdf: 'PDF', docx: 'WORD', doc: 'WORD',
+      xlsx: 'EXCEL', xls: 'EXCEL',
+      pptx: 'PPT', ppt: 'PPT',
+      png: 'IMAGE', jpg: 'IMAGE', jpeg: 'IMAGE', gif: 'IMAGE', webp: 'IMAGE',
+      html: 'HTML', md: 'MD', txt: 'TXT',
+    }
+    return map[ext ?? ''] ?? 'OTHER'
+  }
+
+  function addFileFromUpload(file: File): { id: string; fileName: string } {
+    const id = `res-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    addFile({
+      id,
+      fileName: file.name,
+      fileUrl: '',
+      fileType: deriveFileType(file.name),
+      processType: 'RAW',
+      status: 'stored',
+      creatorType: 'USER',
+      ownerId: '',
+      ownerName: '',
+      lastModify: new Date().toISOString().replace('T', ' ').slice(0, 16),
+    })
+    return { id, fileName: file.name }
+  }
+
+  return { resourceList, getFileById, uploadNewVersion, addFile, addFileFromUpload, deleteFile };
 });
