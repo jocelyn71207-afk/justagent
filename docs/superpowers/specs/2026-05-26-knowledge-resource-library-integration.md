@@ -78,6 +78,15 @@ const showResourcePicker = ref(false)
 
 加入 `<ResourceFilePicker v-model="showResourcePicker" @select="onPickerSelect" />`
 
+#### `onPickerSelect` 處理器
+```ts
+function onPickerSelect(file: { fileId: string; fileName: string }) {
+  selectedLibraryFile.value = file
+  uploadedFile.value = null    // 若之前已上傳檔案，一併清除
+  showResourcePicker.value = false
+}
+```
+
 #### `canSubmit` 邏輯
 ```ts
 // FILE 模式
@@ -121,11 +130,11 @@ addFile(file: File): { id: string; fileName: string } {
   const newEntry: ResourceFile = {
     id: `res-${Date.now()}`,
     fileName: file.name,
-    fileType: deriveFileType(file.name),  // pdf / docx / xlsx
+    fileType: deriveFileType(file.name),  // 從副檔名推導：pdf / docx / xlsx
     processType: 'RAW',
     status: 'stored',
     creatorType: 'USER',
-    ownerId: currentUser.id,
+    ownerId: '',   // mock：實際應取自 authStore 或 userStore
     lastModify: new Date().toISOString(),
     version: 1,
     fileUrl: '',   // 實際 S3 upload URL（目前為 mock，填空字串）
