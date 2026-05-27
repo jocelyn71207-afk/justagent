@@ -7,8 +7,8 @@
     <template #title>建立知識條目</template>
 
     <div class="wizard-modal-body">
-      <!-- 來源類型選擇 -->
-      <div class="source-type-row mb-4">
+      <!-- 來源類型選擇（prefillFile 時隱藏）-->
+      <div class="source-type-row mb-4" v-if="!prefillFile">
         <div
           v-for="t in sourceTypes"
           :key="t.value"
@@ -21,10 +21,33 @@
         </div>
       </div>
 
+      <!-- FILE: 已預填來源檔案（從共用檔案管理建立）-->
+      <template v-if="selectedSourceType === 'FILE' && prefillFile">
+        <div class="upload-dropzone mb-3 has-file" style="cursor:default;">
+          <i class="material-symbols-outlined fs-28 mb-1" style="color:#16a34a;">task_alt</i>
+          <div class="fs-13 fw-600">{{ prefillFile.fileName }}</div>
+          <div class="fs-12 fc-grey-1 mt-1">來自共用檔案管理</div>
+        </div>
+      </template>
+
+      <!-- FILE: 已從共用庫選取 -->
+      <template v-else-if="selectedSourceType === 'FILE' && selectedLibraryFile">
+        <div class="upload-dropzone mb-2 has-file" style="cursor:default;">
+          <i class="material-symbols-outlined fs-28 mb-1" style="color:var(--success);">task_alt</i>
+          <div class="fs-13 fw-600">{{ selectedLibraryFile.fileName }}</div>
+          <div class="fs-12 fc-grey-1 mt-1">來自共用檔案管理</div>
+          <button
+            class="fs-11 fc-grey-1 mt-2"
+            style="background:none;border:none;cursor:pointer;text-decoration:underline;"
+            @click="selectedLibraryFile = null"
+          >更換</button>
+        </div>
+      </template>
+
       <!-- FILE: 上傳區 -->
-      <template v-if="selectedSourceType === 'FILE'">
+      <template v-else-if="selectedSourceType === 'FILE'">
         <div
-          class="upload-dropzone mb-3"
+          class="upload-dropzone mb-2"
           :class="{ 'has-file': uploadedFile }"
           @dragover.prevent
           @drop.prevent="handleDrop"
@@ -43,6 +66,23 @@
           </template>
         </div>
         <input ref="fileInputRef" type="file" accept=".pdf,.docx,.xlsx" style="display:none;" @change="handleFileSelect" />
+
+        <!-- 上傳提示 + 共用庫按鈕 -->
+        <div class="d-flex align-items-center justify-content-center gap-1 mb-2" style="font-size:11px;color:var(--text-faint);">
+          <i class="material-symbols-outlined" style="font-size:13px;">info</i>
+          上傳的檔案將同時儲存至共用檔案管理
+        </div>
+        <div class="text-center mb-3" style="font-size:11px;color:var(--text-faint);">— 或 —</div>
+        <div class="text-center mb-3">
+          <button
+            class="custom-btn"
+            style="font-size:12px;"
+            @click.stop="showResourcePicker = true"
+          >
+            <i class="material-symbols-outlined fs-14">folder_open</i>
+            從共用檔案管理選取
+          </button>
+        </div>
       </template>
 
       <!-- API: 選來源 -->
@@ -101,11 +141,12 @@
           :disabled="!canSubmit"
           @click="handleSubmit"
         >
-          <i class="material-symbols-outlined">{{ selectedSourceType === 'MANUAL' ? 'edit' : 'upload' }}</i>
-          {{ selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : '上傳並開始處理' }}
+          <i class="material-symbols-outlined">{{ (prefillFile || selectedLibraryFile) ? 'edit' : selectedSourceType === 'MANUAL' ? 'edit' : 'upload' }}</i>
+          {{ (prefillFile || selectedLibraryFile) ? '建立草稿並編輯' : selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : '上傳並開始處理' }}
         </button>
       </div>
     </div>
+    <ResourceFilePicker v-model="showResourcePicker" @select="onPickerSelect" />
   </compModal>
 </template>
 
@@ -113,15 +154,21 @@
 import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
+import compModal from '@/components/compModal/compModal.vue'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import type { SourceType } from '@/stores/knowledgeStore'
 import popDialog from '@/services/popDialog'
+import ResourceFilePicker from '@/components/Knowledge/ResourceFilePicker.vue'
+import { useResourceStore } from '@/stores/resourceStore'
 
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void
   (e: 'created', knowledgeId: string): void
 }>()
-const props = defineProps<{ modelValue: boolean }>()
+const props = defineProps<{
+  modelValue: boolean
+  prefillFile?: { fileId: string; fileName: string }
+}>()
 
 const isOpenModal = computed({
   get: () => props.modelValue,
@@ -130,6 +177,7 @@ const isOpenModal = computed({
 
 const router = useRouter()
 const knowledgeStore = useKnowledgeStore()
+const resourceStore = useResourceStore()
 const { knowledgeList, apiSources } = storeToRefs(knowledgeStore)
 
 // ── 來源類型 ──
@@ -143,6 +191,14 @@ const selectedSourceType = ref<SourceType>('FILE')
 // ── FILE ──
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const uploadedFile = ref<File | null>(null)
+const selectedLibraryFile = ref<{ fileId: string; fileName: string } | null>(null)
+const showResourcePicker = ref(false)
+
+function onPickerSelect(file: { fileId: string; fileName: string }) {
+  selectedLibraryFile.value = file
+  uploadedFile.value = null
+  showResourcePicker.value = false
+}
 
 function handleDrop(e: DragEvent) {
   const file = e.dataTransfer?.files?.[0]
@@ -179,7 +235,8 @@ function removeTag(tag: string) {
 
 const canSubmit = computed(() => {
   if (!selectedCategory.value) return false
-  if (selectedSourceType.value === 'FILE') return !!uploadedFile.value
+  if (props.prefillFile) return true
+  if (selectedSourceType.value === 'FILE') return !!(uploadedFile.value || selectedLibraryFile.value)
   if (selectedSourceType.value === 'API') return !!selectedApiSourceId.value
   if (selectedSourceType.value === 'MANUAL') return !!manualTitle.value.trim()
   return false
@@ -190,6 +247,8 @@ watch(isOpenModal, (open) => {
   if (!open) {
     selectedSourceType.value = 'FILE'
     uploadedFile.value = null
+    selectedLibraryFile.value = null
+    showResourcePicker.value = false
     selectedApiSourceId.value = ''
     manualTitle.value = ''
     selectedCategory.value = ''
@@ -201,6 +260,19 @@ watch(isOpenModal, (open) => {
 // ── 送出 ──
 function handleSubmit() {
   if (!canSubmit.value) return
+
+  if (props.prefillFile) {
+    const { knowledgeId, versionId } = knowledgeStore.createFromFile({
+      fileId: props.prefillFile.fileId,
+      fileName: props.prefillFile.fileName,
+      category: selectedCategory.value,
+      template: '',
+      content: '',
+    })
+    isOpenModal.value = false
+    router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
+    return
+  }
 
   if (selectedSourceType.value === 'MANUAL') {
     const { knowledgeId, versionId } = knowledgeStore.createManualDraft({
@@ -214,15 +286,29 @@ function handleSubmit() {
   }
 
   if (selectedSourceType.value === 'FILE') {
-    const id = knowledgeStore.createFromUpload({
-      fileName: uploadedFile.value!.name,
+    const isFromLibrary = !!selectedLibraryFile.value
+    const fileRef = isFromLibrary
+      ? { fileId: selectedLibraryFile.value!.fileId, fileName: selectedLibraryFile.value!.fileName }
+      : (() => {
+          const saved = resourceStore.addFileFromUpload(uploadedFile.value!)
+          return { fileId: saved.id, fileName: saved.fileName }
+        })()
+
+    const { knowledgeId, versionId } = knowledgeStore.createFromFile({
+      fileId: fileRef.fileId,
+      fileName: fileRef.fileName,
       category: selectedCategory.value,
-      tags: selectedTags.value,
+      template: '',
+      content: '',
     })
+
+    const toastMsg = isFromLibrary
+      ? '已建立知識條目草稿'
+      : '檔案已儲存至共用檔案管理，知識條目草稿已建立'
+
     isOpenModal.value = false
-    emit('created', id)
-    popDialog.toast('上傳成功，Pipeline 處理中…', 3000)
-    simulatePipeline(id)
+    popDialog.toast(toastMsg, 3000)
+    router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
     return
   }
 
