@@ -141,8 +141,8 @@
           :disabled="!canSubmit"
           @click="handleSubmit"
         >
-          <i class="material-symbols-outlined">{{ (prefillFile || selectedLibraryFile) ? 'edit' : selectedSourceType === 'MANUAL' ? 'edit' : 'upload' }}</i>
-          {{ (prefillFile || selectedLibraryFile) ? '建立草稿並編輯' : selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : '上傳並開始處理' }}
+          <i class="material-symbols-outlined">{{ selectedSourceType === 'MANUAL' ? 'edit' : selectedSourceType === 'FILE' ? 'auto_awesome' : 'upload' }}</i>
+          {{ selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : selectedSourceType === 'FILE' ? '建立並 AI 生成內容' : '上傳並開始處理' }}
         </button>
       </div>
     </div>
@@ -263,7 +263,7 @@ function handleSubmit() {
   if (!canSubmit.value) return
 
   if (props.prefillFile) {
-    const { knowledgeId, versionId } = knowledgeStore.createFromFile({
+    const { knowledgeId } = knowledgeStore.createFromFile({
       fileId: props.prefillFile.fileId,
       fileName: props.prefillFile.fileName,
       category: selectedCategory.value,
@@ -272,7 +272,9 @@ function handleSubmit() {
     })
     emit('done', { fileId: props.prefillFile.fileId, knowledgeId })
     isOpenModal.value = false
-    router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
+    popDialog.toast('AI 正在解析檔案並生成知識內容…', 3000)
+    simulateFileAiGeneration(knowledgeId, props.prefillFile.fileName)
+    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
     return
   }
 
@@ -296,7 +298,7 @@ function handleSubmit() {
           return { fileId: saved.id, fileName: saved.fileName }
         })()
 
-    const { knowledgeId, versionId } = knowledgeStore.createFromFile({
+    const { knowledgeId } = knowledgeStore.createFromFile({
       fileId: fileRef.fileId,
       fileName: fileRef.fileName,
       category: selectedCategory.value,
@@ -305,13 +307,14 @@ function handleSubmit() {
     })
 
     const toastMsg = isFromLibrary
-      ? '已建立知識條目草稿'
-      : '檔案已儲存至共用檔案管理，知識條目草稿已建立'
+      ? 'AI 正在解析檔案並生成知識內容…'
+      : '檔案已儲存至共用檔案管理，AI 正在解析並生成知識內容…'
 
     emit('done', { fileId: fileRef.fileId, knowledgeId })
     isOpenModal.value = false
     popDialog.toast(toastMsg, 3000)
-    router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
+    simulateFileAiGeneration(knowledgeId, fileRef.fileName)
+    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
     return
   }
 
@@ -329,6 +332,26 @@ function handleSubmit() {
     popDialog.toast('API 來源已建立，Pipeline 處理中…', 3000)
     simulatePipeline(id)
   }
+}
+
+function simulateFileAiGeneration(id: string, fileName: string) {
+  const baseName = fileName.replace(/\.[^.]+$/, '')
+  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
+    { stage: 'chunking',  startPct: 0,  delay: 0    },
+    { stage: 'embedding', startPct: 33, delay: 1500 },
+    { stage: 'indexing',  startPct: 67, delay: 3500 },
+  ]
+  stages.forEach(({ stage, startPct, delay }) => {
+    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
+  })
+  setTimeout(() => {
+    const aiContent = `## ${baseName}\n\n本知識條目由 AI 根據來源檔案自動解析生成。\n\n### 重點摘要\n\n- AI 已完成檔案解析與內容萃取\n- 知識內容已結構化，可供查詢與引用\n- 如需調整，可點擊「編輯草稿」進行人工修訂\n\n### 詳細內容\n\n（AI 解析完成後，正式內容將顯示於此）`
+    knowledgeStore.markPipelineDone(id, [
+      { index: 1, content: `${baseName} — 第一段`, tokenCount: 280 },
+      { index: 2, content: `${baseName} — 第二段`, tokenCount: 243 },
+    ], aiContent)
+    popDialog.toast('AI 內容生成完成，可前往審閱草稿', 3000)
+  }, 4500)
 }
 
 function simulatePipeline(id: string) {

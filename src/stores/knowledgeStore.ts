@@ -908,7 +908,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     item.pipelineProgress = progress
   }
 
-  function markPipelineDone(id: string, chunks: ChunkPreview[]) {
+  function markPipelineDone(id: string, chunks: ChunkPreview[], aiContent?: string) {
     const item = knowledgeList.value.find(k => k.id === id)
     if (!item) return
     item.status = 'pending'
@@ -922,6 +922,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       draft.embeddingModel = 'text-embedding-3-large'
       draft.embeddingDimension = 3072
       draft.embeddingCount = chunks.length
+      if (aiContent) draft.content = aiContent
     }
   }
 
