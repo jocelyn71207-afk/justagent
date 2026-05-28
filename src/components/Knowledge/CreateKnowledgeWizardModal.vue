@@ -334,11 +334,90 @@ function handleSubmit() {
   }
 }
 
-const VECTORIZABLE_EXTS = new Set(['pdf','docx','doc','xlsx','xls','pptx','ppt','html','htm','md','txt'])
+// 向量化：可結構化萃取（表格/純文字/markdown）
+const VECTORIZABLE_EXTS = new Set(['xlsx','xls','csv','md','txt','html','htm'])
+// 非向量化：以 Q&A 方式解析（pdf/word/ppt/圖片）
+const NON_VECTORIZABLE_EXTS = new Set(['pdf','docx','doc','pptx','ppt','png','jpg','jpeg','gif','webp'])
 
+function getFileExt(fileName: string): string {
+  return fileName.split('.').pop()?.toLowerCase() ?? ''
+}
 function isVectorizable(fileName: string): boolean {
-  const ext = fileName.split('.').pop()?.toLowerCase() ?? ''
-  return VECTORIZABLE_EXTS.has(ext)
+  return VECTORIZABLE_EXTS.has(getFileExt(fileName))
+}
+
+function generateStructuredContent(baseName: string, ext: string): { content: string; chunks: Array<{index:number;content:string;tokenCount:number}> } {
+  if (['xlsx', 'xls', 'csv'].includes(ext)) {
+    const chunks = [
+      { index: 1, content: `${baseName} — 表頭列：欄位定義與說明`, tokenCount: 98 },
+      { index: 2, content: `${baseName} — 資料列 1–10：主要資料內容`, tokenCount: 312 },
+      { index: 3, content: `${baseName} — 資料列 11–20：補充資料`, tokenCount: 287 },
+    ]
+    const content = [
+      `## ${baseName}`,
+      ``,
+      `> AI 已完成試算表解析，以下為結構化資料預覽。`,
+      ``,
+      `| 品號 | 品名 | 規格 | 庫存量 | 單價 |`,
+      `| --- | --- | --- | ---: | ---: |`,
+      `| A001 | 商品 A | M / 黑色 | 120 | $299 |`,
+      `| A002 | 商品 B | L / 白色 | 85 | $399 |`,
+      `| A003 | 商品 C | S / 藍色 | 204 | $199 |`,
+      `| A004 | 商品 D | XL / 米色 | 47 | $499 |`,
+      ``,
+      `**共解析 ${chunks.reduce((s,c)=>s+c.tokenCount,0)} tokens，${chunks.length} 段。**`,
+    ].join('\n')
+    return { content, chunks }
+  }
+
+  if (ext === 'md') {
+    const chunks = [
+      { index: 1, content: `${baseName} — 標題與簡介`, tokenCount: 134 },
+      { index: 2, content: `${baseName} — 主體段落`, tokenCount: 298 },
+      { index: 3, content: `${baseName} — 結尾與參考資料`, tokenCount: 167 },
+    ]
+    const content = [
+      `## ${baseName}`,
+      ``,
+      `> AI 已解析 Markdown 文件，以下為原始格式內容。`,
+      ``,
+      `### 一、背景說明`,
+      ``,
+      `本文件由 AI 自動解析，呈現原始 Markdown 結構與重點段落。`,
+      ``,
+      `### 二、主要內容`,
+      ``,
+      `- **項目 A**：說明文字，涵蓋核心定義與適用範疇。`,
+      `- **項目 B**：補充細節，包含數值、條件或流程描述。`,
+      `- **項目 C**：注意事項與例外情況處理原則。`,
+      ``,
+      `### 三、參考資料`,
+      ``,
+      `相關文件連結與引用出處於此列出。`,
+    ].join('\n')
+    return { content, chunks }
+  }
+
+  // txt / html / other vectorizable
+  const chunks = [
+    { index: 1, content: `${baseName} — 第 1 段：開頭摘要`, tokenCount: 210 },
+    { index: 2, content: `${baseName} — 第 2 段：主要內容`, tokenCount: 334 },
+    { index: 3, content: `${baseName} — 第 3 段：結語與補充`, tokenCount: 176 },
+  ]
+  const content = [
+    `## ${baseName}`,
+    ``,
+    `> AI 已完成純文字解析。`,
+    ``,
+    `### 段落摘要`,
+    ``,
+    `| 段落 | 主題 | 內容摘要 | Token 數 |`,
+    `| --- | --- | --- | ---: |`,
+    ...chunks.map(c => `| ${c.index} | 第 ${c.index} 段 | ${c.content.replace(/\|/g, '｜')} | ${c.tokenCount} |`),
+    ``,
+    `**共解析 ${chunks.reduce((s,c)=>s+c.tokenCount,0)} tokens。**`,
+  ].join('\n')
+  return { content, chunks }
 }
 
 function simulateFileAiGeneration(id: string, fileName: string) {
@@ -354,38 +433,27 @@ function simulateFileAiGeneration(id: string, fileName: string) {
   setTimeout(() => {
     let aiContent: string
     let chunks: Array<{ index: number; content: string; tokenCount: number }>
+    const ext = getFileExt(fileName)
 
     if (isVectorizable(fileName)) {
-      chunks = [
-        { index: 1, content: `【${baseName}】第 1 段：主旨與背景說明，包含目標、範疇及適用對象等核心資訊。`, tokenCount: 312 },
-        { index: 2, content: `【${baseName}】第 2 段：主要內容條列，涵蓋關鍵數據、規格、流程或條款等結構化資料。`, tokenCount: 287 },
-        { index: 3, content: `【${baseName}】第 3 段：補充說明與注意事項，包含例外情況、參考來源及附錄資訊。`, tokenCount: 198 },
-      ]
-      aiContent = [
-        `## ${baseName}`,
-        ``,
-        `> AI 已完成文件解析，以下為結構化萃取結果。`,
-        ``,
-        `| 段落 | 主題 | 內容摘要 | Token 數 |`,
-        `| --- | --- | --- | ---: |`,
-        ...chunks.map(c => `| ${c.index} | 第 ${c.index} 段 | ${c.content.replace(/\|/g, '｜')} | ${c.tokenCount} |`),
-        ``,
-        `**共解析 ${chunks.length} 段，總計 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens。**`,
-      ].join('\n')
+      const result = generateStructuredContent(baseName, ext)
+      aiContent = result.content
+      chunks = result.chunks
     } else {
+      // Q&A for pdf / word / ppt / images
       chunks = [
-        { index: 1, content: `Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 視覺分析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, tokenCount: 142 },
+        { index: 1, content: `Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, tokenCount: 142 },
         { index: 2, content: `Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, tokenCount: 118 },
         { index: 3, content: `Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, tokenCount: 107 },
       ]
       aiContent = [
-        `## ${baseName} — AI 視覺解析`,
+        `## ${baseName} — AI 解析`,
         ``,
-        `> 此檔案類型不支援全文向量化，AI 已進行視覺理解並以 Q&A 方式整理重點。`,
+        `> 此格式由 AI 進行語意理解，以 Q&A 方式整理重點；原始檔案可透過「來源附件」查看原檔。`,
         ``,
         `**Q1: 這份檔案的主要用途是什麼？**`,
         ``,
-        `A: 根據 AI 視覺分析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`,
+        `A: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`,
         ``,
         `**Q2: 檔案中有哪些可識別的關鍵元素？**`,
         ``,

@@ -176,14 +176,11 @@
                 >
                   <i class="material-symbols-outlined fs-14">description</i>
                   <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.fileName }}</span>
-                  <a
-                    v-if="resourceStore.getFileById(f.fileId)?.fileUrl"
-                    :href="resourceStore.getFileById(f.fileId)!.fileUrl"
-                    target="_blank"
-                    rel="noopener"
+                  <button
                     class="custom-btn fs-11 py-0 px-2"
                     style="white-space:nowrap;"
-                  >查看原檔</a>
+                    @click="openFilePreview(f.fileId, f.fileName)"
+                  >查看原檔</button>
                 </div>
               </div>
               <div v-else class="fc-grey-1 fs-13">尚未關聯任何來源檔案</div>
@@ -312,6 +309,11 @@
       :knowledgeId="props.id"
       :versionId="reviewVersionId"
     />
+    <FilePreviewModal
+      v-model="showFilePreview"
+      :file-name="previewFileName"
+      :file-url="previewFileUrl"
+    />
   </div>
 </template>
 
@@ -331,6 +333,7 @@ import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue'
 import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue'
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue'
+import FilePreviewModal from '@/components/Knowledge/FilePreviewModal.vue'
 import popDialog from '@/services/popDialog'
 
 const props = defineProps<{ id: string }>()
@@ -338,6 +341,16 @@ const router = useRouter()
 const knowledgeStore = useKnowledgeStore()
 const resourceStore = useResourceStore()
 const md = new MarkdownIt({ html: false, breaks: true, linkify: false })
+
+const showFilePreview = ref(false)
+const previewFileName = ref('')
+const previewFileUrl = ref('')
+
+function openFilePreview(fileId: string, fileName: string) {
+  previewFileName.value = fileName
+  previewFileUrl.value = resourceStore.getFileById(fileId)?.fileUrl ?? ''
+  showFilePreview.value = true
+}
 
 const {
   data: knowledgeData,
