@@ -373,8 +373,28 @@ function simulateFileAiGeneration(id: string, fileName: string) {
         `**共解析 ${chunks.length} 段，總計 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens。**`,
       ].join('\n')
     } else {
-      chunks = [{ index: 1, content: `${baseName} — 非文字檔案，僅保留原檔。`, tokenCount: 0 }]
-      aiContent = `## ${baseName}\n\n此檔案類型不支援全文向量化，已以原檔形式儲存。`
+      chunks = [
+        { index: 1, content: `Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 視覺分析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, tokenCount: 142 },
+        { index: 2, content: `Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, tokenCount: 118 },
+        { index: 3, content: `Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, tokenCount: 107 },
+      ]
+      aiContent = [
+        `## ${baseName} — AI 視覺解析`,
+        ``,
+        `> 此檔案類型不支援全文向量化，AI 已進行視覺理解並以 Q&A 方式整理重點。`,
+        ``,
+        `**Q1: 這份檔案的主要用途是什麼？**`,
+        ``,
+        `A: 根據 AI 視覺分析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`,
+        ``,
+        `**Q2: 檔案中有哪些可識別的關鍵元素？**`,
+        ``,
+        `A: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`,
+        ``,
+        `**Q3: 此檔案適合用在哪些場景？**`,
+        ``,
+        `A: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`,
+      ].join('\n')
     }
 
     knowledgeStore.markPipelineDone(id, chunks, aiContent)
