@@ -63,7 +63,10 @@
             <!-- 卡片 header: 檔案名稱 + more button -->
             <div class="card-header-box">
               <div class="file-name">
-                <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
+                <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
+                  {{ item.fileName }}
+                  <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+                </template>
                 <input class="custom-input mofidyInput w-100" v-else-if="nowModifyItem.id === item.id"
                   :id="'mofidyInput'+item.id"
                   v-model="nowModifyItem.fileName"
@@ -120,7 +123,10 @@
                       class="material-symbols-outlined other-file-icon">question_mark</i>
                     <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
                   </div>
-                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
+                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
+                    {{ item.fileName }}
+                    <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+                  </template>
                   <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
                     :id="'mofidyInput'+item.id"
                     v-model="nowModifyItem.fileName"
@@ -171,6 +177,8 @@
 
   <CreateKnowledgeWizardModal
     v-model="isWizardOpen"
+    :prefill-file="wizardFile"
+    @done="({ fileId, knowledgeId }) => resourceStore.markAsKnowledge(fileId, knowledgeId)"
   />
 
   <SourceUpdateModal
@@ -210,6 +218,8 @@ const {
 
 // 知識建立精靈
 const isWizardOpen = ref(false);
+const wizardFile = ref<{ fileId: string; fileName: string } | undefined>(undefined);
+watch(isWizardOpen, (open) => { if (!open) wizardFile.value = undefined; });
 
 // 來源更新 Modal
 const isSourceUpdateModalOpen = ref(false);
@@ -229,12 +239,12 @@ const rootStore = useRootStore();
 const { isEnterAppSearchPage, projectListMode: viewMode } = storeToRefs(rootStore);
 const openBatchUploadFn = rootStore.openBatchUploadFn;
 
-// 過濾條件: 全部 / 資料入庫型 / 原檔保存型
+// 過濾條件: 全部 / 用戶上傳 / Agent 上傳
 const filterValue = ref('ALL');
 const filterTabs = [
-  { label: '全部檔案', value: 'ALL' },
-  { label: '資料入庫型', value: 'AI_PARSED' },
-  { label: '原檔保存型', value: 'RAW' },
+  { label: '全部', value: 'ALL' },
+  { label: '用戶上傳', value: 'USER' },
+  { label: 'Agent 上傳', value: 'AI' },
 ];
 
 // 狀態標籤對照
@@ -260,7 +270,7 @@ const numberOfRowsPerPage = ref(10);
 const filteredList = computed(() => {
   let list = resourceList.value as any[];
   if (filterValue.value !== 'ALL') {
-    list = list.filter(item => item.processType === filterValue.value);
+    list = list.filter(item => item.creatorType === filterValue.value);
   }
   if (filterTypeValue.value) {
     list = list.filter(item => item.fileType === filterTypeValue.value);
@@ -327,9 +337,10 @@ function saveModifyFileName() {
   nowModifyItem.value = null;
 }
 
-// 建立為知識內容：開啟精靈
+// 建立為知識內容：預填檔案並開啟精靈
 function createKnowledge(item: any) {
   item.showMoreOption = false;
+  wizardFile.value = { fileId: item.id, fileName: item.fileName };
   isWizardOpen.value = true;
 }
 

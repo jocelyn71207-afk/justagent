@@ -13,6 +13,7 @@ export interface ResourceFile {
   ownerName: string;
   lastModify: string;
   version: number;
+  knowledgeId?: string;
   showMoreOption?: boolean;
 }
 
@@ -49,6 +50,11 @@ export const useResourceStore = defineStore('resource', () => {
     resourceList.value.unshift({ ...file, version: 1, showMoreOption: false });
   }
 
+  function markAsKnowledge(fileId: string, knowledgeId: string) {
+    const file = getFileById(fileId);
+    if (file) file.knowledgeId = knowledgeId;
+  }
+
   function deleteFile(fileId: string) {
     const idx = resourceList.value.findIndex(f => f.id === fileId);
     if (idx !== -1) resourceList.value.splice(idx, 1);
@@ -83,5 +89,5 @@ export const useResourceStore = defineStore('resource', () => {
     return { id, fileName: file.name }
   }
 
-  return { resourceList, getFileById, uploadNewVersion, addFile, addFileFromUpload, deleteFile };
+  return { resourceList, getFileById, uploadNewVersion, addFile, addFileFromUpload, markAsKnowledge, deleteFile };
 });

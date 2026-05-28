@@ -164,6 +164,7 @@ import { useResourceStore } from '@/stores/resourceStore'
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void
   (e: 'created', knowledgeId: string): void
+  (e: 'done', payload: { fileId: string; knowledgeId: string }): void
 }>()
 const props = defineProps<{
   modelValue: boolean
@@ -269,6 +270,7 @@ function handleSubmit() {
       template: '',
       content: '',
     })
+    emit('done', { fileId: props.prefillFile.fileId, knowledgeId })
     isOpenModal.value = false
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
     return
@@ -306,6 +308,7 @@ function handleSubmit() {
       ? '已建立知識條目草稿'
       : '檔案已儲存至共用檔案管理，知識條目草稿已建立'
 
+    emit('done', { fileId: fileRef.fileId, knowledgeId })
     isOpenModal.value = false
     popDialog.toast(toastMsg, 3000)
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
