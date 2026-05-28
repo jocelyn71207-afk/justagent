@@ -334,6 +334,13 @@ function handleSubmit() {
   }
 }
 
+const VECTORIZABLE_EXTS = new Set(['pdf','docx','doc','xlsx','xls','pptx','ppt','html','htm','md','txt'])
+
+function isVectorizable(fileName: string): boolean {
+  const ext = fileName.split('.').pop()?.toLowerCase() ?? ''
+  return VECTORIZABLE_EXTS.has(ext)
+}
+
 function simulateFileAiGeneration(id: string, fileName: string) {
   const baseName = fileName.replace(/\.[^.]+$/, '')
   const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
@@ -345,11 +352,32 @@ function simulateFileAiGeneration(id: string, fileName: string) {
     setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
   })
   setTimeout(() => {
-    const aiContent = `## ${baseName}\n\n本知識條目由 AI 根據來源檔案自動解析生成。\n\n### 重點摘要\n\n- AI 已完成檔案解析與內容萃取\n- 知識內容已結構化，可供查詢與引用\n- 如需調整，可點擊「編輯草稿」進行人工修訂\n\n### 詳細內容\n\n（AI 解析完成後，正式內容將顯示於此）`
-    knowledgeStore.markPipelineDone(id, [
-      { index: 1, content: `${baseName} — 第一段`, tokenCount: 280 },
-      { index: 2, content: `${baseName} — 第二段`, tokenCount: 243 },
-    ], aiContent)
+    let aiContent: string
+    let chunks: Array<{ index: number; content: string; tokenCount: number }>
+
+    if (isVectorizable(fileName)) {
+      chunks = [
+        { index: 1, content: `【${baseName}】第 1 段：主旨與背景說明，包含目標、範疇及適用對象等核心資訊。`, tokenCount: 312 },
+        { index: 2, content: `【${baseName}】第 2 段：主要內容條列，涵蓋關鍵數據、規格、流程或條款等結構化資料。`, tokenCount: 287 },
+        { index: 3, content: `【${baseName}】第 3 段：補充說明與注意事項，包含例外情況、參考來源及附錄資訊。`, tokenCount: 198 },
+      ]
+      aiContent = [
+        `## ${baseName}`,
+        ``,
+        `> AI 已完成文件解析，以下為結構化萃取結果。`,
+        ``,
+        `| 段落 | 主題 | 內容摘要 | Token 數 |`,
+        `| --- | --- | --- | ---: |`,
+        ...chunks.map(c => `| ${c.index} | 第 ${c.index} 段 | ${c.content.replace(/\|/g, '｜')} | ${c.tokenCount} |`),
+        ``,
+        `**共解析 ${chunks.length} 段，總計 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens。**`,
+      ].join('\n')
+    } else {
+      chunks = [{ index: 1, content: `${baseName} — 非文字檔案，僅保留原檔。`, tokenCount: 0 }]
+      aiContent = `## ${baseName}\n\n此檔案類型不支援全文向量化，已以原檔形式儲存。`
+    }
+
+    knowledgeStore.markPipelineDone(id, chunks, aiContent)
     popDialog.toast('AI 內容生成完成，可前往審閱草稿', 3000)
   }, 4500)
 }
