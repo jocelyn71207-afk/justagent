@@ -91,9 +91,8 @@
               <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
             </div>
 
-            <!-- 卡片 footer: 狀態 + 時間 -->
+            <!-- 卡片 footer: 時間 -->
             <div class="card-footer-box">
-              <span :class="['status-badge', `status-badge--${item.status}`]">{{ statusLabel[item.status] }}</span>
               <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
             </div>
 
@@ -108,7 +107,6 @@
                 <th>檔案名稱</th>
                 <th width="90">檔案格式</th>
                 <th width="130">處理方式</th>
-                <th width="110">狀態</th>
                 <th>最後更新時間</th>
                 <th width="60"></th>
               </tr>
@@ -137,11 +135,6 @@
                   <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
                     <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
                     {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
-                  </span>
-                </td>
-                <td>
-                  <span :class="['status-badge', `status-badge--${item.status}`]">
-                    {{ statusLabel[item.status] }}
                   </span>
                 </td>
                 <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
@@ -247,14 +240,6 @@ const filterTabs = [
   { label: 'Agent 上傳', value: 'AI' },
 ];
 
-// 狀態標籤對照
-const statusLabel: Record<string, string> = {
-  uploading: '上傳中',
-  parsing:   '解析中',
-  stored:    '已入庫',
-  saved:     '已儲存',
-  failed:    '失敗',
-};
 
 // 過濾條件
 const filterTypeValue = ref('') as Ref<string | number>;
