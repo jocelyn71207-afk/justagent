@@ -388,12 +388,12 @@ function isVectorizable(fileName: string): boolean {
   return VECTORIZABLE_EXTS.has(getFileExt(fileName))
 }
 
-function generateStructuredContent(baseName: string, ext: string): { content: string; chunks: Array<{index:number;content:string;tokenCount:number}> } {
+function generateStructuredContent(baseName: string, ext: string): { content: string; chunks: Array<{index:number;content:string;tokenCount:number;sourceType:'text'|'image'}> } {
   if (['xlsx', 'xls', 'csv'].includes(ext)) {
     const chunks = [
-      { index: 1, content: `${baseName} — 表頭列：欄位定義與說明`, tokenCount: 98 },
-      { index: 2, content: `${baseName} — 資料列 1–10：主要資料內容`, tokenCount: 312 },
-      { index: 3, content: `${baseName} — 資料列 11–20：補充資料`, tokenCount: 287 },
+      { index: 1, content: `${baseName} — 表頭列：欄位定義與說明`, tokenCount: 98, sourceType: 'text' as const },
+      { index: 2, content: `${baseName} — 資料列 1–10：主要資料內容`, tokenCount: 312, sourceType: 'text' as const },
+      { index: 3, content: `${baseName} — 資料列 11–20：補充資料`, tokenCount: 287, sourceType: 'text' as const },
     ]
     const content = [
       `## ${baseName}`,
@@ -414,9 +414,9 @@ function generateStructuredContent(baseName: string, ext: string): { content: st
 
   if (ext === 'md') {
     const chunks = [
-      { index: 1, content: `${baseName} — 標題與簡介`, tokenCount: 134 },
-      { index: 2, content: `${baseName} — 主體段落`, tokenCount: 298 },
-      { index: 3, content: `${baseName} — 結尾與參考資料`, tokenCount: 167 },
+      { index: 1, content: `${baseName} — 標題與簡介`, tokenCount: 134, sourceType: 'text' as const },
+      { index: 2, content: `${baseName} — 主體段落`, tokenCount: 298, sourceType: 'text' as const },
+      { index: 3, content: `${baseName} — 結尾與參考資料`, tokenCount: 167, sourceType: 'text' as const },
     ]
     const content = [
       `## ${baseName}`,
@@ -442,9 +442,9 @@ function generateStructuredContent(baseName: string, ext: string): { content: st
 
   // txt / html / other vectorizable
   const chunks = [
-    { index: 1, content: `${baseName} — 第 1 段：開頭摘要`, tokenCount: 210 },
-    { index: 2, content: `${baseName} — 第 2 段：主要內容`, tokenCount: 334 },
-    { index: 3, content: `${baseName} — 第 3 段：結語與補充`, tokenCount: 176 },
+    { index: 1, content: `${baseName} — 第 1 段：開頭摘要`, tokenCount: 210, sourceType: 'text' as const },
+    { index: 2, content: `${baseName} — 第 2 段：主要內容`, tokenCount: 334, sourceType: 'text' as const },
+    { index: 3, content: `${baseName} — 第 3 段：結語與補充`, tokenCount: 176, sourceType: 'text' as const },
   ]
   const content = [
     `## ${baseName}`,
@@ -474,7 +474,7 @@ function simulateFileAiGeneration(id: string, fileName: string) {
   })
   setTimeout(() => {
     let aiContent: string
-    let chunks: Array<{ index: number; content: string; tokenCount: number }>
+    let chunks: Array<{ index: number; content: string; tokenCount: number; sourceType: 'text' | 'image' }>
     const ext = getFileExt(fileName)
 
     if (isVectorizable(fileName)) {
@@ -484,9 +484,9 @@ function simulateFileAiGeneration(id: string, fileName: string) {
     } else {
       // Q&A for pdf / word / ppt / images
       chunks = [
-        { index: 1, content: `Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, tokenCount: 142 },
-        { index: 2, content: `Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, tokenCount: 118 },
-        { index: 3, content: `Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, tokenCount: 107 },
+        { index: 1, content: `Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, tokenCount: 142, sourceType: 'text' },
+        { index: 2, content: `Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, tokenCount: 118, sourceType: 'text' },
+        { index: 3, content: `Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, tokenCount: 107, sourceType: 'text' },
       ]
       aiContent = [
         `## ${baseName} — AI 解析`,
@@ -541,6 +541,7 @@ function simulateJustkaGeneration(id: string, bot: { id: string; name: string; c
       index: i + 1,
       content: `${bot.name} — Q&A 第 ${i + 1} 批（共 ${Math.ceil(bot.cardCount / 4)} 題）`,
       tokenCount: Math.floor(bot.cardCount * 8 / 4),
+      sourceType: 'text' as const,
     }))
     knowledgeStore.markPipelineDone(id, chunks, aiContent)
     popDialog.toast('AI 整理完成，可前往審閱草稿', 3000)
@@ -560,7 +561,7 @@ function simulatePipeline(id: string) {
 
   setTimeout(() => {
     knowledgeStore.markPipelineDone(id, [
-      { index: 1, content: '（Pipeline 完成，實際分段由後端提供）', tokenCount: 0 },
+      { index: 1, content: '（Pipeline 完成，實際分段由後端提供）', tokenCount: 0, sourceType: 'text' },
     ])
     popDialog.toast('Pipeline 處理完成！可前往編輯草稿', 3000)
   }, 4500)

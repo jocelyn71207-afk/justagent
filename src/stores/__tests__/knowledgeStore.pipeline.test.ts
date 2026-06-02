@@ -48,7 +48,7 @@ describe('knowledgeStore — pipeline actions', () => {
       store.updatePipelineProgress(id, 'indexing', 100)
 
       store.markPipelineDone(id, [
-        { index: 1, content: 'chunk 1', tokenCount: 100 },
+        { index: 1, content: 'chunk 1', tokenCount: 100, sourceType: 'text' },
       ])
 
       const item = store.knowledgeList.find(k => k.id === id)!
