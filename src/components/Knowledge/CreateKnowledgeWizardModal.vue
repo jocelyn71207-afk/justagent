@@ -359,7 +359,8 @@ function handleSubmit() {
   }
 
   if (selectedSourceType.value === 'JUSTKA') {
-    const bot = JUSTKA_BOTS.find(b => b.id === selectedJustkaBot.value)!
+    const bot = JUSTKA_BOTS.find(b => b.id === selectedJustkaBot.value)
+    if (!bot) return
     const { knowledgeId } = knowledgeStore.createFromJustka({
       botId: bot.id,
       botName: bot.name,
