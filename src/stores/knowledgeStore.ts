@@ -63,6 +63,22 @@ export interface ReviewRecord {
   note?: string
 }
 
+export interface ChunkingConfig {
+  chunkSize: number
+  overlap: number
+  contextPrefix: string
+}
+
+export function getChunkingConfig(category: string): ChunkingConfig {
+  const configs: Record<string, ChunkingConfig> = {
+    '商品文件': { chunkSize: 200, overlap: 20, contextPrefix: '[商品]' },
+    '客服知識': { chunkSize: 300, overlap: 50, contextPrefix: '[客服]' },
+    '規則說明': { chunkSize: 500, overlap: 100, contextPrefix: '[規則]' },
+    '系統文件': { chunkSize: 400, overlap: 80, contextPrefix: '[系統]' },
+  }
+  return configs[category] ?? { chunkSize: 300, overlap: 50, contextPrefix: '' }
+}
+
 export interface ChunkPreview {
   index: number
   content: string
