@@ -355,6 +355,7 @@ function handleSubmit() {
     emit('created', id)
     popDialog.toast('API 來源已建立，Pipeline 處理中…', 3000)
     simulatePipeline(id)
+    return
   }
 
   if (selectedSourceType.value === 'JUSTKA') {
@@ -368,6 +369,7 @@ function handleSubmit() {
     isOpenModal.value = false
     popDialog.toast('AI 正在整理題庫內容…', 3000)
     simulateJustkaGeneration(knowledgeId, bot)
+    emit('created', knowledgeId)
     router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
     return
   }
