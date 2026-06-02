@@ -121,4 +121,29 @@ describe('knowledgeStore — pipeline actions', () => {
       expect(store.knowledgeList.find(k => k.id === 'k3')).toBeUndefined()
     })
   })
+
+  describe('createFromJustka', () => {
+    it('建立 pending 狀態條目，sourceType 為 JUSTKA，title 包含機器人名稱', () => {
+      const store = useKnowledgeStore()
+      const before = store.knowledgeList.length
+
+      const { knowledgeId, versionId } = store.createFromJustka({
+        botId: 'bot-1',
+        botName: '客服機器人',
+        cardCount: 48,
+        category: '客服',
+      })
+
+      expect(store.knowledgeList.length).toBe(before + 1)
+      const item = store.knowledgeList.find(k => k.id === knowledgeId)!
+      expect(item.status).toBe('pending')
+      expect(item.sourceType).toBe('JUSTKA')
+      expect(item.title).toBe('客服機器人 題庫')
+      expect(item.pipelineProgress).toBe(0)
+      expect(item.pipelineStage).toBeNull()
+      const ver = item.versions.find(v => v.id === versionId)!
+      expect(ver.status).toBe('draft')
+      expect(ver.summary).toContain('48')
+    })
+  })
 })

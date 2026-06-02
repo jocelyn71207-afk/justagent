@@ -13,7 +13,7 @@ export type ItemStatus =
 export type VersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
 export type VersionType = 'MAJOR' | 'MINOR'
 export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
-export type SourceType = 'FILE' | 'API' | 'MANUAL'
+export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA'
 
 export interface ApiSourceHeader {
   key: string
@@ -588,6 +588,59 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return { knowledgeId: newId, versionId: draftId };
   };
 
+  function createFromJustka(params: {
+    botId: string;
+    botName: string;
+    cardCount: number;
+    category: string;
+  }): { knowledgeId: string; versionId: string } {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    const newId = `k-${Date.now()}`;
+    const draftId = `v1.0-draft-${Date.now()}`;
+    const title = `${params.botName} 題庫`;
+
+    const newKnowledge: KnowledgeItem = {
+      id: newId,
+      title,
+      category: params.category,
+      status: 'pending',
+      sourceType: 'JUSTKA',
+      pipelineProgress: 0,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
+      lastUpdateTime: now,
+      lastUpdateBy: 'AI 生成',
+      versions: [{
+        id: draftId,
+        knowledgeId: newId,
+        versionNumber: 'v1.0',
+        versionType: null,
+        status: 'draft',
+        title,
+        summary: `從 JustKa「${params.botName}」整理 ${params.cardCount} 張題卡生成的知識條目草稿`,
+        content: '',
+        tags: [],
+        systemTags: [],
+        lastUpdateBy: 'AI 生成',
+        lastUpdateTime: now,
+        updateNote: `從 JustKa 機器人「${params.botName}」匯入，共 ${params.cardCount} 題卡`,
+        sourceFiles: [],
+        chunks: [],
+        embeddingModel: null,
+        embeddingDimension: null,
+        embeddingCount: 0,
+      }],
+    };
+
+    knowledgeList.value.unshift(newKnowledge);
+    return { knowledgeId: newId, versionId: draftId };
+  }
+
   // 來源檔案更新後，將關聯此檔案的所有知識條目標記為 stale
   function markFileStale(fileId: string, newVersion: number) {
     for (const k of knowledgeList.value) {
@@ -964,6 +1017,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     getVersionById,
     createDraftFromPublished,
     createFromFile,
+    createFromJustka,
     saveDraft,
     submitForReview,
     restoreToDraft,
