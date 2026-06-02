@@ -287,7 +287,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           ],
           embeddingModel: 'text-embedding-3-large',
           embeddingDimension: 3072,
-          embeddingCount: 2,
+          embeddingCount: 3,
           conversionLog: [
             {
               stage: 'chunking',
@@ -561,7 +561,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           ],
           embeddingModel: 'text-embedding-3-large',
           embeddingDimension: 3072,
-          embeddingCount: 8,
+          embeddingCount: 3,
           conversionLog: [
             {
               stage: 'chunking',
@@ -1368,6 +1368,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     if (!k || k.status !== 'needs_update') return
     k.status = 'active'
     k.sourceStale = false
+    k.staleSourceFileIds = []
   }
 
   function createFromSharePoint(items: Array<{ title: string; category: string }>) {
