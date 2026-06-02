@@ -68,3 +68,51 @@ describe('buildChunkContent', () => {
     expect(result).toBe('[分類:商品文件][標籤:3C][來源:image] 黑色無線耳機，頭戴式設計')
   })
 })
+
+import { getVisionPrompt, processImage } from '@/stores/knowledgeStore'
+
+describe('getVisionPrompt', () => {
+  it('returns product-focused prompt for 商品文件', () => {
+    const prompt = getVisionPrompt('商品文件')
+    expect(prompt).toContain('外觀')
+    expect(prompt).toContain('顏色')
+  })
+
+  it('returns UI-focused prompt for 系統文件', () => {
+    const prompt = getVisionPrompt('系統文件')
+    expect(prompt).toContain('UI')
+    expect(prompt).toContain('操作步驟')
+  })
+
+  it('returns rule-focused prompt for 規則說明', () => {
+    const prompt = getVisionPrompt('規則說明')
+    expect(prompt).toContain('條款')
+  })
+
+  it('returns service-focused prompt for 客服知識', () => {
+    const prompt = getVisionPrompt('客服知識')
+    expect(prompt).toContain('流程')
+  })
+
+  it('returns fallback prompt for unknown category', () => {
+    const prompt = getVisionPrompt('未知')
+    expect(typeof prompt).toBe('string')
+    expect(prompt.length).toBeGreaterThan(0)
+  })
+})
+
+describe('processImage', () => {
+  it('returns vision method with non-empty text', async () => {
+    const mockFile = new File([''], 'product.jpg', { type: 'image/jpeg' })
+    const result = await processImage(mockFile, '商品文件')
+    expect(result.method).toBe('vision')
+    expect(typeof result.text).toBe('string')
+    expect(result.text.length).toBeGreaterThan(0)
+  })
+
+  it('includes category name in mock description', async () => {
+    const mockFile = new File([''], 'manual.jpg', { type: 'image/jpeg' })
+    const result = await processImage(mockFile, '系統文件')
+    expect(result.text).toContain('系統文件')
+  })
+})

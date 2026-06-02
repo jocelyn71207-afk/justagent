@@ -87,6 +87,28 @@ export function buildChunkContent(
   return `[分類:${meta.category}]${tagsStr}[來源:${meta.sourceType}] ${chunk}`
 }
 
+export function getVisionPrompt(category: string): string {
+  const prompts: Record<string, string> = {
+    '商品文件': '請詳細描述圖片中商品的外觀、顏色、材質、尺寸和特徵。',
+    '系統文件': '請描述圖片中的 UI 元件、操作步驟和按鈕文字。',
+    '規則說明': '請識別並列出圖片中的條款文字和章節標題。',
+    '客服知識': '請說明圖片中圖示的意義、流程說明和狀態標記。',
+  }
+  return prompts[category] ?? '請描述這張圖片的主要內容。'
+}
+
+// Mock implementation — replace with real OCR/Vision API when backend is ready.
+// OCR threshold: if extracted text ≥ 100 chars, use text path instead of vision path.
+export async function processImage(
+  _file: File,
+  category: string,
+): Promise<{ method: 'ocr' | 'vision'; text: string }> {
+  return {
+    method: 'vision',
+    text: `[AI 視覺描述 - ${category}] ${getVisionPrompt(category).slice(0, 20)}... (mock)`,
+  }
+}
+
 export interface ChunkPreview {
   index: number
   content: string
