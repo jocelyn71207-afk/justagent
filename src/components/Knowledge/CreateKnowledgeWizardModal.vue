@@ -96,6 +96,19 @@
         </div>
       </template>
 
+      <!-- JUSTKA: 選機器人 -->
+      <template v-else-if="selectedSourceType === 'JUSTKA'">
+        <div class="mb-3">
+          <label class="form-label">JustKa 機器人 <span style="color:#dc2626;">*</span></label>
+          <select v-model="selectedJustkaBot" class="custom-input w-100">
+            <option value="">選擇機器人...</option>
+            <option v-for="b in JUSTKA_BOTS" :key="b.id" :value="b.id">
+              {{ b.name }}（{{ b.cardCount }} 題卡）
+            </option>
+          </select>
+        </div>
+      </template>
+
       <!-- MANUAL: 標題輸入 -->
       <template v-else-if="selectedSourceType === 'MANUAL'">
         <div class="mb-3">
@@ -141,8 +154,8 @@
           :disabled="!canSubmit"
           @click="handleSubmit"
         >
-          <i class="material-symbols-outlined">{{ selectedSourceType === 'MANUAL' ? 'edit' : selectedSourceType === 'FILE' ? 'auto_awesome' : 'upload' }}</i>
-          {{ selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : selectedSourceType === 'FILE' ? '建立並 AI 生成內容' : '上傳並開始處理' }}
+          <i class="material-symbols-outlined">{{ selectedSourceType === 'MANUAL' ? 'edit' : selectedSourceType === 'FILE' ? 'auto_awesome' : selectedSourceType === 'JUSTKA' ? 'auto_awesome' : 'upload' }}</i>
+          {{ selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : selectedSourceType === 'FILE' ? '建立並 AI 生成內容' : selectedSourceType === 'JUSTKA' ? '匯入並 AI 整理題庫' : '上傳並開始處理' }}
         </button>
       </div>
     </div>
@@ -183,9 +196,10 @@ const { knowledgeList, apiSources } = storeToRefs(knowledgeStore)
 
 // ── 來源類型 ──
 const sourceTypes = [
-  { value: 'FILE' as SourceType, label: '上傳檔案', icon: 'upload_file', desc: 'PDF、Word、Excel' },
-  { value: 'API' as SourceType,  label: 'API 來源',  icon: 'api',         desc: '連接外部系統' },
+  { value: 'FILE' as SourceType,   label: '上傳檔案', icon: 'upload_file', desc: 'PDF、Word、Excel' },
+  { value: 'API' as SourceType,    label: 'API 來源',  icon: 'api',         desc: '連接外部系統' },
   { value: 'MANUAL' as SourceType, label: '直接編輯', icon: 'edit_note',   desc: '手動撰寫內容' },
+  { value: 'JUSTKA' as SourceType, label: 'JustKa',   icon: 'smart_toy',   desc: '匯入機器人題庫' },
 ]
 const selectedSourceType = ref<SourceType>('FILE')
 
@@ -214,6 +228,14 @@ function handleFileSelect(e: Event) {
 // ── API ──
 const selectedApiSourceId = ref('')
 
+// ── JUSTKA ──
+const JUSTKA_BOTS = [
+  { id: 'bot-1', name: '客服機器人',       cardCount: 48 },
+  { id: 'bot-2', name: '銷售諮詢機器人',   cardCount: 32 },
+  { id: 'bot-3', name: '退換貨處理機器人', cardCount: 24 },
+] as const
+const selectedJustkaBot = ref('')
+
 // ── MANUAL ──
 const manualTitle = ref('')
 
@@ -240,6 +262,7 @@ const canSubmit = computed(() => {
   if (selectedSourceType.value === 'FILE') return !!(uploadedFile.value || selectedLibraryFile.value)
   if (selectedSourceType.value === 'API') return !!selectedApiSourceId.value
   if (selectedSourceType.value === 'MANUAL') return !!manualTitle.value.trim()
+  if (selectedSourceType.value === 'JUSTKA') return !!selectedJustkaBot.value
   return false
 })
 
@@ -251,6 +274,7 @@ watch(isOpenModal, (open) => {
     selectedLibraryFile.value = null
     showResourcePicker.value = false
     selectedApiSourceId.value = ''
+    selectedJustkaBot.value = ''
     manualTitle.value = ''
     selectedCategory.value = ''
     selectedTags.value = []
@@ -331,6 +355,21 @@ function handleSubmit() {
     emit('created', id)
     popDialog.toast('API 來源已建立，Pipeline 處理中…', 3000)
     simulatePipeline(id)
+  }
+
+  if (selectedSourceType.value === 'JUSTKA') {
+    const bot = JUSTKA_BOTS.find(b => b.id === selectedJustkaBot.value)!
+    const { knowledgeId } = knowledgeStore.createFromJustka({
+      botId: bot.id,
+      botName: bot.name,
+      cardCount: bot.cardCount,
+      category: selectedCategory.value,
+    })
+    isOpenModal.value = false
+    popDialog.toast('AI 正在整理題庫內容…', 3000)
+    simulateJustkaGeneration(knowledgeId, bot)
+    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
+    return
   }
 }
 
@@ -467,6 +506,41 @@ function simulateFileAiGeneration(id: string, fileName: string) {
 
     knowledgeStore.markPipelineDone(id, chunks, aiContent)
     popDialog.toast('AI 內容生成完成，可前往審閱草稿', 3000)
+  }, 4500)
+}
+
+function simulateJustkaGeneration(id: string, bot: { id: string; name: string; cardCount: number }) {
+  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
+    { stage: 'chunking',  startPct: 0,  delay: 0    },
+    { stage: 'embedding', startPct: 33, delay: 1500 },
+    { stage: 'indexing',  startPct: 67, delay: 3500 },
+  ]
+  stages.forEach(({ stage, startPct, delay }) => {
+    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
+  })
+  setTimeout(() => {
+    const aiContent = [
+      `## ${bot.name} — 題庫知識`,
+      ``,
+      `> AI 已整理 ${bot.cardCount} 張題卡，以下為結構化 Q&A 內容。`,
+      ``,
+      `| # | 問題 | 參考答案 |`,
+      `| --- | --- | --- |`,
+      `| 1 | 如何查詢訂單狀態？ | 可至官網會員中心查詢，或提供訂單編號由客服協助確認。 |`,
+      `| 2 | 退貨流程為何？ | 請於購買後 7 天內聯繫客服，提供訂單編號與退貨原因，我們將於 3 個工作天內處理。 |`,
+      `| 3 | 商品保固期多久？ | 依商品類型不同，一般為購買日起 1 年內，詳情請參閱商品說明頁。 |`,
+      `| 4 | 如何修改訂單資訊？ | 訂單成立後 2 小時內可聯繫客服修改；超過時效請於收到商品後辦理換貨。 |`,
+      `| … | … | … |`,
+      ``,
+      `**共整理 ${bot.cardCount} 題，可於「分段預覽」查看完整題卡。**`,
+    ].join('\n')
+    const chunks = Array.from({ length: 4 }, (_, i) => ({
+      index: i + 1,
+      content: `${bot.name} — Q&A 第 ${i + 1} 批（共 ${Math.ceil(bot.cardCount / 4)} 題）`,
+      tokenCount: Math.floor(bot.cardCount * 8 / 4),
+    }))
+    knowledgeStore.markPipelineDone(id, chunks, aiContent)
+    popDialog.toast('AI 整理完成，可前往審閱草稿', 3000)
   }, 4500)
 }
 
