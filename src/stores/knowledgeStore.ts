@@ -114,7 +114,7 @@ export interface ChunkPreview {
   sectionPath?: string       // 如「第二章 > 2.1 節 申請流程」
   content: string
   tokenCount: number
-  sourceType?: 'text' | 'image'
+  sourceType: 'text' | 'image'
   gist?: string              // AI 生成摘要
   qaPairs?: string[]         // 建議問答，最多 5 題
   taxonomyTags?: string[]    // 分類路徑標籤
