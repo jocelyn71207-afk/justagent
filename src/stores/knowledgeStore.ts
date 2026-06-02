@@ -79,6 +79,14 @@ export function getChunkingConfig(category: string): ChunkingConfig {
   return configs[category] ?? { chunkSize: 300, overlap: 50, contextPrefix: '' }
 }
 
+export function buildChunkContent(
+  chunk: string,
+  meta: { category: string; tags: string[]; sourceType: 'text' | 'image' },
+): string {
+  const tagsStr = meta.tags.length > 0 ? `[標籤:${meta.tags.join(',')}]` : ''
+  return `[分類:${meta.category}]${tagsStr}[來源:${meta.sourceType}] ${chunk}`
+}
+
 export interface ChunkPreview {
   index: number
   content: string

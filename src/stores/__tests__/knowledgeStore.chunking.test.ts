@@ -37,3 +37,34 @@ describe('getChunkingConfig', () => {
     expect(config.contextPrefix).toBe('')
   })
 })
+
+import { buildChunkContent } from '@/stores/knowledgeStore'
+
+describe('buildChunkContent', () => {
+  it('prepends category, tags and sourceType prefix', () => {
+    const result = buildChunkContent('退款需要三個工作天', {
+      category: '客服知識',
+      tags: ['退款', '流程'],
+      sourceType: 'text',
+    })
+    expect(result).toBe('[分類:客服知識][標籤:退款,流程][來源:text] 退款需要三個工作天')
+  })
+
+  it('omits tags section when tags array is empty', () => {
+    const result = buildChunkContent('商品說明文字', {
+      category: '商品文件',
+      tags: [],
+      sourceType: 'text',
+    })
+    expect(result).toBe('[分類:商品文件][來源:text] 商品說明文字')
+  })
+
+  it('marks image-derived chunks with image sourceType', () => {
+    const result = buildChunkContent('黑色無線耳機，頭戴式設計', {
+      category: '商品文件',
+      tags: ['3C'],
+      sourceType: 'image',
+    })
+    expect(result).toBe('[分類:商品文件][標籤:3C][來源:image] 黑色無線耳機，頭戴式設計')
+  })
+})
