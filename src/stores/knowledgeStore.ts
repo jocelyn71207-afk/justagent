@@ -588,12 +588,12 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return { knowledgeId: newId, versionId: draftId };
   };
 
-  function createFromJustka(params: {
+  const createFromJustka = (params: {
     botId: string;
     botName: string;
     cardCount: number;
     category: string;
-  }): { knowledgeId: string; versionId: string } {
+  }): { knowledgeId: string; versionId: string } => {
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
     const newId = `k-${Date.now()}`;
     const draftId = `v1.0-draft-${Date.now()}`;
@@ -611,8 +611,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       sourceStale: false,
       staleSourceFileIds: [],
       lastSyncAt: null,
-      apiSourceId: null,
-      apiSourceName: null,
+      apiSourceId: params.botId,
+      apiSourceName: params.botName,
       lastUpdateTime: now,
       lastUpdateBy: 'AI 生成',
       versions: [{
@@ -639,7 +639,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
     knowledgeList.value.unshift(newKnowledge);
     return { knowledgeId: newId, versionId: draftId };
-  }
+  };
 
   // 來源檔案更新後，將關聯此檔案的所有知識條目標記為 stale
   function markFileStale(fileId: string, newVersion: number) {
