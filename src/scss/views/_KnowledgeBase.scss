@@ -2572,3 +2572,24 @@
   word-break: break-all;
   margin: 0;
 }
+
+// ── Pipeline 審核提示 banner ─────────────────────────────
+.pipeline-review-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #E8FAA0;
+  border: 1px solid var(--color-primary, #C8F135);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #2A3500;
+  line-height: 1.6;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}

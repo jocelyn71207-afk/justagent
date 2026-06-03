@@ -594,7 +594,7 @@ function simulatePipeline(id: string) {
     knowledgeStore.markPipelineDone(id, [
       { index: 1, content: '（Pipeline 完成，實際分段由後端提供）', tokenCount: 0, sourceType: 'text' },
     ])
-    popDialog.toast('Pipeline 處理完成！可前往編輯草稿', 3000)
+    popDialog.toast('Pipeline 處理完成！請前往「開始審核」確認 AI 生成的內容後批准發佈', 4000)
   }, 4500)
 }
 </script>

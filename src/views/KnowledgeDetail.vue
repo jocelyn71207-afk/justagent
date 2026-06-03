@@ -74,6 +74,13 @@
 
       <!-- Tab 1: 概覽 -->
       <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'overview' }]">
+
+        <!-- Pipeline 審核提示 banner -->
+        <div v-if="isPipelineReview" class="pipeline-review-banner">
+          <i class="material-symbols-outlined">smart_toy</i>
+          <span>此條目由 Pipeline 處理完成，以下為 AI 生成的知識摘要。請切換至「分段預覽」審查內容品質，確認無誤後點擊「開始審核」批准發佈。</span>
+        </div>
+
         <div class="detail-overview-grid">
 
           <!-- 左：內容預覽 -->
@@ -341,10 +348,28 @@ const draftVersion = computed(() =>
   knowledge.value?.versions.find(v => v.status === 'draft' || v.status === 'rejected') ?? null
 )
 
+// Pipeline 審核狀態：reviewing 但沒有 reviewHistory（尚未人工送審）
+const isPipelineReview = computed(() =>
+  activeVer.value?.status === 'reviewing' &&
+  (!activeVer.value?.reviewHistory || activeVer.value.reviewHistory.length === 0)
+)
+
 const renderedContent = computed(() => {
   const c = activeVer.value?.content
-  if (!c) return '<span style="color:#999">（此版本無內容）</span>'
-  return md.render(c)
+  if (c) return md.render(c)
+
+  // 內容為空時，若有 chunk gist，改為顯示 AI 摘要摘要列表
+  const chunks = activeVer.value?.chunks ?? []
+  const hasGist = chunks.some(ch => ch.gist)
+  if (hasGist) {
+    const items = chunks
+      .filter(ch => ch.gist)
+      .map(ch => `**${ch.sectionPath ?? `知識單元 #${ch.index}`}**\n\n${ch.gist}`)
+      .join('\n\n---\n\n')
+    return md.render(items)
+  }
+
+  return '<span style="color:#999">（此版本無內容）</span>'
 })
 
 // ── Tabs ──

@@ -1159,13 +1159,13 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   function markPipelineDone(id: string, chunks: ChunkPreview[], aiContent?: string) {
     const item = knowledgeList.value.find(k => k.id === id)
     if (!item) return
-    item.status = 'pending'
+    item.status = 'reviewing'
     item.pipelineProgress = 100
     item.pipelineStage = null
     item.pipelineError = null
     const draft = item.versions[0]
     if (draft) {
-      draft.status = 'draft'
+      draft.status = 'reviewing'
       draft.chunks = chunks
       draft.embeddingModel = 'text-embedding-3-large'
       draft.embeddingDimension = 3072
