@@ -6,7 +6,7 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">知識庫管理</div>
+          <div class="banner-title">知識內容管理</div>
         </div>
       </div>
 
@@ -31,19 +31,27 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon stat-icon--green"><i class="material-symbols-outlined">verified</i></div>
-            <div><div class="stat-number">{{ stats.active }}</div><div class="stat-label">Active</div></div>
+            <div><div class="stat-number">{{ stats.active }}</div><div class="stat-label">已發布</div></div>
           </div>
           <div class="stat-card" style="background: #fffbeb; border-color: #fde68a;">
             <div class="stat-icon" style="background:#fef3c7;color:#b45309;"><i class="material-symbols-outlined">update</i></div>
-            <div><div class="stat-number" style="color:#b45309;">{{ stats.needsUpdate }}</div><div class="stat-label">Needs Update</div></div>
+            <div><div class="stat-number" style="color:#b45309;">{{ stats.needsUpdate }}</div><div class="stat-label">需更新</div></div>
           </div>
           <div class="stat-card">
             <div class="stat-icon stat-icon--blue"><i class="material-symbols-outlined">rate_review</i></div>
-            <div><div class="stat-number">{{ stats.reviewing }}</div><div class="stat-label">Reviewing</div></div>
+            <div><div class="stat-number">{{ stats.reviewing }}</div><div class="stat-label">審核中</div></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background:#ede9fe;color:#7c3aed;"><i class="material-symbols-outlined">sync</i></div>
-            <div><div class="stat-number" style="color:#7c3aed;">{{ stats.processing }}</div><div class="stat-label">Processing</div></div>
+          <div class="stat-card stat-card--kpi">
+            <span class="kpi-badge">KPI</span>
+            <div class="stat-icon stat-icon--kpi"><i class="material-symbols-outlined">insights</i></div>
+            <div>
+              <div class="stat-number stat-number--kpi">{{ conversionRate }}%</div>
+              <div class="stat-label">知識轉換率</div>
+              <div class="kpi-target">目標 ≥ 95%</div>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="kpi-progress-fill" :style="{ width: conversionRate + '%' }"></div>
+            </div>
           </div>
         </div>
 
@@ -67,10 +75,11 @@
           </div>
           <div class="filter-right">
             <compDropDown
-              v-model="selectedStatus"
               :options="statusOptions"
+              :default-value="selectedStatus"
               placeholder="狀態"
               style="width: 130px;"
+              @select="(item: any) => { selectedStatus = String(item.value); currentPage = 1 }"
             />
             <button class="custom-btn custom-main-btn ml-2" @click="isCreateModalOpen = true">
               <i class="material-symbols-outlined">add_box</i>新增知識
@@ -120,7 +129,7 @@
                     <div class="pipeline-progress-bar">
                       <div class="pipeline-progress-fill" :style="{ width: item.pipelineProgress + '%' }"></div>
                     </div>
-                    <span class="pipeline-stage-label">{{ item.pipelineStage }} {{ item.pipelineProgress }}%</span>
+                    <span class="pipeline-stage-label">{{ pipelineStageLabelMap[item.pipelineStage ?? ''] ?? item.pipelineStage }} {{ item.pipelineProgress }}%</span>
                   </div>
                 </td>
                 <td>
@@ -166,7 +175,20 @@
                           <i class="material-symbols-outlined">refresh</i>重新觸發 Pipeline
                         </div>
                       </template>
-                      <template v-if="item.status !== 'processing' && item.status !== 'pending'">
+                      <template v-if="item.status === 'needs_update'">
+                        <div class="option-item" @click="knowledgeStore.ignoreUpdate(item.id); popDialog.toast('已忽略更新', 2000); closeOps()">
+                          <i class="material-symbols-outlined">block</i>忽略更新
+                        </div>
+                      </template>
+                      <template v-if="item.status === 'failed'">
+                        <div class="option-item" @click="openErrorLog(item); closeOps()">
+                          <i class="material-symbols-outlined">bug_report</i>查看錯誤紀錄
+                        </div>
+                      </template>
+                      <div class="option-item" @click="downloadItem(item.title); closeOps()">
+                        <i class="material-symbols-outlined">download</i>下載原始檔案
+                      </div>
+                      <template v-if="item.status !== 'processing'">
                         <div class="option-item option-item--danger" @click="deleteItem(item.id); closeOps()">
                           <i class="material-symbols-outlined">delete</i>刪除
                         </div>
@@ -215,6 +237,11 @@
       :v1Id="compareV1Id"
       :v2Id="compareV2Id"
     />
+
+    <ErrorLogModal
+      v-model="isErrorLogOpen"
+      :error-message="errorLogMessage"
+    />
   </div>
 </template>
 
@@ -228,6 +255,7 @@ import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWi
 import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue'
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue'
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
+import ErrorLogModal from '@/components/Knowledge/ErrorLogModal.vue'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import type { KnowledgeItem } from '@/stores/knowledgeStore'
 import popDialog from '@/services/popDialog'
@@ -249,14 +277,14 @@ const categoryOptions = computed(() => {
 })
 
 const statusOptions = [
-  { label: '全部狀態', value: '' },
-  { label: 'Active', value: 'active' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Reviewing', value: 'reviewing' },
-  { label: 'Needs Update', value: 'needs_update' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Failed', value: 'failed' },
-  { label: 'Archived', value: 'archived' },
+  { name: '全部狀態', value: '' },
+  { name: '已發布', value: 'active' },
+  { name: '處理中', value: 'processing' },
+  { name: '審核中', value: 'reviewing' },
+  { name: '需更新', value: 'needs_update' },
+  { name: '待處理', value: 'pending' },
+  { name: '失敗', value: 'failed' },
+  { name: '已封存', value: 'archived' },
 ]
 
 const filteredList = computed(() => {
@@ -285,6 +313,13 @@ const stats = computed(() => ({
   processing: knowledgeList.value.filter(k => k.status === 'processing' || k.status === 'pending').length,
 }))
 
+const conversionRate = computed(() => {
+  const all = knowledgeList.value.filter(k => k.status !== 'archived')
+  if (!all.length) return 0
+  const active = all.filter(k => k.status === 'active').length
+  return Math.round((active / all.length) * 1000) / 10
+})
+
 // ── 狀態 label / icon ──
 const statusLabelMap: Record<string, string> = {
   active: '已發布',
@@ -310,6 +345,12 @@ const statusIconMap: Record<string, string> = {
   draft: 'edit_note',
   history: 'history',
   rejected: 'cancel',
+}
+
+const pipelineStageLabelMap: Record<string, string> = {
+  chunking:  '分段中',
+  embedding: '向量化',
+  indexing:  '建立索引',
 }
 
 // ── 勾選批次 ──
@@ -442,8 +483,8 @@ function handleKnowledgeCreated(_id: string) {
 // ── 狀態輔助 ──
 function isEditableStatus(item: KnowledgeItem): boolean {
   return item.versions.some(v => v.status === 'draft' || v.status === 'rejected')
-    && item.status !== 'active'
     && item.status !== 'reviewing'
+    && item.status !== 'processing'
 }
 
 // ── 版本比較 ──
@@ -451,4 +492,17 @@ const isCompareOpen = ref(false)
 const compareKnowledgeId = ref('')
 const compareV1Id = ref('')
 const compareV2Id = ref('')
+
+// ── 錯誤紀錄 ──
+const isErrorLogOpen = ref(false)
+const errorLogMessage = ref<string | null>(null)
+
+function openErrorLog(item: KnowledgeItem) {
+  errorLogMessage.value = item.pipelineError
+  isErrorLogOpen.value = true
+}
+
+function downloadItem(title: string) {
+  window.alert('下載：' + title + '.pdf')
+}
 </script>

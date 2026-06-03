@@ -2357,3 +2357,84 @@
     flex: 1;
   }
 }
+
+// ── KPI 轉換率卡片 ──────────────────────────────────────
+.stat-card--kpi {
+  position: relative;
+  border-color: var(--color-primary, #C8F135);
+  background: #F0FFD4;
+  cursor: default;
+  &:hover {
+    border-color: var(--color-primary, #C8F135);
+    box-shadow: 0 2px 12px rgba(200, 241, 53, 0.15);
+  }
+}
+
+.kpi-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--color-primary, #C8F135);
+  color: #2A3500;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.stat-icon--kpi {
+  background: #E8FAA0;
+  color: #5B6342;
+}
+
+.stat-number--kpi {
+  color: #2A3500;
+}
+
+.kpi-target {
+  font-size: 11px;
+  color: #5B6342;
+  margin-top: 2px;
+}
+
+.kpi-progress-bar {
+  height: 3px;
+  background: #D0D9C0;
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.kpi-progress-fill {
+  height: 100%;
+  background: var(--color-primary, #C8F135);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+// ── ErrorLogModal 樣式 ─────────────────────────────────
+.error-log-modal {
+  width: 560px;
+  max-width: 90vw;
+}
+
+.error-log-body {
+  padding: 16px 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.error-log-pre {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-danger, #BA1A1A);
+  background: #FFF5F5;
+  border: 1px solid #FFD0D0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
