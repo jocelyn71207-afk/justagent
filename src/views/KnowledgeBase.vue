@@ -41,9 +41,17 @@
             <div class="stat-icon stat-icon--blue"><i class="material-symbols-outlined">rate_review</i></div>
             <div><div class="stat-number">{{ stats.reviewing }}</div><div class="stat-label">Reviewing</div></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background:#ede9fe;color:#7c3aed;"><i class="material-symbols-outlined">sync</i></div>
-            <div><div class="stat-number" style="color:#7c3aed;">{{ stats.processing }}</div><div class="stat-label">Processing</div></div>
+          <div class="stat-card stat-card--kpi">
+            <span class="kpi-badge">KPI</span>
+            <div class="stat-icon stat-icon--kpi"><i class="material-symbols-outlined">insights</i></div>
+            <div>
+              <div class="stat-number stat-number--kpi">{{ conversionRate }}%</div>
+              <div class="stat-label">知識轉換率</div>
+              <div class="kpi-target">目標 ≥ 95%</div>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="kpi-progress-fill" :style="{ width: conversionRate + '%' }"></div>
+            </div>
           </div>
         </div>
 
@@ -166,6 +174,19 @@
                           <i class="material-symbols-outlined">refresh</i>重新觸發 Pipeline
                         </div>
                       </template>
+                      <template v-if="item.status === 'needs_update'">
+                        <div class="option-item" @click="knowledgeStore.ignoreUpdate(item.id); popDialog.toast('已忽略更新', 2000); closeOps()">
+                          <i class="material-symbols-outlined">block</i>忽略更新
+                        </div>
+                      </template>
+                      <template v-if="item.status === 'failed'">
+                        <div class="option-item" @click="openErrorLog(item); closeOps()">
+                          <i class="material-symbols-outlined">bug_report</i>查看錯誤紀錄
+                        </div>
+                      </template>
+                      <div class="option-item" @click="downloadItem(item.title); closeOps()">
+                        <i class="material-symbols-outlined">download</i>下載原始檔案
+                      </div>
                       <template v-if="item.status !== 'processing' && item.status !== 'pending'">
                         <div class="option-item option-item--danger" @click="deleteItem(item.id); closeOps()">
                           <i class="material-symbols-outlined">delete</i>刪除
@@ -215,6 +236,11 @@
       :v1Id="compareV1Id"
       :v2Id="compareV2Id"
     />
+
+    <ErrorLogModal
+      v-model="isErrorLogOpen"
+      :error-message="errorLogMessage"
+    />
   </div>
 </template>
 
@@ -228,6 +254,7 @@ import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWi
 import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue'
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue'
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
+import ErrorLogModal from '@/components/Knowledge/ErrorLogModal.vue'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import type { KnowledgeItem } from '@/stores/knowledgeStore'
 import popDialog from '@/services/popDialog'
@@ -284,6 +311,13 @@ const stats = computed(() => ({
   reviewing: knowledgeList.value.filter(k => k.status === 'reviewing').length,
   processing: knowledgeList.value.filter(k => k.status === 'processing' || k.status === 'pending').length,
 }))
+
+const conversionRate = computed(() => {
+  const all = knowledgeList.value.filter(k => k.status !== 'archived')
+  if (!all.length) return 0
+  const active = all.filter(k => k.status === 'active').length
+  return Math.round((active / all.length) * 1000) / 10
+})
 
 // ── 狀態 label / icon ──
 const statusLabelMap: Record<string, string> = {
@@ -451,4 +485,16 @@ const isCompareOpen = ref(false)
 const compareKnowledgeId = ref('')
 const compareV1Id = ref('')
 const compareV2Id = ref('')
+
+const isErrorLogOpen = ref(false)
+const errorLogMessage = ref<string | null>(null)
+
+function openErrorLog(item: KnowledgeItem) {
+  errorLogMessage.value = item.pipelineError
+  isErrorLogOpen.value = true
+}
+
+function downloadItem(title: string) {
+  window.alert('下載：' + title + '.pdf')
+}
 </script>
