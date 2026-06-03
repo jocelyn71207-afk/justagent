@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 
@@ -145,60 +145,5 @@ describe('knowledgeStore — pipeline actions', () => {
       expect(ver.status).toBe('draft')
       expect(ver.summary).toContain('48')
     })
-  })
-})
-
-describe('ignoreUpdate', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-  })
-
-  it('needs_update 狀態轉為 active，並清除 sourceStale', () => {
-    const store = useKnowledgeStore()
-    const item = store.knowledgeList.find(k => k.status === 'needs_update')
-    expect(item).toBeDefined()
-    store.ignoreUpdate(item!.id)
-    expect(item!.status).toBe('active')
-    expect(item!.sourceStale).toBe(false)
-  })
-
-  it('非 needs_update 狀態不做任何變更', () => {
-    const store = useKnowledgeStore()
-    const item = store.knowledgeList.find(k => k.status === 'active')
-    expect(item).toBeDefined()
-    store.ignoreUpdate(item!.id)
-    expect(item!.status).toBe('active')
-  })
-})
-
-describe('approveVersion MANUAL 路徑', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  it('審核通過後先進入 processing，2 秒後變為 active', () => {
-    const store = useKnowledgeStore()
-    store.approveVersion('k2', 'k2-v2.0')
-    const item = store.knowledgeList.find(k => k.id === 'k2')!
-    expect(item.status).toBe('processing')
-    vi.advanceTimersByTime(2000)
-    expect(item.status).toBe('active')
-  })
-
-  it('2 秒後版本有 conversionLog（chunking=skipped, embedding=success）', () => {
-    const store = useKnowledgeStore()
-    store.approveVersion('k2', 'k2-v2.0')
-    vi.advanceTimersByTime(2000)
-    const ver = store.knowledgeList.find(k => k.id === 'k2')!.versions.find(v => v.id === 'k2-v2.0')!
-    expect(ver.conversionLog).toHaveLength(3)
-    expect(ver.conversionLog[0].stage).toBe('chunking')
-    expect(ver.conversionLog[0].status).toBe('skipped')
-    expect(ver.conversionLog[1].stage).toBe('embedding')
-    expect(ver.conversionLog[1].status).toBe('success')
   })
 })

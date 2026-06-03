@@ -13,7 +13,7 @@ export type ItemStatus =
 export type VersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
 export type VersionType = 'MAJOR' | 'MINOR'
 export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
-export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA' | 'SHAREPOINT'
+export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA'
 
 export interface ApiSourceHeader {
   key: string
@@ -111,23 +111,9 @@ export async function processImage(
 
 export interface ChunkPreview {
   index: number
-  sectionPath?: string       // 如「第二章 > 2.1 節 申請流程」
   content: string
   tokenCount: number
   sourceType: 'text' | 'image'
-  gist?: string              // AI 生成摘要
-  qaPairs?: string[]         // 建議問答，最多 5 題
-  taxonomyTags?: string[]    // 分類路徑標籤
-  citationCount?: number     // 被引用次數
-}
-
-export interface ConversionStep {
-  stage: 'chunking' | 'embedding' | 'indexing'
-  status: 'success' | 'failed' | 'skipped'
-  startedAt: string
-  durationMs: number
-  detail: Record<string, string | number>
-  errorMessage?: string
 }
 
 export interface KnowledgeVersion {
@@ -154,7 +140,6 @@ export interface KnowledgeVersion {
   reviewedTime?: string
   reviewFeedback?: string
   reviewHistory?: ReviewRecord[]
-  conversionLog: ConversionStep[]
 }
 
 export interface KnowledgeItem {
@@ -215,7 +200,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           embeddingModel: 'text-embedding-3-large',
           embeddingDimension: 3072,
           embeddingCount: 5,
-          conversionLog: [],
         },
         {
           id: 'k1-v1.2',
@@ -235,82 +219,26 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           chunks: [
             {
               index: 1,
-              sectionPath: '商品資料 > UGG 鞋款庫存',
               content: 'UGG 鞋款庫存資料整理，包含 2025 年秋冬新款型號、配色與庫存數量說明，TV 系列為主力推廣款式。',
               tokenCount: 312,
               sourceType: 'text',
-              gist: '本段整理 2025 年 UGG 秋冬款鞋類庫存資料，含型號、配色及庫存數量。',
-              qaPairs: [
-                'UGG 2025 秋冬款有哪些型號？',
-                '各型號庫存數量如何查詢？',
-                'TV 系列與一般系列的差異為何？',
-                '庫存不足時如何補貨？',
-                '哪些配色是本季主打？',
-              ],
-              taxonomyTags: ['商品文件/庫存管理/鞋類'],
-              citationCount: 12,
             },
             {
               index: 2,
-              sectionPath: '商品資料 > 冬季款明細',
               content: 'TV4038BKBR 冬季款詳細規格，含尺寸範圍 US5–11、建議售價 NT$6,800 與安全庫存量設定標準。',
               tokenCount: 287,
               sourceType: 'text',
-              gist: 'TV4038BKBR 冬季款規格說明，含尺寸、售價與庫存設定標準。',
-              qaPairs: [
-                'TV4038BKBR 的尺寸範圍是多少？',
-                '建議售價如何設定？',
-                '安全庫存量標準為何？',
-                '此款與其他冬季款的差異？',
-                '如何申請補貨？',
-              ],
-              taxonomyTags: ['商品文件/庫存管理/冬季款'],
-              citationCount: 7,
             },
             {
               index: 3,
-              sectionPath: '商品資料 > Q3 選品說明',
               content: 'Q3 選品策略以秋冬轉換期熱銷品項為主，重點布局 UGG 經典款與新色系，建議備貨量較 Q2 增加 30%。',
               tokenCount: 345,
               sourceType: 'text',
-              gist: 'Q3 選品以秋冬轉換期熱銷品項為主，說明選品策略與重點商品備貨建議。',
-              qaPairs: [
-                'Q3 主推商品有哪些？',
-                '選品策略如何制定？',
-                '秋冬轉換期間如何備貨？',
-                '哪些品項預計促銷？',
-                'Q4 選品預覽有哪些資訊？',
-              ],
-              taxonomyTags: ['商品文件/選品策略/季節商品'],
-              citationCount: 4,
             },
           ],
           embeddingModel: 'text-embedding-3-large',
           embeddingDimension: 3072,
           embeddingCount: 3,
-          conversionLog: [
-            {
-              stage: 'chunking',
-              status: 'success',
-              startedAt: '2026-08-13 10:20',
-              durationMs: 3200,
-              detail: { strategy: 'Section-aware', chunkCount: 3, avgTokens: 315, imageCount: 0, tableCount: 1, sourceFormat: 'XLSX' },
-            },
-            {
-              stage: 'embedding',
-              status: 'success',
-              startedAt: '2026-08-13 10:20',
-              durationMs: 8700,
-              detail: { model: 'BAAI/bge-m3', dimension: 1024, denseCount: 3, sparseCount: 3, batchSize: 32 },
-            },
-            {
-              stage: 'indexing',
-              status: 'success',
-              startedAt: '2026-08-13 10:21',
-              durationMs: 400,
-              detail: { collection: 'knowledge_chunks', pointCount: 3, indexType: 'HNSW' },
-            },
-          ],
         },
       ],
     },
@@ -350,7 +278,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           embeddingModel: null,
           embeddingDimension: null,
           embeddingCount: 0,
-          conversionLog: [],
         },
       ],
     },
@@ -390,7 +317,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           embeddingModel: null,
           embeddingDimension: null,
           embeddingCount: 0,
-          conversionLog: [],
         },
       ],
     },
@@ -429,48 +355,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           chunks: [
             {
               index: 1,
-              sectionPath: '申辦資格 > 基本條件',
               content: '申辦資格：年滿 20 歲，年收入 30 萬以上，需提供薪資證明或最近一年報稅資料，外籍人士另需居留證。',
               tokenCount: 198,
               sourceType: 'text',
-              gist: '說明信用卡申辦基本資格，包含年齡、收入門檻及所需文件。',
-              qaPairs: [
-                '信用卡申辦的年齡限制為何？',
-                '申辦所需的最低年收入是多少？',
-                '需要提供哪些證明文件？',
-                '外籍人士可以申辦嗎？',
-                '學生可以申辦哪種信用卡？',
-              ],
-              taxonomyTags: ['產品資訊/信用卡/申辦資格'],
-              citationCount: 18,
             },
           ],
           embeddingModel: 'text-embedding-3-large',
           embeddingDimension: 3072,
           embeddingCount: 1,
-          conversionLog: [
-            {
-              stage: 'chunking',
-              status: 'success',
-              startedAt: '2026-04-12 08:50',
-              durationMs: 1800,
-              detail: { strategy: 'Section-aware', chunkCount: 1, avgTokens: 198, imageCount: 0, tableCount: 0, sourceFormat: 'PDF' },
-            },
-            {
-              stage: 'embedding',
-              status: 'success',
-              startedAt: '2026-04-12 08:50',
-              durationMs: 2100,
-              detail: { model: 'BAAI/bge-m3', dimension: 1024, denseCount: 1, sparseCount: 1, batchSize: 32 },
-            },
-            {
-              stage: 'indexing',
-              status: 'success',
-              startedAt: '2026-04-12 08:50',
-              durationMs: 200,
-              detail: { collection: 'knowledge_chunks', pointCount: 1, indexType: 'HNSW' },
-            },
-          ],
         },
       ],
     },
@@ -509,82 +401,26 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           chunks: [
             {
               index: 1,
-              sectionPath: '商品目錄 > 春夏選品',
               content: '2026 年春夏主打商品清單，共 11 款（8 款新品、3 款延續熱銷），附建議陳列方式與促銷時程。',
               tokenCount: 428,
               sourceType: 'text',
-              gist: '整理 2026 春夏主打商品 11 款，含新品、延續款及陳列建議。',
-              qaPairs: [
-                '2026 春夏新品有哪幾款？',
-                '哪些是延續熱銷商品？',
-                '建議陳列方式為何？',
-                '春夏商品何時開始上架？',
-                '售完是否會補貨？',
-              ],
-              taxonomyTags: ['商品文件/季節商品/春夏選品'],
-              citationCount: 5,
             },
             {
               index: 2,
-              sectionPath: '商品目錄 > 庫存狀態',
               content: '各品項庫存即時狀態，正常庫存（≥ 50 件）標示綠色，低庫存（< 20 件）標示黃色，售完標示紅色。',
               tokenCount: 356,
               sourceType: 'text',
-              gist: '說明庫存狀態標示規則與各品項目前庫存水位，協助客服即時回應詢問。',
-              qaPairs: [
-                '庫存狀態如何判讀？',
-                '低庫存的定義是什麼？',
-                '售完商品何時補貨？',
-                '如何查詢特定商品庫存？',
-                '庫存資料多久更新一次？',
-              ],
-              taxonomyTags: ['商品文件/庫存管理/即時狀態'],
-              citationCount: 22,
             },
             {
               index: 3,
-              sectionPath: '商品目錄 > 價格資訊',
               content: '各品項建議售價與進行中優惠活動彙整，特價商品標示活動期間及折扣幅度，會員另享 95 折優惠。',
               tokenCount: 389,
               sourceType: 'text',
-              gist: '彙整各品項建議售價及進行中優惠活動，含活動期間與折扣資訊。',
-              qaPairs: [
-                '目前有哪些優惠活動？',
-                '特價商品如何辨識？',
-                '折扣可以疊加嗎？',
-                '建議售價是否含稅？',
-                '會員與一般客戶的售價差異？',
-              ],
-              taxonomyTags: ['商品文件/價格管理/優惠活動'],
-              citationCount: 9,
             },
           ],
           embeddingModel: 'text-embedding-3-large',
           embeddingDimension: 3072,
           embeddingCount: 3,
-          conversionLog: [
-            {
-              stage: 'chunking',
-              status: 'success',
-              startedAt: '2026-04-12 08:55',
-              durationMs: 4100,
-              detail: { strategy: 'Section-aware', chunkCount: 3, avgTokens: 391, imageCount: 0, tableCount: 2, sourceFormat: 'API' },
-            },
-            {
-              stage: 'embedding',
-              status: 'success',
-              startedAt: '2026-04-12 08:55',
-              durationMs: 9300,
-              detail: { model: 'BAAI/bge-m3', dimension: 1024, denseCount: 3, sparseCount: 3, batchSize: 32 },
-            },
-            {
-              stage: 'indexing',
-              status: 'success',
-              startedAt: '2026-04-12 08:56',
-              durationMs: 380,
-              detail: { collection: 'knowledge_chunks', pointCount: 3, indexType: 'HNSW' },
-            },
-          ],
         },
       ],
     },
@@ -624,30 +460,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           embeddingModel: null,
           embeddingDimension: null,
           embeddingCount: 0,
-          conversionLog: [
-            {
-              stage: 'chunking',
-              status: 'success',
-              startedAt: '2026-05-30 03:10',
-              durationMs: 5200,
-              detail: { strategy: 'Section-aware', chunkCount: 18, avgTokens: 487, imageCount: 2, tableCount: 4, sourceFormat: 'PDF' },
-            },
-            {
-              stage: 'embedding',
-              status: 'failed',
-              startedAt: '2026-05-30 03:11',
-              durationMs: 0,
-              detail: { model: 'BAAI/bge-m3', dimension: 1024 },
-              errorMessage: 'EmbeddingError: CUDA out of memory. Tried to allocate 2.5 GiB\n(GPU 0; 24.0 GiB total capacity)\nat /opt/bge-m3/model.py:line 234\nRuntimeError: CUBLAS_STATUS_ALLOC_FAILED when calling cublasCreate(handle)',
-            },
-            {
-              stage: 'indexing',
-              status: 'skipped',
-              startedAt: '2026-05-30 03:11',
-              durationMs: 0,
-              detail: {},
-            },
-          ],
         },
       ],
     },
@@ -810,33 +622,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
     if (k.sourceType === 'MANUAL') {
       k.status = 'processing'
-      const processingStart = now
       setTimeout(() => {
         k.status = 'active'
         k.lastUpdateTime = new Date().toISOString().replace('T', ' ').slice(0, 16)
-        v.conversionLog = [
-          {
-            stage: 'chunking',
-            status: 'skipped',
-            startedAt: processingStart,
-            durationMs: 0,
-            detail: {},
-          },
-          {
-            stage: 'embedding',
-            status: 'success',
-            startedAt: processingStart,
-            durationMs: 1200,
-            detail: { model: 'BAAI/bge-m3', dimension: 1024, denseCount: 1, sparseCount: 1, batchSize: 32 },
-          },
-          {
-            stage: 'indexing',
-            status: 'success',
-            startedAt: processingStart,
-            durationMs: 200,
-            detail: { collection: 'knowledge_chunks', pointCount: 1, indexType: 'HNSW' },
-          },
-        ]
       }, 2000)
     } else {
       k.status = 'active'
@@ -927,7 +715,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         embeddingModel: null,
         embeddingDimension: null,
         embeddingCount: 0,
-        conversionLog: [],
       }],
     };
 
@@ -981,7 +768,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         embeddingModel: null,
         embeddingDimension: null,
         embeddingCount: 0,
-        conversionLog: [],
       }],
     };
 
@@ -1111,7 +897,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         embeddingModel: null,
         embeddingDimension: null,
         embeddingCount: 0,
-        conversionLog: [],
       }],
     }
 
@@ -1183,7 +968,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
               embeddingModel: null,
               embeddingDimension: null,
               embeddingCount: 0,
-              conversionLog: [],
             }
 
             linked.versions.push(newVersion)
@@ -1248,7 +1032,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         embeddingModel: null,
         embeddingDimension: null,
         embeddingCount: 0,
-        conversionLog: [],
       }],
     }
 
@@ -1297,7 +1080,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         embeddingModel: null,
         embeddingDimension: null,
         embeddingCount: 0,
-        conversionLog: [],
       }],
     }
 
@@ -1371,52 +1153,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.staleSourceFileIds = []
   }
 
-  function createFromSharePoint(items: Array<{ title: string; category: string }>) {
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
-    for (const item of items) {
-      const id = `sp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
-      const versionId = `${id}-v1.0`
-      knowledgeList.value.unshift({
-        id,
-        title: item.title,
-        category: item.category,
-        status: 'pending',
-        sourceType: 'SHAREPOINT',
-        pipelineProgress: 0,
-        pipelineStage: null,
-        pipelineError: null,
-        sourceStale: false,
-        staleSourceFileIds: [],
-        lastSyncAt: now,
-        apiSourceId: null,
-        apiSourceName: 'SharePoint',
-        lastUpdateTime: now,
-        lastUpdateBy: 'SharePoint 同步',
-        versions: [{
-          id: versionId,
-          knowledgeId: id,
-          versionNumber: 'v1.0',
-          versionType: null,
-          status: 'draft',
-          title: item.title,
-          summary: '',
-          content: '',
-          tags: [],
-          systemTags: [],
-          lastUpdateBy: 'SharePoint 同步',
-          lastUpdateTime: now,
-          updateNote: 'SharePoint 自動匯入',
-          sourceFiles: [],
-          chunks: [],
-          embeddingModel: null,
-          embeddingDimension: null,
-          embeddingCount: 0,
-          conversionLog: [],
-        }],
-      })
-    }
-  }
-
   return {
     knowledgeList,
     getKnowledgeById,
@@ -1447,7 +1183,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     markPipelineFailed,
     retriggerPipeline,
     ignoreUpdate,
-    createFromSharePoint,
     archiveKnowledge,
     batchArchive,
     batchDelete,
