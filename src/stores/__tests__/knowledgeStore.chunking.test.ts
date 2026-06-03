@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { getChunkingConfig } from '@/stores/knowledgeStore'
 
 describe('getChunkingConfig', () => {
@@ -114,5 +114,29 @@ describe('processImage', () => {
     const mockFile = new File([''], 'manual.jpg', { type: 'image/jpeg' })
     const result = await processImage(mockFile, '系統文件')
     expect(result.text).toContain('系統文件')
+  })
+})
+
+import { setActivePinia, createPinia } from 'pinia'
+import { useKnowledgeStore, vectorSearch } from '@/stores/knowledgeStore'
+
+describe('vectorSearch', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('returns results matching the given category filter', () => {
+    const store = useKnowledgeStore()
+    const results = vectorSearch('退款', { category: '客服知識' }, store.knowledgeList)
+    results.forEach(r => {
+      expect(r.category).toBe('客服知識')
+    })
+  })
+
+  it('returns all results when no category filter is provided', () => {
+    const store = useKnowledgeStore()
+    const allResults = vectorSearch('商品', undefined, store.knowledgeList)
+    const filteredResults = vectorSearch('商品', { category: '商品文件' }, store.knowledgeList)
+    expect(allResults.length).toBeGreaterThanOrEqual(filteredResults.length)
   })
 })
