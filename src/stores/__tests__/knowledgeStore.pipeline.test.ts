@@ -147,3 +147,26 @@ describe('knowledgeStore — pipeline actions', () => {
     })
   })
 })
+
+describe('ignoreUpdate', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('needs_update 狀態轉為 active，並清除 sourceStale', () => {
+    const store = useKnowledgeStore()
+    const item = store.knowledgeList.find(k => k.status === 'needs_update')
+    expect(item).toBeDefined()
+    store.ignoreUpdate(item!.id)
+    expect(item!.status).toBe('active')
+    expect(item!.sourceStale).toBe(false)
+  })
+
+  it('非 needs_update 狀態不做任何變更', () => {
+    const store = useKnowledgeStore()
+    const item = store.knowledgeList.find(k => k.status === 'active')
+    expect(item).toBeDefined()
+    store.ignoreUpdate(item!.id)
+    expect(item!.status).toBe('active')
+  })
+})
