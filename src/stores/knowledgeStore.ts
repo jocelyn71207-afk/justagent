@@ -114,6 +114,11 @@ export interface ChunkPreview {
   content: string
   tokenCount: number
   sourceType: 'text' | 'image'
+  sectionPath?: string
+  gist?: string
+  qaPairs?: string[]
+  taxonomyTags?: string[]
+  citationCount?: number
 }
 
 export interface KnowledgeVersion {
