@@ -226,6 +226,14 @@ function openEdit(id: string) {
 }
 
 function handleSharePointComplete() {
+  knowledgeStore.createFromSharePoint([
+    { title: '外幣業務作業規範_v3.3', category: '規則說明' },
+    { title: '貸款審核SOP_v2.1', category: '規則說明' },
+  ])
+  const toArchive = knowledgeStore.knowledgeList.find(k =>
+    k.title.includes('2024年結存利率說明')
+  )
+  if (toArchive) knowledgeStore.archiveKnowledge(toArchive.id)
   popDialog.toast('SharePoint 同步完成，已匯入 2 筆文件', 3000)
 }
 </script>
