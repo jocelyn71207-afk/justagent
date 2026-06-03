@@ -230,51 +230,18 @@
 
       <!-- Tab 3: 分段預覽 -->
       <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'chunks' }]">
-        <template v-if="activeVer?.chunks?.length">
-          <div class="fc-grey-1 fs-13 mb-3">共 {{ activeVer.chunks.length }} 個 Chunk</div>
-          <div
-            v-for="chunk in activeVer.chunks"
-            :key="chunk.index"
-            class="chunk-card"
-          >
-            <div class="chunk-header">
-              Chunk #{{ chunk.index }}
-              <span class="chunk-token">tokens: {{ chunk.tokenCount }}</span>
-            </div>
-            <div class="chunk-content">{{ chunk.content }}</div>
-          </div>
-        </template>
-        <div v-else class="fc-grey-1 fs-13 text-center py-4">尚無分段資料（Pipeline 尚未完成或無內容）</div>
+        <ChunkPreviewTab
+          :chunks="activeVer?.chunks ?? []"
+          :source-type="knowledge.sourceType"
+        />
       </div>
 
       <!-- Tab 4: 轉換結果 -->
-      <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'embedding' }]">
-        <template v-if="activeVer?.embeddingModel">
-          <div class="detail-header-card" style="max-width:480px;">
-            <div class="info-label mb-3">Embedding 向量化狀態</div>
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fc-grey-1">向量化狀態</span>
-              <span class="status-badge status-badge--active">完成</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fc-grey-1">Embedding 模型</span>
-              <span>{{ activeVer.embeddingModel }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fc-grey-1">向量維度</span>
-              <span>{{ activeVer.embeddingDimension }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fc-grey-1">已向量化 Chunks</span>
-              <span>{{ activeVer.embeddingCount }} / {{ activeVer.chunks.length || activeVer.embeddingCount }}</span>
-            </div>
-            <div class="d-flex justify-content-between">
-              <span class="fc-grey-1">最後更新</span>
-              <span>{{ activeVer.lastUpdateTime }}</span>
-            </div>
-          </div>
-        </template>
-        <div v-else class="fc-grey-1 fs-13 text-center py-4">尚無向量化資料</div>
+      <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'conversion' }]">
+        <ConversionLogTab
+          :conversion-log="activeVer?.conversionLog ?? []"
+          :status="knowledge.status"
+        />
       </div>
 
     </div>
@@ -334,6 +301,8 @@ import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue'
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue'
 import FilePreviewModal from '@/components/Knowledge/FilePreviewModal.vue'
+import ChunkPreviewTab from '@/components/Knowledge/ChunkPreviewTab.vue'
+import ConversionLogTab from '@/components/Knowledge/ConversionLogTab.vue'
 import popDialog from '@/services/popDialog'
 
 const props = defineProps<{ id: string }>()
@@ -383,7 +352,7 @@ const tabs = [
   { key: 'overview', label: '概覽' },
   { key: 'history', label: '版本歷程' },
   { key: 'chunks', label: '分段預覽' },
-  { key: 'embedding', label: '轉換結果' },
+  { key: 'conversion', label: '轉換結果' },
 ]
 const activeTabKey = ref('overview')
 

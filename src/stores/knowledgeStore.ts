@@ -121,6 +121,15 @@ export interface ChunkPreview {
   citationCount?: number
 }
 
+export interface ConversionStep {
+  stage: 'chunking' | 'embedding' | 'indexing'
+  status: 'success' | 'failed' | 'skipped'
+  durationMs: number
+  startedAt: string
+  detail: Record<string, string | number>
+  errorMessage?: string
+}
+
 export interface KnowledgeVersion {
   id: string
   knowledgeId: string
@@ -145,6 +154,7 @@ export interface KnowledgeVersion {
   reviewedTime?: string
   reviewFeedback?: string
   reviewHistory?: ReviewRecord[]
+  conversionLog?: ConversionStep[]
 }
 
 export interface KnowledgeItem {

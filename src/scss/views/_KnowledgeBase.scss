@@ -2357,3 +2357,137 @@
     flex: 1;
   }
 }
+
+// ── ConversionLogTab ──────────────────────────────────────
+.conversion-log-tab {
+  padding: 4px 0;
+}
+
+.conversion-log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 8px;
+  color: var(--color-on-surface-variant, #43483E);
+
+  .material-symbols-outlined {
+    font-size: 40px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 14px;
+    opacity: 0.6;
+    margin: 0;
+  }
+}
+
+.conversion-log-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.conversion-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+
+  &.badge--success {
+    background: #E8FAA0;
+    color: #2A3500;
+  }
+
+  &.badge--failed {
+    background: #FFE4E4;
+    color: var(--color-error, #BA1A1A);
+  }
+}
+
+.conversion-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conversion-step-card {
+  border: 1px solid var(--color-outline, #C3C8BB);
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.step--success .step-header { background: var(--color-primary-container, #E8FAA0); }
+  &.step--failed .step-header { background: #FFE4E4; }
+  &.step--skipped .step-header { background: var(--color-surface-container, #F3F3F0); opacity: 0.7; }
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+}
+
+.step-status-icon {
+  font-size: 14px;
+  font-weight: 700;
+  width: 16px;
+  text-align: center;
+}
+
+.step-title {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  color: var(--color-on-surface, #1A1C18);
+}
+
+.step-duration {
+  flex-shrink: 0;
+}
+
+.step-body {
+  padding: 10px 14px;
+  background: var(--color-surface, #FAFAFA);
+}
+
+.step-skipped-note {
+  font-size: 12px;
+  color: var(--color-on-surface-variant, #43483E);
+  opacity: 0.6;
+  margin: 0;
+}
+
+.step-detail-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 16px;
+  row-gap: 4px;
+  font-size: 12px;
+}
+
+.step-detail-key {
+  color: var(--color-on-surface-variant, #43483E);
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.step-detail-val {
+  color: var(--color-on-surface, #1A1C18);
+}
+
+.step-error-msg {
+  font-size: 11px;
+  color: var(--color-error, #BA1A1A);
+  background: #FFF5F5;
+  border: 1px solid #FFD0D0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+}
