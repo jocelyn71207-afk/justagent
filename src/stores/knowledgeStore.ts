@@ -1289,6 +1289,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     markPipelineFailed,
     retriggerPipeline,
     ignoreUpdate,
+    createFromSharePoint,
     archiveKnowledge,
     batchArchive,
     batchDelete,
