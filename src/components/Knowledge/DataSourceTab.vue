@@ -4,7 +4,55 @@
 
     <div class="section-desc">連接外部資料來源，系統將自動同步資料並在知識內容管理建立對應的知識條目</div>
 
-    <!-- 已連接 -->
+    <!-- SharePoint 已連接卡片 -->
+    <div v-if="spState.connected" class="connected-section">
+      <div class="section-label">SharePoint</div>
+      <div class="source-cards">
+        <div class="source-card sp-connected-card">
+          <div class="source-card-header">
+            <div class="source-icon" style="background:#e8f4fd;">
+              <i class="material-symbols-outlined" style="color:#0078D4;">corporate_fare</i>
+            </div>
+            <div class="source-card-header-right">
+              <div class="source-card-status status-success">已連接</div>
+              <button class="custom-btn fs-12 py-0 px-2" @click="showSharePointWizard = true">
+                <i class="material-symbols-outlined fs-14">sync</i>重新同步
+              </button>
+            </div>
+          </div>
+          <div class="source-name">SharePoint</div>
+          <div class="source-type-label">企業內部文件庫・手動同步</div>
+          <div class="source-sync-info">
+            上次同步：{{ spState.lastSync }}（{{ spState.count }} 筆）
+          </div>
+
+          <!-- 可展開的條目清單 -->
+          <div class="sp-items-toggle" @click="spItemsExpanded = !spItemsExpanded">
+            <i class="material-symbols-outlined fs-14">{{ spItemsExpanded ? 'expand_less' : 'expand_more' }}</i>
+            已匯入的條目（{{ spItems.length }}）
+          </div>
+          <div v-if="spItemsExpanded && spItems.length" class="sp-items-list">
+            <div
+              v-for="item in spItems"
+              :key="item.id"
+              class="sp-item-row"
+              @click="router.push({ name: 'KnowledgeDetail', params: { id: item.id } })"
+            >
+              <i class="material-symbols-outlined fs-14">description</i>
+              <span class="sp-item-title">{{ item.title }}</span>
+              <span :class="['status-badge', `status-badge--${item.status}`]" style="font-size:11px;padding:1px 6px;">
+                {{ item.status === 'reviewing' ? '待審核' : item.status === 'active' ? '已發布' : '待處理' }}
+              </span>
+            </div>
+          </div>
+          <div v-if="spItemsExpanded && !spItems.length" class="sp-items-empty">
+            尚無匯入條目
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 已連接 API 來源 -->
     <div v-if="apiSources.length > 0" class="connected-section">
       <div class="section-label">已連接（{{ apiSources.length }}）</div>
       <div class="source-cards">
@@ -135,23 +183,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import ConnectApiWizard from '@/components/Knowledge/ConnectApiWizard.vue';
 import EditApiSourceModal from '@/components/Knowledge/EditApiSourceModal.vue';
 import SharePointWizardModal from '@/components/Knowledge/SharePointWizardModal.vue';
 import type { WizardPayload } from '@/stores/knowledgeStore';
+import type { SpCompletePayload } from '@/components/Knowledge/SharePointWizardModal.vue';
 import popDialog from '@/services/popDialog';
+import { useRouter } from 'vue-router';
 
 const knowledgeStore = useKnowledgeStore();
-const { apiSources } = storeToRefs(knowledgeStore);
+const { apiSources, knowledgeList } = storeToRefs(knowledgeStore);
+const router = useRouter();
 
 const showWizard = ref(false);
 const showEdit = ref(false);
 const editSourceId = ref('');
 const syncingIds = ref(new Set<string>());
 const showSharePointWizard = ref(false);
+
+// SharePoint 連接狀態
+const spState = ref<{ connected: boolean; lastSync: string; count: number }>({
+  connected: false,
+  lastSync: '',
+  count: 0,
+})
+const spItemsExpanded = ref(false)
+
+const spItems = computed(() =>
+  knowledgeList.value.filter(k => k.sourceType === 'SHAREPOINT')
+)
 
 const scheduleLabel: Record<string, string> = {
   MANUAL: '手動同步',
@@ -225,15 +288,21 @@ function openEdit(id: string) {
   showEdit.value = true;
 }
 
-function handleSharePointComplete() {
-  knowledgeStore.createFromSharePoint([
-    { title: '外幣業務作業規範_v3.3', category: '規則說明' },
-    { title: '貸款審核SOP_v2.1', category: '規則說明' },
-  ])
-  const toArchive = knowledgeStore.knowledgeList.find(k =>
-    k.title.includes('2024年結存利率說明')
-  )
-  if (toArchive) knowledgeStore.archiveKnowledge(toArchive.id)
-  popDialog.toast('SharePoint 同步完成，已匯入 2 筆文件', 3000)
+function handleSharePointComplete(payload: SpCompletePayload) {
+  if (payload.toCreate.length) {
+    knowledgeStore.createFromSharePoint(payload.toCreate)
+  }
+  for (const title of payload.toArchiveTitles) {
+    const found = knowledgeStore.knowledgeList.find(k => k.title.includes(title))
+    if (found) knowledgeStore.archiveKnowledge(found.id)
+  }
+
+  const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+  spState.value = { connected: true, lastSync: now, count: payload.syncedCount }
+
+  const msg = payload.syncedCount > 0
+    ? `SharePoint 同步完成，已匯入 ${payload.syncedCount} 筆文件`
+    : 'SharePoint 同步完成，未匯入任何檔案'
+  popDialog.toast(msg, 3000)
 }
 </script>
