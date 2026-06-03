@@ -1248,7 +1248,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           systemTags: [],
           lastUpdateBy: 'SharePoint \u540c\u6b65',
           lastUpdateTime: now,
-          updateNote: 'SharePoint \u81ea\u52d5\u5319\u5165',
+          updateNote: 'SharePoint 自動匯入',
           sourceFiles: [],
           chunks: [],
           embeddingModel: null,
