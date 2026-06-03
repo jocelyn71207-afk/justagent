@@ -120,14 +120,60 @@ export interface ChunkPreview {
   taxonomyTags?: string[]
   citationCount?: number
 }
-
 export interface ConversionStep {
   stage: 'chunking' | 'embedding' | 'indexing'
   status: 'success' | 'failed' | 'skipped'
-  durationMs: number
   startedAt: string
+  durationMs: number
   detail: Record<string, string | number>
   errorMessage?: string
+}
+
+export interface ChunkMetadata {
+  itemId: string
+  versionId: string
+  category: string
+  tags: string[]
+  sourceType: 'text' | 'image'
+  chunkIndex: number
+  content: string
+}
+
+// Mock implementation of vector search with client-side metadata filter.
+// Replace filter logic with vector DB metadata filter API when backend is integrated.
+export function vectorSearch(
+  _query: string,
+  options: { category?: string; tags?: string[] } | undefined,
+  knowledgeList: KnowledgeItem[],
+): ChunkMetadata[] {
+  const results: ChunkMetadata[] = []
+
+  for (const item of knowledgeList) {
+    const latestVersion = item.versions[0]
+    if (!latestVersion) continue
+
+    for (const chunk of latestVersion.chunks) {
+      const meta: ChunkMetadata = {
+        itemId: item.id,
+        versionId: latestVersion.id,
+        category: item.category,
+        tags: latestVersion.tags,
+        sourceType: chunk.sourceType,
+        chunkIndex: chunk.index,
+        content: chunk.content,
+      }
+
+      if (options?.category && meta.category !== options.category) continue
+      if (options?.tags?.length) {
+        const hasTag = options.tags.some(t => meta.tags.includes(t))
+        if (!hasTag) continue
+      }
+
+      results.push(meta)
+    }
+  }
+
+  return results
 }
 
 export interface KnowledgeVersion {
@@ -1166,6 +1212,51 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.status = 'active'
     k.sourceStale = false
     k.staleSourceFileIds = []
+  }
+
+  function createFromSharePoint(items: Array<{ title: string; category: string }>) {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    for (const item of items) {
+      const id = `sp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+      const versionId = `${id}-v1.0`
+      knowledgeList.value.unshift({
+        id,
+        title: item.title,
+        category: item.category,
+        status: 'pending',
+        sourceType: 'SHAREPOINT',
+        pipelineProgress: 0,
+        pipelineStage: null,
+        pipelineError: null,
+        sourceStale: false,
+        staleSourceFileIds: [],
+        lastSyncAt: now,
+        apiSourceId: null,
+        apiSourceName: 'SharePoint',
+        lastUpdateTime: now,
+        lastUpdateBy: 'SharePoint \u540c\u6b65',
+        versions: [{
+          id: versionId,
+          knowledgeId: id,
+          versionNumber: 'v1.0',
+          versionType: null,
+          status: 'draft',
+          title: item.title,
+          summary: '',
+          content: '',
+          tags: [],
+          systemTags: [],
+          lastUpdateBy: 'SharePoint \u540c\u6b65',
+          lastUpdateTime: now,
+          updateNote: 'SharePoint \u81ea\u52d5\u5319\u5165',
+          sourceFiles: [],
+          chunks: [],
+          embeddingModel: null,
+          embeddingDimension: null,
+          embeddingCount: 0,
+        }],
+      })
+    }
   }
 
   return {
