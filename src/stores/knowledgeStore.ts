@@ -13,7 +13,7 @@ export type ItemStatus =
 export type VersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
 export type VersionType = 'MAJOR' | 'MINOR'
 export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
-export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA'
+export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA' | 'SHAREPOINT'
 
 export interface ApiSourceHeader {
   key: string
@@ -1168,51 +1168,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.staleSourceFileIds = []
   }
 
-  function createFromSharePoint(items: Array<{ title: string; category: string }>) {
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
-    for (const item of items) {
-      const id = `sp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
-      const versionId = `${id}-v1.0`
-      knowledgeList.value.unshift({
-        id,
-        title: item.title,
-        category: item.category,
-        status: 'pending',
-        sourceType: 'SHAREPOINT',
-        pipelineProgress: 0,
-        pipelineStage: null,
-        pipelineError: null,
-        sourceStale: false,
-        staleSourceFileIds: [],
-        lastSyncAt: now,
-        apiSourceId: null,
-        apiSourceName: 'SharePoint',
-        lastUpdateTime: now,
-        lastUpdateBy: 'SharePoint 同步',
-        versions: [{
-          id: versionId,
-          knowledgeId: id,
-          versionNumber: 'v1.0',
-          versionType: null,
-          status: 'draft',
-          title: item.title,
-          summary: '',
-          content: '',
-          tags: [],
-          systemTags: [],
-          lastUpdateBy: 'SharePoint 同步',
-          lastUpdateTime: now,
-          updateNote: 'SharePoint 自動匯入',
-          sourceFiles: [],
-          chunks: [],
-          embeddingModel: null,
-          embeddingDimension: null,
-          embeddingCount: 0,
-        }],
-      })
-    }
-  }
-
   return {
     knowledgeList,
     getKnowledgeById,
@@ -1243,7 +1198,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     markPipelineFailed,
     retriggerPipeline,
     ignoreUpdate,
-    createFromSharePoint,
     archiveKnowledge,
     batchArchive,
     batchDelete,

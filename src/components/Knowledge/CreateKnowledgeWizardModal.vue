@@ -168,8 +168,8 @@ import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import compModal from '@/components/compModal/compModal.vue'
-import { useKnowledgeStore } from '@/stores/knowledgeStore'
-import type { SourceType } from '@/stores/knowledgeStore'
+import { useKnowledgeStore, getChunkingConfig, buildChunkContent, processImage } from '@/stores/knowledgeStore'
+import type { SourceType, ChunkPreview } from '@/stores/knowledgeStore'
 import popDialog from '@/services/popDialog'
 import ResourceFilePicker from '@/components/Knowledge/ResourceFilePicker.vue'
 import { useResourceStore } from '@/stores/resourceStore'
@@ -377,9 +377,9 @@ function handleSubmit() {
 }
 
 // 向量化：可結構化萃取（表格/純文字/markdown）
-const VECTORIZABLE_EXTS = new Set(['xlsx','xls','csv','md','txt','html','htm'])
-// 非向量化：以 Q&A 方式解析（pdf/word/ppt/圖片）
-const NON_VECTORIZABLE_EXTS = new Set(['pdf','docx','doc','pptx','ppt','png','jpg','jpeg','gif','webp'])
+const VECTORIZABLE_EXTS = new Set(['xlsx', 'xls', 'csv', 'md', 'txt', 'html', 'htm'])
+// 圖片：走 processImage（OCR 或 Vision Model）
+const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
 
 function getFileExt(fileName: string): string {
   return fileName.split('.').pop()?.toLowerCase() ?? ''
@@ -388,13 +388,21 @@ function isVectorizable(fileName: string): boolean {
   return VECTORIZABLE_EXTS.has(getFileExt(fileName))
 }
 
-function generateStructuredContent(baseName: string, ext: string): { content: string; chunks: Array<{index:number;content:string;tokenCount:number;sourceType:'text'|'image'}> } {
+function generateStructuredContent(baseName: string, ext: string, category: string, tags: string[]): { content: string; chunks: ChunkPreview[] } {
+  const config = getChunkingConfig(category)
+
   if (['xlsx', 'xls', 'csv'].includes(ext)) {
-    const chunks = [
-      { index: 1, content: `${baseName} — 表頭列：欄位定義與說明`, tokenCount: 98, sourceType: 'text' as const },
-      { index: 2, content: `${baseName} — 資料列 1–10：主要資料內容`, tokenCount: 312, sourceType: 'text' as const },
-      { index: 3, content: `${baseName} — 資料列 11–20：補充資料`, tokenCount: 287, sourceType: 'text' as const },
+    const rawTexts = [
+      `${baseName} — 表頭列：欄位定義與說明`,
+      `${baseName} — 資料列 1–10：主要資料內容`,
+      `${baseName} — 資料列 11–20：補充資料`,
     ]
+    const chunks: ChunkPreview[] = rawTexts.map((t, i) => ({
+      index: i + 1,
+      content: buildChunkContent(t, { category, tags, sourceType: 'text' }),
+      tokenCount: config.chunkSize,
+      sourceType: 'text',
+    }))
     const content = [
       `## ${baseName}`,
       ``,
@@ -407,17 +415,23 @@ function generateStructuredContent(baseName: string, ext: string): { content: st
       `| A003 | 商品 C | S / 藍色 | 204 | $199 |`,
       `| A004 | 商品 D | XL / 米色 | 47 | $499 |`,
       ``,
-      `**共解析 ${chunks.reduce((s,c)=>s+c.tokenCount,0)} tokens，${chunks.length} 段。**`,
+      `**共解析 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens，${chunks.length} 段。**`,
     ].join('\n')
     return { content, chunks }
   }
 
   if (ext === 'md') {
-    const chunks = [
-      { index: 1, content: `${baseName} — 標題與簡介`, tokenCount: 134, sourceType: 'text' as const },
-      { index: 2, content: `${baseName} — 主體段落`, tokenCount: 298, sourceType: 'text' as const },
-      { index: 3, content: `${baseName} — 結尾與參考資料`, tokenCount: 167, sourceType: 'text' as const },
+    const rawTexts = [
+      `${baseName} — 標題與簡介`,
+      `${baseName} — 主體段落`,
+      `${baseName} — 結尾與參考資料`,
     ]
+    const chunks: ChunkPreview[] = rawTexts.map((t, i) => ({
+      index: i + 1,
+      content: buildChunkContent(t, { category, tags, sourceType: 'text' }),
+      tokenCount: config.chunkSize,
+      sourceType: 'text',
+    }))
     const content = [
       `## ${baseName}`,
       ``,
@@ -441,11 +455,17 @@ function generateStructuredContent(baseName: string, ext: string): { content: st
   }
 
   // txt / html / other vectorizable
-  const chunks = [
-    { index: 1, content: `${baseName} — 第 1 段：開頭摘要`, tokenCount: 210, sourceType: 'text' as const },
-    { index: 2, content: `${baseName} — 第 2 段：主要內容`, tokenCount: 334, sourceType: 'text' as const },
-    { index: 3, content: `${baseName} — 第 3 段：結語與補充`, tokenCount: 176, sourceType: 'text' as const },
+  const rawTexts = [
+    `${baseName} — 第 1 段：開頭摘要`,
+    `${baseName} — 第 2 段：主要內容`,
+    `${baseName} — 第 3 段：結語與補充`,
   ]
+  const chunks: ChunkPreview[] = rawTexts.map((t, i) => ({
+    index: i + 1,
+    content: buildChunkContent(t, { category, tags, sourceType: 'text' }),
+    tokenCount: config.chunkSize,
+    sourceType: 'text',
+  }))
   const content = [
     `## ${baseName}`,
     ``,
@@ -457,59 +477,70 @@ function generateStructuredContent(baseName: string, ext: string): { content: st
     `| --- | --- | --- | ---: |`,
     ...chunks.map(c => `| ${c.index} | 第 ${c.index} 段 | ${c.content.replace(/\|/g, '｜')} | ${c.tokenCount} |`),
     ``,
-    `**共解析 ${chunks.reduce((s,c)=>s+c.tokenCount,0)} tokens。**`,
+    `**共解析 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens。**`,
   ].join('\n')
   return { content, chunks }
 }
 
-function simulateFileAiGeneration(id: string, fileName: string) {
+async function simulateFileAiGeneration(id: string, fileName: string) {
+  const item = knowledgeStore.knowledgeList.find(k => k.id === id)
+  const category = item?.category ?? ''
+  const tags = item?.versions[0]?.tags ?? []
   const baseName = fileName.replace(/\.[^.]+$/, '')
-  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
-    { stage: 'chunking',  startPct: 0,  delay: 0    },
-    { stage: 'embedding', startPct: 33, delay: 1500 },
-    { stage: 'indexing',  startPct: 67, delay: 3500 },
-  ]
-  stages.forEach(({ stage, startPct, delay }) => {
-    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
-  })
-  setTimeout(() => {
-    let aiContent: string
-    let chunks: Array<{ index: number; content: string; tokenCount: number; sourceType: 'text' | 'image' }>
-    const ext = getFileExt(fileName)
+  const ext = getFileExt(fileName)
 
-    if (isVectorizable(fileName)) {
-      const result = generateStructuredContent(baseName, ext)
-      aiContent = result.content
-      chunks = result.chunks
-    } else {
-      // Q&A for pdf / word / ppt / images
-      chunks = [
-        { index: 1, content: `Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, tokenCount: 142, sourceType: 'text' },
-        { index: 2, content: `Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, tokenCount: 118, sourceType: 'text' },
-        { index: 3, content: `Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, tokenCount: 107, sourceType: 'text' },
-      ]
-      aiContent = [
-        `## ${baseName} — AI 解析`,
-        ``,
-        `> 此格式由 AI 進行語意理解，以 Q&A 方式整理重點；原始檔案可透過「來源附件」查看原檔。`,
-        ``,
-        `**Q1: 這份檔案的主要用途是什麼？**`,
-        ``,
-        `A: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`,
-        ``,
-        `**Q2: 檔案中有哪些可識別的關鍵元素？**`,
-        ``,
-        `A: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`,
-        ``,
-        `**Q3: 此檔案適合用在哪些場景？**`,
-        ``,
-        `A: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`,
-      ].join('\n')
-    }
+  knowledgeStore.updatePipelineProgress(id, 'chunking', 0)
+  await new Promise(r => setTimeout(r, 800))
+  knowledgeStore.updatePipelineProgress(id, 'embedding', 33)
+  await new Promise(r => setTimeout(r, 1500))
+  knowledgeStore.updatePipelineProgress(id, 'indexing', 67)
+  await new Promise(r => setTimeout(r, 1000))
 
-    knowledgeStore.markPipelineDone(id, chunks, aiContent)
-    popDialog.toast('AI 內容生成完成，可前往審閱草稿', 3000)
-  }, 4500)
+  let aiContent: string
+  let chunks: ChunkPreview[]
+
+  if (IMAGE_EXTS.has(ext)) {
+    // 圖片路徑：processImage stub（未來接 OCR/Vision API）
+    const imageResult = await processImage(new File([], fileName), category)
+    chunks = [{
+      index: 1,
+      content: buildChunkContent(imageResult.text, { category, tags, sourceType: 'image' }),
+      tokenCount: getChunkingConfig(category).chunkSize,
+      sourceType: 'image',
+    }]
+    aiContent = imageResult.text
+  } else if (isVectorizable(fileName)) {
+    const result = generateStructuredContent(baseName, ext, category, tags)
+    aiContent = result.content
+    chunks = result.chunks
+  } else {
+    // Q&A for pdf / word / ppt
+    chunks = [
+      { index: 1, content: buildChunkContent(`Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, { category, tags, sourceType: 'text' }), tokenCount: 142, sourceType: 'text' },
+      { index: 2, content: buildChunkContent(`Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, { category, tags, sourceType: 'text' }), tokenCount: 118, sourceType: 'text' },
+      { index: 3, content: buildChunkContent(`Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, { category, tags, sourceType: 'text' }), tokenCount: 107, sourceType: 'text' },
+    ]
+    aiContent = [
+      `## ${baseName} — AI 解析`,
+      ``,
+      `> 此格式由 AI 進行語意理解，以 Q&A 方式整理重點；原始檔案可透過「來源附件」查看原檔。`,
+      ``,
+      `**Q1: 這份檔案的主要用途是什麼？**`,
+      ``,
+      `A: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`,
+      ``,
+      `**Q2: 檔案中有哪些可識別的關鍵元素？**`,
+      ``,
+      `A: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`,
+      ``,
+      `**Q3: 此檔案適合用在哪些場景？**`,
+      ``,
+      `A: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`,
+    ].join('\n')
+  }
+
+  knowledgeStore.markPipelineDone(id, chunks, aiContent)
+  popDialog.toast('AI 內容生成完成，可前往審閱草稿', 3000)
 }
 
 function simulateJustkaGeneration(id: string, bot: { id: string; name: string; cardCount: number }) {
