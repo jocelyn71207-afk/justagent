@@ -1035,6 +1035,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
             linked.status = 'pending'
             linked.lastUpdateTime = now
             linked.lastUpdateBy = 'API 同步'
+            startPipelineSimulation(linked.id, content)
           }
         } else {
           source.lastSyncStatus = 'FAILED'
@@ -1148,6 +1149,23 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return { knowledgeId: newId, versionId: draftId }
   }
 
+  // 在 store 內部執行 pipeline 模擬，供 triggerSync 與 createFromSharePoint 呼叫
+  function startPipelineSimulation(id: string, aiContent?: string) {
+    const stages: Array<{ stage: PipelineStage; pct: number; delay: number }> = [
+      { stage: 'chunking',  pct: 0,  delay: 0    },
+      { stage: 'embedding', pct: 33, delay: 1500 },
+      { stage: 'indexing',  pct: 67, delay: 3500 },
+    ]
+    stages.forEach(({ stage, pct, delay }) => {
+      setTimeout(() => updatePipelineProgress(id, stage, pct), delay)
+    })
+    setTimeout(() => {
+      markPipelineDone(id, [
+        { index: 1, content: '（Pipeline 完成，實際分段由後端提供）', tokenCount: 0, sourceType: 'text' },
+      ], aiContent)
+    }, 4500)
+  }
+
   function updatePipelineProgress(id: string, stage: PipelineStage, progress: number) {
     const item = knowledgeList.value.find(k => k.id === id)
     if (!item) return
@@ -1256,6 +1274,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           embeddingCount: 0,
         }],
       })
+      startPipelineSimulation(id)
     }
   }
 
@@ -1284,6 +1303,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     triggerSync,
     createFromUpload,
     createManualDraft,
+    startPipelineSimulation,
     updatePipelineProgress,
     markPipelineDone,
     markPipelineFailed,

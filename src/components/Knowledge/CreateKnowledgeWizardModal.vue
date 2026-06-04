@@ -580,20 +580,8 @@ function simulateJustkaGeneration(id: string, bot: { id: string; name: string; c
 }
 
 function simulatePipeline(id: string) {
-  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
-    { stage: 'chunking',   startPct: 0,   delay: 0    },
-    { stage: 'embedding',  startPct: 33,  delay: 1500 },
-    { stage: 'indexing',   startPct: 67,  delay: 3500 },
-  ]
-
-  stages.forEach(({ stage, startPct, delay }) => {
-    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
-  })
-
+  knowledgeStore.startPipelineSimulation(id)
   setTimeout(() => {
-    knowledgeStore.markPipelineDone(id, [
-      { index: 1, content: '（Pipeline 完成，實際分段由後端提供）', tokenCount: 0, sourceType: 'text' },
-    ])
     popDialog.toast('Pipeline 處理完成！請前往「開始審核」確認 AI 生成的內容後批准發佈', 4000)
   }, 4500)
 }
