@@ -6,7 +6,7 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">知識庫管理</div>
+          <div class="banner-title">知識內容管理</div>
         </div>
       </div>
 
