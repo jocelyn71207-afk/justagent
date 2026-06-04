@@ -31,15 +31,15 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon stat-icon--green"><i class="material-symbols-outlined">verified</i></div>
-            <div><div class="stat-number">{{ stats.active }}</div><div class="stat-label">Active</div></div>
+            <div><div class="stat-number">{{ stats.active }}</div><div class="stat-label">已發布</div></div>
           </div>
           <div class="stat-card" style="background: #fffbeb; border-color: #fde68a;">
             <div class="stat-icon" style="background:#fef3c7;color:#b45309;"><i class="material-symbols-outlined">update</i></div>
-            <div><div class="stat-number" style="color:#b45309;">{{ stats.needsUpdate }}</div><div class="stat-label">Needs Update</div></div>
+            <div><div class="stat-number" style="color:#b45309;">{{ stats.needsUpdate }}</div><div class="stat-label">需更新</div></div>
           </div>
           <div class="stat-card">
             <div class="stat-icon stat-icon--blue"><i class="material-symbols-outlined">rate_review</i></div>
-            <div><div class="stat-number">{{ stats.reviewing }}</div><div class="stat-label">Reviewing</div></div>
+            <div><div class="stat-number">{{ stats.reviewing }}</div><div class="stat-label">審核中</div></div>
           </div>
           <div class="stat-card stat-card--kpi">
             <span class="kpi-badge">KPI</span>
@@ -277,13 +277,13 @@ const categoryOptions = computed(() => {
 
 const statusOptions = [
   { label: '全部狀態', value: '' },
-  { label: 'Active', value: 'active' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Reviewing', value: 'reviewing' },
-  { label: 'Needs Update', value: 'needs_update' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Failed', value: 'failed' },
-  { label: 'Archived', value: 'archived' },
+  { label: '已發布', value: 'active' },
+  { label: '處理中', value: 'processing' },
+  { label: '審核中', value: 'reviewing' },
+  { label: '需更新', value: 'needs_update' },
+  { label: '待處理', value: 'pending' },
+  { label: '失敗', value: 'failed' },
+  { label: '已封存', value: 'archived' },
 ]
 
 const filteredList = computed(() => {
