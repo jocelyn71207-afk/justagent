@@ -1181,14 +1181,67 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     item.pipelineProgress = 100
     item.pipelineStage = null
     item.pipelineError = null
-    const draft = item.versions[0]
+
+    // 找最新的 draft（可能是 API sync 推入末端的新版本）
+    const draft =
+      item.versions.find(v => v.status === 'draft') ??
+      item.versions[item.versions.length - 1]
+
     if (draft) {
       draft.status = 'reviewing'
       draft.chunks = chunks
-      draft.embeddingModel = 'text-embedding-3-large'
-      draft.embeddingDimension = 3072
+      draft.embeddingModel = 'BAAI/bge-m3'
+      draft.embeddingDimension = 1024
       draft.embeddingCount = chunks.length
       if (aiContent) draft.content = aiContent
+
+      const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+      const avgTokens = chunks.length
+        ? Math.round(chunks.reduce((s, c) => s + c.tokenCount, 0) / chunks.length)
+        : 320
+      const sourceFormatMap: Record<string, string> = {
+        FILE: 'PDF', API: 'API', SHAREPOINT: 'PDF', JUSTKA: 'JSON', MANUAL: 'TEXT',
+      }
+      draft.conversionLog = [
+        {
+          stage: 'chunking',
+          status: 'success',
+          startedAt: now,
+          durationMs: 3200,
+          detail: {
+            strategy: 'Section-aware',
+            chunkCount: chunks.length,
+            avgTokens,
+            imageCount: 0,
+            tableCount: 0,
+            sourceFormat: sourceFormatMap[item.sourceType] ?? 'PDF',
+          },
+        },
+        {
+          stage: 'embedding',
+          status: 'success',
+          startedAt: now,
+          durationMs: 8700,
+          detail: {
+            model: 'BAAI/bge-m3',
+            dimension: 1024,
+            denseCount: chunks.length,
+            sparseCount: chunks.length,
+            batchSize: 32,
+          },
+        },
+        {
+          stage: 'indexing',
+          status: 'success',
+          startedAt: now,
+          durationMs: 400,
+          detail: {
+            collection: 'knowledge_chunks',
+            pointCount: chunks.length,
+            indexType: 'HNSW',
+          },
+        },
+      ]
     }
   }
 
