@@ -58,5 +58,50 @@ export const useIntegrationStore = defineStore('integration', () => {
     return integrationSources.value.find(s => s.id === id) ?? null
   }
 
-  return { integrationSources, getIntegrationById }
+  function createIntegration(
+    type: IntegrationType,
+    config: NotionConfig | GoogleDriveConfig | SlackConfig,
+    name: string,
+    schedule: 'MANUAL' | 'DAILY' | 'WEEKLY',
+  ): string {
+    const id = `integration-${type.toLowerCase()}-${Date.now()}`
+    integrationSources.value.push({
+      id,
+      type,
+      name,
+      enabled: true,
+      schedule,
+      lastSyncAt: null,
+      lastSyncStatus: null,
+      lastSyncCount: 0,
+      lastSyncError: null,
+      config,
+    })
+    return id
+  }
+
+  function updateIntegration(id: string, patch: Partial<Omit<IntegrationSource, 'id' | 'type'>>) {
+    const src = integrationSources.value.find(s => s.id === id)
+    if (!src) return
+    Object.assign(src, patch)
+  }
+
+  function deleteIntegration(id: string) {
+    const idx = integrationSources.value.findIndex(s => s.id === id)
+    if (idx !== -1) integrationSources.value.splice(idx, 1)
+  }
+
+  function toggleIntegrationEnabled(id: string) {
+    const src = integrationSources.value.find(s => s.id === id)
+    if (src) src.enabled = !src.enabled
+  }
+
+  return {
+    integrationSources,
+    getIntegrationById,
+    createIntegration,
+    updateIntegration,
+    deleteIntegration,
+    toggleIntegrationEnabled,
+  }
 })
