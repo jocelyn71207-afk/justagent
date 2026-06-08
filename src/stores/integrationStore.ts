@@ -30,6 +30,41 @@ export interface IntegrationSource {
   config: NotionConfig | GoogleDriveConfig | SlackConfig
 }
 
+export interface NotionRichText {
+  plain_text: string
+}
+
+export interface NotionBlock {
+  type: string
+  heading_1?: { rich_text: NotionRichText[] }
+  heading_2?: { rich_text: NotionRichText[] }
+  heading_3?: { rich_text: NotionRichText[] }
+  paragraph?: { rich_text: NotionRichText[] }
+  bulleted_list_item?: { rich_text: NotionRichText[] }
+  numbered_list_item?: { rich_text: NotionRichText[] }
+  code?: { rich_text: NotionRichText[]; language: string }
+}
+
+function blocksToMarkdown(blocks: NotionBlock[]): string {
+  return blocks
+    .map(block => {
+      const text = (arr?: NotionRichText[]) => (arr ?? []).map(t => t.plain_text).join('')
+      switch (block.type) {
+        case 'heading_1': return `# ${text(block.heading_1?.rich_text)}`
+        case 'heading_2': return `## ${text(block.heading_2?.rich_text)}`
+        case 'heading_3': return `### ${text(block.heading_3?.rich_text)}`
+        case 'paragraph': return text(block.paragraph?.rich_text)
+        case 'bulleted_list_item': return `- ${text(block.bulleted_list_item?.rich_text)}`
+        case 'numbered_list_item': return `1. ${text(block.numbered_list_item?.rich_text)}`
+        case 'code':
+          return `\`\`\`${block.code?.language ?? ''}\n${text(block.code?.rich_text)}\n\`\`\``
+        default: return ''
+      }
+    })
+    .filter(Boolean)
+    .join('\n\n')
+}
+
 export const useIntegrationStore = defineStore('integration', () => {
   const integrationSources = ref<IntegrationSource[]>([
     {
@@ -103,5 +138,6 @@ export const useIntegrationStore = defineStore('integration', () => {
     updateIntegration,
     deleteIntegration,
     toggleIntegrationEnabled,
+    blocksToMarkdown,
   }
 })

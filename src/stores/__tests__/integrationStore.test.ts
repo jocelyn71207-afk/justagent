@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useIntegrationStore } from '@/stores/integrationStore'
+import type { NotionBlock } from '@/stores/integrationStore'
 
 describe('integrationStore — CRUD', () => {
   beforeEach(() => {
@@ -60,5 +61,36 @@ describe('integrationStore — CRUD', () => {
     expect(store.getIntegrationById(id)?.enabled).toBe(!original)
     store.toggleIntegrationEnabled(id)
     expect(store.getIntegrationById(id)?.enabled).toBe(original)
+  })
+})
+
+describe('blocksToMarkdown', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('轉換常見 block 類型為 Markdown', () => {
+    const store = useIntegrationStore()
+    const blocks: NotionBlock[] = [
+      { type: 'heading_2', heading_2: { rich_text: [{ plain_text: '標題' }] } },
+      { type: 'paragraph', paragraph: { rich_text: [{ plain_text: '段落文字' }] } },
+      { type: 'bulleted_list_item', bulleted_list_item: { rich_text: [{ plain_text: '清單項目' }] } },
+      { type: 'numbered_list_item', numbered_list_item: { rich_text: [{ plain_text: '編號項目' }] } },
+    ]
+    const result = store.blocksToMarkdown(blocks)
+    expect(result).toContain('## 標題')
+    expect(result).toContain('段落文字')
+    expect(result).toContain('- 清單項目')
+    expect(result).toContain('1. 編號項目')
+  })
+
+  it('忽略不支援的 block 類型', () => {
+    const store = useIntegrationStore()
+    const blocks: NotionBlock[] = [
+      { type: 'unsupported_type' as never },
+      { type: 'paragraph', paragraph: { rich_text: [{ plain_text: '保留這段' }] } },
+    ]
+    const result = store.blocksToMarkdown(blocks)
+    expect(result).toBe('保留這段')
   })
 })
