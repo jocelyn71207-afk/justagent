@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useIntegrationStore } from '@/stores/integrationStore'
 import type { NotionBlock } from '@/stores/integrationStore'
+import { useKnowledgeStore } from '@/stores/knowledgeStore'
 
 describe('integrationStore — CRUD', () => {
   beforeEach(() => {
@@ -132,5 +133,37 @@ describe('triggerIntegrationSync — Notion', () => {
   it('id 不存在時不拋出錯誤', async () => {
     const store = useIntegrationStore()
     await expect(store.triggerIntegrationSync('non-existent')).resolves.toBeUndefined()
+  })
+})
+
+describe('syncNotion — 建立知識條目', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+    vi.spyOn(Math, 'random').mockReturnValue(0.9)
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  it('成功同步後在 knowledgeStore 建立新知識條目', async () => {
+    const integrationStore = useIntegrationStore()
+    const knowledgeStore = useKnowledgeStore()
+
+    const before = knowledgeStore.knowledgeList.length
+    const sourceId = integrationStore.integrationSources[0].id
+
+    const syncPromise = integrationStore.triggerIntegrationSync(sourceId)
+    vi.advanceTimersByTime(2000)
+    await syncPromise
+
+    expect(knowledgeStore.knowledgeList.length).toBeGreaterThan(before)
+    const newItems = knowledgeStore.knowledgeList.filter(
+      k => k.integrationSourceId === sourceId,
+    )
+    expect(newItems.length).toBeGreaterThan(0)
+    expect(newItems[0].sourceType).toBe('NOTION')
+    expect(newItems[0].versions[0].status).toBe('draft')
   })
 })

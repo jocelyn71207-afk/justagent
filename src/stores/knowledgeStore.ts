@@ -13,7 +13,7 @@ export type ItemStatus =
 export type VersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
 export type VersionType = 'MAJOR' | 'MINOR'
 export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
-export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA' | 'SHAREPOINT'
+export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA' | 'SHAREPOINT' | 'NOTION'
 
 export interface ApiSourceHeader {
   key: string
@@ -220,6 +220,8 @@ export interface KnowledgeItem {
   versions: KnowledgeVersion[]
   lastUpdateTime: string
   lastUpdateBy: string
+  integrationSourceId?: string
+  notionPageId?: string
 }
 
 export const useKnowledgeStore = defineStore('knowledge', () => {
@@ -1451,6 +1453,101 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     }
   }
 
+  function createKnowledgeFromIntegration(
+    integrationSourceId: string,
+    notionPageId: string,
+    title: string,
+    content: string,
+    category: string,
+    tags: string[],
+  ): string {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    const newId = `k-notion-${Date.now()}`
+    const draftId = `v1.0-draft-${Date.now()}`
+
+    const newKnowledge: KnowledgeItem = {
+      id: newId,
+      title,
+      category,
+      status: 'pending',
+      sourceType: 'NOTION',
+      pipelineProgress: 0,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
+      lastUpdateTime: now,
+      lastUpdateBy: 'Notion 同步',
+      integrationSourceId,
+      notionPageId,
+      versions: [{
+        id: draftId,
+        knowledgeId: newId,
+        versionNumber: 'v1.0',
+        versionType: null,
+        status: 'draft',
+        title,
+        summary: `由 Notion 同步建立`,
+        content,
+        tags,
+        systemTags: [],
+        lastUpdateBy: 'Notion 同步',
+        lastUpdateTime: now,
+        updateNote: 'Notion 首次同步',
+        sourceFiles: [],
+        chunks: [],
+        embeddingModel: null,
+        embeddingDimension: null,
+        embeddingCount: 0,
+      }],
+    }
+
+    knowledgeList.value.push(newKnowledge)
+    startPipelineSimulation(newId, content)
+    return newId
+  }
+
+  function createDraftFromIntegrationSync(
+    knowledgeId: string,
+    title: string,
+    content: string,
+    category: string,
+    tags: string[],
+  ): string {
+    const k = knowledgeList.value.find(item => item.id === knowledgeId)
+    if (!k) return ''
+
+    const base = k.versions.find(v => v.status === 'active') ?? k.versions[k.versions.length - 1]
+    const [major, minor] = base.versionNumber.replace('v', '').split('.').map(Number)
+    const newNum = `v${major}.${minor + 1}`
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+
+    const newVersion: KnowledgeVersion = {
+      ...JSON.parse(JSON.stringify(base)),
+      id: `${newNum}-notion-sync-${Date.now()}`,
+      versionNumber: newNum,
+      versionType: 'MINOR',
+      status: 'draft',
+      title,
+      content,
+      tags,
+      lastUpdateBy: 'Notion 同步',
+      lastUpdateTime: now,
+      updateNote: 'Notion 自動同步更新',
+      chunks: [],
+    }
+
+    k.versions.push(newVersion)
+    k.status = 'pending'
+    k.lastUpdateTime = now
+    k.lastUpdateBy = 'Notion 同步'
+    startPipelineSimulation(k.id, content)
+    return newVersion.id
+  }
+
   return {
     knowledgeList,
     getKnowledgeById,
@@ -1486,5 +1583,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     archiveKnowledge,
     batchArchive,
     batchDelete,
+    createKnowledgeFromIntegration,
+    createDraftFromIntegrationSync,
   };
 });

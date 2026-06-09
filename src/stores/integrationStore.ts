@@ -133,7 +133,7 @@ export const useIntegrationStore = defineStore('integration', () => {
 
   function syncNotion(source: IntegrationSource): Promise<void> {
     return new Promise(resolve => {
-      setTimeout(() => {
+      setTimeout(async () => {
         const success = Math.random() > 0.2
         const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
 
@@ -146,7 +146,34 @@ export const useIntegrationStore = defineStore('integration', () => {
           return
         }
 
+        const { useKnowledgeStore } = await import('@/stores/knowledgeStore')
+        const knowledgeStore = useKnowledgeStore()
+        const config = source.config as NotionConfig
         const count = Math.floor(Math.random() * 5) + 3
+
+        const mockPages = Array.from({ length: count }, (_, i) => ({
+          notionPageId: `notion-page-${source.id}-${i}`,
+          title: `${source.name} 條目 ${i + 1}`,
+          content: `## 說明\n\n這是來自 Notion Database「${source.name}」的第 ${i + 1} 筆知識內容。\n\n## 詳細資訊\n\n由 Notion Integration 自動同步生成的示範段落文字。`,
+          category: config.defaultCategory ?? '商品文件',
+          tags: ['Notion', 'AI 同步'],
+        }))
+
+        for (const page of mockPages) {
+          const existing = knowledgeStore.knowledgeList.find(
+            k => k.integrationSourceId === source.id && k.notionPageId === page.notionPageId,
+          )
+          if (existing) {
+            knowledgeStore.createDraftFromIntegrationSync(
+              existing.id, page.title, page.content, page.category, page.tags,
+            )
+          } else {
+            knowledgeStore.createKnowledgeFromIntegration(
+              source.id, page.notionPageId, page.title, page.content, page.category, page.tags,
+            )
+          }
+        }
+
         source.lastSyncStatus = 'SUCCESS'
         source.lastSyncAt = now
         source.lastSyncCount = count
