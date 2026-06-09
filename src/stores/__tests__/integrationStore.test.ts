@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useIntegrationStore } from '@/stores/integrationStore'
 import type { NotionBlock } from '@/stores/integrationStore'
@@ -92,5 +92,45 @@ describe('blocksToMarkdown', () => {
     ]
     const result = store.blocksToMarkdown(blocks)
     expect(result).toBe('保留這段')
+  })
+})
+
+describe('triggerIntegrationSync — Notion', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('同步成功後更新 lastSyncStatus 為 SUCCESS', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.9) // > 0.2 → success
+    const store = useIntegrationStore()
+    const id = store.integrationSources[0].id
+    const syncPromise = store.triggerIntegrationSync(id)
+    vi.advanceTimersByTime(2000)
+    await syncPromise
+    const src = store.getIntegrationById(id)
+    expect(src?.lastSyncStatus).toBe('SUCCESS')
+    expect(src?.lastSyncCount).toBeGreaterThan(0)
+    expect(src?.lastSyncError).toBeNull()
+  })
+
+  it('同步失敗後更新 lastSyncStatus 為 FAILED', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.1) // <= 0.2 → fail
+    const store = useIntegrationStore()
+    const id = store.integrationSources[0].id
+    const syncPromise = store.triggerIntegrationSync(id)
+    vi.advanceTimersByTime(2000)
+    await syncPromise
+    const src = store.getIntegrationById(id)
+    expect(src?.lastSyncStatus).toBe('FAILED')
+    expect(src?.lastSyncError).toBeTruthy()
+  })
+
+  it('id 不存在時不拋出錯誤', async () => {
+    const store = useIntegrationStore()
+    await expect(store.triggerIntegrationSync('non-existent')).resolves.toBeUndefined()
   })
 })

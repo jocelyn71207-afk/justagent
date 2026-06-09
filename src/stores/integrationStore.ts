@@ -131,6 +131,40 @@ export const useIntegrationStore = defineStore('integration', () => {
     if (src) src.enabled = !src.enabled
   }
 
+  function syncNotion(source: IntegrationSource): Promise<void> {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const success = Math.random() > 0.2
+        const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+
+        if (!success) {
+          source.lastSyncStatus = 'FAILED'
+          source.lastSyncAt = now
+          source.lastSyncCount = 0
+          source.lastSyncError = '連線失敗：無法存取 Notion API'
+          resolve()
+          return
+        }
+
+        const count = Math.floor(Math.random() * 5) + 3
+        source.lastSyncStatus = 'SUCCESS'
+        source.lastSyncAt = now
+        source.lastSyncCount = count
+        source.lastSyncError = null
+        resolve()
+      }, 2000)
+    })
+  }
+
+  function triggerIntegrationSync(id: string): Promise<void> {
+    const source = integrationSources.value.find(s => s.id === id)
+    if (!source) return Promise.resolve()
+    switch (source.type) {
+      case 'NOTION': return syncNotion(source)
+      default: return Promise.resolve()
+    }
+  }
+
   return {
     integrationSources,
     getIntegrationById,
@@ -139,5 +173,6 @@ export const useIntegrationStore = defineStore('integration', () => {
     deleteIntegration,
     toggleIntegrationEnabled,
     blocksToMarkdown,
+    triggerIntegrationSync,
   }
 })
