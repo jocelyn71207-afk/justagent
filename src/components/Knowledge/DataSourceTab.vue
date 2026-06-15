@@ -52,6 +52,77 @@
       </div>
     </div>
 
+    <!-- 整合平台 section -->
+    <div class="datasource-integration">
+
+      <!-- 已連接的整合 -->
+      <div v-if="integrationStore.integrationSources.length > 0">
+        <div class="datasource-integration__section-label">整合平台</div>
+        <div
+          v-for="src in integrationStore.integrationSources"
+          :key="src.id"
+          class="datasource-integration__card"
+        >
+          <div class="datasource-integration__card-icon">{{ src.type === 'NOTION' ? 'N' : '?' }}</div>
+          <div class="datasource-integration__card-info">
+            <div class="datasource-integration__card-name">{{ src.name }}</div>
+            <div class="datasource-integration__card-meta">
+              {{ src.schedule === 'MANUAL' ? '手動同步' : src.schedule === 'DAILY' ? '每日同步' : '每週同步' }}
+              &nbsp;·&nbsp;
+              <span :class="src.lastSyncStatus === 'SUCCESS' ? 'text-success' : 'text-danger'">
+                {{ src.lastSyncStatus === 'SUCCESS' ? '上次同步成功' : src.lastSyncStatus === 'FAILED' ? '上次同步失敗' : '尚未同步' }}
+              </span>
+              <span v-if="src.lastSyncAt">&nbsp;·&nbsp;{{ src.lastSyncAt }}</span>
+              <span v-if="src.lastSyncCount > 0">&nbsp;·&nbsp;{{ src.lastSyncCount }} 筆</span>
+            </div>
+          </div>
+          <div class="datasource-integration__card-actions">
+            <label class="datasource-integration__toggle">
+              <input
+                type="checkbox"
+                :checked="src.enabled"
+                @change="integrationStore.toggleIntegrationEnabled(src.id)"
+              />
+              <span class="datasource-integration__toggle-track"></span>
+            </label>
+            <button
+              class="datasource-integration__btn"
+              :disabled="integrationSyncingId === src.id"
+              @click="handleIntegrationSync(src.id)"
+            >
+              {{ integrationSyncingId === src.id ? '同步中...' : '立即同步' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 可新增整合 -->
+      <div class="datasource-integration__section-label">可新增整合平台</div>
+      <div class="datasource-integration__available">
+        <div
+          class="datasource-integration__available-item"
+          @click="showIntegrationWizard = true"
+        >
+          <div class="datasource-integration__available-icon">N</div>
+          <div class="datasource-integration__available-name">Notion</div>
+          <div class="datasource-integration__available-action">+ 新增連接</div>
+        </div>
+        <div class="datasource-integration__available-item datasource-integration__available-item--disabled">
+          <div class="datasource-integration__available-icon">📁</div>
+          <div class="datasource-integration__available-name">Google 雲端硬碟</div>
+          <div class="datasource-integration__available-action">即將推出</div>
+        </div>
+        <div class="datasource-integration__available-item datasource-integration__available-item--disabled">
+          <div class="datasource-integration__available-icon">💬</div>
+          <div class="datasource-integration__available-name">Slack</div>
+          <div class="datasource-integration__available-action">即將推出</div>
+        </div>
+      </div>
+
+      <!-- Wizard -->
+      <IntegrationConnectWizard v-model="showIntegrationWizard" />
+    </div>
+
     <!-- 已連接 API 來源 -->
     <div v-if="apiSources.length > 0" class="connected-section">
       <div class="section-label">已連接（{{ apiSources.length }}）</div>
@@ -193,10 +264,22 @@ import type { WizardPayload } from '@/stores/knowledgeStore';
 import type { SpCompletePayload } from '@/components/Knowledge/SharePointWizardModal.vue';
 import popDialog from '@/services/popDialog';
 import { useRouter } from 'vue-router';
+import { useIntegrationStore } from '@/stores/integrationStore'
+import IntegrationConnectWizard from '@/components/Knowledge/IntegrationConnectWizard.vue'
 
 const knowledgeStore = useKnowledgeStore();
 const { apiSources, knowledgeList } = storeToRefs(knowledgeStore);
 const router = useRouter();
+
+const integrationStore = useIntegrationStore()
+const showIntegrationWizard = ref(false)
+const integrationSyncingId = ref<string | null>(null)
+
+async function handleIntegrationSync(id: string) {
+  integrationSyncingId.value = id
+  await integrationStore.triggerIntegrationSync(id)
+  integrationSyncingId.value = null
+}
 
 const showWizard = ref(false);
 const showEdit = ref(false);
@@ -224,7 +307,6 @@ const scheduleLabel: Record<string, string> = {
 
 const placeholderApps = [
   { name: 'Google 雲端硬碟', desc: '同步雲端文件至知識庫', icon: 'folder', iconBg: '#e8f0fe', iconColor: '#4285F4' },
-  { name: 'Notion', desc: '從 Notion 頁面匯入知識', icon: 'article', iconBg: '#f5f5f5', iconColor: '#333' },
   { name: 'Slack', desc: '頻道訊息轉化為知識條目', icon: 'forum', iconBg: '#fce8ff', iconColor: '#4A154B' },
 ];
 
