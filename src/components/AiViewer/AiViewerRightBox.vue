@@ -738,11 +738,13 @@
     <!-- 專案檔案清單 list -->
     <fileListArea/>
 
+    <KnowledgeSourceDrawer />
+
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
@@ -750,6 +752,7 @@ import { useJourneyStore } from '@/stores/journeyStore'
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
+import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
 import commentListArea from '@/components/AiViewer/commentListArea.vue';
 import fileListArea from '@/components/AiViewer/fileListArea.vue';
 import blockListArea from '@/components/AiViewer/blockListArea.vue';
@@ -757,6 +760,12 @@ import popDialog from '@/services/popDialog';
 import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions } from '@/utils/file';
 import htmlIcon from '@/assets/fileTypeIcon/html.png';
 import { Chart } from 'chart.js/auto';
+
+interface KnowledgeSource {
+  knowledgeId: string
+  title: string
+  chunkIndexes: number[]
+}
 
 const props = defineProps<{
   rightWidth: number;
@@ -1123,6 +1132,19 @@ watch(() => userInputModal.value.msg, () => {
   adjustTextareaHeight();
 });
 
+// ── Drawer state (知識來源側邊抽屜) ────────────────────────────────
+const drawerOpen = ref(false)
+const drawerSources = ref<KnowledgeSource[]>([])
+
+function openDrawer(sources: KnowledgeSource[]) {
+  drawerSources.value = sources
+  drawerOpen.value = true
+}
+
+provide('drawerOpen', drawerOpen)
+provide('drawerSources', drawerSources)
+provide('openDrawer', openDrawer)
+
 // 發送使用者輸入訊息
 function send() {
   if (currentConversationId.value === 'conv1') {
@@ -1215,6 +1237,16 @@ const tempDebugMsg = computed(() => {
     </p>
   `;
 });
+// Mock thinking data — injected into AI messages so ThinkingChainCard can display them
+const MOCK_THINKING_STEPS = [
+  { type: 'think' as const, label: '分析問題意圖' },
+  { type: 'search' as const, label: '查詢知識庫', detail: '找到 2 篇相關段落' },
+  { type: 'synthesize' as const, label: '整合資訊，組織回答' },
+]
+const MOCK_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k5', title: '商品目錄 Q2', chunkIndexes: [0, 1] },
+]
+
 const conv1Msgs = ref<any[]>([]);
 // conv1IsEmpty 由實際訊息狀態推導，避免 HMR 殘留舊狀態
 watch(
@@ -1278,7 +1310,12 @@ function c1PushThinkingThenReply(
   doneKey: string,
 ) {
   const thinkingId = 'thinking-' + Date.now();
-  conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+  conv1Msgs.value.push({
+    id: thinkingId,
+    isThinking: true,
+    thinkingSteps: MOCK_THINKING_STEPS,
+    sources: MOCK_SOURCES,
+  });
   nextTick(() => AiAgentChatListScrollTo('ASC'));
   setTimeout(() => {
     const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1289,6 +1326,8 @@ function c1PushThinkingThenReply(
       cardType: 'translationComplete',
       msg: replyMsg,
       files,
+      thinkingSteps: MOCK_THINKING_STEPS,
+      sources: MOCK_SOURCES,
     });
     try { addReportBlock(reportUrl, reportName); } catch (e) { /* ignore */ }
     nextTick(() => AiAgentChatListScrollTo('ASC'));
@@ -1300,7 +1339,7 @@ function processConv1Msg(msg: string) {
   // 初始翻譯請求：對話尚未開始（id_3 尚未出現）
   if (!conv1Msgs.value.some((m: any) => m.cardType === 'translationConfirm')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
@@ -1326,7 +1365,7 @@ function processConv1Msg(msg: string) {
   }
   if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1385,6 +1424,8 @@ function processConv1Msg(msg: string) {
           { name: '年成長率趨勢.json', type: 'JSON', size: 248 },
           { name: '各鞋款銷售量.json', type: 'JSON', size: 420 },
         ],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
       pushConv1NextStepPrompt('圖表');
@@ -1409,7 +1450,7 @@ function processConv1Msg(msg: string) {
     );
   } else if (msg.includes('行銷自動化旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
@@ -1420,6 +1461,8 @@ function processConv1Msg(msg: string) {
         cardType: 'translationComplete',
         msg: '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
         files: [{ name: 'hurricane_trailsetter_journey_dashboard.html', type: 'HTML', size: 11986 }],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       })
       if (!journeyDashboardAdded.value) {
         addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
@@ -1430,7 +1473,7 @@ function processConv1Msg(msg: string) {
     }, 2000)
   } else if (msg.includes('旅程過於單一') || msg.includes('更豐富的旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
@@ -1441,13 +1484,15 @@ function processConv1Msg(msg: string) {
         cardType: 'translationComplete',
         msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
         files: [{ name: 'hurricane_trailsetter_journey_dashboard-1.html', type: 'HTML', size: 13065 }],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       })
       addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard-1.html', '旅程總覽-1')
       nextTick(() => AiAgentChatListScrollTo('ASC'))
     }, 2500)
   } else if (msg.includes('壽星') || msg.includes('生日旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
@@ -1458,13 +1503,15 @@ function processConv1Msg(msg: string) {
         cardType: 'translationComplete',
         msg: '已從 CDP 篩選出台北地區 <strong>1,284 位 5 月壽星</strong>，完成專屬行銷自動化旅程設計。旅程從生日前 7 天預熱啟動，整合 Email、LINE、SMS 三大渠道，並在 D+1 依兌換行為進行分流，預估轉換提升 38%，請在畫布中查閱。',
         files: [{ name: 'hurricane_trailsetter_birthday_journey.html', type: 'HTML', size: 13530 }],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       })
       addReportBlock('/justagent/hurricane_trailsetter_birthday_journey.html', '5月壽星專屬旅程')
       nextTick(() => AiAgentChatListScrollTo('ASC'))
     }, 2800)
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1478,7 +1525,7 @@ function processConv1Msg(msg: string) {
     }, 1500);
   } else if (msg.includes('歡迎 Email 模板')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1492,7 +1539,7 @@ function processConv1Msg(msg: string) {
     }, 1800);
   } else if (msg.includes('LINE 腳本')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1506,7 +1553,7 @@ function processConv1Msg(msg: string) {
     }, 1500);
   } else if (msg.includes('再行銷受眾')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1520,7 +1567,7 @@ function processConv1Msg(msg: string) {
     }, 1600);
   } else if (msg.includes('穿搭指南')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1534,7 +1581,7 @@ function processConv1Msg(msg: string) {
     }, 1800);
   } else if (msg.includes('棄單 SMS')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1548,7 +1595,7 @@ function processConv1Msg(msg: string) {
     }, 1500);
   } else if (msg.includes('忠誠計畫')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1562,7 +1609,7 @@ function processConv1Msg(msg: string) {
     }, 1800);
   } else if (msg.includes('日文')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
@@ -1600,7 +1647,7 @@ function processConv1Msg(msg: string) {
     }, 3200)
   } else if (msg.includes('Hurricane') || msg.includes('鞋款') || msg.includes('銷售數據')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
