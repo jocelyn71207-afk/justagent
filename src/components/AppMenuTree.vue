@@ -68,6 +68,32 @@
             企業/團隊設定
           </RouterLink>
         </div>
+        <!-- 技能管理 -->
+        <div class="one-btn-item sub-group-header"
+          @click="isSkillOpen = !isSkillOpen"
+          :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }">
+          <i class="material-symbols-outlined">psychology</i>
+          技能管理
+          <i class="material-symbols-outlined sub-arrow">{{ isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+        </div>
+        <div class="sub-menu-box" v-if="isSkillOpen">
+          <div class="one-btn-item">
+            <RouterLink to="/view/Skills" custom v-slot="{ href, navigate }">
+              <a :href="href" @click="navigate" :class="{ active: route.path === '/view/Skills' }">
+                <i class="material-symbols-outlined">auto_awesome</i>
+                我的技能
+              </a>
+            </RouterLink>
+          </div>
+          <div class="one-btn-item">
+            <RouterLink to="/view/SkillTest" custom v-slot="{ href, navigate }">
+              <a :href="href" @click="navigate" :class="{ active: route.path === '/view/SkillTest' }">
+                <i class="material-symbols-outlined">science</i>
+                技能測試沙盒
+              </a>
+            </RouterLink>
+          </div>
+        </div>
       </div>
 
       <!-- 單一團隊 -->
@@ -161,6 +187,7 @@ const handleLogout = () => {
 };
 
 const isMobileMenuOpen = ref(false);
+const isSkillOpen = ref(true);
 const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };
 const closeMobileMenu = () => { isMobileMenuOpen.value = false; };
 
