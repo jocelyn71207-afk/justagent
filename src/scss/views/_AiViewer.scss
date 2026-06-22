@@ -1955,13 +1955,17 @@
   &.forUser {
     justify-content: flex-end;
     .ai-avatar { display: none; }
+    .message-wrap {
+      flex: 0 1 auto;
+      max-width: 80%;
+    }
     .content-box {
       background-color: var(--surface);
       border: 1px solid var(--divider);
       border-radius: 12px;
       border-top-right-radius: 2px;
       width: fit-content;
-      max-width: 80%;
+      max-width: 100%;
       flex: unset;
       font-size: 14px;
     }
