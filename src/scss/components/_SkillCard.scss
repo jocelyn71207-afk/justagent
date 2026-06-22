@@ -1,0 +1,167 @@
+@use "sass:color";
+
+.SkillCard {
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s, opacity 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &.is-extension {
+    margin-left: 28px;
+    border-left: 2px solid $color_main_1;
+    border-radius: 0 12px 12px 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -2px;
+      top: 50%;
+      width: 16px;
+      height: 2px;
+      background: $color_main_1;
+    }
+  }
+
+  &.is-standalone {
+    margin-left: 0;
+    border-left: 3px solid #f59e0b;
+    border-radius: 12px;
+
+    &::before { display: none; }
+  }
+
+  &.is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+
+    .skill-card-actions {
+      pointer-events: auto;
+    }
+  }
+
+  .skill-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 20px; }
+
+    &.icon--sys {
+      background: $color_main_4;
+      color: $color_main_2;
+    }
+
+    &.icon--ext {
+      background: #fef3c7;
+      color: #b45309;
+    }
+  }
+
+  .skill-card-body {
+    flex: 1;
+    min-width: 0;
+
+    .skill-card-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 3px;
+    }
+
+    .skill-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 480px;
+    }
+
+    .skill-card-lineage {
+      font-size: 11px;
+      color: $color_main_1;
+      margin-top: 3px;
+    }
+  }
+
+  .skill-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      &.dot--on  { background: $color_main_1; }
+      &.dot--off { background: var(--text-faint); }
+    }
+
+    .status-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+  }
+
+  .skill-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+}
+
+// Tag chips
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+
+  &.tag--sys     { background: $color_main_4; color: $color_main_2; }
+  &.tag--ext     { background: #fef3c7; color: #b45309; }
+  &.tag--version { background: var(--page-bg); color: var(--text-muted); border: 1px solid var(--divider-a50); }
+  &.tag--update  { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+}
+
+// Skill action button overrides
+.skill-action-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+
+  &.btn--warning {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    color: #fff;
+    &:hover { background: #d97706; border-color: #d97706; color: #fff; }
+  }
+
+  &.btn--danger-ghost {
+    color: #dc2626;
+    border-color: #fecaca;
+    &:hover { background: #fef2f2; }
+  }
+}
