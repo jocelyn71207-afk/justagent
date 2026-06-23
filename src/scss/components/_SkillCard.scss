@@ -67,8 +67,8 @@
     }
 
     &.icon--ext {
-      background: #fef3c7;
-      color: #b45309;
+      background: $color-badge-hot-bg;
+      color: $color-badge-hot-text;
     }
   }
 
@@ -142,7 +142,7 @@
   font-weight: 500;
 
   &.tag--sys     { background: $color_main_4; color: $color_main_2; }
-  &.tag--ext     { background: #fef3c7; color: #b45309; }
+  &.tag--ext     { background: $color-badge-hot-bg; color: $color-badge-hot-text; }
   &.tag--version { background: var(--page-bg); color: var(--text-muted); border: 1px solid var(--divider-a50); }
   &.tag--update  { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
 }
@@ -153,10 +153,10 @@
   font-size: 12px;
 
   &.btn--warning {
-    background: #f59e0b;
-    border-color: #f59e0b;
+    background: $color-warning-amber;
+    border-color: $color-warning-amber;
     color: #fff;
-    &:hover { background: #d97706; border-color: #d97706; color: #fff; }
+    &:hover { background: $color_main_2; border-color: $color_main_2; color: #fff; }
   }
 
   &.btn--danger-ghost {
