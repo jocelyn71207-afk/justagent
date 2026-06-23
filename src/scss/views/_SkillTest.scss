@@ -1,3 +1,160 @@
+// ── SkillTest 頁面佈局 ──
+.SkillTest {
+  height: 100%;
+
+  .skill-test-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+
+  // ── 左側 Sidebar ──
+  .test-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--divider-a50);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .sidebar-head {
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--divider-a50);
+      color: var(--text);
+    }
+
+    .sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-item {
+      padding: 10px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--page-bg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      transition: background 0.15s;
+
+      &:hover { background: var(--page-bg); }
+
+      &.is-active {
+        background: $color_main_5;
+        color: $color_main_2;
+        font-weight: 500;
+      }
+    }
+
+    .skill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.dot--sys { background: #818cf8; }
+      &.dot--ext { background: #f59e0b; }
+    }
+  }
+
+  // ── 右側 Panel ──
+  .test-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--page-bg);
+  }
+
+  .test-panel-head {
+    background: var(--surface);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--divider-a50);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  .mode-tabs {
+    display: flex;
+    background: var(--page-bg);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .mode-tab {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 16px; }
+
+    &.is-active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    &:hover:not(.is-active) { color: var(--text); }
+  }
+
+  .panel-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-faint);
+
+    .material-symbols-outlined { font-size: 48px; opacity: 0.3; }
+    p { font-size: 14px; }
+  }
+
+  .skill-tag {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-weight: 500;
+
+    &.tag--version {
+      background: var(--page-bg);
+      color: var(--text-muted);
+    }
+
+    &.tag--sys {
+      background: #ede9fe;
+      color: #5b21b6;
+    }
+
+    &.tag--ext {
+      background: #fef3c7;
+      color: #92400e;
+    }
+  }
+}
+
 // SkillTestChat
 .SkillTestChat {
   display: flex;
