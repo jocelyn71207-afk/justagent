@@ -6,7 +6,7 @@
         <i class="material-symbols-outlined">input</i> Input (JSON)
       </div>
       <textarea
-        v-model="store.testJsonInput"
+        v-model="localInput"
         class="json-textarea"
         spellcheck="false"
         :disabled="store.testIsRunning"
@@ -50,13 +50,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
 const lastLatencyMs = ref(0)
 const callChain = ref<{ name: string; latencyMs: number }[]>([])
+
+const localInput = computed({
+  get: () => store.testJsonInput,
+  set: (v) => { store.testJsonInput = v }
+})
 
 async function handleRun() {
   const start = Date.now()
