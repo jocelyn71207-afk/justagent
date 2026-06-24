@@ -35,6 +35,22 @@
       </div>
     </div>
 
+    <!-- 預設測試案例 -->
+    <div v-if="testCases.length" class="test-cases-bar">
+      <span class="test-cases-label">測試案例</span>
+      <div class="test-cases-list">
+        <button
+          v-for="tc in testCases"
+          :key="tc.name"
+          class="test-case-chip"
+          :disabled="store.testIsRunning"
+          @click="inputText = tc.input"
+        >
+          {{ tc.name }}
+        </button>
+      </div>
+    </div>
+
     <div class="chat-input-row">
       <input
         v-model="inputText"
@@ -55,13 +71,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
 const inputText = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
+
+const testCases = computed(() => store.findSkill(props.skillId)?.testCases ?? [])
 
 async function handleSend() {
   const msg = inputText.value.trim()

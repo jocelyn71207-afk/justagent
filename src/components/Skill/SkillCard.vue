@@ -24,7 +24,7 @@
         </span>
       </div>
       <div class="skill-card-desc">{{ skill.description }}</div>
-      <div v-if="isExtension" class="skill-card-lineage">
+      <div v-if="isExtension && skill.forkSourceId" class="skill-card-lineage">
         <template v-if="skill.upstreamLink === 'linked'">
           演化自 v{{ skill.forkSourceVersion }}
         </template>
@@ -79,6 +79,7 @@ const emit = defineEmits<{
 const originLabel = computed(() => {
   if (props.skill.origin === 'conversation_evolved') return '對話演化'
   if (props.skill.origin === 'custom_version') return '自訂版本'
+  if (props.skill.origin === 'manually_created') return '手動建立'
   return '擴充技能'
 })
 </script>

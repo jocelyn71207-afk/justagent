@@ -36,7 +36,7 @@
           </div>
           <div>
             <div class="skill-stat-num">{{ store.totalUsageCount }}</div>
-            <div class="skill-stat-lbl">本月自動觸發</div>
+            <div class="skill-stat-lbl">本月使用次數</div>
           </div>
         </div>
         <div class="skill-stat-card">
@@ -62,7 +62,7 @@
       <!-- 技能清單 -->
       <div class="skill-list-header">
         <h2>技能清單</h2>
-        <button class="custom-btn" disabled title="後續規劃">
+        <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
           <i class="material-symbols-outlined">add</i>建立
         </button>
       </div>
@@ -80,7 +80,7 @@
             />
             <template v-if="skill.children">
               <SkillCard
-                v-for="child in skill.children"
+                v-for="child in skill.children?.filter(c => !c.deletedAt)"
                 :key="child.id"
                 :skill="child"
                 :is-extension="true"
@@ -114,6 +114,8 @@
       @close="detailSkill = null"
       @test="handleTest"
       @toggle="store.toggleSkill($event.id)"
+      @edit="(s) => router.push({ path: '/view/SkillEditor', query: { skillId: s.id } })"
+      @delete="(s) => { store.deleteSkill(s.id); detailSkill = null }"
     />
     <UpstreamUpdateDrawer
       :skill="upstreamSkill"
@@ -140,11 +142,8 @@ const store = useSkillStore()
 
 const detailSkill = ref<Skill | null>(null)
 const upstreamSkill = ref<Skill | null>(null)
-
-// store.skills 是頂層陣列，system skill 的 extension 子項放在 children 內
-// 頂層中 type === 'extension' 的即為獨立 extension（無父系統技能）
-const systemSkills = computed(() => store.skills.filter(s => s.type === 'system'))
-const standaloneExtensions = computed(() => store.skills.filter(s => s.type === 'extension'))
+const systemSkills = computed(() => store.skills.filter(s => s.type === 'system' && !s.deletedAt))
+const standaloneExtensions = computed(() => store.skills.filter(s => s.type === 'extension' && !s.deletedAt))
 
 function handleTest(skill: Skill) {
   router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })

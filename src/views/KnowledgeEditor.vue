@@ -4,8 +4,10 @@
 
       <!-- 頂部麵包屑 -->
       <div class="page-banner">
-        <AppBreadcrumb />
-        <div class="banner-title">編輯草稿 {{ draft.versionNumber }}</div>
+        <div>
+          <AppBreadcrumb />
+          <div class="banner-title">編輯草稿 {{ draft.versionNumber }}</div>
+        </div>
       </div>
 
       <!-- 操作列 -->

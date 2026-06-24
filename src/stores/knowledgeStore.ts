@@ -1505,7 +1505,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       }],
     }
 
-    knowledgeList.value.push(newKnowledge)
+    knowledgeList.value.unshift(newKnowledge)
     startPipelineSimulation(newId, content)
     return newId
   }

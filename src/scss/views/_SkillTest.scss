@@ -284,6 +284,55 @@
     }
   }
 
+  .test-cases-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--divider-a50);
+    background: var(--page-bg);
+
+    .test-cases-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      padding-top: 4px;
+    }
+
+    .test-cases-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .test-case-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--divider-a50);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+
+      &:hover:not(:disabled) {
+        border-color: $color_main_1;
+        color: $color_main_2;
+        background: $color_main_4;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
   .chat-input-row {
     display: flex;
     gap: 8px;

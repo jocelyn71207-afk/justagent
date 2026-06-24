@@ -96,7 +96,7 @@ function startAnimation() {
       clearInterval(timer!)
       timer = null
     }
-  }, 800)
+  }, 1200)
 }
 
 watch(

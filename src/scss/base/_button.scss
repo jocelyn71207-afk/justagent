@@ -2,6 +2,9 @@
 
 button.custom-btn {
   // default
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 0.375rem 0.8rem;
   border: 2px solid var(--divider);
   border-radius: $radius;
@@ -10,8 +13,8 @@ button.custom-btn {
   font-size: 1rem;
   line-height: $line-height-base;
   font-family: $font-family;
-  vertical-align: bottom;
-  white-space: nowrap; // 實驗按鈕強制不換行看看
+  vertical-align: middle;
+  white-space: nowrap;
   cursor: pointer;
   &:hover {
     border-color: $color_main_2;
@@ -38,8 +41,8 @@ button.custom-btn {
   }
   // icon 樣式
   > i {
-    font-size: 20px;
-    vertical-align: text-top;
+    font-size: 18px;
+    flex-shrink: 0;
   }
 }
 

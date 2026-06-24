@@ -93,3 +93,121 @@
     margin-bottom: 4px;
   }
 }
+
+// 建立技能 Modal
+.CreateSkillModal {
+  &.modal-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    background: rgba(#09151A, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-panel {
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+    width: 440px;
+    max-width: calc(100vw - 32px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--divider-a50);
+
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+      &:hover { background: var(--page-bg); }
+      i { font-size: 20px; }
+    }
+  }
+
+  .modal-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &.form-field--inline {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    .required { color: #dc2626; margin-left: 2px; }
+  }
+
+  .form-textarea { resize: vertical; min-height: 72px; font-size: 13px; }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+
+    input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--divider-a50);
+      transition: background 0.2s;
+      flex-shrink: 0;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.2s;
+      }
+    }
+
+    input:checked + .toggle-track {
+      background: $color_main_1;
+      &::after { transform: translateX(16px); }
+    }
+  }
+
+  .modal-footer {
+    padding: 14px 20px 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--divider-a50);
+  }
+}
+
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.18s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }

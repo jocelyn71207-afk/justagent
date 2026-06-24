@@ -119,6 +119,12 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/SkillTest.vue'),
         meta: { title: '技能測試沙盒', parentName: 'SkillManagement' },
       },
+      {
+        path: '/view/SkillEditor',
+        name: 'SkillEditor',
+        component: () => import('@/views/SkillEditor.vue'),
+        meta: { title: '建立技能', parentName: 'SkillManagement' },
+      },
     ]
   },
 ]

@@ -1,0 +1,279 @@
+.SkillEditor {
+  // 步驟指示器
+  .se-stepper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 36px;
+    max-width: 560px;
+  }
+
+  .se-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    cursor: default;
+
+    &.is-done { cursor: pointer; }
+  }
+
+  .se-step-bubble {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--divider-a50);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+    i { font-size: 16px; }
+
+    .is-active & {
+      border-color: $color_main_1;
+      background: $color_main_1;
+      color: #fff;
+    }
+    .is-done & {
+      border-color: $color_main_1;
+      background: $color_main_5;
+      color: $color_main_1;
+    }
+  }
+
+  .se-step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+
+    .is-active & { color: $color_main_1; font-weight: 600; }
+    .is-done  & { color: $color_main_2; }
+  }
+
+  // 步驟連接線（絕對定位在氣泡中線）
+  .se-step-track {
+    position: absolute;
+    top: 15px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: var(--divider-a50);
+    z-index: 0;
+
+    .se-step-fill {
+      height: 100%;
+      background: $color_main_1;
+      transition: width 0.3s ease;
+    }
+  }
+
+  // 表單內容區
+  .se-body {
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+
+  .se-section {
+    margin-bottom: 22px;
+  }
+
+  .se-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .se-required { color: #dc2626; margin-left: 2px; }
+
+  .se-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+    line-height: 1.6;
+  }
+
+  .se-textarea-sm {
+    width: 100%;
+    resize: vertical;
+    min-height: 80px;
+    font-size: 13px;
+  }
+
+  .se-editor-wrap {
+    position: relative;
+  }
+
+  .se-textarea-lg {
+    width: 100%;
+    resize: vertical;
+    min-height: 280px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .se-mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+  .se-char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 11px;
+    color: var(--text-faint);
+    pointer-events: none;
+  }
+
+  // 確認卡片
+  .se-confirm-card {
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    padding: 4px 0;
+    margin-bottom: 16px;
+    max-width: 560px;
+  }
+
+  .se-confirm-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--divider-a50);
+
+    &:last-child { border-bottom: none; }
+
+    &.se-confirm-row--toggle {
+      align-items: center;
+    }
+  }
+
+  .se-confirm-key {
+    flex-shrink: 0;
+    width: 100px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .se-confirm-val {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .se-empty { color: var(--text-faint); font-style: italic; }
+
+  .se-confirm-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    max-width: 560px;
+
+    i { font-size: 16px; color: var(--text-faint); }
+  }
+
+  // Toggle
+  .se-toggle {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+
+    input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .se-toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--divider-a50);
+      transition: background 0.2s;
+      flex-shrink: 0;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.2s;
+      }
+    }
+
+    input:checked + .se-toggle-track {
+      background: $color_main_1;
+      &::after { transform: translateX(16px); }
+    }
+  }
+
+  // 底部導覽
+  .se-footer {
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-a50);
+  }
+
+  .se-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .custom-btn i.material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .se-agent-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .se-agent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover {
+      border-color: $color_main_1;
+      color: $color_main_2;
+    }
+
+    &.is-selected {
+      background: $color_main_4;
+      border-color: $color_main_3;
+      color: $color_main_2;
+      font-weight: 500;
+
+      .se-chip-check { color: $color_main_1; }
+    }
+  }
+}
