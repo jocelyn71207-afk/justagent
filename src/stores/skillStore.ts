@@ -99,6 +99,24 @@ export interface Skill {
   upstreamConflicts?: ConflictItem[]
 }
 
+export interface CreateSkillPayload {
+  name: string
+  description?: string
+  instructions: string
+  triggerHint: string
+  isEnabled: boolean
+  assignedAgents: string[]
+}
+
+export interface UpdateSkillPayload {
+  name: string
+  description?: string
+  instructions: string
+  triggerHint: string
+  isEnabled: boolean
+  assignedAgents: string[]
+}
+
 export interface DraftSkill {
   id: string
   name: string
@@ -162,6 +180,36 @@ const MOCK_SKILLS: Skill[] = [
       { title: '識別高風險客訴', description: '分析對話情緒，當使用者情緒激烈或已升級為投訴語氣時，即時標記並轉介給資深客服代表接手。' },
     ],
     assignedAgents: ['客服中心助理', '電商小幫手'],
+    auditLog: [
+      { action: 'ENABLED' as const, by: '管理員', time: '2026-06-28T10:00:00Z' },
+      { action: 'DISABLED' as const, by: '管理員', time: '2026-06-20T14:00:00Z' },
+      { action: 'ENABLED' as const, by: '管理員', time: '2026-06-10T09:00:00Z' },
+    ] satisfies OperationRecord[],
+    versions: [
+      {
+        id: 'v-cs-001-v241',
+        versionTag: '2.4.1',
+        status: 'reviewing' as SkillVersionStatus,
+        name: '通用客服機器人',
+        description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
+        instructions: '你是一個專業客服助理，使用親切且專業的語氣，處理各類客戶諮詢。',
+        reviewNote: '新增情緒分析能力，優化回覆語氣',
+        updateNote: '優化 Prompt 語氣',
+        reviewHistory: [
+          { action: 'SUBMITTED' as const, by: '管理員', time: '2026-06-28T10:00:00Z' },
+        ],
+        createdAt: '2026-06-28T10:00:00Z',
+      },
+      {
+        id: 'v-cs-001-v240',
+        versionTag: '2.4.0',
+        status: 'active' as SkillVersionStatus,
+        name: '通用客服機器人',
+        description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
+        instructions: '你是一個客服助理，處理各類客戶諮詢與 FAQ。',
+        createdAt: '2026-06-01T10:00:00Z',
+      },
+    ] satisfies SkillVersion[],
     testCases: [
       { name: '詢問訂單到貨', input: '我的訂單什麼時候會到？訂單號是 #20241201-0023' },
       { name: '詢問退換貨', input: '我上週買的商品有瑕疵，想退貨，請問流程是什麼？' },
@@ -605,14 +653,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
-  function createSkill(data: {
-    name: string
-    description?: string
-    instructions: string
-    triggerHint: string
-    isEnabled: boolean
-    assignedAgents: string[]
-  }): void {
+  function createSkill(data: CreateSkillPayload): void {
     skills.value.push({
       id: `ext-custom-${skills.value.length + 1}`,
       name: data.name,
@@ -630,14 +671,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     })
   }
 
-  function updateSkill(id: string, data: {
-    name: string
-    description?: string
-    instructions: string
-    triggerHint: string
-    isEnabled: boolean
-    assignedAgents: string[]
-  }): void {
+  function updateSkill(id: string, data: UpdateSkillPayload): void {
     const skill = findSkill(id)
     if (!skill) return
     skill.name = data.name
@@ -790,7 +824,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     myDrafts.value = myDrafts.value.filter(d => d.id !== id)
   }
 
-  function submitDraft(id: string, mode: 'new_skill' | 'version_update'): void {
+  function submitDraft(id: string, mode: 'new_skill' | 'version_update' = 'new_skill'): void {
     const draft = myDrafts.value.find(d => d.id === id)
     if (!draft) return
     if (mode === 'new_skill') {
@@ -835,7 +869,10 @@ export const useSkillStore = defineStore('skillStore', () => {
   }
 
   function getTestRunHistory(skillId: string): TestRun[] {
-    return testRunHistory.value.filter(r => r.skillId === skillId)
+    return testRunHistory.value
+      .filter(r => r.skillId === skillId)
+      .slice(-5)
+      .reverse()
   }
 
   function setSelectedSkill(id: string): void {
