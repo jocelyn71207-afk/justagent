@@ -1,0 +1,155 @@
+import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { useSkillStore } from '@/stores/skillStore'
+
+describe('skillStore', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  describe('版本管理', () => {
+    it('getSkillVersions 返回指定技能的版本列表', () => {
+      const store = useSkillStore()
+      const versions = store.getSkillVersions('ext-cs-return-001')
+      expect(versions.length).toBeGreaterThan(0)
+    })
+
+    it('approveSkillVersion 將版本設為 active，前一 active 設為 history', () => {
+      const store = useSkillStore()
+      const reviewing = store.getSkillVersions('ext-cs-return-001').find(v => v.status === 'reviewing')
+      expect(reviewing).toBeDefined()
+      store.approveSkillVersion('ext-cs-return-001', reviewing!.id)
+      const versions = store.getSkillVersions('ext-cs-return-001')
+      expect(versions.find(v => v.id === reviewing!.id)!.status).toBe('active')
+      expect(versions.filter(v => v.status === 'active').length).toBe(1)
+    })
+
+    it('rejectSkillVersion 將版本設為 rejected', () => {
+      const store = useSkillStore()
+      const reviewing = store.getSkillVersions('ext-cs-return-001').find(v => v.status === 'reviewing')
+      expect(reviewing).toBeDefined()
+      store.rejectSkillVersion('ext-cs-return-001', reviewing!.id, '需修改語氣')
+      expect(store.getSkillVersions('ext-cs-return-001').find(v => v.id === reviewing!.id)!.status).toBe('rejected')
+    })
+  })
+
+  describe('Draft CRUD', () => {
+    it('createDraft 新增一筆草稿', () => {
+      const store = useSkillStore()
+      const before = store.drafts.length
+      store.createDraft()
+      expect(store.drafts.length).toBe(before + 1)
+    })
+
+    it('updateDraft 更新草稿欄位', () => {
+      const store = useSkillStore()
+      const draft = store.drafts[0]
+      store.updateDraft(draft.id, { name: '測試草稿' })
+      expect(store.drafts.find(d => d.id === draft.id)!.name).toBe('測試草稿')
+    })
+
+    it('deleteDraft 移除草稿', () => {
+      const store = useSkillStore()
+      const before = store.drafts.length
+      const draft = store.drafts[0]
+      store.deleteDraft(draft.id)
+      expect(store.drafts.length).toBe(before - 1)
+    })
+
+    it('submitDraft 移除草稿並在 flatSkills 中新增技能', () => {
+      const store = useSkillStore()
+      store.updateDraft(store.drafts[0].id, { name: '訂單追蹤助理', instructions: '測試指令' })
+      const draftName = store.drafts[0].name
+      const before = store.drafts.length
+      store.submitDraft(store.drafts[0].id, 'new_skill')
+      expect(store.drafts.length).toBe(before - 1)
+      expect(store.flatSkills.some(s => s.name === draftName)).toBe(true)
+    })
+  })
+
+  describe('批量更新', () => {
+    it('pendingUpdateCount 大於 0', () => {
+      const store = useSkillStore()
+      expect(store.pendingUpdateCount).toBeGreaterThan(0)
+    })
+
+    it('pendingUpdateSkills 包含正確的技能', () => {
+      const store = useSkillStore()
+      expect(store.pendingUpdateSkills.length).toBeGreaterThan(0)
+      store.pendingUpdateSkills.forEach(s => {
+        expect(store.upstreamUpdateSkillIds.has(s.id)).toBe(true)
+      })
+    })
+
+    it('batchMergeUpstreamUpdates 跳過有衝突的技能', () => {
+      const store = useSkillStore()
+      const allIds = store.pendingUpdateSkills.map(s => s.id)
+      store.batchMergeUpstreamUpdates(allIds)
+      // Skills with upstreamConflicts should NOT have been merged
+      // ext-cs-return-001 has upstreamConflicts set in mock data
+      const conflictSkill = store.findSkill('ext-cs-return-001')
+      expect(conflictSkill?.upstreamConflicts?.length).toBeGreaterThan(0)
+      // It should still have the same forkSourceVersion (not updated)
+      expect(conflictSkill?.forkSourceVersion).toBe('2.4.0')
+    })
+  })
+
+  describe('稽核記錄', () => {
+    it('toggleSkill 寫入 auditLog', () => {
+      const store = useSkillStore()
+      const skill = store.flatSkills[0]
+      store.toggleSkill(skill.id)
+      expect(store.findSkill(skill.id)!.auditLog!.length).toBeGreaterThan(0)
+    })
+
+    it('mergeUpstreamUpdate（無衝突技能）寫入 UPSTREAM_MERGED', () => {
+      const store = useSkillStore()
+      // ext-meeting-eng-001 has update available and no conflicts
+      const target = store.findSkill('ext-meeting-eng-001')
+      expect(target).toBeDefined()
+      store.mergeUpstreamUpdate(target!.id)
+      expect(store.findSkill(target!.id)!.auditLog?.some(r => r.action === 'UPSTREAM_MERGED')).toBe(true)
+    })
+
+    it('ignoreUpstreamUpdate 寫入 UPSTREAM_IGNORED', () => {
+      const store = useSkillStore()
+      const target = store.findSkill('ext-meeting-eng-001')
+      expect(target).toBeDefined()
+      store.ignoreUpstreamUpdate(target!.id)
+      expect(store.findSkill(target!.id)!.auditLog?.some(r => r.action === 'UPSTREAM_IGNORED')).toBe(true)
+      expect(store.findSkill(target!.id)!.upstreamUpdateStatus).toBe('ignored')
+    })
+
+    it('detachFromUpstream 寫入 UPSTREAM_DETACHED', () => {
+      const store = useSkillStore()
+      const target = store.findSkill('ext-cs-return-001')
+      expect(target).toBeDefined()
+      store.detachFromUpstream(target!.id)
+      expect(store.findSkill(target!.id)!.auditLog?.some(r => r.action === 'UPSTREAM_DETACHED')).toBe(true)
+    })
+  })
+
+  describe('測試歷史', () => {
+    it('saveTestRun 儲存記錄', () => {
+      const store = useSkillStore()
+      store.saveTestRun('sys-cs-001', { total: 7, passed: 5 })
+      expect(store.getTestRunHistory('sys-cs-001').length).toBeGreaterThan(0)
+    })
+
+    it('超過 10 筆時不超過上限', () => {
+      const store = useSkillStore()
+      for (let i = 0; i < 12; i++) {
+        store.saveTestRun('sys-cs-001', { total: 7, passed: i % 7 })
+      }
+      expect(store.getTestRunHistory('sys-cs-001').length).toBeLessThanOrEqual(10)
+    })
+
+    it('saveTestRun 計算 passRate 正確', () => {
+      const store = useSkillStore()
+      store.saveTestRun('sys-cs-001', { total: 10, passed: 7 })
+      const history = store.getTestRunHistory('sys-cs-001')
+      const last = history[history.length - 1]
+      expect(last.passRate).toBeCloseTo(0.7)
+    })
+  })
+})

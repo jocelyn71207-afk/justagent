@@ -44,6 +44,33 @@ export interface SkillVersion {
   reviewHistory?: SkillReviewRecord[]
 }
 
+export interface OperationRecord {
+  action: 'ENABLED' | 'DISABLED' | 'UPSTREAM_MERGED' | 'UPSTREAM_IGNORED' | 'UPSTREAM_DETACHED'
+  by: string
+  time: string
+}
+
+export interface ConflictItem {
+  field: string
+  label: string
+  mine: string
+  upstream: string
+}
+
+export interface ConflictResolution {
+  field: string
+  choice: 'mine' | 'upstream'
+}
+
+export interface TestRun {
+  id: string
+  skillId: string
+  date: string
+  total: number
+  passed: number
+  passRate: number
+}
+
 export interface Skill {
   id: string
   name: string
@@ -67,6 +94,9 @@ export interface Skill {
   versions?: SkillVersion[]
   deletedAt?: string
   children?: Skill[]
+  upstreamUpdateStatus?: 'up_to_date' | 'update_available' | 'ignored'
+  auditLog?: OperationRecord[]
+  upstreamConflicts?: ConflictItem[]
 }
 
 export interface DraftSkill {
@@ -78,6 +108,8 @@ export interface DraftSkill {
   forkSourceId?: string
   createdAt: string
   updatedAt: string
+  triggerHint?: string
+  assignedAgents?: string[]
 }
 
 export interface ChatMessage {
@@ -150,6 +182,7 @@ const MOCK_SKILLS: Skill[] = [
         avgLatencyMs: 342,
         forkSourceId: 'sys-cs-001',
         forkSourceVersion: '2.4.0',
+        upstreamUpdateStatus: 'update_available' as const,
         evolutionContext: '用戶說：「以後遇到退貨問題，先查詢訂單狀態再根據退貨政策給建議」',
         instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 如有疑問轉接人工客服',
         triggerHint: '退貨、換貨、退款、品質問題',
@@ -158,6 +191,14 @@ const MOCK_SKILLS: Skill[] = [
           { name: '退貨資格判斷', description: '依設定的退貨規則自動判斷是否符合退貨條件並給出建議。' },
         ],
         assignedAgents: ['客服中心助理'],
+        upstreamConflicts: [
+          {
+            field: 'instructions',
+            label: '技能指令',
+            mine: '你是專門處理退貨問題的客服助理。',
+            upstream: '你是一個專業客服助理，使用親切且專業的語氣，專門處理退貨相關問題。',
+          },
+        ],
         testCases: [
           { name: '退貨資格確認', input: '我在 2024/11/15 購買了一件外套，現在可以退貨嗎？' },
           { name: '逾期退貨申請', input: '我超過 30 天了，但商品真的有問題，有辦法退嗎？' },
@@ -284,6 +325,7 @@ const MOCK_SKILLS: Skill[] = [
         avgLatencyMs: 480,
         forkSourceId: 'sys-meeting-001',
         forkSourceVersion: '2.1.0',
+        upstreamUpdateStatus: 'update_available' as const,
         capabilities: [
           { name: 'Jira 整合', description: '自動將識別出的 action items 建立為 Jira Issue 並指派負責人。' },
           { name: '工程格式輸出', description: '以工程團隊慣用格式輸出摘要，包含技術決策記錄與 PR 連結。' },
@@ -364,6 +406,56 @@ const MOCK_SKILLS: Skill[] = [
   },
 ]
 
+type ScenarioTemplate = Omit<AITestScenario, 'id' | 'status'>
+
+const MOCK_AI_SCENARIO_TEMPLATES: Record<string, ScenarioTemplate[]> = {
+  'sys-cs-001': [
+    { tag: 'normal', input: '我的訂單什麼時候會到？訂單號是 #20241201-0023', expectedBehavior: '技能觸發，查詢訂單狀態並回覆預計到貨時間' },
+    { tag: 'normal', input: '你們支援哪些付款方式？可以用信用卡分期嗎？', expectedBehavior: '技能觸發，列出支援付款方式並說明分期條件' },
+    { tag: 'normal', input: '我想退貨，請問流程是什麼？', expectedBehavior: '技能觸發，說明退貨步驟與所需文件' },
+    { tag: 'boundary', input: '你好！', expectedBehavior: '技能觸發一般問候回覆，不強制進入特定流程' },
+    { tag: 'boundary', input: '你這破客服都沒在聽！我等了三天！', expectedBehavior: '情緒分析觸發，識別高情緒並轉介人工客服' },
+    { tag: 'boundary', input: '幫我查 #99999999，是我朋友的訂單', expectedBehavior: '技能查詢但說明需驗證訂單歸屬' },
+    { tag: 'trigger_edge', input: '退款 換貨 保固', expectedBehavior: '關鍵字觸發，引導使用者說明具體問題' },
+    { tag: 'trigger_edge', input: 'I want to return my order please', expectedBehavior: '多語言觸發，以英文說明退貨流程' },
+  ],
+  'ext-cs-return-001': [
+    { tag: 'normal', input: '我在 2024/11/15 購買了一件外套，現在可以退貨嗎？', expectedBehavior: '觸發退貨資格判斷，確認是否在 30 天內並給出建議' },
+    { tag: 'normal', input: '退貨後多久可以收到退款？', expectedBehavior: '觸發，說明退款時程' },
+    { tag: 'boundary', input: '我超過 30 天了，但商品真的有問題，有辦法嗎？', expectedBehavior: '觸發，提供超期但瑕疵品的彈性處理流程' },
+    { tag: 'boundary', input: '我是 VIP 客戶，退貨期限是幾天？', expectedBehavior: '觸發 VIP 識別，說明 45 天優惠退貨期' },
+    { tag: 'trigger_edge', input: '退貨 換貨 瑕疵 VIP', expectedBehavior: '關鍵字觸發，確認技能正確識別退貨相關意圖' },
+  ],
+  'sys-doc-001': [
+    { tag: 'normal', input: '請幫我摘要以下季報重點：第三季營收較去年同期成長 12%...', expectedBehavior: '技能觸發，生成結構化摘要條列式重點' },
+    { tag: 'normal', input: '請從這份文件中提取 5 個最重要的關鍵字', expectedBehavior: '技能觸發，提取並列出 5 個核心關鍵字' },
+    { tag: 'normal', input: '請將這篇文章摘要成 JSON 格式，包含標題、重點列表與結論', expectedBehavior: '技能觸發，輸出 JSON 格式摘要' },
+    { tag: 'boundary', input: '這份文件只有一句話，請摘要', expectedBehavior: '技能觸發，對超短文件給出合理的摘要或說明' },
+    { tag: 'trigger_edge', input: '摘要 PDF Word Markdown 文件', expectedBehavior: '關鍵字觸發，確認多格式文件技能正確識別' },
+  ],
+  'sys-meeting-001': [
+    { tag: 'normal', input: '本次週會決定將上線日期延後兩週，請整理決策事項', expectedBehavior: '技能觸發，識別並條列決策事項' },
+    { tag: 'normal', input: 'John 要在週五前完成 API 文件，Lisa 負責 QA，請列出 action items', expectedBehavior: '技能觸發，生成含負責人的 action item 清單' },
+    { tag: 'boundary', input: '今天的會議沒有結論，請摘要', expectedBehavior: '技能觸發，說明無明確決策並建議後續追蹤方式' },
+    { tag: 'trigger_edge', input: '會議 摘要 action items 決策', expectedBehavior: '關鍵字觸發，確認會議相關意圖被正確識別' },
+  ],
+  'ext-erp-001': [
+    { tag: 'normal', input: '查詢 SKU-00123 目前在所有倉庫的庫存數量', expectedBehavior: '技能觸發，呼叫庫存查詢 tool 並回傳各倉庫數量' },
+    { tag: 'normal', input: '台北倉現在有多少 SKU-00456 的庫存？', expectedBehavior: '技能觸發，指定倉庫查詢並回傳結果' },
+    { tag: 'normal', input: '哪些產品目前庫存低於安全存量？請列出清單', expectedBehavior: '技能觸發，掃描並回傳低庫存清單' },
+    { tag: 'boundary', input: '我要查 SKU-99999，但我不確定這個 SKU 存不存在', expectedBehavior: '技能觸發，查詢後提示查無此 SKU' },
+    { tag: 'trigger_edge', input: '庫存 SKU 倉庫 查詢', expectedBehavior: '關鍵字觸發，確認庫存相關意圖被正確識別' },
+  ],
+}
+
+const DEFAULT_AI_SCENARIOS: ScenarioTemplate[] = [
+  { tag: 'normal', input: '請執行這個技能的主要功能', expectedBehavior: '技能正確觸發並執行主要功能，回傳預期輸出' },
+  { tag: 'normal', input: '我需要協助處理一個標準任務', expectedBehavior: '技能觸發，提供清晰的處理結果' },
+  { tag: 'boundary', input: '這個任務有點不一樣，你能處理嗎？', expectedBehavior: '技能在邊界情境下仍給出合理回應或適當引導' },
+  { tag: 'boundary', input: '（空白輸入）', expectedBehavior: '技能不崩潰，主動引導使用者提供必要資訊' },
+  { tag: 'trigger_edge', input: '觸發關鍵詞測試', expectedBehavior: '關鍵字觸發測試，確認技能正確識別意圖' },
+]
+
 const MOCK_DRAFTS: DraftSkill[] = [
   {
     id: 'draft-001',
@@ -442,11 +534,19 @@ export const useSkillStore = defineStore('skillStore', () => {
     const ids = new Set<string>()
     for (const s of flatSkills.value) {
       if (!s.forkSourceId || !s.forkSourceVersion) continue
+      if (s.upstreamUpdateStatus === 'ignored') continue
       const source = skills.value.find(p => p.id === s.forkSourceId)
       if (source && source.version !== s.forkSourceVersion) ids.add(s.id)
     }
     return ids
   })
+
+  const pendingUpdateCount = computed(() => upstreamUpdateSkillIds.value.size)
+  const pendingUpdateSkills = computed<Skill[]>(() =>
+    flatSkills.value.filter(s => upstreamUpdateSkillIds.value.has(s.id))
+  )
+
+  const testRunHistory = ref<TestRun[]>([])
 
   function findSkill(id: string): Skill | undefined {
     return flatSkills.value.find(s => s.id === id)
@@ -463,7 +563,16 @@ export const useSkillStore = defineStore('skillStore', () => {
 
   function toggleSkill(id: string): void {
     const skill = findSkill(id)
-    if (skill) skill.isEnabled = !skill.isEnabled
+    if (skill) {
+      skill.isEnabled = !skill.isEnabled
+      skill.auditLog ??= []
+      skill.auditLog.unshift({
+        action: skill.isEnabled ? 'ENABLED' : 'DISABLED',
+        by: '管理員',
+        time: new Date().toISOString(),
+      })
+      if (skill.auditLog.length > 20) skill.auditLog.length = 20
+    }
   }
 
   function deleteSkill(id: string): void {
@@ -569,6 +678,32 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (!skill) return
     delete skill.forkSourceId
     delete skill.forkSourceVersion
+    skill.upstreamUpdateStatus = 'ignored'
+    skill.auditLog ??= []
+    skill.auditLog.unshift({ action: 'UPSTREAM_DETACHED', by: '管理員', time: new Date().toISOString() })
+  }
+
+  const detachUpstream = detachFromUpstream
+
+  function mergeUpstreamUpdate(id: string, _resolutions?: ConflictResolution[]): void {
+    const skill = findSkill(id)
+    if (!skill) return
+    if (skill.forkSourceId) {
+      const source = skills.value.find(s => s.id === skill.forkSourceId)
+      if (source) skill.forkSourceVersion = source.version
+    }
+    skill.upstreamUpdateStatus = 'up_to_date'
+    skill.upstreamConflicts = undefined
+    skill.auditLog ??= []
+    skill.auditLog.unshift({ action: 'UPSTREAM_MERGED', by: '管理員', time: new Date().toISOString() })
+  }
+
+  function ignoreUpstreamUpdate(id: string): void {
+    const skill = findSkill(id)
+    if (!skill) return
+    skill.upstreamUpdateStatus = 'ignored'
+    skill.auditLog ??= []
+    skill.auditLog.unshift({ action: 'UPSTREAM_IGNORED', by: '管理員', time: new Date().toISOString() })
   }
 
   function approveSkillVersion(skillId: string, versionId: string): void {
@@ -644,6 +779,13 @@ export const useSkillStore = defineStore('skillStore', () => {
     draft.updatedAt = new Date().toISOString()
   }
 
+  function updateDraft(id: string, patch: Partial<DraftSkill>): void {
+    const draft = myDrafts.value.find(d => d.id === id)
+    if (!draft) return
+    Object.assign(draft, patch)
+    draft.updatedAt = new Date().toISOString()
+  }
+
   function deleteDraft(id: string): void {
     myDrafts.value = myDrafts.value.filter(d => d.id !== id)
   }
@@ -651,10 +793,49 @@ export const useSkillStore = defineStore('skillStore', () => {
   function submitDraft(id: string, mode: 'new_skill' | 'version_update'): void {
     const draft = myDrafts.value.find(d => d.id === id)
     if (!draft) return
-    // In real implementation:
+    if (mode === 'new_skill') {
+      createSkill({
+        name: draft.name,
+        description: draft.description,
+        instructions: draft.instructions,
+        triggerHint: draft.triggerHint ?? '',
+        isEnabled: true,
+        assignedAgents: draft.assignedAgents ?? [],
+      })
+    }
     // 'version_update' → patch forkSourceId skill with new SkillVersion + submitSkillForReview
-    // 'new_skill'      → createSkill (type: extension, origin: manually_created) + submitSkillForReview
     myDrafts.value = myDrafts.value.filter(d => d.id !== id)
+  }
+
+  function batchMergeUpstreamUpdates(skillIds: string[]): string[] {
+    const merged: string[] = []
+    for (const id of skillIds) {
+      const skill = findSkill(id)
+      if (!skill || (skill.upstreamConflicts && skill.upstreamConflicts.length > 0)) continue
+      mergeUpstreamUpdate(id)
+      merged.push(id)
+    }
+    return merged
+  }
+
+  function saveTestRun(skillId: string, result: { total: number; passed: number }): void {
+    testRunHistory.value.push({
+      id: `run-${Date.now()}`,
+      skillId,
+      date: new Date().toISOString(),
+      total: result.total,
+      passed: result.passed,
+      passRate: result.total > 0 ? result.passed / result.total : 0,
+    })
+    const runs = testRunHistory.value.filter(r => r.skillId === skillId)
+    if (runs.length > 10) {
+      const oldestIdx = testRunHistory.value.indexOf(runs[0])
+      testRunHistory.value.splice(oldestIdx, 1)
+    }
+  }
+
+  function getTestRunHistory(skillId: string): TestRun[] {
+    return testRunHistory.value.filter(r => r.skillId === skillId)
   }
 
   function setSelectedSkill(id: string): void {
@@ -662,6 +843,90 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestScenarios.value = []
     aiTestReport.value = null
     aiTestIsGenerating.value = false
+    aiTestIsRunning.value = false
+  }
+
+  async function generateAITestScenarios(skillId: string): Promise<void> {
+    aiTestIsGenerating.value = true
+    aiTestScenarios.value = []
+    aiTestReport.value = null
+    await new Promise(r => setTimeout(r, 900))
+    const templates = MOCK_AI_SCENARIO_TEMPLATES[skillId] ?? DEFAULT_AI_SCENARIOS
+    aiTestScenarios.value = templates.map((t, i) => ({
+      ...t,
+      id: `ai-sc-${skillId}-${i}`,
+      status: 'pending',
+    }))
+    aiTestIsGenerating.value = false
+  }
+
+  function _computeAITestReport(): void {
+    const all = aiTestScenarios.value
+    const allDone = all.every(s => s.status === 'pass' || s.status === 'fail')
+    if (!allDone) return
+
+    const byTag: AITestReport['byTag'] = {
+      normal: { total: 0, passed: 0 },
+      boundary: { total: 0, passed: 0 },
+      trigger_edge: { total: 0, passed: 0 },
+    }
+    let total = 0
+    let passed = 0
+    for (const s of all) {
+      byTag[s.tag].total++
+      total++
+      if (s.status === 'pass') { byTag[s.tag].passed++; passed++ }
+    }
+
+    const rate = total > 0 ? passed / total : 0
+    const failedBoundary = byTag.boundary.total - byTag.boundary.passed
+    let summary: string
+    if (rate === 1) {
+      summary = '所有測試情境均通過，技能行為符合預期，可考慮擴大使用範圍。'
+    } else if (rate >= 0.7) {
+      summary = failedBoundary > 0
+        ? `技能在正常情境下穩定觸發，建議調整邊界情況的觸發描述（${failedBoundary} 個案例未達預期）以提高整體覆蓋率。`
+        : `技能整體表現良好，${total - passed} 個案例有改善空間，建議檢視對應的觸發描述。`
+    } else {
+      summary = '技能觸發穩定性有待改善，建議重新審視 triggerHint 與 instructions 的設定。'
+    }
+
+    aiTestReport.value = { total, passed, byTag, summary }
+  }
+
+  async function runSingleAITest(_skillId: string, scenarioId: string): Promise<void> {
+    const scenario = aiTestScenarios.value.find(s => s.id === scenarioId)
+    if (!scenario || scenario.status === 'running') return
+
+    scenario.status = 'running'
+    await new Promise(r => setTimeout(r, 600 + Math.floor(Math.random() * 400)))
+
+    const idx = aiTestScenarios.value.findIndex(s => s.id === scenarioId)
+    // normal 和 trigger_edge 固定通過；boundary 每三個中第二個失敗（demo 效果）
+    const passes = scenario.tag !== 'boundary' || idx % 3 !== 1
+
+    const shortInput = scenario.input.length > 40
+      ? scenario.input.slice(0, 40) + '...'
+      : scenario.input
+
+    scenario.agentReply = passes
+      ? `（Mock）已處理您的請求：「${shortInput}」，並完成對應動作。`
+      : `（Mock）您好，這個問題需要更多資訊，請提供相關細節以便進一步協助。`
+    scenario.aiJudgment = passes
+      ? '技能正確觸發，回覆內容符合預期行為。'
+      : '技能未如預期觸發，回覆為一般性回應，未執行對應功能。'
+    scenario.status = passes ? 'pass' : 'fail'
+
+    _computeAITestReport()
+  }
+
+  async function runAllAITests(skillId: string): Promise<void> {
+    if (aiTestIsRunning.value) return
+    aiTestIsRunning.value = true
+    const pending = aiTestScenarios.value.filter(s => s.status === 'pending')
+    for (const scenario of pending) {
+      await runSingleAITest(skillId, scenario.id)
+    }
     aiTestIsRunning.value = false
   }
 
@@ -692,6 +957,7 @@ export const useSkillStore = defineStore('skillStore', () => {
   return {
     skills,
     myDrafts,
+    drafts: myDrafts,
     selectedSkillId,
     testConversationHistory,
     testIsRunning,
@@ -706,9 +972,13 @@ export const useSkillStore = defineStore('skillStore', () => {
     deletedSkills,
     reviewingSkillIds,
     upstreamUpdateSkillIds,
+    pendingUpdateCount,
+    pendingUpdateSkills,
+    testRunHistory,
     getUpstreamVersion,
     acceptUpstreamUpdate,
     detachFromUpstream,
+    detachUpstream,
     findSkill,
     getSkillVersions,
     getReviewingVersion,
@@ -718,15 +988,24 @@ export const useSkillStore = defineStore('skillStore', () => {
     createSkill,
     updateSkill,
     toggleSkill,
+    mergeUpstreamUpdate,
+    ignoreUpstreamUpdate,
     submitSkillForReview,
     approveSkillVersion,
     rejectSkillVersion,
     duplicateSkill,
     createDraft,
     saveDraft,
+    updateDraft,
     deleteDraft,
     submitDraft,
+    batchMergeUpstreamUpdates,
+    saveTestRun,
+    getTestRunHistory,
     setSelectedSkill,
+    generateAITestScenarios,
+    runSingleAITest,
+    runAllAITests,
     resetConversation,
     sendChatMessage,
   }
