@@ -24,3 +24,7 @@
 @import "./SkillCard";
 @import "./SkillDetailDrawer";
 @import "./UpstreamUpdateDrawer";
+@import "./SkillVersionCompare";
+@import "./SkillReviewDrawer";
+@import "./DraftCard";
+@forward 'ConfirmModal';
