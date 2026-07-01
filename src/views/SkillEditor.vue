@@ -186,6 +186,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { useSkillStore } from '@/stores/skillStore'
+import type { DraftSkill } from '@/stores/skillStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -201,14 +202,22 @@ const AVAILABLE_AGENTS = [
 ]
 
 const editSkillId = route.query.skillId as string | undefined
+const draftId = route.query.draftId as string | undefined
 const isEditMode = !!editSkillId
+const isDraftMode = !!draftId
+
 const existingSkill = editSkillId ? store.findSkill(editSkillId) : null
+const existingDraft = draftId ? (store.myDrafts as DraftSkill[]).find(d => d.id === draftId) ?? null : null
 
 const form = reactive({
-  name: existingSkill?.name ?? '',
-  instructions: existingSkill?.instructions ?? '',
-  triggerHint: existingSkill?.triggerHint ?? '',
-  assignedAgents: existingSkill?.assignedAgents ? [...existingSkill.assignedAgents] : [] as string[],
+  name: existingSkill?.name ?? existingDraft?.name ?? '',
+  instructions: existingSkill?.instructions ?? existingDraft?.instructions ?? '',
+  triggerHint: existingSkill?.triggerHint ?? existingDraft?.triggerHint ?? '',
+  assignedAgents: existingSkill?.assignedAgents
+    ? [...existingSkill.assignedAgents]
+    : existingDraft?.assignedAgents
+      ? [...existingDraft.assignedAgents]
+      : [] as string[],
   isEnabled: existingSkill?.isEnabled ?? true,
 })
 
@@ -239,7 +248,9 @@ function handleSubmit() {
     assignedAgents: [...form.assignedAgents],
     isEnabled: form.isEnabled,
   }
-  if (isEditMode && editSkillId) {
+  if (isDraftMode && draftId) {
+    store.updateDraft(draftId, payload)
+  } else if (isEditMode && editSkillId) {
     store.updateSkill(editSkillId, payload)
   } else {
     store.createSkill(payload)

@@ -310,13 +310,13 @@ const filteredSystemSkills = computed(() => {
     if (s.type !== 'system' || s.deletedAt) return false
     if (f.type === 'extension') return false  // extension filter excludes system skills
     const selfMatch = (
-      (!q || s.name.toLowerCase().includes(q)) &&
+      (!q || s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)) &&
       (f.status === 'all' || (f.status === 'enabled' ? s.isEnabled : !s.isEnabled)) &&
       (f.update === 'all' || store.upstreamUpdateSkillIds.has(s.id))
     )
     const childMatch = (s.children ?? []).some(c =>
       !c.deletedAt &&
-      (!q || c.name.toLowerCase().includes(q)) &&
+      (!q || c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)) &&
       (f.status === 'all' || (f.status === 'enabled' ? c.isEnabled : !c.isEnabled)) &&
       (f.update === 'all' || store.upstreamUpdateSkillIds.has(c.id))
     )
@@ -330,7 +330,7 @@ const filteredStandaloneExtensions = computed(() => {
   const q = f.query.toLowerCase().trim()
   return store.skills.filter(s => {
     if (s.type !== 'extension' || s.deletedAt) return false
-    if (q && !s.name.toLowerCase().includes(q)) return false
+    if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false
     if (f.status !== 'all' && (f.status === 'enabled' ? !s.isEnabled : s.isEnabled)) return false
     if (f.update === 'has_update' && !store.upstreamUpdateSkillIds.has(s.id)) return false
     return true

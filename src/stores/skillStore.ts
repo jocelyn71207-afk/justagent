@@ -720,6 +720,8 @@ export const useSkillStore = defineStore('skillStore', () => {
   const detachUpstream = detachFromUpstream
 
   function mergeUpstreamUpdate(id: string, _resolutions?: ConflictResolution[]): void {
+    // _resolutions: in production, field-level choices would be applied here;
+    // the mock simply clears conflicts and bumps forkSourceVersion regardless of choice.
     const skill = findSkill(id)
     if (!skill) return
     if (skill.forkSourceId) {

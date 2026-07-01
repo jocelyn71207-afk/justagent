@@ -29,6 +29,15 @@
         <i class="material-symbols-outlined">arrow_back</i>回到選項
       </button>
       <button
+        v-if="currentIdx < conflicts.length - 1"
+        class="custom-btn custom-main-btn"
+        :disabled="!resolutions[current?.field ?? '']"
+        @click="currentIdx++"
+      >
+        下一個<i class="material-symbols-outlined">arrow_forward</i>
+      </button>
+      <button
+        v-else
         class="custom-btn custom-main-btn"
         :disabled="!allResolved"
         @click="handleConfirm"
