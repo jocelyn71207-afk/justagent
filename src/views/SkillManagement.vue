@@ -67,13 +67,6 @@
         </div>
         <div class="skill-list-actions">
           <template v-if="activeView === 'list'">
-            <div class="skill-search">
-              <i class="material-symbols-outlined">search</i>
-              <input v-model="searchQuery" class="skill-search-input" placeholder="搜尋技能..." />
-              <button v-if="searchQuery" class="skill-search-clear" @click="searchQuery = ''">
-                <i class="material-symbols-outlined">close</i>
-              </button>
-            </div>
             <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
               <i class="material-symbols-outlined">add</i>建立
             </button>
@@ -86,34 +79,22 @@
         </div>
       </div>
 
+      <!-- 上游更新 Banner -->
+      <div v-if="store.pendingUpdateCount > 0" class="upstream-banner">
+        <span>
+          <i class="material-symbols-outlined">upgrade</i>
+          <strong>{{ store.pendingUpdateCount }} 個技能</strong>有上游更新可合併
+        </span>
+        <button class="custom-btn" @click="showBatchUpdate = true">查看全部</button>
+      </div>
+
+      <!-- 搜尋篩選 -->
+      <template v-if="activeView === 'list'">
+        <SkillFilterBar v-model="filterState" />
+      </template>
+
       <!-- ── 技能清單 view ──────────────────────── -->
       <template v-if="activeView === 'list'">
-        <!-- Filter chips -->
-        <div class="filter-chips">
-          <button :class="['filter-chip', activeFilter === 'all' && 'is-active']" @click="activeFilter = 'all'">全部</button>
-          <button :class="['filter-chip', activeFilter === 'system' && 'is-active']" @click="activeFilter = 'system'">
-            <i class="material-symbols-outlined">psychology</i>系統技能
-          </button>
-          <button :class="['filter-chip', activeFilter === 'extension' && 'is-active']" @click="activeFilter = 'extension'">
-            <i class="material-symbols-outlined">extension</i>企業擴充
-          </button>
-          <button
-            v-if="store.reviewingSkillIds.size > 0"
-            :class="['filter-chip', 'filter-chip--reviewing', activeFilter === 'reviewing' && 'is-active']"
-            @click="activeFilter = 'reviewing'"
-          >
-            <i class="material-symbols-outlined">rate_review</i>審核中
-            <span class="fc-badge">{{ store.reviewingSkillIds.size }}</span>
-          </button>
-          <button
-            v-if="store.upstreamUpdateSkillIds.size > 0"
-            :class="['filter-chip', 'filter-chip--upstream', activeFilter === 'upstream' && 'is-active']"
-            @click="activeFilter = 'upstream'"
-          >
-            <i class="material-symbols-outlined">upgrade</i>待更新
-            <span class="fc-badge fc-badge--amber">{{ store.upstreamUpdateSkillIds.size }}</span>
-          </button>
-        </div>
 
         <!-- Skill tree -->
         <div class="skill-tree">
@@ -220,6 +201,11 @@
       @rejected="showReviewDrawer = false"
     />
 
+    <BatchUpdateModal
+      v-model="showBatchUpdate"
+      @merged="showBatchUpdate = false"
+    />
+
     <!-- 提交確認 dialog -->
     <Teleport to="body">
       <Transition name="confirm-fade">
@@ -294,8 +280,10 @@ import DraftCard from '@/components/Skill/DraftCard.vue'
 import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
+import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
+import SkillFilterBar, { type SkillFilterState } from '@/components/Skill/SkillFilterBar.vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { Skill, DraftSkill } from '@/stores/skillStore'
+import type { Skill, DraftSkill, ConflictResolution } from '@/stores/skillStore'
 
 const router = useRouter()
 const store = useSkillStore()
@@ -305,8 +293,8 @@ const showReviewDrawer = ref(false)
 const reviewingSkillId = ref('')
 const upstreamSkill = ref<Skill | null>(null)
 const activeView = ref<'list' | 'drafts'>('list')
-const activeFilter = ref<'all' | 'system' | 'extension' | 'reviewing' | 'upstream'>('all')
-const searchQuery = ref('')
+const showBatchUpdate = ref(false)
+const filterState = ref<SkillFilterState>({ query: '', type: 'all', status: 'all', update: 'all' })
 
 const pendingCount = computed(() => store.reviewingSkillIds.size + store.upstreamUpdateSkillIds.size)
 
@@ -316,35 +304,36 @@ const upstreamVersionForDetail = computed(() => {
 })
 
 const filteredSystemSkills = computed(() => {
-  const q = searchQuery.value.toLowerCase().trim()
+  const f = filterState.value
+  const q = f.query.toLowerCase().trim()
   return store.skills.filter(s => {
     if (s.type !== 'system' || s.deletedAt) return false
-    if (activeFilter.value === 'reviewing') {
-      return store.reviewingSkillIds.has(s.id) ||
-        (s.children ?? []).some(c => !c.deletedAt && store.reviewingSkillIds.has(c.id))
-    }
-    if (activeFilter.value === 'upstream') {
-      return store.upstreamUpdateSkillIds.has(s.id) ||
-        (s.children ?? []).some(c => !c.deletedAt && store.upstreamUpdateSkillIds.has(c.id))
-    }
-    if (activeFilter.value === 'extension') {
-      return (s.children ?? []).some(c => !c.deletedAt)
-    }
-    if (!q) return true
-    return s.name.toLowerCase().includes(q) ||
-      (s.children ?? []).some(c => !c.deletedAt && c.name.toLowerCase().includes(q))
+    if (f.type === 'extension') return false  // extension filter excludes system skills
+    const selfMatch = (
+      (!q || s.name.toLowerCase().includes(q)) &&
+      (f.status === 'all' || (f.status === 'enabled' ? s.isEnabled : !s.isEnabled)) &&
+      (f.update === 'all' || store.upstreamUpdateSkillIds.has(s.id))
+    )
+    const childMatch = (s.children ?? []).some(c =>
+      !c.deletedAt &&
+      (!q || c.name.toLowerCase().includes(q)) &&
+      (f.status === 'all' || (f.status === 'enabled' ? c.isEnabled : !c.isEnabled)) &&
+      (f.update === 'all' || store.upstreamUpdateSkillIds.has(c.id))
+    )
+    return selfMatch || childMatch
   })
 })
 
 const filteredStandaloneExtensions = computed(() => {
-  if (activeFilter.value === 'system') return []
-  const q = searchQuery.value.toLowerCase().trim()
+  const f = filterState.value
+  if (f.type === 'system') return []
+  const q = f.query.toLowerCase().trim()
   return store.skills.filter(s => {
     if (s.type !== 'extension' || s.deletedAt) return false
-    if (activeFilter.value === 'reviewing') return store.reviewingSkillIds.has(s.id)
-    if (activeFilter.value === 'upstream') return store.upstreamUpdateSkillIds.has(s.id)
-    if (!q) return true
-    return s.name.toLowerCase().includes(q)
+    if (q && !s.name.toLowerCase().includes(q)) return false
+    if (f.status !== 'all' && (f.status === 'enabled' ? !s.isEnabled : s.isEnabled)) return false
+    if (f.update === 'has_update' && !store.upstreamUpdateSkillIds.has(s.id)) return false
+    return true
   })
 })
 
@@ -362,8 +351,8 @@ function openUpstreamUpdate(skill: Skill) {
   upstreamSkill.value = skill
 }
 
-function handleMerge(skill: Skill) {
-  store.acceptUpstreamUpdate(skill.id)
+function handleMerge(skill: Skill, resolutions?: ConflictResolution[]) {
+  store.mergeUpstreamUpdate(skill.id, resolutions)
   upstreamSkill.value = null
 }
 

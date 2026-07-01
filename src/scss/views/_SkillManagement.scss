@@ -402,6 +402,60 @@
     .material-symbols-outlined { font-size: 40px; }
     span { font-size: 14px; }
   }
+
+  // ── Upstream banner ───────────────────────────
+
+  .upstream-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba($color-warning-amber, 0.08);
+    border: 1px solid rgba($color-warning-amber, 0.25);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 13.5px;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; }
+    }
+  }
+
+  // ── Section header ────────────────────────────
+
+  .skill-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 16px 0 10px;
+    h2 { font-size: 16px; font-weight: 600; }
+  }
+
+  // ── Draft list ────────────────────────────────
+
+  .skill-draft-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  // ── Skill empty state ─────────────────────────
+
+  .skill-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+    color: var(--text-faint);
+    gap: 8px;
+    .material-symbols-outlined { font-size: 36px; }
+    p { font-size: 14px; }
+  }
 }
 
 // ── Submit confirm dialog (Teleport → body) ───────────
