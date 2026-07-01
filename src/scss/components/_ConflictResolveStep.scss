@@ -1,0 +1,118 @@
+@use "sass:color";
+
+.ConflictResolveStep {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+
+  // ── Progress indicator ────────────────────────────────
+  .crs-progress {
+    font-size: 12px;
+    color: var(--text-a70);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  // ── Conflict section ──────────────────────────────────
+  .crs-conflict {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // ── Field label ───────────────────────────────────────
+  .crs-field-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  // ── Options container ────────────────────────────────
+  .crs-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  // ── Option card (radio label) ────────────────────────
+  .crs-option {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    // Hidden radio input
+    input[type="radio"] {
+      margin-top: 2px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      border-color: $color_main_3;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    // Selected state
+    &.is-selected {
+      border-color: $color_main_1;
+      background: color.adjust($color_main_6, $lightness: 1%);
+      box-shadow: 0 0 0 2px rgba($color_main_1, 0.1);
+    }
+  }
+
+  // ── Option body (content wrapper) ────────────────────
+  .crs-option-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  // ── Option tag/badge ─────────────────────────────────
+  .crs-option-tag {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 4px 10px;
+    border-radius: $radius-sm;
+    background: $color_main_4;
+    color: $color_main_1;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+
+    // Upstream variant (different color)
+    &--upstream {
+      background: rgba($color-warning-amber, 0.15);
+      color: $color-warning-text-dark;
+    }
+  }
+
+  // ── Option text (the actual content) ──────────────────
+  .crs-option-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  // ── Footer with action buttons ──────────────────────
+  .crs-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-a50);
+  }
+}
