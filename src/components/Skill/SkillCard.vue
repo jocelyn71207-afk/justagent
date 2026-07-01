@@ -22,6 +22,7 @@
         <span v-if="skill.upstreamUpdateStatus === 'update_available'" class="skill-tag tag--update">
           ↑ 更新
         </span>
+        <span v-if="hasReviewingVersion" class="skill-tag tag--reviewing">審核中</span>
       </div>
       <div class="skill-card-desc">{{ skill.description }}</div>
       <div v-if="isExtension && skill.forkSourceId" class="skill-card-lineage">
@@ -82,4 +83,8 @@ const originLabel = computed(() => {
   if (props.skill.origin === 'manually_created') return '手動建立'
   return '擴充技能'
 })
+
+const hasReviewingVersion = computed(() =>
+  props.skill.versions?.some(v => v.status === 'reviewing') ?? false
+)
 </script>

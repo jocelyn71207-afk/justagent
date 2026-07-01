@@ -144,7 +144,9 @@
   &.tag--sys     { background: $color_main_4; color: $color_main_2; }
   &.tag--ext     { background: $color-badge-hot-bg; color: $color-badge-hot-text; }
   &.tag--version { background: var(--page-bg); color: var(--text-muted); border: 1px solid var(--divider-a50); }
-  &.tag--update  { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+  &.tag--update    { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+  &.tag--reviewing { background: $color-warning-bg; color: $color-warning-text; border: 1px solid $color-warning-border; }
+  &.tag--draft     { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
 }
 
 // Skill action button overrides
