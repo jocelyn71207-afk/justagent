@@ -45,14 +45,16 @@
             <p class="se-hint">簡短精確，讓 Agent 在選用時能快速識別。</p>
           </div>
           <div class="se-section">
-            <label class="se-label">描述（選填）</label>
-            <textarea
-              v-model="form.description"
-              class="custom-input se-textarea-sm"
-              placeholder="這個技能的用途與適用場景"
-              rows="3"
-              maxlength="200"
-            />
+            <div class="se-label-row">
+              <label class="se-label">技能描述</label>
+              <span class="se-ai-badge">
+                <i class="material-symbols-outlined">auto_awesome</i>AI 自動生成
+              </span>
+            </div>
+            <div class="se-ai-desc">
+              <template v-if="existingSkill?.description">{{ existingSkill.description }}</template>
+              <span v-else class="se-ai-desc-hint">AI 將根據技能指令自動識別並填入描述</span>
+            </div>
           </div>
         </template>
 
@@ -111,10 +113,6 @@
             <div class="se-confirm-row">
               <span class="se-confirm-key">技能名稱</span>
               <span class="se-confirm-val">{{ form.name }}</span>
-            </div>
-            <div v-if="form.description" class="se-confirm-row">
-              <span class="se-confirm-key">描述</span>
-              <span class="se-confirm-val">{{ form.description }}</span>
             </div>
             <div class="se-confirm-row">
               <span class="se-confirm-key">指令</span>
@@ -208,7 +206,6 @@ const existingSkill = editSkillId ? store.findSkill(editSkillId) : null
 
 const form = reactive({
   name: existingSkill?.name ?? '',
-  description: existingSkill?.description ?? '',
   instructions: existingSkill?.instructions ?? '',
   triggerHint: existingSkill?.triggerHint ?? '',
   assignedAgents: existingSkill?.assignedAgents ? [...existingSkill.assignedAgents] : [] as string[],
@@ -237,7 +234,6 @@ function handleSubmit() {
   if (!form.name.trim()) return
   const payload = {
     name: form.name.trim(),
-    description: form.description.trim(),
     instructions: form.instructions.trim(),
     triggerHint: form.triggerHint.trim(),
     assignedAgents: [...form.assignedAgents],

@@ -36,14 +36,16 @@ export const useRootStore = defineStore('rootStore', () => {
   // 測試 menutree 用的團隊列表, 之後會改成從後端拿資料
   const testGroups = ref([
     {
-    id: 'testTeam1',
+      id: 'testTeam1',
       name: 'UGG電子商務',
       isOpen: false,
+      isSkillOpen: false,
     },
     {
       id: 'testTeam2',
       name: 'UGG實體門市',
       isOpen: false,
+      isSkillOpen: false,
     }
   ]) as any;
 

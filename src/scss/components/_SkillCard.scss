@@ -3,23 +3,24 @@
 .SkillCard {
   background: var(--surface);
   border: 1px solid var(--divider-a50);
-  border-radius: 12px;
-  padding: 14px 18px;
+  border-radius: 14px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s, opacity 0.2s;
+  transition: box-shadow 0.2s, border-color 0.2s;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-color: $color_main_3;
   }
 
   &.is-extension {
+    // standalone outside group-box
     margin-left: 28px;
     border-left: 2px solid $color_main_1;
-    border-radius: 0 12px 12px 0;
+    border-radius: 0 14px 14px 0;
     position: relative;
 
     &::before {
@@ -35,37 +36,33 @@
 
   &.is-standalone {
     margin-left: 0;
-    border-left: 3px solid #f59e0b;
-    border-radius: 12px;
-
+    border-left: 3px solid $color-warning-amber;
+    border-radius: 14px;
     &::before { display: none; }
   }
 
   &.is-disabled {
     opacity: 0.45;
     pointer-events: none;
-
-    .skill-card-actions {
-      pointer-events: auto;
-    }
+    .skill-card-right { pointer-events: auto; }
   }
 
   .skill-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: box-shadow 0.2s;
 
-    .material-symbols-outlined { font-size: 20px; }
+    .material-symbols-outlined { font-size: 24px; }
 
     &.icon--sys {
-      background: $color_main_4;
+      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
       color: $color_main_2;
     }
-
     &.icon--ext {
       background: $color-badge-hot-bg;
       color: $color-badge-hot-text;
@@ -77,43 +74,85 @@
     min-width: 0;
 
     .skill-card-name {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 700;
       color: var(--text);
       display: flex;
       align-items: center;
       gap: 6px;
       flex-wrap: wrap;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
 
     .skill-card-desc {
-      font-size: 12px;
+      font-size: 12.5px;
       color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 480px;
+      max-width: 520px;
+      margin-bottom: 8px;
     }
 
-    .skill-card-lineage {
-      font-size: 11px;
-      color: $color_main_1;
-      margin-top: 3px;
+    .skill-card-stats {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+
+      .sk-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--page-bg);
+        border: 1px solid var(--divider-a50);
+        padding: 2px 8px 2px 6px;
+        border-radius: 20px;
+        white-space: nowrap;
+
+        .material-symbols-outlined { font-size: 12px; }
+
+        &--good {
+          color: $color_main_1;
+          border-color: rgba($color_main_1, 0.2);
+          background: $color_main_5;
+        }
+        &--warn {
+          color: $color-warning-amber;
+          border-color: rgba($color-warning-amber, 0.2);
+          background: rgba($color-warning-amber, 0.06);
+        }
+        &--bad {
+          color: $color-danger;
+          border-color: rgba($color-danger, 0.2);
+          background: rgba($color-danger, 0.05);
+        }
+      }
     }
+  }
+
+  // Right column: status stacked above actions
+  .skill-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .skill-card-meta {
     display: flex;
     align-items: center;
     gap: 5px;
-    flex-shrink: 0;
 
     .status-dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      &.dot--on  { background: $color_main_1; }
+      &.dot--on  { background: $color_main_1; box-shadow: 0 0 0 2px rgba($color_main_1, 0.2); }
       &.dot--off { background: var(--text-faint); }
     }
 
@@ -132,7 +171,7 @@
   }
 }
 
-// Tag chips
+// ── Tag chips ─────────────────────────────────────────
 .skill-tag {
   display: inline-flex;
   align-items: center;
@@ -147,23 +186,31 @@
   &.tag--update    { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
   &.tag--reviewing { background: $color-warning-bg; color: $color-warning-text; border: 1px solid $color-warning-border; }
   &.tag--draft     { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
+  &.tag--upstream  {
+    background: rgba($color-warning-amber, 0.12);
+    color: $color-warning-amber;
+    gap: 3px;
+    .material-symbols-outlined { font-size: 12px; }
+  }
+  }
 }
 
-// Skill action button overrides
+// ── Skill action button overrides ─────────────────────
 .skill-action-btn {
   padding: 2px 8px;
   font-size: 11px;
 
-  &.btn--warning {
-    background: $color-warning-amber;
-    border-color: $color-warning-amber;
-    color: #fff;
-    &:hover { background: $color_main_2; border-color: $color_main_2; color: #fff; }
+  &--icon {
+    padding: 2px 6px;
+    color: var(--text-faint);
+    border-color: var(--divider-a50);
+    &:hover { color: $color_main_1; border-color: $color_main_3; }
+    .material-symbols-outlined { font-size: 14px; }
   }
 
   &.btn--danger-ghost {
-    color: #dc2626;
-    border-color: #fecaca;
-    &:hover { background: #fef2f2; }
+    color: $color-danger;
+    border-color: rgba($color-danger, 0.28);
+    &:hover { background: rgba($color-danger, 0.06); }
   }
 }

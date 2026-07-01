@@ -29,25 +29,9 @@
                 {{ selectedSkill.type === 'system' ? '系統技能' : '企業擴充' }}
               </span>
             </div>
-            <!-- Mode Tab -->
-            <div class="mode-tabs">
-              <button
-                :class="['mode-tab', { 'is-active': activeMode === 'chat' }]"
-                @click="activeMode = 'chat'"
-              >
-                <i class="material-symbols-outlined">chat</i>對話模式
-              </button>
-              <button
-                :class="['mode-tab', { 'is-active': activeMode === 'json' }]"
-                @click="activeMode = 'json'"
-              >
-                <i class="material-symbols-outlined">data_object</i>JSON 模式
-              </button>
-            </div>
           </div>
 
-          <SkillTestChat v-if="activeMode === 'chat'" :skill-id="selectedSkill.id" />
-          <SkillTestJson v-else :skill-id="selectedSkill.id" />
+          <SkillTestChat :skill-id="selectedSkill.id" />
         </template>
 
         <div v-else class="panel-empty">
@@ -61,15 +45,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import SkillTestChat from '@/components/Skill/SkillTestChat.vue'
-import SkillTestJson from '@/components/Skill/SkillTestJson.vue'
 import { useSkillStore } from '@/stores/skillStore'
 
 const route = useRoute()
 const store = useSkillStore()
-const activeMode = ref<'chat' | 'json'>('chat')
 
 const selectedSkill = computed(() =>
   store.selectedSkillId ? store.findSkill(store.selectedSkillId) ?? null : null

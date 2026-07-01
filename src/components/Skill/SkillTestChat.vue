@@ -2,7 +2,7 @@
   <div class="SkillTestChat">
     <div class="chat-toolbar">
       <span class="system-hint">模擬 User 與 Agent 的真實對話，觀察技能觸發行為</span>
-      <button class="custom-btn" @click="store.resetConversation()">
+      <button class="custom-btn" @click="resetAll">
         <i class="material-symbols-outlined">restart_alt</i>重置對話
       </button>
     </div>
@@ -40,11 +40,11 @@
       <span class="test-cases-label">測試案例</span>
       <div class="test-cases-list">
         <button
-          v-for="tc in testCases"
+          v-for="(tc, i) in testCases"
           :key="tc.name"
           class="test-case-chip"
           :disabled="store.testIsRunning"
-          @click="inputText = tc.input"
+          @click="selectTestCase(i)"
         >
           {{ tc.name }}
         </button>
@@ -58,6 +58,7 @@
         placeholder="輸入測試訊息，模擬用戶..."
         :disabled="store.testIsRunning"
         @keydown.enter.prevent="handleSend"
+        @input="pendingAutoRun = []"
       />
       <button
         class="custom-btn"
@@ -73,19 +74,42 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
+import type { SkillTestCase } from '@/stores/skillStore'
 
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
 const inputText = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
+const pendingAutoRun = ref<SkillTestCase[]>([])
 
 const testCases = computed(() => store.findSkill(props.skillId)?.testCases ?? [])
 
+function selectTestCase(index: number) {
+  const tc = testCases.value[index]
+  if (!tc) return
+  inputText.value = tc.input
+  pendingAutoRun.value = testCases.value.slice(index + 1)
+}
+
+function resetAll() {
+  store.resetConversation()
+  pendingAutoRun.value = []
+  inputText.value = ''
+}
+
 async function handleSend() {
   const msg = inputText.value.trim()
-  if (!msg) return
+  if (!msg || store.testIsRunning) return
   inputText.value = ''
   await store.sendChatMessage(props.skillId, msg)
+
+  if (pendingAutoRun.value.length > 0) {
+    const next = pendingAutoRun.value[0]
+    pendingAutoRun.value = pendingAutoRun.value.slice(1)
+    await new Promise(r => setTimeout(r, 500))
+    inputText.value = next.input
+    await handleSend()
+  }
 }
 
 watch(
