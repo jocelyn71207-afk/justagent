@@ -222,6 +222,14 @@
               </div>
             </div>
 
+            <!-- 演化上下文 -->
+            <div v-if="skill.evolutionContext" class="drawer-section">
+              <div class="section-label">
+                <i class="material-symbols-outlined">auto_awesome</i>演化上下文
+              </div>
+              <p class="evolution-context">{{ skill.evolutionContext }}</p>
+            </div>
+
             <!-- 操作記錄 -->
             <div v-if="auditLog.length" class="drawer-section">
               <div class="section-label">操作記錄</div>

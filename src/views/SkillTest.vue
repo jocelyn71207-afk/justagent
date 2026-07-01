@@ -7,7 +7,7 @@
         <div class="sidebar-head">測試的技能</div>
         <div class="sidebar-list">
           <div
-            v-for="skill in store.flatSkills"
+            v-for="skill in testableSkills"
             :key="skill.id"
             :class="['sidebar-item', { 'is-active': store.selectedSkillId === skill.id }]"
             @click="store.setSelectedSkill(skill.id)"
@@ -67,6 +67,10 @@ const store = useSkillStore()
 
 const activeTab = ref<'chat' | 'ai'>('chat')
 
+const testableSkills = computed(() =>
+  store.flatSkills.filter(s => s.isEnabled && !s.deletedAt)
+)
+
 const selectedSkill = computed(() =>
   store.selectedSkillId ? store.findSkill(store.selectedSkillId) ?? null : null
 )
@@ -75,8 +79,8 @@ onMounted(() => {
   const skillId = route.query.skillId as string | undefined
   if (skillId && store.findSkill(skillId)) {
     store.setSelectedSkill(skillId)
-  } else if (store.flatSkills.length) {
-    store.setSelectedSkill(store.flatSkills[0].id)
+  } else if (testableSkills.value.length) {
+    store.setSelectedSkill(testableSkills.value[0].id)
   }
 })
 </script>

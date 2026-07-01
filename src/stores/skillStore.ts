@@ -570,6 +570,13 @@ export const useSkillStore = defineStore('skillStore', () => {
   const extensionCount = computed(() => flatSkills.value.filter(s => s.type === 'extension').length)
   const totalUsageCount = computed(() => flatSkills.value.reduce((sum, s) => sum + s.usageCount, 0))
 
+  const avgTestPassRate = computed(() => {
+    const enabled = flatSkills.value.filter(s => s.isEnabled && !s.deletedAt)
+    if (!enabled.length) return 0
+    const avg = enabled.reduce((sum, s) => sum + s.testPassRate, 0) / enabled.length
+    return Math.round(avg * 100)
+  })
+
   const reviewingSkillIds = computed<Set<string>>(() => {
     const ids = new Set<string>()
     for (const s of flatSkills.value) {
@@ -1008,6 +1015,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     enabledCount,
     extensionCount,
     totalUsageCount,
+    avgTestPassRate,
     deletedSkills,
     reviewingSkillIds,
     upstreamUpdateSkillIds,

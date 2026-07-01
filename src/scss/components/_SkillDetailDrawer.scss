@@ -481,13 +481,14 @@
   // ── Evolution context ─────────────────────────
 
   .evolution-context {
-    background: var(--page-bg);
-    border-radius: 8px;
-    padding: 12px 14px;
     font-size: 13px;
     color: var(--text-muted);
     line-height: 1.6;
-    border-left: 3px solid $color_main_1;
+    margin: 0;
+    padding: 10px 14px;
+    background: var(--page-bg);
+    border-radius: 8px;
+    border-left: 3px solid $color_main_3;
   }
 
   // ── Chart ─────────────────────────────────────

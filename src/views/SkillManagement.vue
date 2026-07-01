@@ -39,13 +39,13 @@
             <div class="skill-stat-lbl">本月使用次數</div>
           </div>
         </div>
-        <div v-if="pendingCount > 0" class="skill-stat-card skill-stat-card--alert">
-          <div class="skill-stat-icon icon--pending">
-            <i class="material-symbols-outlined">pending_actions</i>
+        <div class="skill-stat-card">
+          <div class="skill-stat-icon icon--pass">
+            <i class="material-symbols-outlined">verified</i>
           </div>
           <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ pendingCount }}</div>
-            <div class="skill-stat-lbl">待處理</div>
+            <div class="skill-stat-num">{{ store.avgTestPassRate }}%</div>
+            <div class="skill-stat-lbl">測試通過率</div>
           </div>
         </div>
       </div>
@@ -83,9 +83,14 @@
       <div v-if="store.pendingUpdateCount > 0 && activeView === 'list'" class="upstream-banner">
         <span>
           <i class="material-symbols-outlined">upgrade</i>
-          <strong>{{ store.pendingUpdateCount }} 個技能</strong>有上游更新可合併
+          <strong>{{ store.pendingUpdateSkills[0]?.name }}</strong>
+          <template v-if="store.pendingUpdateCount > 1"> 等 {{ store.pendingUpdateCount }} 個技能</template>
+          有上游更新可合併
         </span>
-        <button class="custom-btn" @click="showBatchUpdate = true">查看全部</button>
+        <div class="upstream-banner-actions">
+          <button class="custom-btn" @click="upstreamSkill = store.pendingUpdateSkills[0]">查看</button>
+          <button v-if="store.pendingUpdateCount > 1" class="custom-btn" @click="showBatchUpdate = true">全部（{{ store.pendingUpdateCount }}）</button>
+        </div>
       </div>
 
       <!-- 搜尋篩選 -->
@@ -105,7 +110,7 @@
                 :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
                 @click="detailSkill = $event"
                 @test="handleTest"
-                @toggle="store.toggleSkill($event.id)"
+                @toggle="handleToggle"
                 @duplicate="handleDuplicate"
               />
               <div
@@ -120,7 +125,7 @@
                   :has-upstream-update="store.upstreamUpdateSkillIds.has(child.id)"
                   @click="detailSkill = $event"
                   @test="handleTest"
-                  @toggle="store.toggleSkill($event.id)"
+                  @toggle="handleToggle"
                   @duplicate="handleDuplicate"
                 />
               </div>
@@ -135,7 +140,7 @@
             :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
             @click="detailSkill = $event"
             @test="handleTest"
-            @toggle="store.toggleSkill($event.id)"
+            @toggle="handleToggle"
             @duplicate="handleDuplicate"
           />
 
@@ -177,7 +182,7 @@
       :upstream-version="upstreamVersionForDetail"
       @close="detailSkill = null"
       @test="handleTest"
-      @toggle="store.toggleSkill($event.id)"
+      @toggle="handleToggle"
       @edit="(s) => router.push({ path: '/view/SkillEditor', query: { skillId: s.id } })"
       @delete="(s) => { store.deleteSkill(s.id); detailSkill = null }"
       @duplicate="handleDuplicate"
@@ -190,7 +195,7 @@
       :upstream-version="upstreamSkill ? (store.getUpstreamVersion(upstreamSkill.id) ?? '') : ''"
       @close="upstreamSkill = null"
       @merge="handleMerge"
-      @ignore="upstreamSkill = null"
+      @ignore="(s) => { store.ignoreUpstreamUpdate(s.id); upstreamSkill = null }"
       @detach="handleDetach"
     />
 
@@ -268,6 +273,49 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- 停用確認 dialog -->
+    <Teleport to="body">
+      <Transition name="confirm-fade">
+        <div
+          v-if="disableConfirmSkill"
+          class="skill-disable-overlay"
+          @click.self="disableConfirmSkill = null"
+        >
+          <div class="skill-disable-dialog">
+            <div class="sdd-header">
+              <div class="sdd-icon">
+                <i class="material-symbols-outlined">warning</i>
+              </div>
+              <div class="sdd-title">停用「{{ disableConfirmSkill.name }}」？</div>
+            </div>
+
+            <template v-if="disableConfirmSkill.assignedAgents?.length">
+              <p class="sdd-desc">停用後，以下 Agent 將無法繼續調用此技能：</p>
+              <div class="sdd-agent-list">
+                <span
+                  v-for="agent in disableConfirmSkill.assignedAgents"
+                  :key="agent"
+                  class="sdd-agent-tag"
+                >
+                  <i class="material-symbols-outlined">smart_toy</i>{{ agent }}
+                </span>
+              </div>
+            </template>
+            <p v-else class="sdd-desc sdd-desc--no-agent">
+              此技能目前未指派給任何 Agent，停用不影響現有對話流程。
+            </p>
+
+            <div class="sdd-footer">
+              <button class="custom-btn" @click="disableConfirmSkill = null">取消</button>
+              <button class="custom-btn btn--danger-ghost" @click="confirmDisable">
+                <i class="material-symbols-outlined">block</i>確認停用
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -295,8 +343,6 @@ const upstreamSkill = ref<Skill | null>(null)
 const activeView = ref<'list' | 'drafts'>('list')
 const showBatchUpdate = ref(false)
 const filterState = ref<SkillFilterState>({ query: '', type: 'all', status: 'all', update: 'all' })
-
-const pendingCount = computed(() => store.reviewingSkillIds.size + store.upstreamUpdateSkillIds.size)
 
 const upstreamVersionForDetail = computed(() => {
   if (!detailSkill.value) return undefined
@@ -410,5 +456,24 @@ function confirmSubmitDraft() {
 
 function handleDeleteDraft(draft: DraftSkill) {
   store.deleteDraft(draft.id)
+}
+
+const disableConfirmSkill = ref<Skill | null>(null)
+
+function handleToggle(skill: Skill) {
+  if (skill.isEnabled) {
+    disableConfirmSkill.value = skill
+  } else {
+    store.toggleSkill(skill.id)
+  }
+}
+
+function confirmDisable() {
+  if (!disableConfirmSkill.value) return
+  store.toggleSkill(disableConfirmSkill.value.id)
+  if (detailSkill.value?.id === disableConfirmSkill.value.id) {
+    detailSkill.value = { ...detailSkill.value, isEnabled: false }
+  }
+  disableConfirmSkill.value = null
 }
 </script>

@@ -36,7 +36,7 @@
         <button
           class="btn-secondary ai-regen-btn"
           :disabled="store.aiTestIsRunning"
-          @click="handleRegenerate"
+          @click="showRegenConfirm = true"
         >
           重新生成
         </button>
@@ -84,7 +84,12 @@
           <div v-if="scenario.status === 'pass' || scenario.status === 'fail'" class="ai-result">
             <div class="ai-result-row">
               <span class="ai-result-label">Agent 回覆</span>
-              <span class="ai-result-reply">{{ scenario.agentReply }}</span>
+              <span :class="['ai-result-reply', expandedReplies.has(scenario.id) && 'is-expanded']">{{ scenario.agentReply }}</span>
+              <button
+                v-if="!expandedReplies.has(scenario.id)"
+                class="ai-reply-expand"
+                @click="expandedReplies.add(scenario.id)"
+              >展開</button>
             </div>
             <div class="ai-result-row">
               <span class="ai-result-label">AI 判斷</span>
@@ -152,12 +157,21 @@
 
     </div>
   </div>
+
+  <ConfirmModal
+    v-model="showRegenConfirm"
+    title="重新生成測試情境"
+    message="現有情境與執行結果將全部清除，確定要重新生成嗎？"
+    confirm-label="確認重新生成"
+    @confirm="handleRegenerate"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { AITestTag } from '@/stores/skillStore'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const props = defineProps<{ skillId: string }>()
 
@@ -165,6 +179,8 @@ const store = useSkillStore()
 
 // ── State ──────────────────────────────────────────────────────────────────
 const showHistory = ref(false)
+const showRegenConfirm = ref(false)
+const expandedReplies = ref(new Set<string>())
 
 // ── Computed ───────────────────────────────────────────────────────────────
 const isIdle = computed(
@@ -215,6 +231,7 @@ function handleRunAll(): void {
 function handleRegenerate(): void {
   if (store.aiTestIsRunning) return
   store.generateAITestScenarios(props.skillId)
+  showRegenConfirm.value = false
 }
 
 function formatHistoryDate(iso: string): string {

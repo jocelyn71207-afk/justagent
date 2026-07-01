@@ -62,6 +62,10 @@
       color: $color-warning-amber;
       border: 1px solid $color-warning-border;
     }
+    &.icon--pass {
+      background: $color_main_4;
+      color: $color_main_2;
+    }
   }
 
   .skill-stat-body { flex: 1; min-width: 0; }
@@ -422,6 +426,12 @@
       gap: 6px;
       .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; }
     }
+
+    .upstream-banner-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
   }
 
   // ── Section header ────────────────────────────
@@ -577,5 +587,98 @@
     padding: 16px 20px 20px;
     border-top: 1px solid var(--divider-a50);
     margin-top: 16px;
+  }
+}
+
+// ── Disable confirm dialog (Teleport → body) ──────────
+.skill-disable-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(2px);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skill-disable-dialog {
+  background: var(--surface);
+  border-radius: 18px;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  padding: 24px 24px 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+
+  .sdd-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .sdd-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba($color-danger, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    .material-symbols-outlined { font-size: 20px; color: $color-danger; }
+  }
+
+  .sdd-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .sdd-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+
+    &--no-agent { color: var(--text-faint); font-style: italic; margin-bottom: 0; }
+  }
+
+  .sdd-agent-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 20px;
+  }
+
+  .sdd-agent-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: rgba($color-danger, 0.06);
+    border: 1px solid rgba($color-danger, 0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-danger;
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
+  .sdd-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-a50);
+    margin-top: 4px;
+
+    .btn--danger-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      .material-symbols-outlined { font-size: 16px; }
+    }
   }
 }
