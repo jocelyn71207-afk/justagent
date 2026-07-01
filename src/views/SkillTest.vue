@@ -29,9 +29,20 @@
                 {{ selectedSkill.type === 'system' ? '系統技能' : '企業擴充' }}
               </span>
             </div>
+            <div class="test-tabs">
+              <button
+                :class="['test-tab', activeTab === 'chat' && 'is-active']"
+                @click="activeTab = 'chat'"
+              >對話測試</button>
+              <button
+                :class="['test-tab', activeTab === 'ai' && 'is-active']"
+                @click="activeTab = 'ai'"
+              >AI 快速測試</button>
+            </div>
           </div>
 
-          <SkillTestChat :skill-id="selectedSkill.id" />
+          <SkillTestChat v-if="activeTab === 'chat'" :skill-id="selectedSkill.id" />
+          <SkillTestAI v-else :skill-id="selectedSkill.id" />
         </template>
 
         <div v-else class="panel-empty">
@@ -45,13 +56,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import SkillTestChat from '@/components/Skill/SkillTestChat.vue'
+import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
 import { useSkillStore } from '@/stores/skillStore'
 
 const route = useRoute()
 const store = useSkillStore()
+
+const activeTab = ref<'chat' | 'ai'>('chat')
 
 const selectedSkill = computed(() =>
   store.selectedSkillId ? store.findSkill(store.selectedSkillId) ?? null : null

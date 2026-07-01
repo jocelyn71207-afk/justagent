@@ -86,6 +86,31 @@
     }
   }
 
+  .test-tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .test-tab {
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--divider-a50);
+    background: transparent;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover { color: var(--text); border-color: $color_main_3; }
+    &.is-active {
+      background: $color_main_5;
+      color: $color_main_1;
+      border-color: $color_main_3;
+      font-weight: 600;
+    }
+  }
+
   .panel-empty {
     flex: 1;
     display: flex;

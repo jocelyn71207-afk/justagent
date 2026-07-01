@@ -1,0 +1,427 @@
+// ── SkillTestAI Component ──────────────────────────────────────────────────
+.SkillTestAI {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+// ── ① Idle state ──────────────────────────────────────────────────────────
+.ai-idle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+
+  .ai-idle-icon {
+    font-size: 48px;
+    color: var(--text-faint);
+    opacity: 0.4;
+  }
+
+  .ai-idle-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 300px;
+    line-height: 1.6;
+  }
+}
+
+// ── ② Loading state ───────────────────────────────────────────────────────
+.ai-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  .ai-loading-text {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+}
+
+// ── Spinner ────────────────────────────────────────────────────────────────
+.ai-spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--divider-a50);
+  border-top-color: $color_main_1;
+  border-radius: 50%;
+  animation: ai-spin 0.75s linear infinite;
+  flex-shrink: 0;
+
+  &.ai-spinner--sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── ③ Scenarios wrap ──────────────────────────────────────────────────────
+.ai-scenarios-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ── Toolbar ────────────────────────────────────────────────────────────────
+.ai-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  .ai-progress {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ai-regen-btn {
+    margin-left: auto;
+  }
+}
+
+// ── Shared button helpers (scoped to this component) ─────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 7px;
+  border: none;
+  background: $color_main_1;
+  color: var(--text-invert, #fff);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) { opacity: 0.87; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: 1px solid var(--divider-a50);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) { color: var(--text); border-color: $color_main_3; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.btn-sm {
+  padding: 3px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+
+// ── Scenario List ─────────────────────────────────────────────────────────
+.ai-scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ── Scenario Card ──────────────────────────────────────────────────────────
+.ai-scenario-card {
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.15s;
+
+  &.card--pass { border-left: 3px solid $color_main_3; }
+  &.card--fail { border-left: 3px solid $color-danger; }
+}
+
+.ai-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ai-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ── Tag badges ────────────────────────────────────────────────────────────
+.ai-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  &.tag--normal {
+    background: $color_main_5;
+    color: $color_main_1;
+  }
+
+  &.tag--boundary {
+    background: $color-badge-hot-bg;
+    color: $color-badge-hot-text;
+  }
+
+  &.tag--trigger_edge {
+    background: $color-badge-ai-bg;
+    color: $color-badge-ai-text;
+  }
+}
+
+// ── Card body fields ──────────────────────────────────────────────────────
+.ai-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-field {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+
+  .ai-field-label {
+    flex-shrink: 0;
+    width: 56px;
+    color: var(--text-faint);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-top: 2px;
+  }
+
+  .ai-field-value {
+    flex: 1;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .ai-field-expected {
+    color: var(--text-muted);
+  }
+}
+
+// ── Status icon ────────────────────────────────────────────────────────────
+.ai-status-icon {
+  display: flex;
+  align-items: center;
+
+  .material-symbols-outlined { font-size: 20px; }
+
+  &.status--pass { color: $color_main_1; }
+  &.status--fail { color: $color-danger; }
+}
+
+// ── Result section ────────────────────────────────────────────────────────
+.ai-result {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider-a50);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-result-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+
+  .ai-result-label {
+    flex-shrink: 0;
+    width: 64px;
+    color: var(--text-faint);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-top: 2px;
+  }
+
+  .ai-result-reply {
+    flex: 1;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.ai-judgment {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+  font-weight: 500;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ai-judgment-detail {
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  &.judgment--pass {
+    color: $color_main_1;
+    .ai-judgment-detail { color: var(--text-muted); }
+  }
+
+  &.judgment--fail {
+    color: $color-danger;
+    .ai-judgment-detail { color: var(--text-muted); }
+  }
+}
+
+// ── Report Card ────────────────────────────────────────────────────────────
+.ai-report-card {
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .ai-report-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .ai-report-rate {
+    font-size: 15px;
+    font-weight: 700;
+    color: $color_main_1;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ── Report Table ───────────────────────────────────────────────────────────
+.ai-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--divider-a50);
+  }
+
+  td {
+    padding: 8px 0;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--page-bg);
+    vertical-align: middle;
+
+    &:last-child { text-align: center; }
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .report-status-icon {
+    font-size: 18px;
+
+    &.status--pass { color: $color_main_1; }
+    &.status--fail { color: $color-danger; }
+  }
+}
+
+.ai-report-summary {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 12px 14px;
+  background: var(--page-bg);
+  border-radius: 8px;
+  margin: 0;
+}
+
+// ── History Section ────────────────────────────────────────────────────────
+.ai-history {
+  margin-top: 8px;
+  border: 1px solid var(--divider-a50);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ai-history-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--page-bg);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: left;
+  transition: color 0.15s;
+
+  &:hover { color: var(--text); }
+
+  .material-symbols-outlined { font-size: 18px; }
+}
+
+.ai-history-list {
+  padding: 8px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.ai-history-date { color: var(--text-muted); }
+.ai-history-rate { font-weight: 600; color: var(--text); }
+.ai-history-detail { color: var(--text-faint); }
