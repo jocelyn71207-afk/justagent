@@ -80,7 +80,7 @@
       </div>
 
       <!-- 上游更新 Banner -->
-      <div v-if="store.pendingUpdateCount > 0" class="upstream-banner">
+      <div v-if="store.pendingUpdateCount > 0 && activeView === 'list'" class="upstream-banner">
         <span>
           <i class="material-symbols-outlined">upgrade</i>
           <strong>{{ store.pendingUpdateCount }} 個技能</strong>有上游更新可合併
