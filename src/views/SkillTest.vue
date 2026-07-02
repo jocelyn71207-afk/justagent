@@ -15,6 +15,18 @@
             <span :class="['skill-dot', skill.type === 'system' ? 'dot--sys' : 'dot--ext']"></span>
             {{ skill.name }}
           </div>
+          <template v-if="store.myDrafts.length">
+            <div class="sidebar-section-label">草稿</div>
+            <div
+              v-for="draft in store.myDrafts"
+              :key="draft.id"
+              :class="['sidebar-item', { 'is-active': store.selectedSkillId === draft.id }]"
+              @click="store.setSelectedSkill(draft.id)"
+            >
+              <span class="skill-dot dot--draft"></span>
+              {{ draft.name || '未命名草稿' }}
+            </div>
+          </template>
         </div>
       </div>
 

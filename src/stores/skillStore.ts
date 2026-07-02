@@ -604,7 +604,26 @@ export const useSkillStore = defineStore('skillStore', () => {
   const testRunHistory = ref<TestRun[]>([])
 
   function findSkill(id: string): Skill | undefined {
-    return flatSkills.value.find(s => s.id === id)
+    const published = flatSkills.value.find(s => s.id === id)
+    if (published) return published
+    const draft = myDrafts.value.find(d => d.id === id)
+    if (!draft) return undefined
+    return {
+      id: draft.id,
+      name: draft.name || '未命名草稿',
+      description: draft.description,
+      type: draft.type,
+      origin: 'manually_created',
+      version: '草稿',
+      isEnabled: false,
+      usageCount: 0,
+      testPassRate: 0,
+      avgLatencyMs: 0,
+      instructions: draft.instructions,
+      triggerHint: draft.triggerHint,
+      assignedAgents: draft.assignedAgents,
+      forkSourceId: draft.forkSourceId,
+    }
   }
 
   function getSkillVersions(skillId: string): SkillVersion[] {

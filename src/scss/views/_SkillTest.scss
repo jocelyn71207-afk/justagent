@@ -56,8 +56,23 @@
       border-radius: 50%;
       flex-shrink: 0;
 
-      &.dot--sys { background: #818cf8; }
-      &.dot--ext { background: #f59e0b; }
+      &.dot--sys  { background: #818cf8; }
+      &.dot--ext  { background: #f59e0b; }
+      &.dot--draft {
+        background: transparent;
+        border: 2px dashed var(--text-faint);
+      }
+    }
+
+    .sidebar-section-label {
+      padding: 8px 16px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-top: 1px solid var(--divider-a50);
+      margin-top: 4px;
     }
   }
 
