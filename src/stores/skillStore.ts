@@ -77,6 +77,7 @@ export interface Skill {
   description: string
   type: 'system' | 'extension'
   origin: 'platform_created' | 'custom_version' | 'manually_created'
+  scope?: 'system' | 'enterprise' | 'team'
   version: string
   isEnabled: boolean
   usageCount: number
@@ -106,6 +107,7 @@ export interface CreateSkillPayload {
   triggerHint: string
   isEnabled: boolean
   assignedAgents: string[]
+  scope?: 'enterprise' | 'team'
 }
 
 export interface UpdateSkillPayload {
@@ -163,6 +165,7 @@ const MOCK_SKILLS: Skill[] = [
     description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
     type: 'system',
     origin: 'platform_created',
+    scope: 'system',
     version: '2.5.0',
     isEnabled: true,
     usageCount: 0,
@@ -223,6 +226,7 @@ const MOCK_SKILLS: Skill[] = [
         description: '針對退貨問題，依設定的服務原則回應退貨政策與審核',
         type: 'extension',
         origin: 'custom_version',
+        scope: 'enterprise',
         version: '1.0.0',
         isEnabled: true,
         usageCount: 89,
@@ -309,6 +313,7 @@ const MOCK_SKILLS: Skill[] = [
     description: '自動摘要長文件，支援 PDF / Word / Markdown',
     type: 'system',
     origin: 'platform_created',
+    scope: 'system',
     version: '1.5.0',
     isEnabled: true,
     usageCount: 0,
@@ -338,6 +343,7 @@ const MOCK_SKILLS: Skill[] = [
     description: '會議錄音轉文字並生成摘要與 action items',
     type: 'system',
     origin: 'platform_created',
+    scope: 'system',
     version: '2.2.0',
     isEnabled: true,
     usageCount: 0,
@@ -366,6 +372,7 @@ const MOCK_SKILLS: Skill[] = [
         description: '工程會議格式，自動標記 action items 至 Jira',
         type: 'extension',
         origin: 'custom_version',
+        scope: 'team',
         version: '1.2.0',
         isEnabled: true,
         usageCount: 34,
@@ -392,6 +399,7 @@ const MOCK_SKILLS: Skill[] = [
     description: '根據產品 ID 查詢即時庫存量，支援多個倉庫',
     type: 'extension',
     origin: 'manually_created',
+    scope: 'enterprise',
     version: '1.1.0',
     isEnabled: true,
     usageCount: 156,
@@ -448,6 +456,57 @@ const MOCK_SKILLS: Skill[] = [
         reviewHistory: [
           { action: 'SUBMITTED', by: 'jocelyn.tseng', time: '2026-05-15T09:00:00Z' },
           { action: 'APPROVED', by: 'jocelyn.tseng', time: '2026-05-15T11:00:00Z' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'team-weekly-001',
+    name: '業績週報生成',
+    description: '根據本週銷售數據自動整理業績摘要，含商品排行與目標達成率分析',
+    type: 'extension',
+    origin: 'manually_created',
+    scope: 'team',
+    version: '1.0.0',
+    isEnabled: true,
+    usageCount: 28,
+    testPassRate: 0.87,
+    avgLatencyMs: 410,
+    instructions: '你是業務團隊的週報助理。\n\n每週根據提供的銷售數據，自動生成結構化業績週報：\n1. 本週總業績與目標達成率\n2. Top 5 商品銷售排行\n3. 各區域業績比較\n4. 下週改善建議\n\n輸出格式以 Markdown 條列式為主，數字加粗標示。',
+    triggerHint: '週報、業績、銷售報告、商品排行、達標率',
+    capabilities: [
+      { name: '銷售數據分析', description: '自動整理銷售數據並計算各項 KPI，包含業績達成率與成長趨勢。' },
+      { name: '商品排行生成', description: '根據銷售量或業績金額，自動生成 Top N 商品排行清單。' },
+    ],
+    usageScenarios: [
+      { title: '週五業績彙整', description: '每週五業務主管發出週報前，AI 自動整理當週數據並產出草稿，主管只需確認並補充備註即可發送。' },
+      { title: '即時達標查詢', description: '業務同仁隨時可詢問目前達標進度，AI 即時計算本月目標達成率與缺口分析。' },
+    ],
+    assignedAgents: ['業務分析助理'],
+    testCases: [
+      { name: '生成本週週報', input: '請根據本週數據生成業績週報' },
+      { name: '查詢達標率', input: '本週業績達標了嗎？與上週比較如何？' },
+      { name: '商品排行查詢', input: '請列出本週銷售前五名的商品' },
+    ],
+    versions: [
+      {
+        id: 'v-team-weekly-1.0',
+        versionTag: '1.0.0',
+        status: 'active',
+        name: '業績週報生成',
+        description: '根據本週銷售數據自動整理業績摘要，含商品排行與目標達成率分析',
+        instructions: '你是業務團隊的週報助理。\n\n每週根據提供的銷售數據，自動生成結構化業績週報：\n1. 本週總業績與目標達成率\n2. Top 5 商品銷售排行\n3. 各區域業績比較\n4. 下週改善建議',
+        triggerHint: '週報、業績、銷售報告',
+        capabilities: [
+          { name: '銷售數據分析', description: '自動整理銷售數據並計算各項 KPI，包含業績達成率與成長趨勢。' },
+          { name: '商品排行生成', description: '根據銷售量或業績金額，自動生成 Top N 商品排行清單。' },
+        ],
+        createdAt: '2026-06-15T09:00:00Z',
+        createdBy: 'jocelyn.tseng',
+        updateNote: '初始版本',
+        reviewHistory: [
+          { action: 'SUBMITTED', by: 'jocelyn.tseng', time: '2026-06-15T09:00:00Z' },
+          { action: 'APPROVED', by: 'jocelyn.tseng', time: '2026-06-15T14:00:00Z' },
         ],
       },
     ],
@@ -689,6 +748,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       assignedAgents: data.assignedAgents,
       type: 'extension',
       origin: 'manually_created',
+      scope: data.scope ?? 'enterprise',
       version: '1.0.0',
       isEnabled: data.isEnabled,
       usageCount: 0,
