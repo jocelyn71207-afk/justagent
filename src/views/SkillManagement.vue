@@ -36,16 +36,7 @@
           </div>
           <div class="skill-stat-body">
             <div class="skill-stat-num">{{ store.totalUsageCount.toLocaleString() }}</div>
-            <div class="skill-stat-lbl">本月使用次數</div>
-          </div>
-        </div>
-        <div class="skill-stat-card">
-          <div class="skill-stat-icon icon--pass">
-            <i class="material-symbols-outlined">verified</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.avgTestPassRate }}%</div>
-            <div class="skill-stat-lbl">測試通過率</div>
+            <div class="skill-stat-lbl">本月自動觸發次數</div>
           </div>
         </div>
       </div>
