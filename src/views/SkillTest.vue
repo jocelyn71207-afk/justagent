@@ -7,7 +7,7 @@
         <div class="sidebar-head">測試的技能</div>
         <div class="sidebar-list">
           <div
-            v-for="skill in testableSkills"
+            v-for="skill in store.flatSkills"
             :key="skill.id"
             :class="['sidebar-item', { 'is-active': store.selectedSkillId === skill.id }]"
             @click="store.setSelectedSkill(skill.id)"
@@ -15,18 +15,6 @@
             <span :class="['skill-dot', skill.type === 'system' ? 'dot--sys' : 'dot--ext']"></span>
             {{ skill.name }}
           </div>
-          <template v-if="store.myDrafts.length">
-            <div class="sidebar-section-label">草稿</div>
-            <div
-              v-for="draft in store.myDrafts"
-              :key="draft.id"
-              :class="['sidebar-item', { 'is-active': store.selectedSkillId === draft.id }]"
-              @click="store.setSelectedSkill(draft.id)"
-            >
-              <span class="skill-dot dot--draft"></span>
-              {{ draft.name || '未命名草稿' }}
-            </div>
-          </template>
         </div>
       </div>
 
@@ -41,16 +29,23 @@
                 {{ selectedSkill.type === 'system' ? '系統技能' : '企業擴充' }}
               </span>
             </div>
-            <div class="test-tabs">
-              <button
-                :class="['test-tab', activeTab === 'chat' && 'is-active']"
-                @click="activeTab = 'chat'"
-              >對話測試</button>
-              <button
-                :class="['test-tab', activeTab === 'ai' && 'is-active']"
-                @click="activeTab = 'ai'"
-              >AI 快速測試</button>
-            </div>
+          </div>
+
+          <div class="test-panel-tabs">
+            <button
+              :class="['tab-btn', { 'is-active': activeTab === 'chat' }]"
+              @click="activeTab = 'chat'"
+            >
+              <i class="material-symbols-outlined">chat</i>
+              對話測試
+            </button>
+            <button
+              :class="['tab-btn', { 'is-active': activeTab === 'ai' }]"
+              @click="activeTab = 'ai'"
+            >
+              <i class="material-symbols-outlined">auto_awesome</i>
+              AI 快速測試
+            </button>
           </div>
 
           <SkillTestChat v-if="activeTab === 'chat'" :skill-id="selectedSkill.id" />
@@ -76,12 +71,7 @@ import { useSkillStore } from '@/stores/skillStore'
 
 const route = useRoute()
 const store = useSkillStore()
-
 const activeTab = ref<'chat' | 'ai'>('chat')
-
-const testableSkills = computed(() =>
-  store.flatSkills.filter(s => s.isEnabled && !s.deletedAt)
-)
 
 const selectedSkill = computed(() =>
   store.selectedSkillId ? store.findSkill(store.selectedSkillId) ?? null : null
@@ -91,8 +81,8 @@ onMounted(() => {
   const skillId = route.query.skillId as string | undefined
   if (skillId && store.findSkill(skillId)) {
     store.setSelectedSkill(skillId)
-  } else if (testableSkills.value.length) {
-    store.setSelectedSkill(testableSkills.value[0].id)
+  } else if (store.flatSkills.length) {
+    store.setSelectedSkill(store.flatSkills[0].id)
   }
 })
 </script>
