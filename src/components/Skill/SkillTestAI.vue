@@ -12,7 +12,7 @@
     <div v-else-if="!store.aiTestScenarios.length" class="ai-idle">
       <i class="material-symbols-outlined ai-idle-icon">auto_awesome</i>
       <p class="ai-idle-hint">AI 將依技能描述自動產生 6–8 個測試案例</p>
-      <button class="custom-btn custom-btn--primary" @click="generate">
+      <button class="custom-btn custom-main-btn" @click="generate">
         <i class="material-symbols-outlined">play_circle</i>
         生成測試情境
       </button>
@@ -195,6 +195,6 @@ function runOne(scenarioId: string) {
 }
 
 function expand(id: string) {
-  expanded.value.add(id)
+  expanded.value = new Set([...expanded.value, id])
 }
 </script>
