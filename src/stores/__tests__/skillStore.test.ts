@@ -152,4 +152,41 @@ describe('skillStore', () => {
       expect(last.passRate).toBeCloseTo(0.7)
     })
   })
+
+  describe('PersonalSkill', () => {
+    it('myPersonalSkills 初始有 3 筆且都是 zone:personal', () => {
+      const store = useSkillStore()
+      expect(store.myPersonalSkills.length).toBe(3)
+      store.myPersonalSkills.forEach(s => expect(s.zone).toBe('personal'))
+    })
+
+    it('submitPersonalSkill 將 personalStatus 設為 reviewing 並記錄 note 和 mode', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills[0]
+      expect(skill.personalStatus).toBe('available')
+      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明')
+      expect(store.myPersonalSkills[0].personalStatus).toBe('reviewing')
+      expect(store.myPersonalSkills[0].submitNote).toBe('測試說明')
+      expect(store.myPersonalSkills[0].submitMode).toBe('new_skill')
+    })
+
+    it('submitPersonalSkill 對不存在 id 不報錯', () => {
+      const store = useSkillStore()
+      expect(() => store.submitPersonalSkill('nonexistent', 'new_skill', '')).not.toThrow()
+    })
+
+    it('deletePersonalSkill 從列表中移除', () => {
+      const store = useSkillStore()
+      const before = store.myPersonalSkills.length
+      store.deletePersonalSkill(store.myPersonalSkills[0].id)
+      expect(store.myPersonalSkills.length).toBe(before - 1)
+    })
+
+    it('findSkill 可找到個人技能', () => {
+      const store = useSkillStore()
+      const result = store.findSkill('personal-001')
+      expect(result).toBeDefined()
+      expect(result?.zone).toBe('personal')
+    })
+  })
 })

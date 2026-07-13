@@ -98,6 +98,12 @@ export interface Skill {
   upstreamUpdateStatus?: 'up_to_date' | 'update_available' | 'ignored'
   auditLog?: OperationRecord[]
   upstreamConflicts?: ConflictItem[]
+  zone?: 'personal' | 'library'
+  personalStatus?: 'available' | 'reviewing' | 'has_library'
+  derivedFrom?: string
+  hasLibraryUpdate?: boolean
+  submitNote?: string
+  submitMode?: 'version_update' | 'new_skill'
 }
 
 export interface CreateSkillPayload {
@@ -563,6 +569,58 @@ const DEFAULT_AI_SCENARIOS: ScenarioTemplate[] = [
   { tag: 'trigger_edge', input: '觸發關鍵詞測試', expectedBehavior: '關鍵字觸發測試，確認技能正確識別意圖' },
 ]
 
+const MOCK_PERSONAL_SKILLS: Skill[] = [
+  {
+    id: 'personal-001',
+    name: '週報自動生成',
+    description: '根據本週的會議記錄、任務清單，自動整理生成週報摘要',
+    type: 'extension',
+    origin: 'manually_created',
+    zone: 'personal',
+    personalStatus: 'available',
+    derivedFrom: 'sys-meeting-001',
+    hasLibraryUpdate: false,
+    version: '1.0.0',
+    isEnabled: true,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
+  },
+  {
+    id: 'personal-002',
+    name: '客服對話品質評估',
+    description: '自動分析客服對話品質，評估回答準確度與客戶滿意度',
+    type: 'extension',
+    origin: 'manually_created',
+    zone: 'personal',
+    personalStatus: 'reviewing',
+    derivedFrom: 'sys-cs-001',
+    hasLibraryUpdate: true,
+    version: '1.0.0',
+    isEnabled: true,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '你是客服品質評估助理，分析客服對話品質。',
+  },
+  {
+    id: 'personal-003',
+    name: 'ERP 報表彙整',
+    description: '整合 ERP 系統數據，自動生成週期性報表',
+    type: 'extension',
+    origin: 'manually_created',
+    zone: 'personal',
+    personalStatus: 'has_library',
+    version: '1.0.0',
+    isEnabled: false,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '你是 ERP 報表助理，整合多系統數據生成週期性報表。',
+  },
+]
+
 const MOCK_DRAFTS: DraftSkill[] = [
   {
     id: 'draft-001',
@@ -598,6 +656,12 @@ const MOCK_DRAFTS: DraftSkill[] = [
 export const useSkillStore = defineStore('skillStore', () => {
   const skills = ref<Skill[]>(JSON.parse(JSON.stringify(MOCK_SKILLS)))
   const myDrafts = ref<DraftSkill[]>(JSON.parse(JSON.stringify(MOCK_DRAFTS)))
+  const myPersonalSkillsRef = ref<Skill[]>(JSON.parse(JSON.stringify(MOCK_PERSONAL_SKILLS)))
+
+  const myPersonalSkills = computed<Skill[]>(() =>
+    myPersonalSkillsRef.value.filter(s => !s.deletedAt)
+  )
+
   const selectedSkillId = ref<string | null>(null)
   const testConversationHistory = ref<ChatMessage[]>([])
   const testIsRunning = ref(false)
@@ -663,8 +727,11 @@ export const useSkillStore = defineStore('skillStore', () => {
   const testRunHistory = ref<TestRun[]>([])
 
   function findSkill(id: string): Skill | undefined {
-    const published = flatSkills.value.find(s => s.id === id)
-    if (published) return published
+    const library = flatSkills.value.find(s => s.id === id)
+    if (library) return library
+    const personal = myPersonalSkillsRef.value.find(s => s.id === id)
+    if (personal) return personal
+    // draft fallback（保留至草稿清理任務）
     const draft = myDrafts.value.find(d => d.id === id)
     if (!draft) return undefined
     return {
@@ -912,6 +979,23 @@ export const useSkillStore = defineStore('skillStore', () => {
     myDrafts.value = myDrafts.value.filter(d => d.id !== id)
   }
 
+  function submitPersonalSkill(
+    id: string,
+    mode: 'new_skill' | 'version_update',
+    note: string
+  ): void {
+    const skill = myPersonalSkillsRef.value.find(s => s.id === id)
+    if (!skill) return
+    skill.personalStatus = 'reviewing'
+    skill.submitNote = note
+    skill.submitMode = mode
+  }
+
+  function deletePersonalSkill(id: string): void {
+    const idx = myPersonalSkillsRef.value.findIndex(s => s.id === id)
+    if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
+  }
+
   function submitDraft(id: string, mode: 'new_skill' | 'version_update' = 'new_skill'): void {
     const draft = myDrafts.value.find(d => d.id === id)
     if (!draft) return
@@ -1082,6 +1166,7 @@ export const useSkillStore = defineStore('skillStore', () => {
   return {
     skills,
     myDrafts,
+    myPersonalSkills,
     drafts: myDrafts,
     selectedSkillId,
     testConversationHistory,
@@ -1125,6 +1210,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     updateDraft,
     deleteDraft,
     submitDraft,
+    submitPersonalSkill,
+    deletePersonalSkill,
     batchMergeUpstreamUpdates,
     saveTestRun,
     getTestRunHistory,
