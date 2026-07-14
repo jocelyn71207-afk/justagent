@@ -110,4 +110,10 @@
     color: $color-badge-ai-text;
     border: 1px solid rgba($color-badge-ai-text, 0.4);
   }
+
+  &.tag--reviewing {
+    background: $color-warning-bg;
+    color: $color-warning-text;
+    border: 1px solid $color-warning-border;
+  }
 }

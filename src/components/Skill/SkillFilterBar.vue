@@ -10,9 +10,10 @@
       />
     </div>
     <select v-model="local.type" class="custom-select sfb-select" @change="sync">
-      <option value="all">全部類型</option>
+      <option value="all">全部層級</option>
       <option value="system">系統技能</option>
-      <option value="extension">企業擴充</option>
+      <option value="enterprise">企業技能</option>
+      <option value="team">團隊技能</option>
     </select>
     <select v-model="local.status" class="custom-select sfb-select" @change="sync">
       <option value="all">全部狀態</option>
@@ -34,7 +35,7 @@ import { reactive, computed } from 'vue'
 
 export interface SkillFilterState {
   query: string
-  type: 'all' | 'system' | 'extension'
+  type: 'all' | 'system' | 'enterprise' | 'team'
   status: 'all' | 'enabled' | 'disabled'
   update: 'all' | 'has_update'
 }

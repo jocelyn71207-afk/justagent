@@ -1,0 +1,161 @@
+.DraftCard {
+  background: var(--surface);
+  border: 1.5px dashed var(--divider-a50);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.15s;
+
+  &:hover {
+    border-color: $color_main_3;
+    background: rgba($color_main_1, 0.01);
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .draft-card-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--page-bg);
+    border: 1px dashed var(--divider-a50);
+    color: var(--text-faint);
+
+    .material-symbols-outlined { font-size: 22px; }
+  }
+
+  .draft-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .draft-card-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  .draft-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+
+    &:empty::before {
+      content: '未命名草稿';
+      color: var(--text-faint);
+    }
+  }
+
+  .draft-card-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+
+  .draft-card-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 480px;
+    margin-bottom: 8px;
+
+    &--auto { color: var(--text-faint); font-style: italic; }
+  }
+
+  .draft-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  // ── Completion dots ──────────────────────────
+  .draft-completion {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dc-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--divider-a50);
+    border: 1.5px solid var(--divider-a50);
+    transition: background 0.2s, border-color 0.2s;
+
+    &--done {
+      background: $color_main_1;
+      border-color: $color_main_1;
+      box-shadow: 0 0 0 2px rgba($color_main_1, 0.15);
+    }
+  }
+
+  .dc-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-left: 3px;
+  }
+
+  .draft-date {
+    font-size: 11px;
+    color: var(--text-faint);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  // ── Actions ───────────────────────────────────
+  .draft-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .dcard-btn {
+    font-size: 11px;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    .material-symbols-outlined { font-size: 14px; }
+
+    &--submit {
+      background: $color_main_4;
+      color: $color_main_2;
+      border-color: $color_main_3;
+
+      &:hover { background: $color_main_3; }
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+    }
+
+    &--delete {
+      color: $color-danger;
+      border-color: rgba($color-danger, 0.25);
+      padding: 3px 7px;
+      &:hover { background: rgba($color-danger, 0.06); }
+    }
+  }
+}
+
+// ── Draft tag ─────────────────────────────────────
+.skill-tag.tag--draft {
+  background: var(--page-bg);
+  color: var(--text-faint);
+  border: 1px dashed var(--divider-a50);
+}

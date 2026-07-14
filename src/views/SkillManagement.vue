@@ -91,12 +91,63 @@
 
       <!-- ── 技能清單 view ──────────────────────── -->
       <template v-if="activeView === 'list'">
+        <div class="skill-sections">
 
-        <!-- Skill tree -->
-        <div class="skill-tree">
-          <template v-for="skill in filteredSystemSkills" :key="skill.id">
-            <div class="skill-group-box">
+          <!-- 系統技能 -->
+          <div v-if="showSystemSection" class="skill-section">
+            <div class="skill-section-header">
+              <i class="material-symbols-outlined">auto_awesome</i>
+              <span class="skill-section-title">系統技能</span>
+              <span class="skill-section-count">{{ filteredSystemSkills.length }}</span>
+              <span class="skill-section-desc">平台提供的標準 AI 技能，企業可在此基礎上自訂擴充版本</span>
+            </div>
+            <div class="skill-tree">
+              <template v-for="skill in filteredSystemSkills" :key="skill.id">
+                <div class="skill-group-box">
+                  <SkillCard
+                    :skill="skill"
+                    :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
+                    @click="detailSkill = $event"
+                    @test="handleTest"
+                    @toggle="handleToggle"
+                    @duplicate="handleDuplicate"
+                  />
+                  <div
+                    v-if="skill.children?.filter(c => !c.deletedAt).length"
+                    class="skill-group-children"
+                  >
+                    <SkillCard
+                      v-for="child in skill.children!.filter(c => !c.deletedAt)"
+                      :key="child.id"
+                      :skill="child"
+                      :is-extension="true"
+                      :has-upstream-update="store.upstreamUpdateSkillIds.has(child.id)"
+                      @click="detailSkill = $event"
+                      @test="handleTest"
+                      @toggle="handleToggle"
+                      @duplicate="handleDuplicate"
+                    />
+                  </div>
+                </div>
+              </template>
+              <div v-if="filteredSystemSkills.length === 0" class="skill-section-empty">
+                此層級無符合條件的技能
+              </div>
+            </div>
+          </div>
+
+          <!-- 企業技能 -->
+          <div v-if="showEnterpriseSection" class="skill-section">
+            <div class="skill-section-header">
+              <i class="material-symbols-outlined">corporate_fare</i>
+              <span class="skill-section-title">企業技能</span>
+              <span class="skill-section-count">{{ filteredEnterpriseSkills.length }}</span>
+              <span class="skill-section-desc">企業自行建立，適用於全企業的自訂 AI 技能</span>
+            </div>
+            <div class="skill-tree">
               <SkillCard
+                v-for="skill in filteredEnterpriseSkills"
+                :key="skill.id"
                 :skill="skill"
                 :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
                 @click="detailSkill = $event"
@@ -104,41 +155,37 @@
                 @toggle="handleToggle"
                 @duplicate="handleDuplicate"
               />
-              <div
-                v-if="skill.children?.filter(c => !c.deletedAt).length"
-                class="skill-group-children"
-              >
-                <SkillCard
-                  v-for="child in skill.children!.filter(c => !c.deletedAt)"
-                  :key="child.id"
-                  :skill="child"
-                  :is-extension="true"
-                  :has-upstream-update="store.upstreamUpdateSkillIds.has(child.id)"
-                  @click="detailSkill = $event"
-                  @test="handleTest"
-                  @toggle="handleToggle"
-                  @duplicate="handleDuplicate"
-                />
+              <div v-if="filteredEnterpriseSkills.length === 0" class="skill-section-empty">
+                此層級無符合條件的技能
               </div>
             </div>
-          </template>
-
-          <SkillCard
-            v-for="skill in filteredStandaloneExtensions"
-            :key="skill.id"
-            :skill="skill"
-            :is-extension="true"
-            :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
-            @click="detailSkill = $event"
-            @test="handleTest"
-            @toggle="handleToggle"
-            @duplicate="handleDuplicate"
-          />
-
-          <div v-if="filteredSystemSkills.length === 0 && filteredStandaloneExtensions.length === 0" class="skill-empty">
-            <i class="material-symbols-outlined">search_off</i>
-            <span>找不到符合條件的技能</span>
           </div>
+
+          <!-- 團隊技能 -->
+          <div v-if="showTeamSection" class="skill-section">
+            <div class="skill-section-header">
+              <i class="material-symbols-outlined">groups</i>
+              <span class="skill-section-title">團隊技能</span>
+              <span class="skill-section-count">{{ filteredTeamSkills.length }}</span>
+              <span class="skill-section-desc">由團隊成員建立，僅在本團隊範圍內使用</span>
+            </div>
+            <div class="skill-tree">
+              <SkillCard
+                v-for="skill in filteredTeamSkills"
+                :key="skill.id"
+                :skill="skill"
+                :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
+                @click="detailSkill = $event"
+                @test="handleTest"
+                @toggle="handleToggle"
+                @duplicate="handleDuplicate"
+              />
+              <div v-if="filteredTeamSkills.length === 0" class="skill-section-empty">
+                此層級無符合條件的技能
+              </div>
+            </div>
+          </div>
+
         </div>
       </template>
 
@@ -340,12 +387,22 @@ const upstreamVersionForDetail = computed(() => {
   return store.getUpstreamVersion(detailSkill.value.id)
 })
 
+const showSystemSection = computed(() =>
+  filterState.value.type === 'all' || filterState.value.type === 'system'
+)
+const showEnterpriseSection = computed(() =>
+  filterState.value.type === 'all' || filterState.value.type === 'enterprise'
+)
+const showTeamSection = computed(() =>
+  filterState.value.type === 'all' || filterState.value.type === 'team'
+)
+
 const filteredSystemSkills = computed(() => {
   const f = filterState.value
+  if (f.type === 'enterprise' || f.type === 'team') return []
   const q = f.query.toLowerCase().trim()
   return store.skills.filter(s => {
     if (s.type !== 'system' || s.deletedAt) return false
-    if (f.type === 'extension') return false  // extension filter excludes system skills
     const selfMatch = (
       (!q || s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)) &&
       (f.status === 'all' || (f.status === 'enabled' ? s.isEnabled : !s.isEnabled)) &&
@@ -361,12 +418,25 @@ const filteredSystemSkills = computed(() => {
   })
 })
 
-const filteredStandaloneExtensions = computed(() => {
+const filteredEnterpriseSkills = computed(() => {
   const f = filterState.value
-  if (f.type === 'system') return []
+  if (f.type === 'system' || f.type === 'team') return []
   const q = f.query.toLowerCase().trim()
   return store.skills.filter(s => {
-    if (s.type !== 'extension' || s.deletedAt) return false
+    if (s.scope !== 'enterprise' || s.deletedAt) return false
+    if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false
+    if (f.status !== 'all' && (f.status === 'enabled' ? !s.isEnabled : s.isEnabled)) return false
+    if (f.update === 'has_update' && !store.upstreamUpdateSkillIds.has(s.id)) return false
+    return true
+  })
+})
+
+const filteredTeamSkills = computed(() => {
+  const f = filterState.value
+  if (f.type === 'system' || f.type === 'enterprise') return []
+  const q = f.query.toLowerCase().trim()
+  return store.skills.filter(s => {
+    if (s.scope !== 'team' || s.deletedAt) return false
     if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false
     if (f.status !== 'all' && (f.status === 'enabled' ? !s.isEnabled : s.isEnabled)) return false
     if (f.update === 'has_update' && !store.upstreamUpdateSkillIds.has(s.id)) return false

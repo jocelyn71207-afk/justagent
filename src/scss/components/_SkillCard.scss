@@ -186,6 +186,16 @@
   &.tag--update    { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
   &.tag--reviewing { background: $color-warning-bg; color: $color-warning-text; border: 1px solid $color-warning-border; }
   &.tag--draft     { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
+  &.tag--enterprise {
+    background: $color_main_5;
+    color: $color_main_1;
+    border: 1px solid $color_main_4;
+  }
+  &.tag--team {
+    background: rgba($color-warning-amber, 0.1);
+    color: $color-warning-amber;
+    border: 1px solid rgba($color-warning-amber, 0.3);
+  }
   &.tag--upstream  {
     background: rgba($color-warning-amber, 0.12);
     color: $color-warning-amber;

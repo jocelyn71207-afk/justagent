@@ -25,7 +25,7 @@
         <i class="material-symbols-outlined">open_in_new</i>查看詳情
       </button>
       <button
-        :class="['custom-btn', 'psc-btn', canSubmit ? 'custom-main-btn' : '']"
+        :class="['custom-btn', 'psc-btn', canSubmit ? 'custom-main-btn' : null]"
         :disabled="!canSubmit"
         @click="emit('submit', skill)"
       >

@@ -1,0 +1,169 @@
+<h2>知識頁入口 — UI 設計</h2>
+<p class="subtitle">從列表 badge → 詳情 banner → SourceUpdateModal → 建立草稿</p>
+
+<div style="display:flex;flex-direction:column;gap:24px;margin-top:8px;">
+
+  <!-- Step 1: List badge -->
+  <div>
+    <div class="label">Step 1 — 知識列表：來源已更新 badge</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">知識內容管理</div>
+      <div class="mockup-body" style="padding:0;">
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f8f9fa;border-bottom:1px solid #dee2e6;">
+              <th style="padding:8px 12px;text-align:left;color:#868e96;font-weight:500;">知識標題</th>
+              <th style="padding:8px 12px;text-align:left;color:#868e96;font-weight:500;">狀態</th>
+              <th style="padding:8px 12px;text-align:left;color:#868e96;font-weight:500;">來源</th>
+              <th style="padding:8px 12px;text-align:left;color:#868e96;font-weight:500;">更新時間</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fffdf0;">
+              <td style="padding:10px 12px;">
+                <div style="font-weight:600;">商品目錄說明</div>
+                <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+                  <span style="background:#28a745;color:white;border-radius:3px;padding:1px 6px;font-size:10px;">已發布</span>
+                  <span style="background:#f59e0b;color:white;border-radius:3px;padding:1px 6px;font-size:10px;cursor:pointer;">⚠ 來源已更新</span>
+                </div>
+              </td>
+              <td style="padding:10px 12px;color:#495057;">v1.2 active</td>
+              <td style="padding:10px 12px;color:#495057;">product_catalog.pdf</td>
+              <td style="padding:10px 12px;color:#868e96;">2026-06-01</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:10px 12px;">
+                <div style="font-weight:600;">退換貨政策</div>
+                <div style="margin-top:4px;">
+                  <span style="background:#28a745;color:white;border-radius:3px;padding:1px 6px;font-size:10px;">已發布</span>
+                </div>
+              </td>
+              <td style="padding:10px 12px;color:#495057;">v2.0 active</td>
+              <td style="padding:10px 12px;color:#495057;">policy_2026.docx</td>
+              <td style="padding:10px 12px;color:#868e96;">2026-05-20</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Detail page banner -->
+  <div>
+    <div class="label">Step 2 — 知識詳情頁：頂部 banner（點擊展開 Modal）</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">知識詳情：商品目錄說明</div>
+      <div class="mockup-body" style="padding:0;">
+        <!-- Banner -->
+        <div style="background:#fff8e1;border-bottom:1.5px solid #f59e0b;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+            <span style="color:#f59e0b;font-size:18px;">⚠</span>
+            <div>
+              <strong>來源檔案已更新</strong>
+              <span style="color:#868e96;margin-left:8px;">product_catalog.pdf &nbsp;v1 → v2 &nbsp;·&nbsp; 2026-06-07</span>
+            </div>
+          </div>
+          <button class="mock-button" style="background:#f59e0b;color:white;border:none;font-size:12px;padding:5px 12px;border-radius:5px;cursor:pointer;">
+            處理更新
+          </button>
+        </div>
+        <!-- Page content -->
+        <div style="padding:14px 16px;">
+          <div class="placeholder" style="height:80px;font-size:12px;">版本資訊、chunks、轉換日誌...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: SourceUpdateModal -->
+  <div>
+    <div class="label">Step 3 — SourceUpdateModal（點擊「處理更新」後彈出）</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">SourceUpdateModal</div>
+      <div class="mockup-body" style="padding:0;">
+        <!-- Modal header -->
+        <div style="background:#f8f9fa;border-bottom:1px solid #dee2e6;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">來源檔案已更新</div>
+            <div style="font-size:12px;color:#868e96;margin-top:3px;">
+              📄 product_catalog.pdf &nbsp;·&nbsp;
+              <span style="background:#e9ecef;padding:1px 6px;border-radius:3px;">v1</span>
+              &nbsp;→&nbsp;
+              <span style="background:#d4edda;padding:1px 6px;border-radius:3px;color:#28a745;">v2</span>
+              &nbsp;·&nbsp; 更新於 2026-06-07
+            </div>
+          </div>
+          <span style="color:#aaa;font-size:18px;cursor:pointer;">✕</span>
+        </div>
+
+        <!-- Modal body -->
+        <div style="padding:16px;">
+          <div style="font-size:12px;color:#868e96;margin-bottom:12px;">選擇如何更新「商品目錄說明」的知識來源：</div>
+
+          <!-- Option 1 -->
+          <div style="border:1.5px solid #3b5bdb;border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#f0f4ff;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:#3b5bdb;color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">①</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#3b5bdb;">使用資源庫 v2 重新轉換</div>
+                <div style="font-size:12px;color:#666;margin-top:2px;">以資源庫中最新版本自動建立 MINOR 草稿（v1.3），進入編輯器審核後送審</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 2 -->
+          <div style="border:1.5px solid #868e96;border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#f8f9fa;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:#868e96;color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">②</div>
+              <div style="width:100%;">
+                <div style="font-size:13px;font-weight:600;color:#495057;">上傳全新版本的檔案</div>
+                <div style="font-size:12px;color:#666;margin-top:2px;">若有更新版本（尚未在資源庫），直接上傳並建立草稿</div>
+                <div style="border:1px dashed #adb5bd;border-radius:6px;padding:8px;text-align:center;font-size:12px;color:#aaa;margin-top:8px;background:white;">
+                  點此選取或拖曳新版本檔案
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 3 -->
+          <div style="border:1px solid #dee2e6;border-radius:8px;padding:10px 14px;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:#dee2e6;color:#868e96;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">③</div>
+              <div style="font-size:13px;color:#868e96;">稍後處理（保持提醒，暫不建立草稿）</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div style="border-top:1px solid #dee2e6;padding:10px 16px;display:flex;justify-content:flex-end;gap:8px;">
+          <button class="mock-button" style="background:#3b5bdb;color:white;font-size:12px;padding:6px 16px;">確認</button>
+          <button class="mock-button" style="font-size:12px;padding:6px 14px;">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: After confirm option 1 -->
+  <div>
+    <div class="label">Step 4 — 選擇 ① 確認後：建立草稿 → 導向 KnowledgeEditor</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">建立草稿中...</div>
+      <div class="mockup-body" style="padding:14px;display:flex;align-items:center;gap:12px;">
+        <div style="width:32px;height:32px;border:3px solid #3b5bdb;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;">正在建立 v1.3 草稿...</div>
+          <div style="font-size:12px;color:#868e96;margin-top:2px;">更新來源至 product_catalog.pdf v2，準備進入編輯器</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:#868e96;padding:0 4px;">
+      完成後自動跳轉至 <strong>KnowledgeEditor</strong>（/view/KnowledgeEditor/:id/v1.3-id），原 v1.2 active 版本維持不變。
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:16px;font-size:13px;color:#666;">這是知識頁入口的完整 4 步驟流程。整體設計確認後，我將寫入設計文件。</p>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>

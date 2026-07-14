@@ -16,6 +16,8 @@
       <div class="skill-card-name">
         {{ skill.name }}
         <span class="skill-tag tag--version">v{{ skill.version }}</span>
+        <span v-if="isExtension && skill.scope === 'enterprise'" class="skill-tag tag--enterprise">企業</span>
+        <span v-if="isExtension && skill.scope === 'team'" class="skill-tag tag--team">團隊</span>
         <span v-if="hasReviewingVersion" class="skill-tag tag--reviewing">審核中</span>
         <span v-if="hasUpstreamUpdate" class="skill-tag tag--upstream">
           <i class="material-symbols-outlined">upgrade</i>待更新

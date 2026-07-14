@@ -1,0 +1,75 @@
+<h2>三種提升拆解精準度的方案</h2>
+<p class="subtitle">根據你的需求：多種 AI 消費場景 × 不同分類需要不同拆解策略</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Category-Aware Chunking（分類驅動拆解）</h3>
+      <p style="margin-bottom:10px">每個分類套用不同的拆解策略，在 <strong>pipeline 的 chunking 階段</strong>就介入。</p>
+      <table style="font-size:12px;width:100%;border-collapse:collapse">
+        <tr style="background:#f0f4ff">
+          <th style="padding:4px 8px;text-align:left">分類</th>
+          <th style="padding:4px 8px;text-align:left">拆解策略</th>
+        </tr>
+        <tr><td style="padding:4px 8px">商品文件</td><td style="padding:4px 8px">每列一個 chunk（表格行拆解）</td></tr>
+        <tr><td style="padding:4px 8px">客服知識</td><td style="padding:4px 8px">Q&A 配對拆解，問答不分離</td></tr>
+        <tr><td style="padding:4px 8px">規則說明</td><td style="padding:4px 8px">條款段落拆解，保留標題上下文</td></tr>
+        <tr><td style="padding:4px 8px">系統文件</td><td style="padding:4px 8px">章節拆解，保留層級結構</td></tr>
+      </table>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>優點</h4><ul><li>chunk 品質最符合內容特性</li><li>對所有 AI 消費方式都有效</li></ul></div>
+        <div class="cons"><h4>代價</h4><ul><li>需維護每個分類的策略設定</li><li>新增分類時要同步更新策略</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Metadata Prefix + Filter（語意注入 + 查詢過濾）</h3>
+      <p style="margin-bottom:10px">在每個 chunk 內容前面注入分類和標籤，讓向量帶有語意；查詢時加 filter 縮窄範圍。</p>
+      <div style="background:#f5f5f5;padding:8px;border-radius:6px;font-size:12px;font-family:monospace;margin-bottom:10px">
+        <span style="color:#888">// Chunk 內容（送入 embedding 前）</span><br>
+        <span style="color:#2563eb">[分類:客服知識] [標籤:退款,流程]</span><br>
+        原本的 chunk 文字內容...
+      </div>
+      <div style="background:#f5f5f5;padding:8px;border-radius:6px;font-size:12px;font-family:monospace;margin-bottom:10px">
+        <span style="color:#888">// 查詢時的 filter</span><br>
+        vector_search(query, <span style="color:#2563eb">filter: { category: '客服知識' }</span>)
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>改動小，不影響現有拆解邏輯</li><li>搜尋時可精準鎖定分類</li></ul></div>
+        <div class="cons"><h4>代價</h4><ul><li>chunk 本身的品質沒有提升</li><li>需要向量 DB 支援 metadata filter</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>全管道整合（A + B 合體，推薦）</h3>
+      <p style="margin-bottom:10px">同時做 category-aware chunking <strong>和</strong> metadata prefix，搜尋端再加 filter。三層都覆蓋。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="flex:1;min-width:120px;background:#e8f5e9;border-radius:8px;padding:8px;font-size:12px">
+          <strong style="color:#2e7d32">① 拆解品質</strong><br>
+          分類決定 chunk 策略，內容不被亂切
+        </div>
+        <div style="flex:1;min-width:120px;background:#e3f2fd;border-radius:8px;padding:8px;font-size:12px">
+          <strong style="color:#1565c0">② 向量語意</strong><br>
+          category + tags 注入 chunk，向量更精準
+        </div>
+        <div style="flex:1;min-width:120px;background:#fce4ec;border-radius:8px;padding:8px;font-size:12px">
+          <strong style="color:#c62828">③ 查詢過濾</strong><br>
+          搜尋時以 category 縮窄，提升 recall precision
+        </div>
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>三個維度都有提升，不依賴單一機制</li><li>對 chatbot、搜尋、Agent 都通用</li><li>Tag 從此有實質功能，不只是標籤</li></ul></div>
+        <div class="cons"><h4>代價</h4><ul><li>實作工作量最大（但可分期）</li><li>需要後端向量 DB 支援</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:16px;font-size:13px;color:#666">點選你想要的方案，或在 terminal 告訴我想法。</p>

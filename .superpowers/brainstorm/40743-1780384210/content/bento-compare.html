@@ -1,0 +1,120 @@
+<h2>Bento Grid — 現在 vs 修改後</h2>
+<p class="subtitle">請確認第 5 張卡片的替換方式</p>
+
+<div class="section">
+  <h3>▸ 現在（5 張）</h3>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:4px;">
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">全部</div>
+      <div style="font-size:20px;font-weight:700;">1,805</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">已發布</div>
+      <div style="font-size:20px;font-weight:700;color:#47b76a;">1,623</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">需更新</div>
+      <div style="font-size:20px;font-weight:700;color:#f59e0b;">57</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">審核中</div>
+      <div style="font-size:20px;font-weight:700;color:#6366f1;">36</div>
+    </div>
+    <div style="border:2px dashed #f59e0b;border-radius:10px;padding:10px;background:#fffbf0;text-align:center;">
+      <div style="font-size:10px;color:#f59e0b;margin-bottom:4px;">處理中 ← 這張</div>
+      <div style="font-size:20px;font-weight:700;color:#f59e0b;">89</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案一：替換第 5 張（spec 目前的設計）</h3>
+  <p style="font-size:12px;color:#888;margin-bottom:8px;">「處理中」數字從 Bento Grid 消失，改成 KPI</p>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">全部</div>
+      <div style="font-size:20px;font-weight:700;">1,805</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">已發布</div>
+      <div style="font-size:20px;font-weight:700;color:#47b76a;">1,623</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">需更新</div>
+      <div style="font-size:20px;font-weight:700;color:#f59e0b;">57</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">審核中</div>
+      <div style="font-size:20px;font-weight:700;color:#6366f1;">36</div>
+    </div>
+    <div style="border:2px solid #c8f135;border-radius:10px;padding:10px;background:#f0ffd4;text-align:center;position:relative;">
+      <div style="position:absolute;top:6px;right:6px;font-size:9px;background:#c8f135;color:#2a3500;padding:1px 4px;border-radius:3px;font-weight:600;">KPI</div>
+      <div style="font-size:10px;color:#5b6342;margin-bottom:4px;">知識轉換率</div>
+      <div style="font-size:20px;font-weight:700;color:#2a3500;">89.9%</div>
+      <div style="font-size:9px;color:#888;margin-top:2px;">目標 ≥ 95%</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案二：保留「處理中」，拉長成 6 張</h3>
+  <p style="font-size:12px;color:#888;margin-bottom:8px;">5 張都保留，KPI 額外加在最右</p>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:8px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:3px;">全部</div>
+      <div style="font-size:17px;font-weight:700;">1,805</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:8px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:3px;">已發布</div>
+      <div style="font-size:17px;font-weight:700;color:#47b76a;">1,623</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:8px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:3px;">需更新</div>
+      <div style="font-size:17px;font-weight:700;color:#f59e0b;">57</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:8px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:3px;">審核中</div>
+      <div style="font-size:17px;font-weight:700;color:#6366f1;">36</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:8px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:3px;">處理中</div>
+      <div style="font-size:17px;font-weight:700;color:#f59e0b;">89</div>
+    </div>
+    <div style="border:2px solid #c8f135;border-radius:10px;padding:8px;background:#f0ffd4;text-align:center;position:relative;">
+      <div style="position:absolute;top:5px;right:5px;font-size:9px;background:#c8f135;color:#2a3500;padding:1px 4px;border-radius:3px;font-weight:600;">KPI</div>
+      <div style="font-size:10px;color:#5b6342;margin-bottom:3px;">知識轉換率</div>
+      <div style="font-size:17px;font-weight:700;color:#2a3500;">89.9%</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案三：對齊 PRD，重新設計 4 張</h3>
+  <p style="font-size:12px;color:#888;margin-bottom:8px;">完全按 PRD § 5.2.1，合併「等待轉換」（pending+processing+failed），移除「全部」和「審核中」單獨卡片</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">知識上線</div>
+      <div style="font-size:20px;font-weight:700;color:#47b76a;">1,623</div>
+      <div style="font-size:10px;color:#47b76a;margin-top:2px;">▲ +12 本週</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">等待轉換</div>
+      <div style="font-size:20px;font-weight:700;color:#f59e0b;">89</div>
+      <div style="font-size:10px;color:#888;margin-top:2px;">下次 22:00</div>
+      <div style="font-size:9px;color:#aaa;">(pending+processing+failed)</div>
+    </div>
+    <div style="border:1px solid #c3c8bb;border-radius:10px;padding:10px;background:#fafafa;text-align:center;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">等待更新</div>
+      <div style="font-size:20px;font-weight:700;color:#f59e0b;">57</div>
+      <div style="font-size:10px;color:#888;margin-top:2px;">待確認</div>
+    </div>
+    <div style="border:2px solid #c8f135;border-radius:10px;padding:10px;background:#f0ffd4;text-align:center;position:relative;">
+      <div style="position:absolute;top:6px;right:6px;font-size:9px;background:#c8f135;color:#2a3500;padding:1px 4px;border-radius:3px;font-weight:600;">KPI</div>
+      <div style="font-size:10px;color:#5b6342;margin-bottom:4px;">知識轉換率</div>
+      <div style="font-size:20px;font-weight:700;color:#2a3500;">89.9%</div>
+      <div style="font-size:9px;color:#888;margin-top:2px;">目標 ≥ 95%</div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">請選擇你偏好的方案，或直接在終端機告訴我</p>
