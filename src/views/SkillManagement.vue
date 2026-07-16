@@ -445,9 +445,6 @@ function handlePersonalDelete(skill: Skill) {
 
 function handlePersonalToggle(skill: Skill) {
   store.toggleSkill(skill.id)
-  if (detailSkill.value?.id === skill.id) {
-    detailSkill.value = { ...detailSkill.value, isEnabled: !detailSkill.value.isEnabled }
-  }
 }
 
 function getDerivedFromName(derivedFrom: string): string {
