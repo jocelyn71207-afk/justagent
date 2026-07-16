@@ -84,24 +84,6 @@
     margin-top: 5px;
   }
 
-  // ── List header ───────────────────────────────
-
-  .skill-list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .skill-list-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    justify-content: flex-end;
-  }
-
   // ── Search ────────────────────────────────────
 
   .skill-search {
@@ -448,28 +430,6 @@
     .material-symbols-outlined { font-size: 22px; opacity: 0.6; flex-shrink: 0; }
   }
 
-  // ── Draft list ────────────────────────────────
-
-  .skill-draft-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
-  }
-
-  // ── Skill empty state ─────────────────────────
-
-  .skill-empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 20px;
-    color: var(--text-faint);
-    gap: 8px;
-    .material-symbols-outlined { font-size: 36px; }
-    p { font-size: 14px; }
-  }
 }
 
 // ── Submit confirm dialog (Teleport → body) ───────────
@@ -503,23 +463,6 @@
     font-size: 16px;
     font-weight: 700;
     color: var(--text);
-  }
-
-  .dsd-ai-hint {
-    margin: 14px 20px;
-    padding: 10px 14px;
-    background: $color_main_5;
-    border: 1px solid $color_main_3;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 13px;
-    color: var(--text-muted);
-    flex-wrap: wrap;
-
-    .material-symbols-outlined { font-size: 16px; color: $color_main_1; flex-shrink: 0; }
-    strong { color: $color_main_2; font-weight: 600; }
   }
 
   .dsd-options {
