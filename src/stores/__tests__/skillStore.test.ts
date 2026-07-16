@@ -198,4 +198,14 @@ describe('skillStore', () => {
       expect(typeof libSkill.isEnabled).toBe('boolean')
     })
   })
+
+  describe('SkillManagement 頁面整合', () => {
+    it('myPersonalSkills 與 flatSkills 無 id 交集', () => {
+      const store = useSkillStore()
+      const libraryIds = new Set(store.flatSkills.map(s => s.id))
+      store.myPersonalSkills.forEach(s => {
+        expect(libraryIds.has(s.id)).toBe(false)
+      })
+    })
+  })
 })

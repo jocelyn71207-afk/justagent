@@ -8,6 +8,11 @@
           <AppBreadcrumb />
           <div class="banner-title">技能管理</div>
         </div>
+        <div class="page-banner-actions">
+          <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
+            <i class="material-symbols-outlined">add</i>建立技能
+          </button>
+        </div>
       </div>
 
       <!-- Hero 統計列 -->
@@ -41,37 +46,8 @@
         </div>
       </div>
 
-      <!-- View 切換 + 操作列 -->
-      <div class="skill-list-header">
-        <div class="skill-view-tabs">
-          <button
-            :class="['sview-tab', activeView === 'list' && 'is-active']"
-            @click="activeView = 'list'"
-          >技能清單</button>
-          <button
-            :class="['sview-tab', activeView === 'drafts' && 'is-active']"
-            @click="activeView = 'drafts'"
-          >
-            草稿區
-            <span v-if="store.myDrafts.length" class="sview-badge">{{ store.myDrafts.length }}</span>
-          </button>
-        </div>
-        <div class="skill-list-actions">
-          <template v-if="activeView === 'list'">
-            <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
-              <i class="material-symbols-outlined">add</i>建立
-            </button>
-          </template>
-          <template v-else>
-            <button class="custom-btn custom-main-btn" @click="handleCreateDraft">
-              <i class="material-symbols-outlined">add</i>新建草稿
-            </button>
-          </template>
-        </div>
-      </div>
-
       <!-- 上游更新 Banner -->
-      <div v-if="store.pendingUpdateCount > 0 && activeView === 'list'" class="upstream-banner">
+      <div v-if="store.pendingUpdateCount > 0" class="upstream-banner">
         <span>
           <i class="material-symbols-outlined">upgrade</i>
           <strong>{{ store.pendingUpdateSkills[0]?.name }}</strong>
@@ -80,138 +56,130 @@
         </span>
         <div class="upstream-banner-actions">
           <button class="custom-btn" @click="upstreamSkill = store.pendingUpdateSkills[0]">查看</button>
-          <button v-if="store.pendingUpdateCount > 1" class="custom-btn" @click="showBatchUpdate = true">全部（{{ store.pendingUpdateCount }}）</button>
+          <button v-if="store.pendingUpdateCount > 1" class="custom-btn" @click="showBatchUpdate = true">
+            全部（{{ store.pendingUpdateCount }}）
+          </button>
         </div>
       </div>
 
       <!-- 搜尋篩選 -->
-      <template v-if="activeView === 'list'">
-        <SkillFilterBar v-model="filterState" />
-      </template>
+      <SkillFilterBar v-model="filterState" />
 
-      <!-- ── 技能清單 view ──────────────────────── -->
-      <template v-if="activeView === 'list'">
-        <div class="skill-sections">
+      <!-- ── 我的技能 ─────────────────────────────── -->
+      <div class="skill-sections">
 
-          <!-- 系統技能 -->
-          <div v-if="showSystemSection" class="skill-section">
-            <div class="skill-section-header">
-              <i class="material-symbols-outlined">auto_awesome</i>
-              <span class="skill-section-title">系統技能</span>
-              <span class="skill-section-count">{{ filteredSystemSkills.length }}</span>
-              <span class="skill-section-desc">平台提供的標準 AI 技能，企業可在此基礎上自訂擴充版本</span>
-            </div>
-            <div class="skill-tree">
-              <template v-for="skill in filteredSystemSkills" :key="skill.id">
-                <div class="skill-group-box">
+        <div class="skill-section">
+          <div class="skill-section-header">
+            <i class="material-symbols-outlined">person</i>
+            <span class="skill-section-title">我的技能</span>
+            <span class="skill-section-count">{{ store.myPersonalSkills.length }}</span>
+            <span class="skill-section-desc">你建立或從對話生成的個人技能，可送審加入 Library</span>
+          </div>
+          <div v-if="store.myPersonalSkills.length" class="my-skills-list">
+            <PersonalSkillCard
+              v-for="skill in store.myPersonalSkills"
+              :key="skill.id"
+              :skill="skill"
+              @view="detailSkill = $event"
+              @submit="handlePersonalSubmit"
+            />
+          </div>
+          <div v-else class="my-skills-empty">
+            <i class="material-symbols-outlined">person_search</i>
+            <span>透過對話生成技能，或手動建立 skill 檔案後，技能會出現在這裡</span>
+          </div>
+        </div>
+
+        <!-- 系統技能 -->
+        <div v-if="showSystemSection" class="skill-section">
+          <div class="skill-section-header">
+            <i class="material-symbols-outlined">auto_awesome</i>
+            <span class="skill-section-title">系統技能</span>
+            <span class="skill-section-count">{{ filteredSystemSkills.length }}</span>
+            <span class="skill-section-desc">平台提供的標準 AI 技能，企業可在此基礎上自訂擴充版本</span>
+          </div>
+          <div class="skill-tree">
+            <template v-for="skill in filteredSystemSkills" :key="skill.id">
+              <div class="skill-group-box">
+                <SkillCard
+                  :skill="skill"
+                  :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
+                  @click="detailSkill = $event"
+                  @test="handleTest"
+                  @duplicate="handleDuplicate"
+                />
+                <div
+                  v-if="skill.children?.filter(c => !c.deletedAt).length"
+                  class="skill-group-children"
+                >
                   <SkillCard
-                    :skill="skill"
-                    :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
+                    v-for="child in skill.children!.filter(c => !c.deletedAt)"
+                    :key="child.id"
+                    :skill="child"
+                    :is-extension="true"
+                    :has-upstream-update="store.upstreamUpdateSkillIds.has(child.id)"
                     @click="detailSkill = $event"
                     @test="handleTest"
-                    @toggle="handleToggle"
                     @duplicate="handleDuplicate"
                   />
-                  <div
-                    v-if="skill.children?.filter(c => !c.deletedAt).length"
-                    class="skill-group-children"
-                  >
-                    <SkillCard
-                      v-for="child in skill.children!.filter(c => !c.deletedAt)"
-                      :key="child.id"
-                      :skill="child"
-                      :is-extension="true"
-                      :has-upstream-update="store.upstreamUpdateSkillIds.has(child.id)"
-                      @click="detailSkill = $event"
-                      @test="handleTest"
-                      @toggle="handleToggle"
-                      @duplicate="handleDuplicate"
-                    />
-                  </div>
                 </div>
-              </template>
-              <div v-if="filteredSystemSkills.length === 0" class="skill-section-empty">
-                此層級無符合條件的技能
               </div>
+            </template>
+            <div v-if="filteredSystemSkills.length === 0" class="skill-section-empty">
+              此層級無符合條件的技能
             </div>
-          </div>
-
-          <!-- 企業技能 -->
-          <div v-if="showEnterpriseSection" class="skill-section">
-            <div class="skill-section-header">
-              <i class="material-symbols-outlined">corporate_fare</i>
-              <span class="skill-section-title">企業技能</span>
-              <span class="skill-section-count">{{ filteredEnterpriseSkills.length }}</span>
-              <span class="skill-section-desc">企業自行建立，適用於全企業的自訂 AI 技能</span>
-            </div>
-            <div class="skill-tree">
-              <SkillCard
-                v-for="skill in filteredEnterpriseSkills"
-                :key="skill.id"
-                :skill="skill"
-                :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
-                @click="detailSkill = $event"
-                @test="handleTest"
-                @toggle="handleToggle"
-                @duplicate="handleDuplicate"
-              />
-              <div v-if="filteredEnterpriseSkills.length === 0" class="skill-section-empty">
-                此層級無符合條件的技能
-              </div>
-            </div>
-          </div>
-
-          <!-- 團隊技能 -->
-          <div v-if="showTeamSection" class="skill-section">
-            <div class="skill-section-header">
-              <i class="material-symbols-outlined">groups</i>
-              <span class="skill-section-title">團隊技能</span>
-              <span class="skill-section-count">{{ filteredTeamSkills.length }}</span>
-              <span class="skill-section-desc">由團隊成員建立，僅在本團隊範圍內使用</span>
-            </div>
-            <div class="skill-tree">
-              <SkillCard
-                v-for="skill in filteredTeamSkills"
-                :key="skill.id"
-                :skill="skill"
-                :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
-                @click="detailSkill = $event"
-                @test="handleTest"
-                @toggle="handleToggle"
-                @duplicate="handleDuplicate"
-              />
-              <div v-if="filteredTeamSkills.length === 0" class="skill-section-empty">
-                此層級無符合條件的技能
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </template>
-
-      <!-- ── 草稿區 view ─────────────────────────── -->
-      <template v-else>
-        <div class="draft-list">
-          <DraftCard
-            v-for="draft in store.myDrafts"
-            :key="draft.id"
-            :draft="draft"
-            @view="handleViewDraft"
-            @edit="handleEditDraft"
-            @submit="handleSubmitDraft"
-            @delete="handleDeleteDraft"
-          />
-
-          <div v-if="!store.myDrafts.length" class="draft-empty">
-            <i class="material-symbols-outlined">draft</i>
-            <span>目前沒有草稿</span>
-            <button class="custom-btn custom-main-btn" @click="handleCreateDraft">
-              <i class="material-symbols-outlined">add</i>新建草稿
-            </button>
           </div>
         </div>
-      </template>
 
+        <!-- 企業技能 -->
+        <div v-if="showEnterpriseSection" class="skill-section">
+          <div class="skill-section-header">
+            <i class="material-symbols-outlined">corporate_fare</i>
+            <span class="skill-section-title">企業技能</span>
+            <span class="skill-section-count">{{ filteredEnterpriseSkills.length }}</span>
+            <span class="skill-section-desc">企業自行建立，適用於全企業的自訂 AI 技能</span>
+          </div>
+          <div class="skill-tree">
+            <SkillCard
+              v-for="skill in filteredEnterpriseSkills"
+              :key="skill.id"
+              :skill="skill"
+              :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
+              @click="detailSkill = $event"
+              @test="handleTest"
+              @duplicate="handleDuplicate"
+            />
+            <div v-if="filteredEnterpriseSkills.length === 0" class="skill-section-empty">
+              此層級無符合條件的技能
+            </div>
+          </div>
+        </div>
+
+        <!-- 團隊技能 -->
+        <div v-if="showTeamSection" class="skill-section">
+          <div class="skill-section-header">
+            <i class="material-symbols-outlined">groups</i>
+            <span class="skill-section-title">團隊技能</span>
+            <span class="skill-section-count">{{ filteredTeamSkills.length }}</span>
+            <span class="skill-section-desc">由團隊成員建立，僅在本團隊範圍內使用</span>
+          </div>
+          <div class="skill-tree">
+            <SkillCard
+              v-for="skill in filteredTeamSkills"
+              :key="skill.id"
+              :skill="skill"
+              :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
+              @click="detailSkill = $event"
+              @test="handleTest"
+              @duplicate="handleDuplicate"
+            />
+            <div v-if="filteredTeamSkills.length === 0" class="skill-section-empty">
+              此層級無符合條件的技能
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
     <!-- Drawers -->
@@ -220,9 +188,9 @@
       :upstream-version="upstreamVersionForDetail"
       @close="detailSkill = null"
       @test="handleTest"
-      @toggle="handleToggle"
+      @toggle="handlePersonalToggle"
       @edit="(s) => router.push({ path: '/view/SkillEditor', query: { skillId: s.id } })"
-      @delete="(s) => { store.deleteSkill(s.id); detailSkill = null }"
+      @delete="handlePersonalDelete"
       @duplicate="handleDuplicate"
       @review="(skillId, versionId) => { detailSkill = null; openReview(skillId, versionId) }"
       @open-upstream-update="openUpstreamUpdate"
@@ -249,40 +217,49 @@
       @merged="showBatchUpdate = false"
     />
 
-    <!-- 提交確認 dialog -->
+    <!-- 送審 dialog -->
     <Teleport to="body">
       <Transition name="confirm-fade">
         <div
-          v-if="submitConfirmDraft"
+          v-if="submitConfirmSkill"
           class="draft-submit-overlay"
-          @click.self="submitConfirmDraft = null"
+          @click.self="submitConfirmSkill = null"
         >
           <div class="draft-submit-dialog">
             <div class="dsd-header">
-              <span class="dsd-title">提交審核</span>
-              <button class="drawer-close-btn" @click="submitConfirmDraft = null">
+              <span class="dsd-title">送審至 Library</span>
+              <button class="drawer-close-btn" @click="submitConfirmSkill = null">
                 <i class="material-symbols-outlined">close</i>
               </button>
             </div>
 
-            <div class="dsd-ai-hint">
-              <i class="material-symbols-outlined">auto_awesome</i>
-              根據草稿內容，AI 建議：
-              <strong>{{ submitConfirmDraft.forkSourceId ? '更新版本' : '建立新技能' }}</strong>
+            <div class="dsd-info">
+              <div class="dsd-info-row">
+                <span class="dsd-info-label">技能名稱</span>
+                <span class="dsd-info-val">{{ submitConfirmSkill.name }}</span>
+              </div>
+              <div class="dsd-info-row">
+                <span class="dsd-info-label">來源</span>
+                <span class="dsd-info-val">{{ submitConfirmSkill.derivedFrom ? '對話延伸' : '手寫建立' }}</span>
+              </div>
+              <div v-if="submitConfirmSkill.derivedFrom" class="dsd-info-row">
+                <span class="dsd-info-label">來源技能</span>
+                <span class="dsd-info-val">{{ getDerivedFromName(submitConfirmSkill.derivedFrom) }}</span>
+              </div>
             </div>
 
             <div class="dsd-options">
               <button
                 :class="['dsd-option', submitMode === 'version_update' && 'is-selected']"
-                :disabled="!submitConfirmDraft.forkSourceId"
+                :disabled="!submitConfirmSkill.derivedFrom"
                 @click="submitMode = 'version_update'"
               >
                 <i class="material-symbols-outlined">update</i>
                 <div class="dsd-option-body">
                   <div class="dsd-option-title">更新版本</div>
                   <div class="dsd-option-desc">
-                    提交為原技能的新版本，審核通過後更新現有企業擴充
-                    <span v-if="!submitConfirmDraft.forkSourceId">（此草稿無來源技能）</span>
+                    提交為原技能的新版本，審核通過後更新現有技能
+                    <span v-if="!submitConfirmSkill.derivedFrom">（此技能無來源技能）</span>
                   </div>
                 </div>
                 <i v-if="submitMode === 'version_update'" class="material-symbols-outlined dsd-check">check_circle</i>
@@ -294,60 +271,29 @@
               >
                 <i class="material-symbols-outlined">add_circle</i>
                 <div class="dsd-option-body">
-                  <div class="dsd-option-title">建立全新技能</div>
-                  <div class="dsd-option-desc">作為獨立自建技能發布，不影響原系統技能</div>
+                  <div class="dsd-option-title">建立新技能</div>
+                  <div class="dsd-option-desc">作為獨立技能加入 Library，不影響原有技能</div>
                 </div>
                 <i v-if="submitMode === 'new_skill'" class="material-symbols-outlined dsd-check">check_circle</i>
               </button>
             </div>
 
+            <div class="dsd-note">
+              <label class="dsd-note-label">說明（選填）</label>
+              <textarea
+                v-model="submitNote"
+                class="dsd-note-input"
+                rows="3"
+                :placeholder="submitMode === 'version_update'
+                  ? '說明此版本的改動重點...'
+                  : '描述適用情境、與現有技能的差異...'"
+              ></textarea>
+            </div>
+
             <div class="dsd-footer">
-              <button class="custom-btn" @click="submitConfirmDraft = null">取消</button>
-              <button class="custom-btn custom-main-btn" @click="confirmSubmitDraft">
+              <button class="custom-btn" @click="submitConfirmSkill = null">取消</button>
+              <button class="custom-btn custom-main-btn" @click="confirmSubmitSkill">
                 <i class="material-symbols-outlined">send</i>送出審核
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <!-- 停用確認 dialog -->
-    <Teleport to="body">
-      <Transition name="confirm-fade">
-        <div
-          v-if="disableConfirmSkill"
-          class="skill-disable-overlay"
-          @click.self="disableConfirmSkill = null"
-        >
-          <div class="skill-disable-dialog">
-            <div class="sdd-header">
-              <div class="sdd-icon">
-                <i class="material-symbols-outlined">warning</i>
-              </div>
-              <div class="sdd-title">停用「{{ disableConfirmSkill.name }}」？</div>
-            </div>
-
-            <template v-if="disableConfirmSkill.assignedAgents?.length">
-              <p class="sdd-desc">停用後，以下 Agent 將無法繼續調用此技能：</p>
-              <div class="sdd-agent-list">
-                <span
-                  v-for="agent in disableConfirmSkill.assignedAgents"
-                  :key="agent"
-                  class="sdd-agent-tag"
-                >
-                  <i class="material-symbols-outlined">smart_toy</i>{{ agent }}
-                </span>
-              </div>
-            </template>
-            <p v-else class="sdd-desc sdd-desc--no-agent">
-              此技能目前未指派給任何 Agent，停用不影響現有對話流程。
-            </p>
-
-            <div class="sdd-footer">
-              <button class="custom-btn" @click="disableConfirmSkill = null">取消</button>
-              <button class="custom-btn btn--danger-ghost" @click="confirmDisable">
-                <i class="material-symbols-outlined">block</i>確認停用
               </button>
             </div>
           </div>
@@ -362,14 +308,14 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillCard from '@/components/Skill/SkillCard.vue'
-import DraftCard from '@/components/Skill/DraftCard.vue'
+import PersonalSkillCard from '@/components/Skill/PersonalSkillCard.vue'
 import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
 import SkillFilterBar, { type SkillFilterState } from '@/components/Skill/SkillFilterBar.vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { Skill, DraftSkill, ConflictResolution } from '@/stores/skillStore'
+import type { Skill, ConflictResolution } from '@/stores/skillStore'
 
 const router = useRouter()
 const store = useSkillStore()
@@ -378,9 +324,13 @@ const detailSkill = ref<Skill | null>(null)
 const showReviewDrawer = ref(false)
 const reviewingSkillId = ref('')
 const upstreamSkill = ref<Skill | null>(null)
-const activeView = ref<'list' | 'drafts'>('list')
 const showBatchUpdate = ref(false)
 const filterState = ref<SkillFilterState>({ query: '', type: 'all', status: 'all', update: 'all' })
+
+// 送審 dialog 狀態
+const submitConfirmSkill = ref<Skill | null>(null)
+const submitMode = ref<'new_skill' | 'version_update'>('new_skill')
+const submitNote = ref('')
 
 const upstreamVersionForDetail = computed(() => {
   if (!detailSkill.value) return undefined
@@ -471,70 +421,36 @@ function handleDetach(skill: Skill) {
 function handleDuplicate(skill: Skill) {
   store.duplicateSkill(skill.id)
   detailSkill.value = null
-  activeView.value = 'drafts'
 }
 
-function handleCreateDraft() {
-  const draft = store.createDraft()
-  router.push({ path: '/view/SkillEditor', query: { draftId: draft.id } })
+// ── 個人技能 handlers ──────────────────────────────
+
+function handlePersonalSubmit(skill: Skill) {
+  submitConfirmSkill.value = skill
+  submitMode.value = skill.derivedFrom ? 'version_update' : 'new_skill'
+  submitNote.value = ''
 }
 
-function handleViewDraft(draft: DraftSkill) {
-  detailSkill.value = {
-    id: draft.id,
-    name: draft.name || '未命名草稿',
-    description: draft.description,
-    type: draft.type,
-    origin: draft.forkSourceId ? 'custom_version' : 'manually_created',
-    version: '草稿',
-    isEnabled: false,
-    usageCount: 0,
-    testPassRate: 0,
-    avgLatencyMs: 0,
-    instructions: draft.instructions,
-    forkSourceId: draft.forkSourceId,
+function confirmSubmitSkill() {
+  if (!submitConfirmSkill.value) return
+  store.submitPersonalSkill(submitConfirmSkill.value.id, submitMode.value, submitNote.value)
+  submitConfirmSkill.value = null
+  submitNote.value = ''
+}
+
+function handlePersonalDelete(skill: Skill) {
+  store.deletePersonalSkill(skill.id)
+  if (detailSkill.value?.id === skill.id) detailSkill.value = null
+}
+
+function handlePersonalToggle(skill: Skill) {
+  store.toggleSkill(skill.id)
+  if (detailSkill.value?.id === skill.id) {
+    detailSkill.value = { ...detailSkill.value, isEnabled: !detailSkill.value.isEnabled }
   }
 }
 
-function handleEditDraft(draft: DraftSkill) {
-  router.push({ path: '/view/SkillEditor', query: { draftId: draft.id } })
-}
-
-const submitConfirmDraft = ref<DraftSkill | null>(null)
-const submitMode = ref<'new_skill' | 'version_update'>('new_skill')
-
-function handleSubmitDraft(draft: DraftSkill) {
-  submitConfirmDraft.value = draft
-  submitMode.value = draft.forkSourceId ? 'version_update' : 'new_skill'
-}
-
-function confirmSubmitDraft() {
-  if (!submitConfirmDraft.value) return
-  store.submitDraft(submitConfirmDraft.value.id, submitMode.value)
-  submitConfirmDraft.value = null
-  activeView.value = 'list'
-}
-
-function handleDeleteDraft(draft: DraftSkill) {
-  store.deleteDraft(draft.id)
-}
-
-const disableConfirmSkill = ref<Skill | null>(null)
-
-function handleToggle(skill: Skill) {
-  if (skill.isEnabled) {
-    disableConfirmSkill.value = skill
-  } else {
-    store.toggleSkill(skill.id)
-  }
-}
-
-function confirmDisable() {
-  if (!disableConfirmSkill.value) return
-  store.toggleSkill(disableConfirmSkill.value.id)
-  if (detailSkill.value?.id === disableConfirmSkill.value.id) {
-    detailSkill.value = { ...detailSkill.value, isEnabled: false }
-  }
-  disableConfirmSkill.value = null
+function getDerivedFromName(derivedFrom: string): string {
+  return store.flatSkills.find(s => s.id === derivedFrom)?.name ?? derivedFrom
 }
 </script>
