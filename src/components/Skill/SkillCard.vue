@@ -51,12 +51,6 @@
           <i class="material-symbols-outlined">content_copy</i>
         </button>
         <button class="custom-btn skill-action-btn" @click="emit('test', skill)">測試</button>
-        <button
-          :class="['custom-btn', 'skill-action-btn', 'btn--danger-ghost']"
-          @click="emit('toggle', skill)"
-        >
-          {{ skill.isEnabled ? '停用' : '啟用' }}
-        </button>
       </div>
     </div>
   </div>
@@ -78,7 +72,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   click: [skill: Skill]
   test: [skill: Skill]
-  toggle: [skill: Skill]
   duplicate: [skill: Skill]
 }>()
 

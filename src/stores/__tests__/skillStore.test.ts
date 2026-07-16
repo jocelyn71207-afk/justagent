@@ -189,4 +189,13 @@ describe('skillStore', () => {
       expect(result?.zone).toBe('personal')
     })
   })
+
+  describe('Library skill 欄位', () => {
+    it('Library skill 有 isEnabled 欄位但 zone 不為 personal', () => {
+      const store = useSkillStore()
+      const libSkill = store.flatSkills[0]
+      expect(libSkill.zone).not.toBe('personal')
+      expect(typeof libSkill.isEnabled).toBe('boolean')
+    })
+  })
 })

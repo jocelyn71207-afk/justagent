@@ -58,7 +58,7 @@
               <div class="dm-lbl">平均延遲</div>
             </div>
             <div class="dm-divider"></div>
-            <div class="dm-toggle">
+            <div v-if="isPersonal" class="dm-toggle">
               <button
                 class="custom-btn dm-toggle-btn btn--danger-ghost"
                 @click="emit('toggle', skill!)"
@@ -245,7 +245,7 @@
             </div>
 
             <!-- 危險操作 -->
-            <div v-if="skill.type === 'extension'" class="drawer-danger-zone">
+            <div v-if="isPersonal" class="drawer-danger-zone">
               <div class="danger-zone-label">危險操作</div>
               <button
                 class="custom-btn btn--danger-ghost drawer-delete-btn"
@@ -311,6 +311,8 @@ const showConfirm = ref(false)
 const showCompare = ref(false)
 const compareV1Id = ref('')
 const compareV2Id = ref('')
+
+const isPersonal = computed(() => props.skill?.zone === 'personal')
 
 const iconName = computed(() =>
   props.skill?.type === 'extension' ? 'extension' : 'psychology'
