@@ -208,4 +208,51 @@ describe('skillStore', () => {
       })
     })
   })
+
+  describe('版本測試選擇（SkillTest 沙盒）', () => {
+    it('getVersionOptions 對多版本個人技能回傳所有版本並標示使用中版本', () => {
+      const store = useSkillStore()
+      const options = store.getVersionOptions('personal-001')
+      expect(options).toEqual([
+        { versionTag: '1.0', isActive: false },
+        { versionTag: '1.1', isActive: true },
+      ])
+    })
+
+    it('getVersionOptions 對單一版本個人技能回傳單一項目', () => {
+      const store = useSkillStore()
+      const options = store.getVersionOptions('personal-002')
+      expect(options).toEqual([{ versionTag: '1.0', isActive: true }])
+    })
+
+    it('getVersionOptions 對多版本 Library 技能依 status 判斷使用中版本', () => {
+      const store = useSkillStore()
+      const options = store.getVersionOptions('sys-cs-001')
+      expect(options).toContainEqual({ versionTag: '2.4.0', isActive: true })
+      expect(options).toContainEqual({ versionTag: '2.4.1', isActive: false })
+    })
+
+    it('getVersionOptions 對不存在的技能回傳空陣列', () => {
+      const store = useSkillStore()
+      expect(store.getVersionOptions('nonexistent')).toEqual([])
+    })
+
+    it('setSelectedSkill 未指定 versionTag 時預設使用「使用中」版本', () => {
+      const store = useSkillStore()
+      store.setSelectedSkill('personal-001')
+      expect(store.selectedVersionTag).toBe('1.1')
+    })
+
+    it('setSelectedSkill 指定 versionTag 時採用該版本', () => {
+      const store = useSkillStore()
+      store.setSelectedSkill('personal-001', '1.0')
+      expect(store.selectedVersionTag).toBe('1.0')
+    })
+
+    it('setSelectedSkill 對沒有 active 版本的技能退回第一個版本', () => {
+      const store = useSkillStore()
+      store.setSelectedSkill('ext-cs-return-001')
+      expect(store.selectedVersionTag).toBe('1.0.0')
+    })
+  })
 })

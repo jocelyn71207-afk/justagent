@@ -77,7 +77,9 @@ export interface Skill {
   description: string
   type: 'system' | 'extension'
   origin: 'platform_created' | 'custom_version' | 'manually_created'
+  creationMethod?: 'ai_assisted' | 'manual'
   scope?: 'system' | 'enterprise' | 'team'
+  teamName?: string
   version: string
   isEnabled: boolean
   usageCount: number
@@ -104,6 +106,23 @@ export interface Skill {
   hasLibraryUpdate?: boolean
   submitNote?: string
   submitMode?: 'version_update' | 'new_skill'
+  targetScope?: 'enterprise' | 'team'
+  targetTeamName?: string
+  submittedBy?: string
+  personalVersions?: PersonalSkillVersion[]
+}
+
+export interface PersonalSkillVersion {
+  id: string
+  versionTag: string
+  personalStatus: 'available' | 'reviewing' | 'has_library'
+  isActive: boolean
+  submitNote?: string
+  submitMode?: 'version_update' | 'new_skill'
+  targetScope?: 'enterprise' | 'team'
+  targetTeamName?: string
+  submittedBy?: string
+  aiAnalysis?: string[]
 }
 
 export interface CreateSkillPayload {
@@ -232,6 +251,7 @@ const MOCK_SKILLS: Skill[] = [
         description: '針對退貨問題，依設定的服務原則回應退貨政策與審核',
         type: 'extension',
         origin: 'custom_version',
+        creationMethod: 'ai_assisted',
         scope: 'enterprise',
         version: '1.0.0',
         isEnabled: true,
@@ -378,7 +398,9 @@ const MOCK_SKILLS: Skill[] = [
         description: '工程會議格式，自動標記 action items 至 Jira',
         type: 'extension',
         origin: 'custom_version',
+        creationMethod: 'manual',
         scope: 'team',
+        teamName: '工程部',
         version: '1.2.0',
         isEnabled: true,
         usageCount: 34,
@@ -405,6 +427,7 @@ const MOCK_SKILLS: Skill[] = [
     description: '根據產品 ID 查詢即時庫存量，支援多個倉庫',
     type: 'extension',
     origin: 'manually_created',
+    creationMethod: 'manual',
     scope: 'enterprise',
     version: '1.1.0',
     isEnabled: true,
@@ -459,6 +482,7 @@ const MOCK_SKILLS: Skill[] = [
         createdAt: '2026-05-15T09:00:00Z',
         createdBy: 'jocelyn.tseng',
         updateNote: '新增多倉庫整合功能',
+        reviewedBy: 'jocelyn.tseng',
         reviewHistory: [
           { action: 'SUBMITTED', by: 'jocelyn.tseng', time: '2026-05-15T09:00:00Z' },
           { action: 'APPROVED', by: 'jocelyn.tseng', time: '2026-05-15T11:00:00Z' },
@@ -472,7 +496,9 @@ const MOCK_SKILLS: Skill[] = [
     description: '根據本週銷售數據自動整理業績摘要，含商品排行與目標達成率分析',
     type: 'extension',
     origin: 'manually_created',
+    creationMethod: 'manual',
     scope: 'team',
+    teamName: '業務部',
     version: '1.0.0',
     isEnabled: true,
     usageCount: 28,
@@ -510,10 +536,55 @@ const MOCK_SKILLS: Skill[] = [
         createdAt: '2026-06-15T09:00:00Z',
         createdBy: 'jocelyn.tseng',
         updateNote: '初始版本',
+        reviewedBy: 'jocelyn.tseng',
         reviewHistory: [
           { action: 'SUBMITTED', by: 'jocelyn.tseng', time: '2026-06-15T09:00:00Z' },
           { action: 'APPROVED', by: 'jocelyn.tseng', time: '2026-06-15T14:00:00Z' },
         ],
+      },
+    ],
+  },
+  {
+    id: 'team-marketing-001',
+    name: '行銷文案生成',
+    description: '根據活動主題與目標受眾，自動生成社群貼文、EDM 標題與 CTA 文案',
+    type: 'extension',
+    origin: 'manually_created',
+    creationMethod: 'ai_assisted',
+    scope: 'team',
+    teamName: '行銷部',
+    version: '1.1.0',
+    isEnabled: true,
+    usageCount: 52,
+    testPassRate: 0.91,
+    avgLatencyMs: 320,
+    instructions: '你是行銷文案助理，根據活動主題、目標受眾與品牌調性生成行銷文案。\n\n輸出包含：\n1. 社群貼文（Facebook / Instagram / LinkedIn 各一）\n2. EDM 主旨行（3 個選項）\n3. CTA 按鈕文案（2 個選項）\n\n語調依品牌調性調整，預設為專業但親切。',
+    triggerHint: '文案、行銷、貼文、EDM、社群、活動',
+    capabilities: [
+      { name: '多平台文案生成', description: '針對不同社群平台生成適合的文案格式與字數。' },
+      { name: 'CTA 最佳化', description: '根據活動目標建議最佳行動呼籲文案。' },
+    ],
+    versions: [
+      {
+        id: 'v-mkt-1.0',
+        versionTag: '1.0.0',
+        status: 'history',
+        name: '行銷文案生成',
+        description: '根據活動主題自動生成社群文案',
+        createdAt: '2026-05-01T09:00:00Z',
+        createdBy: 'jocelyn.tseng',
+        updateNote: '初始版本',
+      },
+      {
+        id: 'v-mkt-1.1',
+        versionTag: '1.1.0',
+        status: 'active',
+        name: '行銷文案生成',
+        description: '根據活動主題與目標受眾，自動生成社群貼文、EDM 標題與 CTA 文案',
+        createdAt: '2026-06-10T09:00:00Z',
+        createdBy: 'jocelyn.tseng',
+        updateNote: '新增 EDM 主旨行與 CTA 選項輸出',
+        reviewedBy: 'jocelyn.tseng',
       },
     ],
   },
@@ -576,16 +647,21 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     description: '根據本週的會議記錄、任務清單，自動整理生成週報摘要',
     type: 'extension',
     origin: 'manually_created',
+    creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'available',
     derivedFrom: 'sys-meeting-001',
     hasLibraryUpdate: false,
-    version: '1.0.0',
+    version: '1.1.0',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
+    personalVersions: [
+      { id: 'pv-001-1', versionTag: '1.0', personalStatus: 'has_library', isActive: false, submitMode: 'new_skill', submittedBy: 'jocelyn.tseng' },
+      { id: 'pv-001-2', versionTag: '1.1', personalStatus: 'available', isActive: true },
+    ],
   },
   {
     id: 'personal-002',
@@ -593,16 +669,148 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     description: '自動分析客服對話品質，評估回答準確度與客戶滿意度',
     type: 'extension',
     origin: 'manually_created',
+    creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'reviewing',
     derivedFrom: 'sys-cs-001',
     hasLibraryUpdate: true,
+    submitMode: 'version_update',
+    submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
+    targetScope: 'enterprise',
+    submittedBy: '陳雅婷',
     version: '1.0.0',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是客服品質評估助理，分析客服對話品質。',
+    personalVersions: [
+      {
+        id: 'pv-002-1',
+        versionTag: '1.0',
+        personalStatus: 'reviewing',
+        isActive: true,
+        submitMode: 'version_update',
+        submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
+        targetScope: 'enterprise',
+        submittedBy: '陳雅婷',
+        aiAnalysis: [
+          '適合用於處理多輪對話的客服場景，尤其涉及退換貨等複雜流程時表現更穩定',
+          '支援即時情緒辨識，可協助優先處理高風險或情緒激動的對話',
+          '相較現有版本，預估準確率提升 12–15%，誤判率下降約 8%',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'personal-004',
+    name: '合約審核摘要',
+    description: '自動擷取合約關鍵條款，生成風險摘要與審核建議',
+    type: 'extension',
+    origin: 'manually_created',
+    creationMethod: 'manual',
+    zone: 'personal',
+    personalStatus: 'reviewing',
+    submitMode: 'new_skill',
+    submitNote: '支援中英文合約自動摘要，標註高風險條款',
+    targetScope: 'team',
+    targetTeamName: '法務部',
+    submittedBy: '林志明',
+    version: '1.0.0',
+    isEnabled: false,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '你是合約審核助理，負責擷取合約中的關鍵條款並評估潛在法律風險。請以條列方式輸出摘要，並標示高風險條款。',
+    personalVersions: [
+      {
+        id: 'pv-004-1',
+        versionTag: '1.0',
+        personalStatus: 'reviewing',
+        isActive: true,
+        submitMode: 'new_skill',
+        submitNote: '支援中英文合約自動摘要，標註高風險條款',
+        targetScope: 'team',
+        targetTeamName: '法務部',
+        submittedBy: '林志明',
+        aiAnalysis: [
+          '適合法務、採購等需頻繁審閱合約的場景，可大幅縮短人工閱讀時間',
+          '對常見條款類型（保密、違約、終止）識別率達 91%',
+          '建議後續版本補充對特殊行業合約（金融、醫療）的識別能力',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'personal-005',
+    name: '會議記錄自動生成',
+    description: '根據會議逐字稿或音訊，自動輸出結構化會議記錄與行動項目',
+    type: 'extension',
+    origin: 'manually_created',
+    creationMethod: 'ai_assisted',
+    zone: 'personal',
+    personalStatus: 'reviewing',
+    derivedFrom: 'sys-meeting-001',
+    submitMode: 'version_update',
+    submitNote: '新增行動項目追蹤欄位，支援多位發言人識別',
+    targetScope: 'enterprise',
+    submittedBy: '黃思婷',
+    version: '2.0.0',
+    isEnabled: false,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '你是會議記錄助理，根據逐字稿整理結構化會議記錄，包含主題、決議、行動項目與負責人。',
+    personalVersions: [
+      { id: 'pv-005-1', versionTag: '1.0', personalStatus: 'has_library', isActive: false, submitMode: 'new_skill', targetScope: 'enterprise', submittedBy: 'jocelyn.tseng' },
+      {
+        id: 'pv-005-2',
+        versionTag: '2.0',
+        personalStatus: 'reviewing',
+        isActive: true,
+        submitMode: 'version_update',
+        submitNote: '新增行動項目追蹤欄位，支援多位發言人識別',
+        targetScope: 'enterprise',
+        submittedBy: '黃思婷',
+        aiAnalysis: [
+          '多發言人識別功能在 5 人以下會議場景準確率達 95%，可有效減少後製時間',
+          '行動項目自動配對負責人，相較舊版減少約 40% 的手動整理工作',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'personal-006',
+    name: '產品 FAQ 自動回覆',
+    description: '根據產品文件與常見問題資料庫，自動回答用戶提問',
+    type: 'extension',
+    origin: 'manually_created',
+    zone: 'personal',
+    personalStatus: 'reviewing',
+    submitMode: 'new_skill',
+    submitNote: '',
+    targetScope: 'team',
+    targetTeamName: '客服部',
+    submittedBy: '王建豪',
+    version: '1.0.0',
+    isEnabled: false,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '你是產品 FAQ 助理，根據內部文件與常見問題資料庫回答用戶問題，無法回答時請引導至人工客服。',
+    personalVersions: [
+      {
+        id: 'pv-006-1',
+        versionTag: '1.0',
+        personalStatus: 'reviewing',
+        isActive: true,
+        submitMode: 'new_skill',
+        submitNote: '',
+        targetScope: 'team',
+        targetTeamName: '客服部',
+        submittedBy: '王建豪',
+      },
+    ],
   },
   {
     id: 'personal-003',
@@ -618,6 +826,9 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是 ERP 報表助理，整合多系統數據生成週期性報表。',
+    personalVersions: [
+      { id: 'pv-003-1', versionTag: '1.0', personalStatus: 'has_library', isActive: true, submitMode: 'new_skill', submittedBy: 'jocelyn.tseng' },
+    ],
   },
 ]
 
@@ -663,6 +874,7 @@ export const useSkillStore = defineStore('skillStore', () => {
   )
 
   const selectedSkillId = ref<string | null>(null)
+  const selectedVersionTag = ref<string | null>(null)
   const testConversationHistory = ref<ChatMessage[]>([])
   const testIsRunning = ref(false)
   const aiTestScenarios = ref<AITestScenario[]>([])
@@ -759,6 +971,24 @@ export const useSkillStore = defineStore('skillStore', () => {
 
   function getReviewingVersion(skillId: string): SkillVersion | undefined {
     return getSkillVersions(skillId).find(v => v.status === 'reviewing')
+  }
+
+  function getVersionOptions(skillId: string): { versionTag: string; isActive: boolean }[] {
+    const skill = findSkill(skillId)
+    if (!skill) return []
+    if (skill.zone === 'personal' && skill.personalVersions?.length) {
+      return skill.personalVersions.map(v => ({ versionTag: v.versionTag, isActive: v.isActive }))
+    }
+    if (skill.versions?.length) {
+      return skill.versions.map(v => ({ versionTag: v.versionTag, isActive: v.status === 'active' }))
+    }
+    return [{ versionTag: skill.version, isActive: true }]
+  }
+
+  function getDefaultVersionTag(skillId: string): string | null {
+    const options = getVersionOptions(skillId)
+    if (!options.length) return null
+    return options.find(v => v.isActive)?.versionTag ?? options[0].versionTag
   }
 
   function toggleSkill(id: string): void {
@@ -1047,8 +1277,9 @@ export const useSkillStore = defineStore('skillStore', () => {
       .reverse()
   }
 
-  function setSelectedSkill(id: string): void {
+  function setSelectedSkill(id: string, versionTag?: string): void {
     selectedSkillId.value = id
+    selectedVersionTag.value = versionTag ?? getDefaultVersionTag(id)
     aiTestScenarios.value = []
     aiTestReport.value = null
     aiTestIsGenerating.value = false
@@ -1169,6 +1400,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     myPersonalSkills,
     drafts: myDrafts,
     selectedSkillId,
+    selectedVersionTag,
     testConversationHistory,
     testIsRunning,
     aiTestScenarios,
@@ -1193,6 +1425,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     findSkill,
     getSkillVersions,
     getReviewingVersion,
+    getVersionOptions,
+    getDefaultVersionTag,
     deleteSkill,
     restoreSkill,
     permanentlyDeleteSkill,
