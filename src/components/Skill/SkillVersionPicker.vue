@@ -18,6 +18,13 @@
   </div>
 </template>
 
+<script lang="ts">
+const closers = new Set<() => void>()
+function closeOthers(self: () => void) {
+  closers.forEach(close => { if (close !== self) close() })
+}
+</script>
+
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
@@ -31,21 +38,36 @@ const emit = defineEmits<{ 'update:modelValue': [versionTag: string] }>()
 const isOpen = ref(false)
 const ddRef = ref<HTMLElement | null>(null)
 
+function close() {
+  isOpen.value = false
+}
+
 function toggle() {
-  isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    close()
+    return
+  }
+  closeOthers(close)
+  isOpen.value = true
 }
 
 function select(versionTag: string) {
   emit('update:modelValue', versionTag)
-  isOpen.value = false
+  close()
 }
 
 function handleClickOutside(event: MouseEvent) {
   if (ddRef.value && !ddRef.value.contains(event.target as Node)) {
-    isOpen.value = false
+    close()
   }
 }
 
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+onMounted(() => {
+  closers.add(close)
+  document.addEventListener('click', handleClickOutside)
+})
+onUnmounted(() => {
+  closers.delete(close)
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
