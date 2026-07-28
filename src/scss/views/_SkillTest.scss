@@ -238,7 +238,8 @@
 
     &.bubble--agent {
       align-self: flex-start;
-      background: var(--page-bg);
+      background: var(--surface);
+      border: 1px solid var(--divider-a50);
       color: var(--text);
       border-bottom-left-radius: 4px;
     }
@@ -246,7 +247,7 @@
     .bubble-label {
       font-size: 11px;
       font-weight: 600;
-      opacity: 0.6;
+      color: $color_main_2;
       margin-bottom: 4px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
