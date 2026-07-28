@@ -44,7 +44,9 @@
                   <span class="si-name">{{ skill.name }}</span>
                   <span v-if="skill.scope === 'enterprise'" class="skill-tag tag--enterprise">企業</span>
                   <span v-else-if="skill.scope === 'team' && skill.teamName" class="skill-tag tag--team">{{ skill.teamName }}</span>
+                  <span v-if="skill.scope === 'system'" class="version-inline">v{{ displayVersionTag(skill) }}</span>
                   <SkillVersionPicker
+                    v-else
                     :versions="store.getVersionOptions(skill.id)"
                     :model-value="displayVersionTag(skill)"
                     @update:model-value="v => store.setSelectedSkill(skill.id, v)"
