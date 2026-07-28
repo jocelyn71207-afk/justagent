@@ -1,10 +1,10 @@
 <template>
   <span v-if="versions.length <= 1" class="version-inline">v{{ versions[0]?.versionTag }}</span>
   <div v-else class="version-dd" ref="ddRef">
-    <button type="button" class="version-dd-btn" @click.stop="toggle">
+    <button type="button" class="version-dd-btn" ref="btnRef" @click.stop="toggle">
       v{{ modelValue }} <span class="dd-caret">▾</span>
     </button>
-    <div v-show="isOpen" class="version-dd-menu">
+    <div v-show="isOpen" class="version-dd-menu" :style="menuStyle">
       <div
         v-for="v in versions"
         :key="v.versionTag"
@@ -37,6 +37,8 @@ const emit = defineEmits<{ 'update:modelValue': [versionTag: string] }>()
 
 const isOpen = ref(false)
 const ddRef = ref<HTMLElement | null>(null)
+const btnRef = ref<HTMLElement | null>(null)
+const menuStyle = ref<{ top: string; right: string }>({ top: '0px', right: '0px' })
 
 function close() {
   isOpen.value = false
@@ -48,6 +50,13 @@ function toggle() {
     return
   }
   closeOthers(close)
+  if (btnRef.value) {
+    const rect = btnRef.value.getBoundingClientRect()
+    menuStyle.value = {
+      top: `${rect.bottom + 4}px`,
+      right: `${window.innerWidth - rect.right}px`,
+    }
+  }
   isOpen.value = true
 }
 

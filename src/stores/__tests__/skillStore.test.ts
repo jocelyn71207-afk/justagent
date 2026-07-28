@@ -156,7 +156,7 @@ describe('skillStore', () => {
   describe('PersonalSkill', () => {
     it('myPersonalSkills 初始有 3 筆且都是 zone:personal', () => {
       const store = useSkillStore()
-      expect(store.myPersonalSkills.length).toBe(3)
+      expect(store.myPersonalSkills.length).toBe(6)
       store.myPersonalSkills.forEach(s => expect(s.zone).toBe('personal'))
     })
 

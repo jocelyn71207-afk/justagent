@@ -43,7 +43,7 @@
                   <span :class="['skill-dot', skill.type === 'system' ? 'dot--sys' : 'dot--ext']"></span>
                   <span class="si-name">{{ skill.name }}</span>
                   <span v-if="skill.scope === 'enterprise'" class="skill-tag tag--enterprise">企業</span>
-                  <span v-else-if="skill.scope === 'team' && skill.teamName" class="lsr-team-badge">{{ skill.teamName }}</span>
+                  <span v-else-if="skill.scope === 'team' && skill.teamName" class="skill-tag tag--team">{{ skill.teamName }}</span>
                   <SkillVersionPicker
                     :versions="store.getVersionOptions(skill.id)"
                     :model-value="displayVersionTag(skill)"
