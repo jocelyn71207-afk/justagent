@@ -471,6 +471,41 @@
         </div>
       </div>
 
+      <!-- Conv3 上傳原廠文件懸浮面板 -->
+      <div v-show="conv3UploadFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">上傳原廠文件</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3UploadFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-info-note">✦ 點擊下方區域附加這批 TEVA 原廠型錄與文件</div>
+          <div v-if="conv3UploadedFiles.length === 0"
+            class="conv2-up-img-box conv2-up-img-box--empty"
+            style="height:64px"
+            @click.stop="conv3LoadDemoFiles()">
+            <div class="conv2-up-img-placeholder">
+              <i class="material-symbols-outlined">upload_file</i>
+              <span>點擊附加原廠文件</span>
+            </div>
+          </div>
+          <div v-else>
+            <div class="oneFileItem" v-for="(f, i) in conv3UploadedFiles" :key="'conv3-file-' + i" style="margin-bottom:6px">
+              <img class="file-icon" :src="useIconFileTypes[f.type]" v-if="useIconFileTypes[f.type]" />
+              <span class="noFile-icon" v-else><i class="material-symbols-outlined">draft</i></span>
+              <div class="file-info-box">
+                <div class="file-name">{{ f.name }}</div>
+                <div class="file-size">{{ f.type }}．{{ formatFileSize(f.size) }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="conv2-fp-btn-row">
+            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理 →</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 要上傳的附件 -->
       <div v-if="!inputAreaHidden" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
@@ -535,6 +570,27 @@
           <!-- conv2 流程進行中：固定顯示「離開快速任務」 -->
           <div v-if="conv2InputLocked" class="conv2-leave-row">
             <button class="conv2-leave-btn" @click.stop="conv2LeaveFastTask()">
+              <i class="material-symbols-outlined">close</i>離開快速任務
+            </button>
+          </div>
+        </template>
+        <template v-if="currentConversationId === 'conv3'">
+          <div class="conv2-pill-row" v-show="conv3ShowUploadPill || conv3ShowDimPill">
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv3UploadFpVisible}"
+              v-show="conv3ShowUploadPill"
+              @click.stop="conv3UploadFpVisible = !conv3UploadFpVisible">
+              <span class="conv2-pill-dot"></span>上傳原廠文件
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv3UploadFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv3DimFpVisible}"
+              v-show="conv3ShowDimPill"
+              @click.stop="conv3DimFpVisible = !conv3DimFpVisible">
+              <span class="conv2-pill-dot"></span>貼標維度確認
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv3DimFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+          </div>
+          <div v-if="conv3InputLocked" class="conv2-leave-row">
+            <button class="conv2-leave-btn" @click.stop="conv3LeaveFastTask()">
               <i class="material-symbols-outlined">close</i>離開快速任務
             </button>
           </div>
@@ -2503,6 +2559,44 @@ function conv3LeaveFastTask() {
   conv3UploadFpVisible.value = false;
   conv3ShowDimPill.value = false;
   conv3DimFpVisible.value = false;
+}
+
+// 尋找最後一則含 'conv2-search-card' 的處理進度訊息，把指定 class 依序替換（比照 conv2DirectSubmitSku 的做法）
+function conv3FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv3Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv3Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+function conv3LoadDemoFiles() {
+  if (conv3UploadedFiles.value.length) return;
+  conv3UploadedFiles.value = [...CONV3_DEMO_FILES];
+}
+
+function conv3ConfirmUpload() {
+  if (!conv3UploadedFiles.value.length) return;
+  conv3UploadFpVisible.value = false;
+  conv3ShowUploadPill.value = false;
+  const fileListHtml = conv3UploadedFiles.value.map((f, i) => `${i + 1}. ${f.name}`).join('<br>');
+  c3Push({ forUser: true, msg: `已附加 ${conv3UploadedFiles.value.length} 份文件：<br>${fileListHtml}` });
+  c3Push({ msg: `收到，我先掃描這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">DocumentParser 解析原廠型錄與規格表</div>
+  <div class="conv2-ss conv2-ss--wait">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
+</div>` });
+  c3Scroll();
+  setTimeout(() => {
+    conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+    c3Push({ msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
+    c3Scroll();
+    conv3DimFpVisible.value = true;
+    conv3ShowDimPill.value = true;
+  }, 1800);
 }
 // -------- end Conversation 3 流程 --------
 
