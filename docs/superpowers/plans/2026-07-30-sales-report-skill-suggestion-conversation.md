@@ -569,10 +569,22 @@ function resetConversation() {
 }
 ```
 
-- [ ] **Step 5: Verify types and manual walkthrough**
+- [ ] **Step 5: Add a temporary stub so this task's commit type-checks cleanly**
+
+`conv4InitFlow` is called by `sendCannedTask` (Step 2) but isn't implemented until Task 4. Per the Global Constraint that every task must leave `npm run type-check` passing, add a temporary stub immediately after the block inserted in Step 3, before the `// -------- end Conversation 4 流程（函式將於後續任務接續新增）--------` marker:
+
+```typescript
+function conv4InitFlow() {
+  // TODO(Task 4): 實作 conv4 訊息流程
+}
+```
+
+Task 4 Step 1 removes this stub when it adds the real implementation.
+
+- [ ] **Step 6: Verify types and manual walkthrough**
 
 Run: `npm run type-check`
-Expected: errors referencing `conv4InitFlow` not defined (it's added in Task 4) — this is expected at this intermediate point; note it and continue, or if the workflow requires a fully green intermediate state, temporarily stub `function conv4InitFlow() {}` right after the Step 3 block and remove the stub in Task 4 Step 1. Prefer running Tasks 3 and 4 together in one commit if `type-check` must stay green at every commit.
+Expected: no errors.
 
 Run: `npm run dev`, open AiViewer, switch to conv4 via the conversation list.
 
@@ -580,7 +592,7 @@ Run: `npm run dev`, open AiViewer, switch to conv4 via the conversation list.
 - Click the ⚡ (快速任務) button → exactly one item appears: "整理上月產品銷售報告".
 - Switch to conv1 and conv2 and confirm both are unaffected (regression check for the shared `cannedTaskItems`/`sendCannedTask`/`testMsgs`/`resetConversation` edits).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add src/components/AiViewer/AiViewerRightBox.vue
@@ -598,11 +610,14 @@ git commit -m "feat(ai-viewer): wire up conv4 state, entry point, and shared com
 - Consumes: `conv4Msgs`, `conv4Title`, `c4Push`, `c4Scroll`, `CONV4_SOURCES` (Task 3), `addReportBlock` (existing, destructured from `aiviewerStore` at the top of the script), `htmlIcon` (existing import)
 - Produces (used by Task 5): `conv4InitFlow(): void`, `conv4FlipSearchCard(from: string[], to: string[]): void`
 
-- [ ] **Step 1: Replace the Task 3 end marker with the real flow functions**
+- [ ] **Step 1: Replace the Task 3 stub and end marker with the real flow functions**
 
 Replace:
 
 ```typescript
+function conv4InitFlow() {
+  // TODO(Task 4): 實作 conv4 訊息流程
+}
 // -------- end Conversation 4 流程（函式將於後續任務接續新增）--------
 ```
 
@@ -653,13 +668,17 @@ function conv4FlipSearchCard(from: string[], to: string[]) {
     }
   }
 }
+
+function conv4AskBuildSkill() {
+  // TODO(Task 5): 實作 Skill 建議互動
+}
 // -------- end Conversation 4 流程（Skill 建議函式將於下一個任務新增）--------
 ```
 
 - [ ] **Step 2: Verify types**
 
 Run: `npm run type-check`
-Expected: error `conv4AskBuildSkill` is not defined (added in Task 5). This is expected — Task 4 and Task 5 together form one fully type-checkable state. If a green intermediate commit is required, add a temporary `function conv4AskBuildSkill() {}` stub here and remove it in Task 5 Step 1.
+Expected: no errors.
 
 - [ ] **Step 3: Manual walkthrough**
 
@@ -690,11 +709,14 @@ git commit -m "feat(ai-viewer): add conv4 request/progress/report flow with sour
 - Consumes: `conv4Msgs`, `c4Push`, `c4Scroll` (Task 3), `conv4InitFlow`/`conv4FlipSearchCard` (Task 4, not directly called here but same section)
 - Produces: nothing consumed by later tasks (Task 6 is independent; Task 7 is verification only)
 
-- [ ] **Step 1: Replace the Task 4 end marker with the Skill-suggestion functions**
+- [ ] **Step 1: Replace the Task 4 stub and end marker with the Skill-suggestion functions**
 
 Replace:
 
 ```typescript
+function conv4AskBuildSkill() {
+  // TODO(Task 5): 實作 Skill 建議互動
+}
 // -------- end Conversation 4 流程（Skill 建議函式將於下一個任務新增）--------
 ```
 
