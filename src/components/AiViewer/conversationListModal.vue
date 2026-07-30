@@ -16,9 +16,11 @@
           <span>未命名對話</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
+        <li :class="{ active: currentConversationId === 'conv3' }" @click="switchConversation('conv3')">
+          <span>TEVA新品特徵貼標</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
       </ul>
-
-      <div class="remark">一個專案最多兩個對話，如要開啟新對話請刪除其中一個。</div>
     </div>
     <template #footer>
       <button class="custom-btn"

@@ -944,6 +944,8 @@ watch(currentConversationId, (id) => {
     aiViewerBlocks.value = [];
   } else if (id === 'conv2') {
     aiViewerBlocks.value = [...aiviewerStore.INITIAL_BLOCKS];
+  } else if (id === 'conv3') {
+    aiViewerBlocks.value = [];
   }
 }, { immediate: true });
 
