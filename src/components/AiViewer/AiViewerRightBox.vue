@@ -2461,9 +2461,54 @@ const CONV4_SOURCES: KnowledgeSource[] = [
 ];
 
 function conv4InitFlow() {
-  // TODO(Task 4): 實作 conv4 訊息流程
+  if (conv4Msgs.value.length > 0) return;
+  conv4Title.value = '產品銷售報告整理';
+  c4Push({ forUser: true, msg: '請幫我整理上個月的產品銷售報告，相關資料請幫我查詢 @2026Q1產品銷售，輸出格式請參考 @三諾產品部輸出報告規範' });
+  setTimeout(() => {
+    c4Push({ msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card">
+  <div class="conv2-ss conv2-ss--active">SalesDataQuery 查詢 2026Q1 產品銷售數據</div>
+  <div class="conv2-ss conv2-ss--wait">ReportFormatter 套用三諾產品部輸出報告規範</div>
+</div>` });
+    c4Scroll();
+    setTimeout(() => {
+      conv4FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '2026年6月產品銷售報告.html');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      c4Push({
+        finishResponse: true,
+        msg: `✅ 已完成上個月（6月）產品銷售報告，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">2026年6月產品銷售報告.html</div>
+    <div class="file-size">HTML · 5.8 KB · 已加到畫布</div>
+  </div>
+</div>`,
+        sources: CONV4_SOURCES,
+      });
+      c4Scroll();
+      setTimeout(() => conv4AskBuildSkill(), 600);
+    }, 1800);
+  }, 300);
 }
-// -------- end Conversation 4 流程（函式將於後續任務接續新增）--------
+
+// 尋找最後一則含 'conv2-search-card' 的訊息，把指定 class 依序替換（比照 conv2 系列訊息的做法）
+function conv4FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv4Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv4Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+function conv4AskBuildSkill() {
+  // TODO(Task 5): 實作 Skill 建議互動
+}
+// -------- end Conversation 4 流程（Skill 建議函式將於下一個任務新增）--------
 
 const testMsgs = computed(() => {
   const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
