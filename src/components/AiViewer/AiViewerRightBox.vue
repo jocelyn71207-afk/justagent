@@ -2173,6 +2173,16 @@ function handleChatAreaClick(e: MouseEvent) {
     return
   }
 
+  // conv4 是否建立 Skill 快速按鈕
+  if (action === 'conv4-build-skill') {
+    conv4BuildSkill();
+    return;
+  }
+  if (action === 'conv4-skip-skill') {
+    conv4SkipSkill();
+    return;
+  }
+
   if (currentConversationId.value !== 'conv2') return;
 
   // more-button 開關：直接操作 DOM，不走 reactive 流程
@@ -2506,9 +2516,43 @@ function conv4FlipSearchCard(from: string[], to: string[]) {
 }
 
 function conv4AskBuildSkill() {
-  // TODO(Task 5): 實作 Skill 建議互動
+  c4Push({
+    msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存成一個 Skill，之後產品部同仁都能快速套用？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv4-build-skill">是，幫我建立 Skill</span>
+  <span class="conv1-quick-btn" data-action="conv4-skip-skill">不用了</span>
+</div>`,
+  });
+  c4Scroll();
 }
-// -------- end Conversation 4 流程（Skill 建議函式將於下一個任務新增）--------
+
+function conv4BuildSkill() {
+  c4Push({ forUser: true, msg: '是，幫我建立 Skill' });
+  c4Scroll();
+  setTimeout(() => {
+    c4Push({
+      finishResponse: true,
+      msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+  <span style="font-size:20px;line-height:1">🧩</span>
+  <div>
+    <div style="font-weight:700">產品銷售報告整理</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:2px">查詢指定月份產品銷售數據，並依三諾產品部輸出報告規範自動產出報告</div>
+  </div>
+</div>✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。`,
+    });
+    c4Scroll();
+  }, 500);
+}
+
+function conv4SkipSkill() {
+  c4Push({ forUser: true, msg: '不用了' });
+  c4Scroll();
+  setTimeout(() => {
+    c4Push({ msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c4Scroll();
+  }, 500);
+}
+// -------- end Conversation 4 流程 --------
 
 const testMsgs = computed(() => {
   const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
