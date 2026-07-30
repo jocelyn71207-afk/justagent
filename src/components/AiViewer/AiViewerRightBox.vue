@@ -936,6 +936,7 @@ const conv2Title = ref('');
 const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
+  if (currentConversationId.value === 'conv3') return conv3Title.value || 'TEVA新品特徵貼標';
   return conv1Title.value;
 });
 
@@ -991,6 +992,9 @@ const cannedTaskItems = computed(() => {
   if (currentConversationId.value === 'conv2') {
     return [{ id: 'competitorAnalysis', text: '商品競品分析' }];
   }
+  if (currentConversationId.value === 'conv3') {
+    return [{ id: 'tevaFeatureTagging', text: 'TEVA新品特徵貼標' }];
+  }
   return [
     { id: 'cannedTask1', text: '快速罐頭任務範例文字1' },
     { id: 'cannedTask2', text: '快速罐頭任務範例文字2' },
@@ -1006,6 +1010,11 @@ function sendCannedTask(item: any) {
   if (currentConversationId.value === 'conv2' && item.id === 'competitorAnalysis') {
     resetConversation();
     nextTick(() => conv2InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv3' && item.id === 'tevaFeatureTagging') {
+    resetConversation();
+    nextTick(() => conv3InitFlow());
     return;
   }
   send();
@@ -1862,7 +1871,7 @@ const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
-const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
+const inputAreaHidden = computed(() => conv2FpActive.value || conv3FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
 const conv1TranslConfirmed = computed(() => {
   const record = conv1Msgs.value.find((m: any) => m.id === 'id_3');
   return !!(record?.confirmed && !record?.translationStarted);
@@ -2434,8 +2443,73 @@ function conv2ShowReport() {
 }
 // -------- end Conversation 2 流程 --------
 
+// -------- Conversation 3 流程 --------
+const conv3InputLocked = ref(false); // 快速任務觸發後鎖定輸入框
+const conv3Msgs = ref<any[]>([]);
+let conv3IdCounter = 2;
+const conv3Title = ref('');
+
+function c3Push(msg: any) {
+  conv3Msgs.value.push({ id: `c3_${conv3IdCounter++}`, ...msg });
+}
+function c3Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+// Step 1：上傳原廠文件（面板本體於後續任務建立）
+const conv3UploadFpVisible = ref(false);
+const conv3ShowUploadPill = ref(false);
+const conv3UploadedFiles = ref<{ name: string; type: string; size: number }[]>([]);
+const CONV3_DEMO_FILES: { name: string; type: string; size: number }[] = [
+  { name: 'TEVA_AW26_目錄_final_v3(1).pdf', type: 'PDF', size: 8_412_000 },
+  { name: '原廠規格表_更新版.xlsx', type: 'EXCEL', size: 1_204_500 },
+  { name: 'TEVA官網介紹_複製.docx', type: 'WORD', size: 340_200 },
+  { name: '特徵資料_舊版_勿用.txt', type: 'TXT', size: 18_600 },
+];
+
+// Step 2：貼標維度確認（面板本體於後續任務建立）
+const conv3DimFpVisible = ref(false);
+const conv3ShowDimPill = ref(false);
+const conv3Dims = ref([
+  { key: 'color', title: '顏色', sel: true },
+  { key: 'style', title: '款式', sel: true },
+  { key: 'material', title: '材質', sel: true },
+  { key: 'size', title: '尺碼', sel: true },
+  { key: 'theme', title: '風格', sel: true },
+]);
+const conv3DimErr = ref('');
+
+// fp 互動模式中：完全隱藏原始輸入列（比照 conv2FpActive）
+const conv3FpActive = computed(() =>
+  currentConversationId.value === 'conv3' && (conv3ShowUploadPill.value || conv3ShowDimPill.value || conv3InputLocked.value)
+);
+
+function conv3InitFlow() {
+  if (conv3Msgs.value.length > 0) return;
+  conv3InputLocked.value = true;
+  conv3Title.value = 'TEVA新品特徵貼標';
+  c3Push({ forUser: true, msg: '請整理這批 TEVA 新品原廠文件，依顏色、款式、材質、尺碼、風格完成特徵貼標' });
+  setTimeout(() => {
+    c3Push({ msg: '收到！這批原廠文件看起來版本蠻雜亂的，麻煩先在下方面板附加要整理的檔案。' });
+    c3Scroll();
+    conv3UploadFpVisible.value = true;
+    conv3ShowUploadPill.value = true;
+  }, 300);
+}
+
+function conv3LeaveFastTask() {
+  conv3InputLocked.value = false;
+  conv3ShowUploadPill.value = false;
+  conv3UploadFpVisible.value = false;
+  conv3ShowDimPill.value = false;
+  conv3DimFpVisible.value = false;
+}
+// -------- end Conversation 3 流程 --------
+
 const testMsgs = computed(() => {
-  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value;
+  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
+    : currentConversationId.value === 'conv3' ? conv3Msgs.value
+    : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
 });
@@ -2477,6 +2551,19 @@ function resetConversation() {
     conv2DirectMethod.value = '';
     conv2DirectSkuInput.value = '';
     conv2DirectUrlInput.value = '';
+  }
+  if (currentConversationId.value === 'conv3') {
+    conv3IdCounter = 2;
+    conv3Title.value = '';
+    conv3Msgs.value = [];
+    conv3InputLocked.value = false;
+    conv3UploadFpVisible.value = false;
+    conv3ShowUploadPill.value = false;
+    conv3UploadedFiles.value = [];
+    conv3DimFpVisible.value = false;
+    conv3ShowDimPill.value = false;
+    conv3Dims.value.forEach(d => { d.sel = true; });
+    conv3DimErr.value = '';
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
