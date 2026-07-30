@@ -506,6 +506,32 @@
         </div>
       </div>
 
+      <!-- Conv3 貼標維度確認懸浮面板 -->
+      <div v-show="conv3DimFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">貼標維度確認</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3DimFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-pdesc">多選（至少 1 項）</div>
+          <div v-for="d in conv3Dims" :key="d.key"
+            :class="['conv2-feat-item', {sel: d.sel}]"
+            @click.stop="conv3TogDim(d)">
+            <div class="conv2-fcb">
+              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="conv2-ft">{{ d.title }}</div>
+          </div>
+          <div class="conv2-err">{{ conv3DimErr }}</div>
+          <div class="conv2-fp-btn-row">
+            <span class="conv2-cbadge">已選 {{ conv3Dims.filter(d => d.sel).length }} / {{ conv3Dims.length }}</span>
+            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認 →</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 要上傳的附件 -->
       <div v-if="!inputAreaHidden" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
@@ -2597,6 +2623,46 @@ function conv3ConfirmUpload() {
     conv3DimFpVisible.value = true;
     conv3ShowDimPill.value = true;
   }, 1800);
+}
+
+function conv3TogDim(d: any) {
+  const selCount = conv3Dims.value.filter(x => x.sel).length;
+  if (d.sel && selCount <= 1) { conv3DimErr.value = '至少選 1 個維度'; return; }
+  d.sel = !d.sel;
+  conv3DimErr.value = '';
+}
+
+function conv3ConfirmDims() {
+  if (!conv3Dims.value.some(d => d.sel)) { conv3DimErr.value = '至少選 1 個維度'; return; }
+  conv3DimFpVisible.value = false;
+  conv3ShowDimPill.value = false;
+  const dimNames = conv3Dims.value.filter(d => d.sel).map(d => d.title).join('、');
+  c3Push({ forUser: true, msg: `確認以 ${dimNames} 進行貼標，開始執行。` });
+  c3Push({ msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">DocumentParser 解析原廠型錄與規格表</div>
+  <div class="conv2-ss conv2-ss--done">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
+  <div class="conv2-ss conv2-ss--active">FeatureTagger 依 ${dimNames} 進行特徵貼標中</div>
+  <div class="conv2-ss conv2-ss--wait">QualityReview 交叉比對命名與規格一致性</div>
+</div>` });
+  c3Scroll();
+  setTimeout(() => conv3ShowResult(dimNames), 2200);
+}
+
+function conv3ShowResult(dimNames: string) {
+  conv3InputLocked.value = false;
+  conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+  try {
+    addReportBlock('/justagent/teva_feature_tagging_report.html', 'TEVA_特徵貼標報告.html');
+  } catch (e) { /* 畫布可能尚未初始化 */ }
+  c3Push({ msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
+  c3Push({ finishResponse: true, msg: `<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">TEVA_特徵貼標報告.html</div>
+    <div class="file-size">HTML · 6.4 KB · 已加到畫布</div>
+  </div>
+</div>` });
+  c3Scroll();
 }
 // -------- end Conversation 3 流程 --------
 
