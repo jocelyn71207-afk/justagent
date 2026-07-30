@@ -1,0 +1,75 @@
+<h2>Notion 整合 — 3 種設計方向</h2>
+<p class="subtitle">API Key 認證 · Properties + Page Body · 每 row = 一筆知識條目</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>擴充現有 ApiSource</h3>
+      <p>在現有 <code>ApiSource</code> interface 加入 <code>sourceType: 'NOTION'</code> 和 Notion 專用欄位，ConnectApiWizard 加入 Notion 分支流程。</p>
+      <div style="margin-top:10px;background:#f0f4ff;border-radius:8px;padding:10px 12px;font-size:12px;">
+        <strong>新增欄位：</strong><br>
+        sourceType: 'NOTION' | 'REST'<br>
+        notionDatabaseId, notionTitleProp, notionCategoryProp, notionTagsProp, includePageBody
+      </div>
+      <div class="pros-cons" style="margin-top:10px;">
+        <div class="pros"><h4>優點</h4><ul><li>複用現有 store 方法</li><li>改動範圍小</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>ApiSource 設計為 REST，Notion 結構差異大，欄位混雜</li><li>wizrd 邏輯分支複雜</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>獨立 NotionSource（仿 SharePoint 模式）</h3>
+      <p>建立專屬 <code>NotionSource</code> interface 和 <code>NotionConnectWizard</code>，跟 SharePointWizardModal 平行，在 DataSourceTab 並列顯示。</p>
+      <div style="margin-top:10px;background:#f0fff4;border-radius:8px;padding:10px 12px;font-size:12px;">
+        <strong>NotionSource interface：</strong><br>
+        id, name, apiKey, databaseId<br>
+        titleProp, contentProp, categoryProp, tagsProp<br>
+        includePageBody, schedule, enabled<br>
+        lastSyncAt, lastSyncStatus, lastSyncCount, lastSyncError
+      </div>
+      <div style="margin-top:8px;background:#f0fff4;border-radius:8px;padding:10px 12px;font-size:12px;">
+        <strong>NotionConnectWizard 步驟：</strong><br>
+        Step 1：填入 Integration Token + Database ID → 驗證連線<br>
+        Step 2：預覽 Database Properties → 對應標題/分類/標籤欄位<br>
+        Step 3：設定知識條目名稱前綴、同步頻率、分類
+      </div>
+      <div class="pros-cons" style="margin-top:10px;">
+        <div class="pros"><h4>優點</h4><ul><li>職責清晰，不污染 ApiSource</li><li>UX 針對 Notion 優化（可顯示欄位名稱、預覽資料）</li><li>仿現有 SharePoint 模式，架構一致</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>新元件較多</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>通用整合平台框架</h3>
+      <p>建立 <code>IntegrationSource</code> 抽象層，Notion 是第一個實作，未來 Google Drive、Slack 也用同一套框架接入。</p>
+      <div style="margin-top:10px;background:#fff7f0;border-radius:8px;padding:10px 12px;font-size:12px;">
+        <strong>架構：</strong><br>
+        IntegrationSource（抽象）<br>
+        ├── NotionIntegration<br>
+        ├── GoogleDriveIntegration（未來）<br>
+        └── SlackIntegration（未來）<br><br>
+        每個 integration 實作：connect(), sync(), mapToKnowledge()
+      </div>
+      <div class="pros-cons" style="margin-top:10px;">
+        <div class="pros"><h4>優點</h4><ul><li>擴展性最高</li><li>未來加新整合成本低</li></ul></div>
+        <div class="cons"><h4>缺點</h4>
+        <ul><li>過度設計，目前只有 Notion 一個需求</li><li>抽象層增加開發成本</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:20px;color:#666;font-size:13px;">
+  我推薦 <strong>方案 B</strong>：獨立 NotionSource，仿 SharePoint 模式。
+  架構清晰、UX 可針對 Notion 優化，且與現有程式碼風格一致。
+  方案 C 在目前只有 Notion 需求時屬過度設計。
+</p>

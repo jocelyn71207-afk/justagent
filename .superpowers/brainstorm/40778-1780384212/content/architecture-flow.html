@@ -1,0 +1,82 @@
+<h2>方案 C：全管道架構對比</h2>
+<p class="subtitle">三個地方介入：拆解策略 × 語意注入 × 查詢過濾</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">❌ 現況（category/tags 沒有作用）</div>
+    <div class="mockup-body" style="font-size:12px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="background:#e5e7eb;border-radius:6px;padding:8px;text-align:center">
+          上傳檔案 / 輸入內容<br>
+          <span style="font-size:11px;color:#6b7280">category 選好了，tags 打好了</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#fef3c7;border-radius:6px;padding:8px">
+          <strong>Chunking</strong><br>
+          <span style="color:#6b7280">只看副檔名（xlsx/pdf/txt…）<br>❌ 不管 category</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#fef3c7;border-radius:6px;padding:8px">
+          <strong>Embedding</strong><br>
+          <span style="color:#6b7280">純文字 chunk 送入<br>❌ 不含 category/tags</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#fef3c7;border-radius:6px;padding:8px">
+          <strong>Indexing（向量 DB）</strong><br>
+          <span style="color:#6b7280">存向量 + 原文<br>❌ 沒有 metadata</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#e5e7eb;border-radius:6px;padding:8px;text-align:center">
+          <strong>Search</strong><br>
+          <span style="color:#6b7280">全域向量搜尋<br>❌ 無法過濾分類</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">✅ 方案 C 改造後</div>
+    <div class="mockup-body" style="font-size:12px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="background:#e5e7eb;border-radius:6px;padding:8px;text-align:center">
+          上傳檔案 / 輸入內容<br>
+          <span style="font-size:11px;color:#6b7280">category + tags 帶入 pipeline</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#d1fae5;border-radius:6px;padding:8px;border:2px solid #10b981">
+          <strong>① Category-Aware Chunking</strong><br>
+          <span style="color:#065f46">依分類套策略：<br>
+          商品文件 → 表格行拆解<br>
+          客服知識 → Q&A 配對拆解<br>
+          規則說明 → 條款段落拆解<br>
+          系統文件 → 章節拆解</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#dbeafe;border-radius:6px;padding:8px;border:2px solid #3b82f6">
+          <strong>② Metadata Prefix 注入</strong><br>
+          <span style="color:#1e40af;font-family:monospace;font-size:11px">
+            [分類:客服知識][標籤:退款]<br>
+            原始 chunk 內容...
+          </span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#ede9fe;border-radius:6px;padding:8px;border:2px solid #8b5cf6">
+          <strong>Embedding</strong><br>
+          <span style="color:#5b21b6">向量帶有分類語意<br>+ 存 metadata { category, tags }</span>
+        </div>
+        <div style="text-align:center;color:#9ca3af">↓</div>
+        <div style="background:#fce7f3;border-radius:6px;padding:8px;border:2px solid #ec4899">
+          <strong>③ Search + Category Filter</strong><br>
+          <span style="color:#9d174d;font-family:monospace;font-size:11px">
+            search(query,<br>
+            &nbsp;&nbsp;filter: { category })
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:16px;font-size:13px;color:#666;text-align:center">
+  三個介入點可以<strong>分期實作</strong>——先做 ① 效果最大，② 成本最低，③ 需要後端配合
+</p>

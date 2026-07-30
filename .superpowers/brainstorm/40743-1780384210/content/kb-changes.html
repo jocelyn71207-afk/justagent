@@ -1,0 +1,108 @@
+<h2>KnowledgeBase.vue 設計變更</h2>
+<p class="subtitle">Bento Grid KPI 補充 + 操作選單缺口</p>
+
+<div class="section">
+  <h3>2a. Bento Grid — 新增知識轉換率</h3>
+  <p class="subtitle">現有 5 張卡片→調整為 5 張，第 5 張換成「知識轉換率」KPI</p>
+  <div class="mockup">
+    <div class="mockup-header">KnowledgeBase — 統計概覽</div>
+    <div class="mockup-body" style="padding:16px;">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+        <!-- Card 1 -->
+        <div style="border:1px solid #c3c8bb;border-radius:12px;padding:12px;background:#fafafa;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">知識上線</div>
+          <div style="font-size:22px;font-weight:700;color:#1a1c18;">1,623</div>
+          <div style="font-size:11px;color:#47b76a;margin-top:4px;">▲ +12 本週</div>
+        </div>
+        <!-- Card 2 -->
+        <div style="border:1px solid #c3c8bb;border-radius:12px;padding:12px;background:#fafafa;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">等待轉換</div>
+          <div style="font-size:22px;font-weight:700;color:#1a1c18;">89</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;">下次 22:00</div>
+        </div>
+        <!-- Card 3 -->
+        <div style="border:1px solid #c3c8bb;border-radius:12px;padding:12px;background:#fafafa;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">等待更新</div>
+          <div style="font-size:22px;font-weight:700;color:#f59e0b;">57</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;">待確認</div>
+        </div>
+        <!-- Card 4 -->
+        <div style="border:1px solid #c3c8bb;border-radius:12px;padding:12px;background:#fafafa;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">審核中</div>
+          <div style="font-size:22px;font-weight:700;color:#6366f1;">36</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;">待審查</div>
+        </div>
+        <!-- Card 5 — NEW -->
+        <div style="border:2px solid #c8f135;border-radius:12px;padding:12px;background:#f0ffd4;position:relative;">
+          <div style="position:absolute;top:8px;right:8px;font-size:9px;background:#c8f135;color:#2a3500;padding:1px 5px;border-radius:4px;font-weight:600;">KPI</div>
+          <div style="font-size:11px;color:#5b6342;margin-bottom:4px;">知識轉換率</div>
+          <div style="font-size:22px;font-weight:700;color:#2a3500;">89.9%</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;">目標 ≥ 95%</div>
+          <div style="margin-top:6px;background:#e0e0e0;border-radius:4px;height:4px;">
+            <div style="background:#c8f135;width:89.9%;height:4px;border-radius:4px;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:8px;">
+        公式：active ÷ (active + reviewing + needs_update + pending + processing + failed) × 100%，不含 archived
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2b. 單筆操作選單 — 補齊三個缺口</h3>
+  <p class="subtitle">依狀態顯示，紅色為破壞性操作</p>
+  <div class="mockup">
+    <div class="mockup-header">⋮ 操作選單（依狀態）</div>
+    <div class="mockup-body" style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px;">
+
+      <!-- active -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#47b76a;margin-bottom:6px;">● 知識上線（active）</div>
+        <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">📝 編輯資訊</div>
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">🔄 重新索引</div>
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;background:#fffbf0;">⬇️ 下載原始檔案 <span style="font-size:10px;color:#888;">（補）</span></div>
+          <div style="padding:7px 12px;color:#b00020;">📦 設為歷史文件</div>
+        </div>
+      </div>
+
+      <!-- needs_update -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:6px;">● 等待更新（needs_update）</div>
+        <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">✅ 確認更新（重跑 Pipeline）</div>
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;background:#fffbf0;">🚫 忽略更新 <span style="font-size:10px;color:#888;">（補）</span></div>
+          <div style="padding:7px 12px;">⬇️ 下載原始檔案 <span style="font-size:10px;color:#888;">（補）</span></div>
+        </div>
+      </div>
+
+      <!-- failed -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#ba1a1a;margin-bottom:6px;">● 轉換失敗（failed）</div>
+        <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">🔁 重試轉換</div>
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;background:#fffbf0;">🔍 查看錯誤紀錄 <span style="font-size:10px;color:#888;">（補）</span></div>
+          <div style="padding:7px 12px;">⬇️ 下載原始檔案 <span style="font-size:10px;color:#888;">（補）</span></div>
+        </div>
+      </div>
+
+      <!-- reviewing -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#6366f1;margin-bottom:6px;">● 審核中（reviewing）</div>
+        <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">👀 前往審核</div>
+          <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">⬇️ 下載原始檔案 <span style="font-size:10px;color:#888;">（補）</span></div>
+          <div style="padding:7px 12px;color:#b00020;">↩️ 退回重處理</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div style="margin-top:8px;font-size:12px;color:#666;">
+    「下載原始檔案」在所有狀態都出現，demo 環境觸發 <code>window.alert('下載：檔名.pdf')</code>。<br>
+    「查看錯誤紀錄」開啟一個小 Modal 顯示 <code>pipelineError</code> 欄位內容。<br>
+    「忽略更新」直接呼叫新增的 <code>ignoreUpdate()</code> action。
+  </div>
+</div>

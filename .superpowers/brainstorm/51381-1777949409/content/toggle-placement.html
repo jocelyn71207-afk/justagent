@@ -1,0 +1,101 @@
+<h2>Dark Mode 切換控制項 — 放哪裡？</h2>
+<p class="subtitle">選一個你偏好的位置</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#F2F6F7;border-radius:8px;">
+      <div style="display:flex;width:100%;height:160px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <!-- Sidebar -->
+        <div style="width:56px;background:#E8EEF0;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:999px;background:#00A078;"></div>
+          <div style="flex:1;"></div>
+          <!-- Toggle at bottom of sidebar -->
+          <div style="width:28px;height:16px;border-radius:999px;background:#00A078;position:relative;">
+            <div style="width:12px;height:12px;border-radius:999px;background:#fff;position:absolute;right:2px;top:2px;"></div>
+          </div>
+          <div style="width:24px;height:4px;background:#D9E2E4;border-radius:2px;"></div>
+        </div>
+        <!-- Content -->
+        <div style="flex:1;background:#FAFCFC;padding:10px;">
+          <div style="height:12px;background:#E8EDEE;border-radius:4px;margin-bottom:6px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+            <div style="height:40px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+            <div style="height:40px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Sidebar 底部</h3>
+      <p>跟 logo 放在一起，常見的設計模式。不佔主要導覽空間。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#F2F6F7;border-radius:8px;">
+      <div style="display:flex;width:100%;height:160px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <!-- Sidebar -->
+        <div style="width:56px;background:#E8EEF0;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:999px;background:#00A078;"></div>
+          <div style="flex:1;"></div>
+          <div style="width:24px;height:4px;background:#D9E2E4;border-radius:2px;"></div>
+        </div>
+        <!-- Content -->
+        <div style="flex:1;background:#FAFCFC;padding:10px;">
+          <!-- Top bar with toggle -->
+          <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:8px;gap:6px;">
+            <span style="font-size:9px;color:#7F929A;">Dark</span>
+            <div style="width:24px;height:14px;border-radius:999px;background:#00A078;position:relative;">
+              <div style="width:10px;height:10px;border-radius:999px;background:#fff;position:absolute;right:2px;top:2px;"></div>
+            </div>
+          </div>
+          <div style="height:12px;background:#E8EDEE;border-radius:4px;margin-bottom:6px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+            <div style="height:40px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+            <div style="height:40px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 頁面右上角</h3>
+      <p>每個頁面都看得到，操作最直接。適合常常切換的使用者。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#F2F6F7;border-radius:8px;">
+      <div style="display:flex;width:100%;height:160px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <!-- Sidebar with toggle near user -->
+        <div style="width:56px;background:#E8EEF0;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:999px;background:#00A078;"></div>
+          <!-- Toggle right below avatar -->
+          <div style="width:28px;height:16px;border-radius:999px;background:#00A078;position:relative;">
+            <div style="width:12px;height:12px;border-radius:999px;background:#fff;position:absolute;right:2px;top:2px;"></div>
+          </div>
+          <div style="width:20px;height:3px;background:#D9E2E4;border-radius:2px;"></div>
+          <div style="width:20px;height:3px;background:#D9E2E4;border-radius:2px;"></div>
+          <div style="width:20px;height:3px;background:#D9E2E4;border-radius:2px;"></div>
+          <div style="flex:1;"></div>
+          <div style="width:24px;height:4px;background:#D9E2E4;border-radius:2px;"></div>
+        </div>
+        <!-- Content -->
+        <div style="flex:1;background:#FAFCFC;padding:10px;">
+          <div style="height:12px;background:#E8EDEE;border-radius:4px;margin-bottom:6px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+            <div style="height:40px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+            <div style="height:40px;background:#fff;border-radius:6px;border:1px solid #E8EDEE;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Sidebar 使用者頭像旁</h3>
+      <p>跟使用者設定靠在一起，語意清晰。搭配 user popover 也很自然。</p>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:16px;font-size:13px;color:#7F929A;text-align:center;">點選後在 terminal 確認</p>

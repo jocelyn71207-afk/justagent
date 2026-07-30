@@ -1,0 +1,186 @@
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+
+<h2>手繪插圖風格選擇</h2>
+<p class="subtitle">三種不同的「手繪可愛風」風格，哪一種最符合你的感覺？</p>
+
+<div class="cards">
+
+  <!-- Style A: Kawaii Blob -->
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 240 160" style="display:block;">
+        <rect width="240" height="160" fill="#FFFDF0" rx="8"/>
+        <!-- scattered dots bg -->
+        <circle cx="15" cy="20" r="4" fill="#B2EDE3" opacity="0.6"/>
+        <circle cx="225" cy="25" r="3" fill="#FFD166" opacity="0.6"/>
+        <circle cx="220" cy="140" r="4" fill="#FFB8CC" opacity="0.5"/>
+        <circle cx="18" cy="140" r="3" fill="#B2EDE3" opacity="0.5"/>
+        <!-- Star decorations -->
+        <text x="30" y="52" font-size="12" fill="#FFD166">✦</text>
+        <text x="200" y="65" font-size="10" fill="#FFB8CC">✦</text>
+        <text x="115" y="22" font-size="8" fill="#B2EDE3">✦</text>
+
+        <!-- Char A: teal blob (left) -->
+        <ellipse cx="65" cy="90" rx="26" ry="28" fill="#B2EDE3" stroke="#00A078" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="57" cy="82" r="4" fill="#1a1a24"/>
+        <circle cx="58.5" cy="80.5" r="1.2" fill="white"/>
+        <circle cx="73" cy="82" r="4" fill="#1a1a24"/>
+        <circle cx="74.5" cy="80.5" r="1.2" fill="white"/>
+        <ellipse cx="55" cy="91" rx="7" ry="4" fill="#FF8AAE" opacity="0.4"/>
+        <ellipse cx="75" cy="91" rx="7" ry="4" fill="#FF8AAE" opacity="0.4"/>
+        <path d="M 57,97 Q 65,107 73,97" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+        <!-- tiny arms -->
+        <path d="M 89,92 C 100,86 108,82 115,82" fill="none" stroke="#00A078" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="115" cy="82" r="4" fill="#B2EDE3" stroke="#00A078" stroke-width="2"/>
+
+        <!-- Char B: yellow blob (center-top, bigger = leader) -->
+        <ellipse cx="122" cy="80" rx="28" ry="30" fill="#FFE5A0" stroke="#D4A017" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M 112,70 Q 116,66 120,70" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 124,70 Q 128,66 132,70" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="110" cy="82" rx="7" ry="4" fill="#FF8AAE" opacity="0.4"/>
+        <ellipse cx="134" cy="82" rx="7" ry="4" fill="#FF8AAE" opacity="0.4"/>
+        <path d="M 110,90 Q 122,104 134,90" fill="none" stroke="#1a1a24" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 97,82 C 107,80 112,80 115,82" fill="none" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 147,82 C 137,80 132,80 129,82" fill="none" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="129" cy="82" r="4" fill="#FFE5A0" stroke="#D4A017" stroke-width="2"/>
+
+        <!-- Char C: pink blob (right) -->
+        <ellipse cx="178" cy="90" rx="26" ry="28" fill="#FFB8CC" stroke="#C04070" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="170" cy="82" r="4" fill="#1a1a24"/>
+        <circle cx="171.5" cy="80.5" r="1.2" fill="white"/>
+        <circle cx="186" cy="82" r="4" fill="#1a1a24"/>
+        <circle cx="187.5" cy="80.5" r="1.2" fill="white"/>
+        <ellipse cx="168" cy="91" rx="7" ry="4" fill="#FF8AAE" opacity="0.4"/>
+        <ellipse cx="188" cy="91" rx="7" ry="4" fill="#FF8AAE" opacity="0.4"/>
+        <path d="M 170,97 Q 178,107 186,97" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 154,82 C 145,80 140,80 129,82" fill="none" stroke="#C04070" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Caption -->
+        <text x="120" y="148" font-family="system-ui,sans-serif" font-size="11" fill="#888" text-anchor="middle">建立您的第一個團隊 ✨</text>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>A — 胖嘟嘟 Blob 角色</h3>
+      <p>橢圓形身體、大眼睛、腮紅，非常軟萌可愛。配色用粉嫩漸層，讓三個角色代表不同成員。</p>
+    </div>
+  </div>
+
+  <!-- Style B: Doodle / Sketch line art -->
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 240 160" style="display:block;">
+        <defs>
+          <filter id="sketch">
+            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="9" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+        </defs>
+        <rect width="240" height="160" fill="#F9F9F2" rx="8"/>
+        <!-- Sketchy border -->
+        <rect x="4" y="4" width="232" height="152" fill="none" stroke="#ddd" stroke-width="1.5" rx="6" filter="url(#sketch)"/>
+
+        <!-- Background doodle lines -->
+        <path d="M 10,50 Q 20,45 30,52 Q 40,58 50,50" fill="none" stroke="#ddd" stroke-width="1.2" stroke-linecap="round" filter="url(#sketch)"/>
+        <path d="M 190,110 Q 200,105 210,112 Q 218,118 226,110" fill="none" stroke="#ddd" stroke-width="1.2" stroke-linecap="round" filter="url(#sketch)"/>
+
+        <!-- Star doodles -->
+        <path d="M 22,30 L 24,24 L 26,30 L 32,32 L 26,34 L 24,40 L 22,34 L 16,32 Z" fill="none" stroke="#FFD166" stroke-width="1.8" stroke-linejoin="round" filter="url(#sketch)"/>
+        <path d="M 205,22 L 207,17 L 209,22 L 214,24 L 209,26 L 207,31 L 205,26 L 200,24 Z" fill="none" stroke="#00A078" stroke-width="1.8" stroke-linejoin="round" filter="url(#sketch)"/>
+        <path d="M 208,135 L 210,130 L 212,135 L 217,137 L 212,139 L 210,144 L 208,139 L 203,137 Z" fill="none" stroke="#FFB8CC" stroke-width="1.5" filter="url(#sketch)"/>
+
+        <!-- Person 1 (left) - stick+round -->
+        <g filter="url(#sketch)">
+          <circle cx="60" cy="72" r="18" fill="#E0F9F7" stroke="#00A078" stroke-width="2.2"/>
+          <circle cx="54" cy="68" r="3" fill="#1a1a24"/>
+          <circle cx="66" cy="68" r="3" fill="#1a1a24"/>
+          <path d="M 54,78 Q 60,86 66,78" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+          <!-- body (simple oval) -->
+          <path d="M 48,92 Q 60,88 72,92 L 72,118 Q 60,122 48,118 Z" fill="#E0F9F7" stroke="#00A078" stroke-width="2.2" stroke-linejoin="round"/>
+          <!-- arm reaching right -->
+          <path d="M 72,102 C 86,97 98,95 108,95" fill="none" stroke="#00A078" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+
+        <!-- Person 2 (center) - stick+round  -->
+        <g filter="url(#sketch)">
+          <circle cx="120" cy="65" r="20" fill="#FFF0B0" stroke="#D4A017" stroke-width="2.2"/>
+          <path d="M 110,60 Q 114,55 118,60" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 122,60 Q 126,55 130,60" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 110,74 Q 120,85 130,74" fill="none" stroke="#1a1a24" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 107,86 Q 120,82 133,86 L 133,114 Q 120,118 107,114 Z" fill="#FFF0B0" stroke="#D4A017" stroke-width="2.2" stroke-linejoin="round"/>
+          <!-- arms -->
+          <path d="M 107,98 C 96,95 88,95 78,97" fill="none" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 133,98 C 144,95 152,95 162,97" fill="none" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+
+        <!-- Person 3 (right) -->
+        <g filter="url(#sketch)">
+          <circle cx="180" cy="72" r="18" fill="#FFD0E0" stroke="#C04070" stroke-width="2.2"/>
+          <circle cx="174" cy="68" r="3" fill="#1a1a24"/>
+          <circle cx="186" cy="68" r="3" fill="#1a1a24"/>
+          <path d="M 174,78 Q 180,86 186,78" fill="none" stroke="#1a1a24" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 168,92 Q 180,88 192,92 L 192,118 Q 180,122 168,118 Z" fill="#FFD0E0" stroke="#C04070" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M 168,102 C 154,97 146,95 136,95" fill="none" stroke="#C04070" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+
+        <text x="120" y="148" font-family="system-ui,sans-serif" font-size="11" fill="#888" text-anchor="middle">建立您的第一個團隊 ✨</text>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B — 草稿線條風（Sketch）</h3>
+      <p>用略帶抖動的線條和空心輪廓描繪角色，像真正用筆畫出來的感覺。背景有手寫星星裝飾。</p>
+    </div>
+  </div>
+
+  <!-- Style C: Object/prop illustration (no characters) -->
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 240 160" style="display:block;">
+        <defs>
+          <filter id="wobbly">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="3" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+        </defs>
+        <rect width="240" height="160" fill="#FFFDF0" rx="8"/>
+
+        <!-- Decorative dots -->
+        <circle cx="18" cy="22" r="5" fill="#B2EDE3" opacity="0.7" filter="url(#wobbly)"/>
+        <circle cx="222" cy="18" r="4" fill="#FFD166" opacity="0.7" filter="url(#wobbly)"/>
+        <circle cx="215" cy="145" r="5" fill="#FFB8CC" opacity="0.6" filter="url(#wobbly)"/>
+        <circle cx="24" cy="142" r="4" fill="#B2EDE3" opacity="0.5" filter="url(#wobbly)"/>
+
+        <!-- Center: big soft blob/cloud shape -->
+        <path d="M 120,55 C 155,42 190,58 188,82 C 186,106 162,118 135,116 C 108,114 78,110 72,90 C 66,70 85,68 120,55 Z" fill="#E0F9F7" stroke="#00A078" stroke-width="2.5" stroke-linejoin="round" filter="url(#wobbly)"/>
+
+        <!-- Team icon inside: people silhouettes -->
+        <text x="120" y="96" font-family="system-ui,sans-serif" font-size="38" text-anchor="middle" fill="#00A078" opacity="0.85">👥</text>
+
+        <!-- Sparkle stars around the cloud -->
+        <path d="M 50,58 L 53,50 L 56,58 L 64,61 L 56,64 L 53,72 L 50,64 L 42,61 Z" fill="#FFD166" stroke="#D4A017" stroke-width="1" filter="url(#wobbly)"/>
+        <path d="M 185,46 L 187,40 L 189,46 L 195,48 L 189,50 L 187,56 L 185,50 L 179,48 Z" fill="#FFB8CC" stroke="#C04070" stroke-width="1" filter="url(#wobbly)"/>
+        <path d="M 190,118 L 192,112 L 194,118 L 200,120 L 194,122 L 192,128 L 190,122 L 184,120 Z" fill="#B2EDE3" stroke="#00A078" stroke-width="1" filter="url(#wobbly)"/>
+        <path d="M 40,110 L 42,106 L 44,110 L 48,112 L 44,114 L 42,118 L 40,114 L 36,112 Z" fill="#FFD166" stroke="#D4A017" stroke-width="1" filter="url(#wobbly)"/>
+
+        <!-- Small floating circles (member dots) -->
+        <circle cx="55" cy="82" r="10" fill="#FFE5A0" stroke="#D4A017" stroke-width="2" filter="url(#wobbly)"/>
+        <text x="55" y="87" font-size="10" text-anchor="middle">😊</text>
+        <circle cx="185" cy="92" r="10" fill="#FFB8CC" stroke="#C04070" stroke-width="2" filter="url(#wobbly)"/>
+        <text x="185" y="97" font-size="10" text-anchor="middle">😄</text>
+        <circle cx="120" cy="38" r="10" fill="#B2EDE3" stroke="#00A078" stroke-width="2" filter="url(#wobbly)"/>
+        <text x="120" y="43" font-size="10" text-anchor="middle">🙌</text>
+
+        <!-- Dashed lines connecting circles to cloud -->
+        <line x1="65" y1="82" x2="88" y2="84" stroke="#00A078" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+        <line x1="175" y1="90" x2="158" y2="90" stroke="#00A078" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+        <line x1="120" y1="48" x2="120" y2="60" stroke="#00A078" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+
+        <text x="120" y="148" font-family="system-ui,sans-serif" font-size="11" fill="#888" text-anchor="middle">建立您的第一個團隊 ✨</text>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>C — 物件插圖風（Icon + 場景）</h3>
+      <p>不畫人物，改用大型軟雲形狀＋emoji 或 icon，搭配漂浮裝飾元素。輕鬆活潑，不依賴角色造型。</p>
+    </div>
+  </div>
+
+</div>

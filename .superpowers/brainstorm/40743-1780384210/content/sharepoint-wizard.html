@@ -1,0 +1,130 @@
+<h2>SharePoint 整合精靈 — 4 步驟 UI</h2>
+<p class="subtitle">點擊「SharePoint」佔位卡片後開啟，純 mock 模擬，不接真實 API</p>
+
+<div class="section">
+  <h3>入口：App Grid 卡片狀態變化</h3>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
+    <!-- Before -->
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">▸ 現在（即將推出）</div>
+      <div style="border:1px dashed #c3c8bb;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:10px;opacity:.5;background:#f8f8f6;">
+        <div style="width:32px;height:32px;background:#e0e0e0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">📁</div>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#888;">SharePoint</div>
+          <div style="font-size:11px;color:#aaa;">即將推出</div>
+        </div>
+      </div>
+    </div>
+    <!-- After -->
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">▸ 改後（可連接）</div>
+      <div style="border:1px solid #c3c8bb;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;">
+        <div style="width:32px;height:32px;background:#0078d4;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;">SP</div>
+        <div>
+          <div style="font-weight:600;font-size:13px;">SharePoint</div>
+          <div style="font-size:11px;color:#47b76a;">+ 連接</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>精靈 Modal（560px 寬，4 步驟進度條）</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+    <!-- Step 1 -->
+    <div class="mockup">
+      <div class="mockup-header">步驟 1 / 4 — 連線中</div>
+      <div class="mockup-body" style="padding:20px;text-align:center;">
+        <div style="font-size:11px;color:#888;margin-bottom:16px;">
+          ━━━━━━━━━━━━━━━━━━━━━━━<br>
+          <span style="color:#c8f135;">●</span> 連線 &nbsp;○ 掃描 &nbsp;○ 確認 &nbsp;○ 匯入
+        </div>
+        <div style="font-size:28px;margin:16px 0;">⏳</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px;">正在連接 SharePoint...</div>
+        <div style="font-size:12px;color:#888;">驗證服務帳號憑證</div>
+        <div style="margin-top:16px;font-size:11px;color:#aaa;">1.5 秒後自動進入步驟 2</div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="mockup">
+      <div class="mockup-header">步驟 2 / 4 — 掃描中</div>
+      <div class="mockup-body" style="padding:20px;">
+        <div style="font-size:11px;color:#888;margin-bottom:12px;text-align:center;">
+          ✓ 連線 &nbsp;<span style="color:#c8f135;">●</span> 掃描 &nbsp;○ 確認 &nbsp;○ 匯入
+        </div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">正在掃描檔案變更...</div>
+        <div style="background:#f3f3f0;border-radius:6px;height:6px;margin-bottom:6px;overflow:hidden;">
+          <div style="background:#c8f135;width:52%;height:100%;border-radius:6px;"></div>
+        </div>
+        <div style="font-size:11px;color:#888;">已掃描 128 / 247 個檔案 &nbsp;52%</div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="mockup">
+      <div class="mockup-header">步驟 3 / 4 — 確認變更</div>
+      <div class="mockup-body" style="padding:14px;font-size:12px;">
+        <div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center;">
+          ✓ 連線 &nbsp;✓ 掃描 &nbsp;<span style="color:#c8f135;">●</span> 確認 &nbsp;○ 匯入
+        </div>
+        <div style="margin-bottom:10px;color:#43483e;">掃描完成，偵測到以下變更：</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#e8faa0;border-radius:5px;">
+            <span style="color:#47b76a;font-weight:700;">新增</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">外幣業務作業規範_v3.3.pdf</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#fff8e6;border-radius:5px;">
+            <span style="color:#f59e0b;font-weight:700;">更新</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">貸款審核SOP_v2.1.docx</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#fff0f0;border-radius:5px;">
+            <span style="color:#ba1a1a;font-weight:700;">刪除</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">2024年結存利率說明.xlsx</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button style="border:1px solid #c3c8bb;border-radius:6px;padding:5px 12px;font-size:11px;background:#fff;">取消</button>
+          <button style="background:#c8f135;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;color:#2a3500;">開始匯入 ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="mockup">
+      <div class="mockup-header">步驟 4 / 4 — 匯入中</div>
+      <div class="mockup-body" style="padding:14px;font-size:12px;">
+        <div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center;">
+          ✓ 連線 &nbsp;✓ 掃描 &nbsp;✓ 確認 &nbsp;<span style="color:#c8f135;">●</span> 匯入
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:#47b76a;font-size:13px;">✓</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">外幣業務作業規範_v3.3.pdf</span>
+            <span style="font-size:10px;color:#47b76a;">100%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:13px;height:13px;border:2px solid #c8f135;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;"></div>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">貸款審核SOP_v2.1.docx</span>
+            <span style="font-size:10px;color:#888;">40%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;opacity:.5;">
+            <span style="font-size:13px;color:#aaa;">○</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">2024年結存利率說明.xlsx</span>
+            <span style="font-size:10px;color:#aaa;">待處理</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#888;">完成後自動關閉對話框</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:10px;font-size:12px;color:#666;background:#f8f8f6;border-radius:6px;padding:10px 12px;">
+    <strong>Mock 時序：</strong><br>
+    步驟 1 自動 1.5s → 步驟 2 用 setInterval 模擬進度 0→100% → 步驟 3 等使用者確認 → 步驟 4 逐檔 setTimeout 模擬進度 → 完成後 2s 關閉，新檔案以 <code>pending</code> 狀態加入列表
+  </div>
+</div>
