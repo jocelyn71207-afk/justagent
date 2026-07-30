@@ -936,6 +936,7 @@ const conv2Title = ref('');
 const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
+  if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
   return conv1Title.value;
 });
 
@@ -991,6 +992,9 @@ const cannedTaskItems = computed(() => {
   if (currentConversationId.value === 'conv2') {
     return [{ id: 'competitorAnalysis', text: '商品競品分析' }];
   }
+  if (currentConversationId.value === 'conv4') {
+    return [{ id: 'salesReport', text: '整理上月產品銷售報告' }];
+  }
   return [
     { id: 'cannedTask1', text: '快速罐頭任務範例文字1' },
     { id: 'cannedTask2', text: '快速罐頭任務範例文字2' },
@@ -1006,6 +1010,11 @@ function sendCannedTask(item: any) {
   if (currentConversationId.value === 'conv2' && item.id === 'competitorAnalysis') {
     resetConversation();
     nextTick(() => conv2InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv4' && item.id === 'salesReport') {
+    resetConversation();
+    nextTick(() => conv4InitFlow());
     return;
   }
   send();
@@ -2434,8 +2443,32 @@ function conv2ShowReport() {
 }
 // -------- end Conversation 2 流程 --------
 
+// -------- Conversation 4 流程 --------
+const conv4Msgs = ref<any[]>([]);
+let conv4IdCounter = 2;
+const conv4Title = ref('');
+
+function c4Push(msg: any) {
+  conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
+}
+function c4Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+const CONV4_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k7', title: '2026Q1產品銷售', chunkIndexes: [0, 1] },
+  { knowledgeId: 'k8', title: '三諾產品部輸出報告規範', chunkIndexes: [0, 1] },
+];
+
+function conv4InitFlow() {
+  // TODO(Task 4): 實作 conv4 訊息流程
+}
+// -------- end Conversation 4 流程（函式將於後續任務接續新增）--------
+
 const testMsgs = computed(() => {
-  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value;
+  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
+    : currentConversationId.value === 'conv4' ? conv4Msgs.value
+    : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
 });
@@ -2477,6 +2510,11 @@ function resetConversation() {
     conv2DirectMethod.value = '';
     conv2DirectSkuInput.value = '';
     conv2DirectUrlInput.value = '';
+  }
+  if (currentConversationId.value === 'conv4') {
+    conv4IdCounter = 2;
+    conv4Title.value = '';
+    conv4Msgs.value = [];
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
