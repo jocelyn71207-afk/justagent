@@ -64,9 +64,6 @@
             <div class="panel-title">
               {{ selectedSkill.name }}
               <span class="skill-tag tag--version">v{{ selectedSkill.version }}</span>
-              <span :class="['skill-tag', selectedSkill.type === 'system' ? 'tag--sys' : 'tag--ext']">
-                {{ selectedSkill.type === 'system' ? '系統技能' : '企業擴充' }}
-              </span>
             </div>
           </div>
 
