@@ -104,11 +104,5 @@ function deleteFn(event: MouseEvent) {
       }
     }
   }
-
-  .remark {
-    color: var(--color-text-alpha50);
-    font-size: 14px;
-    margin-top: 10px;
-  }
 }
 </style>

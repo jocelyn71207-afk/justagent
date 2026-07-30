@@ -624,7 +624,7 @@
           </div>
         </div>
         <!-- Conv1 旅程修改需求懸浮面板 -->
-        <div v-if="showJourneyModifyPill && currentConversationId !== 'conv2'" class="conv2-fp" @click.stop>
+        <div v-if="showJourneyModifyPill && currentConversationId === 'conv1'" class="conv2-fp" @click.stop>
           <div class="conv2-fp-top">
             <span class="conv2-fp-title">旅程修改需求</span>
             <button class="conv2-fp-close-btn" @click.stop="showJourneyModifyPill = false">
@@ -2457,6 +2457,7 @@ function conv2ShowReport() {
 const conv4Msgs = ref<any[]>([]);
 let conv4IdCounter = 2;
 const conv4Title = ref('');
+const conv4SkillChoiceMade = ref(false);
 
 function c4Push(msg: any) {
   conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
@@ -2475,7 +2476,7 @@ function conv4InitFlow() {
   conv4Title.value = '產品銷售報告整理';
   c4Push({ forUser: true, msg: '請幫我整理上個月的產品銷售報告，相關資料請幫我查詢 @2026Q1產品銷售，輸出格式請參考 @三諾產品部輸出報告規範' });
   setTimeout(() => {
-    c4Push({ msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card">
+    c4Push({ msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SalesDataQuery 查詢 2026Q1 產品銷售數據</div>
   <div class="conv2-ss conv2-ss--wait">ReportFormatter 套用三諾產品部輸出報告規範</div>
 </div>` });
@@ -2484,7 +2485,7 @@ function conv4InitFlow() {
       conv4FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
       try {
         addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '2026年6月產品銷售報告.html');
-      } catch (e) { /* 畫布可能尚未初始化 */ }
+      } catch { /* 畫布可能尚未初始化 */ }
       c4Push({
         finishResponse: true,
         msg: `✅ 已完成上個月（6月）產品銷售報告，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
@@ -2527,6 +2528,8 @@ function conv4AskBuildSkill() {
 }
 
 function conv4BuildSkill() {
+  if (conv4SkillChoiceMade.value) return;
+  conv4SkillChoiceMade.value = true;
   c4Push({ forUser: true, msg: '是，幫我建立 Skill' });
   c4Scroll();
   setTimeout(() => {
@@ -2545,6 +2548,8 @@ function conv4BuildSkill() {
 }
 
 function conv4SkipSkill() {
+  if (conv4SkillChoiceMade.value) return;
+  conv4SkillChoiceMade.value = true;
   c4Push({ forUser: true, msg: '不用了' });
   c4Scroll();
   setTimeout(() => {
@@ -2604,6 +2609,7 @@ function resetConversation() {
     conv4IdCounter = 2;
     conv4Title.value = '';
     conv4Msgs.value = [];
+    conv4SkillChoiceMade.value = false;
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }

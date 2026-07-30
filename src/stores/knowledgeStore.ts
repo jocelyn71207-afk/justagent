@@ -698,7 +698,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
             {
               index: 2,
               sectionPath: '二、熱銷品項明細',
-              content: '熱銷前五名：UGG Classic Mini II 雪靴（NT$3,720,000）、Hurricane Trailsetter 健走鞋（NT$3,348,000）、TEVA Hurricane XLT2 涼鞋（NT$2,795,000）、TEVA Original Universal（NT$1,988,000）、UGG Tasman 拖鞋（NT$1,470,000）。',
+              content: '熱銷前五名：UGG Classic Mini II 雪靴（NT$3,720,000）、Hurricane Trailsetter 健走鞋（NT$3,348,000）、TEVA Hurricane XLT2 涼鞋（NT$2,795,000）、TEVA Original Universal（NT$1,988,000）、Hurricane Verge 水陸機能鞋（NT$1,672,000）。',
               tokenCount: 245,
               sourceType: 'text',
               gist: '列出 2026年6月銷售金額前五名的品項與對應營業額。',
