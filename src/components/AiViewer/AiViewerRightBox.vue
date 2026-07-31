@@ -2579,22 +2579,24 @@ const conv6Msgs = ref<any[]>([]);
 let conv6IdCounter = 2;
 const conv6Title = ref('');
 const conv6ReportChoiceMade = ref(false);
+const conv6FlowStarted = ref(false);
 function c6Push(msg: any) { conv6Msgs.value.push({ id: `c6_${conv6IdCounter++}`, ...msg }); }
 function c6Scroll() { nextTick(() => AiAgentChatListScrollTo('ASC')); }
 
 const CONV6_SOURCES: KnowledgeSource[] = [
-  { knowledgeId: 'k13', title: 'TEVA涼鞋2026Q2通路銷售數據彙總', chunkIndexes: [1, 2] },
-  { knowledgeId: 'k14', title: 'TEVA會員CRM分群與回購定義', chunkIndexes: [1, 2] },
+  { knowledgeId: 'k13', title: 'TEVA涼鞋2026Q2通路銷售數據彙總', chunkIndexes: [0, 1] },
+  { knowledgeId: 'k14', title: 'TEVA會員CRM分群與回購定義', chunkIndexes: [0, 1] },
 ];
 
 function processConv6Msg(msg: string) {
-  if (conv6Msgs.value.length > 1) {
+  if (conv6FlowStarted.value) {
     setTimeout(() => { c6Push({ msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
     return;
   }
   const hasTeva = msg.includes('TEVA');
   const hasTopic = ['銷售', '會員', '通路', '業績', '輪廓'].some(k => msg.includes(k));
   if (hasTeva && hasTopic) {
+    conv6FlowStarted.value = true;
     conv6Title.value = 'TEVA涼鞋銷售分析';
     conv6RunAnalysis();
     return;
@@ -2766,6 +2768,7 @@ function resetConversation() {
     conv6Title.value = '';
     conv6Msgs.value = [];
     conv6ReportChoiceMade.value = false;
+    conv6FlowStarted.value = false;
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
