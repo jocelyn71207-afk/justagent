@@ -1899,7 +1899,7 @@ const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
-const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value || conv5ConcernFpVisible.value);
+const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value || (conv5ConcernFpVisible.value && currentConversationId.value === 'conv5'));
 const conv1TranslConfirmed = computed(() => {
   const record = conv1Msgs.value.find((m: any) => m.id === 'id_3');
   return !!(record?.confirmed && !record?.translationStarted);
@@ -2217,7 +2217,7 @@ function handleChatAreaClick(e: MouseEvent) {
     return;
   }
   if (action === 'conv5-raise-concern') {
-    conv5ConcernFpVisible.value = true;
+    if (!conv5FollowUpDone.value) conv5ConcernFpVisible.value = true;
     return;
   }
 
@@ -2625,6 +2625,10 @@ const CONV5_STRATEGY_SOURCES: KnowledgeSource[] = [
   ...CONV5_INVENTORY_SOURCE,
   ...CONV5_TREND_SOURCES,
 ];
+const CONV5_REVISED_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k9', title: 'Teva 商品庫存即時資料', chunkIndexes: [0, 1] },
+  { knowledgeId: 'k7', title: '2026Q1產品銷售數據彙總', chunkIndexes: [1] },
+];
 
 function conv5InitFlow() {
   if (conv5Msgs.value.length > 0) return;
@@ -2668,7 +2672,7 @@ function conv5InitFlow() {
   <img class="file-icon" src="${htmlIcon}" />
   <div class="file-info-box">
     <div class="file-name">Teva 2026 換季促銷方案.html</div>
-    <div class="file-size">HTML · 7.1 KB · 已加到畫布</div>
+    <div class="file-size">HTML · 9.9 KB · 已加到畫布</div>
   </div>
 </div>
 <div class="conv1-quick-btns" style="margin-top:8px">
@@ -2732,17 +2736,13 @@ function conv5ReviseStrategy() {
       try {
         addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html');
       } catch { /* 畫布可能尚未初始化 */ }
-      const CONV5_REVISED_SOURCES: KnowledgeSource[] = [
-        { knowledgeId: 'k9', title: 'Teva 商品庫存即時資料', chunkIndexes: [0, 1] },
-        { knowledgeId: 'k7', title: '2026Q1產品銷售數據彙總', chunkIndexes: [1] },
-      ];
       c5Push({
         finishResponse: true,
         msg: `已修正：Original Universal 現貨僅剩 18 件，不適合作為大量曝光的主打商品，已改由庫存充足（320 件）、同樣熱銷的 Hurricane XLT2 接手主打，60% 廣告預算同步轉移；Original Universal 改包裝為「限量珍藏款」，用低庫存做稀缺感話題操作，風險評估表也已同步更新。修正版報告已加入畫布。<div class="oneFileItem">
   <img class="file-icon" src="${htmlIcon}" />
   <div class="file-info-box">
     <div class="file-name">Teva 2026 換季促銷方案（修正版）.html</div>
-    <div class="file-size">HTML · 7.4 KB · 已加到畫布</div>
+    <div class="file-size">HTML · 13.3 KB · 已加到畫布</div>
   </div>
 </div>`,
         sources: CONV5_REVISED_SOURCES,
