@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teva 2026 換季促銷方案</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f7;
+    --border: #e4e7ed;
+    --text: #1a1d23;
+    --text-2: #5c6370;
+    --text-3: #9ca3af;
+    --blue: #3b72f6;
+    --blue-light: rgba(59,114,246,0.08);
+    --green: #16a34a;
+    --green-light: rgba(22,163,74,0.08);
+    --orange: #ea580c;
+    --orange-light: rgba(234,88,12,0.08);
+    --red: #dc2626;
+    --red-light: rgba(220,38,38,0.08);
+    --purple: #7c3aed;
+    --purple-light: rgba(124,58,237,0.08);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    color: var(--text);
+    padding: 28px 24px 48px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    gap: 12px;
+  }
+  .report-brand {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 4px;
+  }
+  .report-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .report-meta {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+  .report-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--orange-light);
+    color: var(--orange);
+    border: 1px solid rgba(234,88,12,0.2);
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+
+  /* Stat cards */
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 150px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+  .stat-val {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .stat-val.accent { color: var(--blue); }
+  .stat-sub {
+    font-size: 10.5px;
+    color: var(--text-2);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 26px 0 10px;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+
+  /* Trend list */
+  .trend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .trend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 11px 13px;
+  }
+  .trend-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .trend-body { flex: 1; }
+  .trend-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .trend-desc {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  /* Strategy narrative card */
+  .strategy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 15px 16px;
+  }
+  .strategy-card p {
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.75;
+  }
+  .strategy-card p + p { margin-top: 10px; }
+  .strategy-card strong { color: var(--text); font-weight: 700; }
+
+  .tactic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 12px;
+  }
+  .tactic-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 12px;
+    color: var(--text-2);
+    padding: 8px 10px;
+    background: var(--surface2);
+    border-radius: 7px;
+  }
+  .tactic-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--blue);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* Risk table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  thead th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    background: var(--surface2);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  .risk-name { font-weight: 700; color: var(--text); white-space: nowrap; }
+  .risk-level {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .risk-level.low { background: var(--green-light); color: var(--green); }
+  .risk-level.mid { background: var(--orange-light); color: var(--orange); }
+  .risk-level.high { background: var(--red-light); color: var(--red); }
+  .risk-desc { color: var(--text-2); }
+
+  /* Footer note */
+  .report-footer {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 10.5px;
+    color: var(--text-3);
+  }
+</style>
+</head>
+<body>
+
+  <div class="report-header">
+    <div>
+      <div class="report-brand">Teva · AW26 換季促銷企劃</div>
+      <div class="report-title">Teva 2026 換季促銷方案</div>
+      <div class="report-meta">行銷策略與風險評估 · 台灣市場</div>
+    </div>
+    <span class="report-tag">草案 v1</span>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-lbl">主打商品</div>
+      <div class="stat-val accent">TEVA Original Universal</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">促銷檔期</div>
+      <div class="stat-val">8/15 – 9/30</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">廣告預算配置</div>
+      <div class="stat-val" style="font-size:12.5px">社群廣告 60%</div>
+      <div class="stat-sub">雜誌置入 20% ／電商首頁 20%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">預期營收</div>
+      <div class="stat-val">NT$4,200,000</div>
+    </div>
+  </div>
+
+  <div class="section-title">本季市場趨勢摘要</div>
+  <div class="trend-list">
+    <div class="trend-item">
+      <span class="trend-icon">📈</span>
+      <div class="trend-body">
+        <div class="trend-label">社群聲量成長</div>
+        <div class="trend-desc">近 30 天「機能涼鞋」「戶外機能穿搭」相關貼文聲量較上季成長 42%，熱門標籤 #機能涼鞋 #水陸兩用 帶動討論熱度。</div>
+      </div>
+    </div>
+    <div class="trend-item">
+      <span class="trend-icon">📰</span>
+      <div class="trend-body">
+        <div class="trend-label">時尚雜誌話題延燒</div>
+        <div class="trend-desc">7 月時尚雜誌報導點名 Gorpcore（機能露營風）持續發燒，機能涼鞋搭配機能襪成為秋冬過渡穿搭的示範重點，永續回收材質同步成為話題焦點。</div>
+      </div>
+    </div>
+    <div class="trend-item">
+      <span class="trend-icon">🏭</span>
+      <div class="trend-body">
+        <div class="trend-label">產業成長與競爭態勢</div>
+        <div class="trend-desc">產業報告指出 2026 年戶外機能鞋市場年增率預估達 11%，但競品品牌陸續祭出換季促銷折扣，價格戰風險隨之上升。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">行銷策略說明</div>
+  <div class="strategy-card">
+    <p>綜合上述趨勢，本方案建議以 <strong>TEVA Original Universal</strong> 作為本季換季促銷的主打商品。該款式為 2026 年 6 月銷售排行第 4 名（單月銷售額 NT$1,988,000），顯示市場需求穩健；其經典一字帶造型與大地色系選項，亦與本季 Gorpcore／機能穿搭聲量成長高度契合，適合作為社群與雜誌曝光的視覺主角。</p>
+    <p>建議操作方向：</p>
+    <div class="tactic-list">
+      <div class="tactic-item">
+        <span class="tactic-dot"></span>
+        <span>檔期前 2 週於 Instagram / 小紅書 投放大量素人穿搭與 KOL 開箱內容，導流電商首頁</span>
+      </div>
+      <div class="tactic-item">
+        <span class="tactic-dot"></span>
+        <span>洽談時尚雜誌置入報導，呼應「機能涼鞋＋機能襪」秋冬過渡穿搭話題</span>
+      </div>
+      <div class="tactic-item">
+        <span class="tactic-dot"></span>
+        <span>檔期首週推出 doorbuster 開賣折扣，衝刺初期買氣與聲量</span>
+      </div>
+      <div class="tactic-item">
+        <span class="tactic-dot"></span>
+        <span>電商首頁主視覺全面替換為 Original Universal 換季形象圖，貫穿整個檔期</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">風險評估</div>
+  <table>
+    <thead>
+      <tr><th>風險項目</th><th>評級</th><th>說明</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="risk-name">供應鏈風險</td>
+        <td><span class="risk-level low">低</span></td>
+        <td class="risk-desc">原物料供應穩定，無明顯斷料疑慮。</td>
+      </tr>
+      <tr>
+        <td class="risk-name">市場競爭風險</td>
+        <td><span class="risk-level mid">中</span></td>
+        <td class="risk-desc">競品品牌同步祭出換季促銷，檔期內價格戰風險上升。</td>
+      </tr>
+      <tr>
+        <td class="risk-name">庫存風險</td>
+        <td><span class="risk-level low">低</span></td>
+        <td class="risk-desc">無虞。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="report-footer">草案版本 · 待行銷與供應鏈團隊複核後定案</div>
+
+</body>
+</html>
