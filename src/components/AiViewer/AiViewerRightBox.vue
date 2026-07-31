@@ -483,7 +483,7 @@
           <div class="conv2-info-note">✦ 點擊下方區域附加這批 TEVA 原廠型錄與文件</div>
           <div v-if="conv3UploadedFiles.length === 0"
             class="conv2-up-img-box conv2-up-img-box--empty"
-            style="height:64px"
+            style="width:100%;height:64px"
             @click.stop="conv3LoadDemoFiles()">
             <div class="conv2-up-img-placeholder">
               <i class="material-symbols-outlined">upload_file</i>
@@ -2659,7 +2659,7 @@ function conv3ShowResult(dimNames: string) {
   <img class="file-icon" src="${htmlIcon}" />
   <div class="file-info-box">
     <div class="file-name">TEVA_特徵貼標報告.html</div>
-    <div class="file-size">HTML · 6.4 KB · 已加到畫布</div>
+    <div class="file-size">HTML · 7.9 KB · 已加到畫布</div>
   </div>
 </div>` });
   c3Scroll();
