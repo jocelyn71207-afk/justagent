@@ -2194,6 +2194,9 @@ function handleChatAreaClick(e: MouseEvent) {
     conv4SkipSkill();
     return;
   }
+  if (action === 'conv6-report-channel') { conv6ChooseReport('channel'); return; }
+  if (action === 'conv6-report-member') { conv6ChooseReport('member'); return; }
+  if (action === 'conv6-report-strategy') { conv6ChooseReport('strategy'); return; }
 
   if (currentConversationId.value !== 'conv2') return;
 
@@ -2640,6 +2643,7 @@ function conv6RunAnalysis() {
         sources: CONV6_SOURCES,
       });
       c6Scroll();
+      setTimeout(() => conv6AskReportChoice(), 600);
     }, 1800);
   }, 300);
 }
@@ -2655,6 +2659,52 @@ function conv6FlipSearchCard(from: string[], to: string[]) {
       return;
     }
   }
+}
+
+function conv6AskReportChoice() {
+  c6Push({
+    msg: `要不要我把這次的分析整理成一份洞察報告？你想要哪一種？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv6-report-channel">通路銷售深度分析報告</span>
+  <span class="conv1-quick-btn" data-action="conv6-report-member">會員輪廓與行為洞察報告</span>
+  <span class="conv1-quick-btn" data-action="conv6-report-strategy">行銷策略建議報告</span>
+</div>`,
+  });
+  c6Scroll();
+}
+
+const CONV6_REPORT_LABELS: Record<string, string> = {
+  channel: '通路銷售深度分析報告',
+  member: '會員輪廓與行為洞察報告',
+  strategy: '行銷策略建議報告',
+};
+
+function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
+  if (conv6ReportChoiceMade.value) return;
+  conv6ReportChoiceMade.value = true;
+  c6Push({ forUser: true, msg: `好，請幫我產出「${CONV6_REPORT_LABELS[kind]}」` });
+  c6Scroll();
+  setTimeout(() => {
+    if (kind === 'channel') {
+      try {
+        addReportBlock('/justagent/teva_channel_sales_report.html', '通路銷售深度分析報告.html');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      c6Push({
+        finishResponse: true,
+        msg: `✅ 已完成「通路銷售深度分析報告」，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">通路銷售深度分析報告.html</div>
+    <div class="file-size">HTML · 已加到畫布</div>
+  </div>
+</div>`,
+        sources: CONV6_SOURCES,
+      });
+    } else {
+      c6Push({ msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
+    }
+    c6Scroll();
+  }, 500);
 }
 // -------- end Conversation 6 流程 --------
 
