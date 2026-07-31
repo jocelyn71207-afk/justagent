@@ -2579,12 +2579,82 @@ const conv6ReportChoiceMade = ref(false);
 function c6Push(msg: any) { conv6Msgs.value.push({ id: `c6_${conv6IdCounter++}`, ...msg }); }
 function c6Scroll() { nextTick(() => AiAgentChatListScrollTo('ASC')); }
 
+const CONV6_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k13', title: 'TEVA涼鞋2026Q2通路銷售數據彙總', chunkIndexes: [1, 2] },
+  { knowledgeId: 'k14', title: 'TEVA會員CRM分群與回購定義', chunkIndexes: [1, 2] },
+];
+
 function processConv6Msg(msg: string) {
   if (conv6Msgs.value.length > 1) {
     setTimeout(() => { c6Push({ msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
     return;
   }
+  const hasTeva = msg.includes('TEVA');
+  const hasTopic = ['銷售', '會員', '通路', '業績', '輪廓'].some(k => msg.includes(k));
+  if (hasTeva && hasTopic) {
+    conv6Title.value = 'TEVA涼鞋銷售分析';
+    conv6RunAnalysis();
+    return;
+  }
   setTimeout(() => { c6Push({ msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
+}
+
+function conv6RunAnalysis() {
+  setTimeout(() => {
+    c6Push({ msg: `收到，我先透過 MCP 串接 Adobe Commerce 查詢並比對會員資料⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">AdobeCommerceConnector（MCP）建立連線</div>
+  <div class="conv2-ss conv2-ss--wait">MagentoSalesAPI 查詢 TEVA 涼鞋各通路銷售數據</div>
+  <div class="conv2-ss conv2-ss--wait">MemberSegmentAnalyzer 交叉比對會員輪廓</div>
+  <div class="conv2-ss conv2-ss--wait">ChannelPerformanceAggregator 彙整分析結果</div>
+</div>` });
+    c6Scroll();
+    setTimeout(() => {
+      conv6FlipSearchCard(
+        ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait'],
+        ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done']
+      );
+      try {
+        addChartBlock({
+          chart: 'bar',
+          title: 'TEVA涼鞋 2026Q2 各通路銷售額（萬元）',
+          y_axis: { title: '銷售額（萬元）' },
+          data: {
+            labels: ['官網直營', '天貓旗艦店', '蝦皮商城', '實體門市', '經銷通路'],
+            values: [{ '銷售額（萬元）': [1240, 980, 760, 1530, 610] }],
+          },
+        }, '各通路銷售表現.json');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      try {
+        addChartBlock({
+          chart: 'doughnut',
+          title: 'TEVA涼鞋會員回購結構',
+          data: {
+            labels: ['新會員', '回購會員'],
+            values: [{ '會員占比（%）': [32, 68] }],
+          },
+        }, '會員輪廓分布.json');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      c6Push({
+        finishResponse: true,
+        msg: `✅ 已完成 TEVA 涼鞋 2026Q2 各通路銷售與會員輪廓分析，圖表已加入畫布。<br><br>重點洞察：實體門市貢獻最高但年減 4%，天貓旗艦店成長最快（+32%）；會員回購占比達 68%，顯示既有會員貢獻穩定。`,
+        sources: CONV6_SOURCES,
+      });
+      c6Scroll();
+    }, 1800);
+  }, 300);
+}
+
+// 尋找最後一則含 'conv2-search-card' 的訊息，把指定 class 依序替換（比照 conv4FlipSearchCard）
+function conv6FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv6Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv6Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
 }
 // -------- end Conversation 6 流程 --------
 
