@@ -786,6 +786,270 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         },
       ],
     },
+    {
+      id: 'k9',
+      title: 'Teva 商品庫存即時資料',
+      category: '商品文件',
+      status: 'active',
+      sourceType: 'API',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: '2026-07-30 08:00',
+      apiSourceId: 'api-3',
+      apiSourceName: 'Teva 商品庫存 API',
+      lastUpdateTime: '2026-07-30 08:00',
+      lastUpdateBy: 'API 同步',
+      versions: [
+        {
+          id: 'k9-v1.0',
+          knowledgeId: 'k9',
+          versionNumber: 'v1.0',
+          versionType: 'MAJOR',
+          status: 'active',
+          title: 'Teva 商品庫存即時資料',
+          summary: '由 Teva 商品庫存 API 同步更新，涵蓋主力品項現有庫存量與低庫存警示，共 2 個知識單元。',
+          content: `# Teva 商品庫存即時資料（2026-07-30 最新同步）
+
+> **資料來源**：Teva 商品庫存 API｜**同步時間**：2026-07-30 08:00｜**版本**：v1.0
+
+---
+
+## 一、Teva 商品線總覽
+
+| 商品編號 | 品名 | 現有庫存 | 狀態 |
+|---------|------|---------|------|
+| TEVA-XLT2-2026 | TEVA Hurricane XLT2 涼鞋 | 320 件 | 🟢 正常 |
+| TEVA-VERGE-2026 | TEVA Hurricane Verge 水陸機能鞋 | 210 件 | 🟢 正常 |
+| TEVA-RIDGE-2026 | TEVA Ridgeview 秋冬機能涼鞋（新品） | 260 件 | 🟢 正常，新品剛到貨 |
+| TEVA-OU-2026 | TEVA Original Universal | 18 件 | 🟡 低庫存 |
+
+---
+
+## 二、低庫存警示
+
+**TEVA Original Universal**（現有庫存 18 件）：因 6 月銷售暢旺（單月銷售額 NT$1,988,000，為當月熱銷第 4 名），現貨去化速度快，目前僅剩 18 件，預計 8/20 補貨到位。⚠️ **不建議作為大規模曝光的主打商品**，適合改以限量／稀缺角度操作。`,
+          tags: ['商品', 'Teva', 'API'],
+          systemTags: ['商品文件'],
+          lastUpdateBy: 'API 同步',
+          lastUpdateTime: '2026-07-30 08:00',
+          updateNote: 'API 自動同步，更新 Teva 商品線庫存與低庫存警示',
+          sourceFiles: [],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、Teva 商品線總覽',
+              content: 'Teva 商品線現有庫存：Hurricane XLT2 320 件（正常）、Hurricane Verge 210 件（正常）、新品 Ridgeview 260 件（正常，剛到貨）、Original Universal 18 件（低庫存）。',
+              tokenCount: 312,
+              sourceType: 'text',
+              gist: '列出 Teva 四款主力品項的現有庫存量與狀態燈號。',
+              qaPairs: [
+                'Teva 目前有哪些主力品項？',
+                'Hurricane XLT2 現在庫存多少？',
+                '新品 Ridgeview 庫存狀況如何？',
+                '哪一款 Teva 商品庫存偏低？',
+              ],
+              taxonomyTags: ['商品文件/庫存管理/Teva商品線'],
+              citationCount: 3,
+            },
+            {
+              index: 2,
+              sectionPath: '二、低庫存警示',
+              content: 'Original Universal 因 6 月銷售暢旺（NT$1,988,000，當月熱銷第4名）去化快，現貨僅剩 18 件，預計 8/20 補貨。不建議作為大規模曝光主打，適合改以限量／稀缺角度操作。',
+              tokenCount: 268,
+              sourceType: 'text',
+              gist: 'Original Universal 因熱賣導致庫存偏低，說明原因、補貨時程與行銷操作建議。',
+              qaPairs: [
+                'Original Universal 為什麼庫存只剩18件？',
+                'Original Universal 何時補貨？',
+                '庫存這麼低適合當促銷主打嗎？',
+                '低庫存商品可以怎麼操作行銷？',
+              ],
+              taxonomyTags: ['商品文件/庫存管理/低庫存警示'],
+              citationCount: 6,
+            },
+          ],
+          embeddingModel: 'BAAI/bge-m3',
+          embeddingDimension: 1024,
+          embeddingCount: 2,
+        },
+      ],
+    },
+    {
+      id: 'k10',
+      title: '2026換季社群輿情彙整',
+      category: '市場情報',
+      status: 'active',
+      sourceType: 'API',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: '2026-07-29 07:00',
+      apiSourceId: 'api-4',
+      apiSourceName: '社群輿情監測 API',
+      lastUpdateTime: '2026-07-29 07:00',
+      lastUpdateBy: 'API 同步',
+      versions: [
+        {
+          id: 'k10-v1.0',
+          knowledgeId: 'k10',
+          versionNumber: 'v1.0',
+          versionType: 'MAJOR',
+          status: 'active',
+          title: '2026換季社群輿情彙整',
+          summary: '社群輿情監測 API 彙整近期機能戶外穿搭聲量與熱門標籤、色彩偏好，共 1 個知識單元。',
+          content: `# 2026換季社群輿情彙整（2026-07-29 最新同步）
+
+> **資料來源**：社群輿情監測 API｜**同步時間**：2026-07-29 07:00｜**版本**：v1.0
+
+---
+
+## 一、社群聲量與熱門標籤
+
+近 30 天「機能涼鞋」「戶外機能穿搭」相關貼文聲量較上季成長 42%。熱門標籤：#機能涼鞋 #水陸兩用 #Gorpcore #秋冬過渡穿搭。使用者偏好色彩以大地色系（卡其、軍綠、棕）為主，搭配螢光點綴色（螢光黃、螢光橘）作為視覺焦點。`,
+          tags: ['市場情報', '社群', 'Teva'],
+          systemTags: ['市場情報'],
+          lastUpdateBy: 'API 同步',
+          lastUpdateTime: '2026-07-29 07:00',
+          updateNote: 'API 自動同步，更新換季社群聲量與色彩偏好',
+          sourceFiles: [],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、社群聲量與熱門標籤',
+              content: '近30天機能涼鞋／戶外機能穿搭聲量較上季成長42%。熱門標籤：#機能涼鞋 #水陸兩用 #Gorpcore #秋冬過渡穿搭。色彩偏好：大地色系為主，螢光點綴色為視覺焦點。',
+              tokenCount: 245,
+              sourceType: 'text',
+              gist: '說明近期社群上機能戶外穿搭的聲量成長幅度、熱門標籤與色彩偏好。',
+              qaPairs: [
+                '機能涼鞋在社群上的聲量如何？',
+                '目前有哪些熱門標籤？',
+                '消費者偏好什麼顏色？',
+              ],
+              taxonomyTags: ['市場情報/社群輿情/換季趨勢'],
+              citationCount: 4,
+            },
+          ],
+          embeddingModel: 'BAAI/bge-m3',
+          embeddingDimension: 1024,
+          embeddingCount: 1,
+        },
+      ],
+    },
+    {
+      id: 'k11',
+      title: '時尚雜誌趨勢報導彙整',
+      category: '市場情報',
+      status: 'active',
+      sourceType: 'FILE',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
+      lastUpdateTime: '2026-07-25 10:00',
+      lastUpdateBy: 'Ivy',
+      versions: [
+        {
+          id: 'k11-v1.0',
+          knowledgeId: 'k11',
+          versionNumber: 'v1.0',
+          versionType: 'MAJOR',
+          status: 'active',
+          title: '時尚雜誌趨勢報導彙整',
+          summary: '彙整近期時尚雜誌對機能穿搭與永續材質趨勢的報導重點，共 1 個知識單元。',
+          content: '# 時尚雜誌趨勢報導彙整\n\n彙整國內外時尚雜誌 7 月報導重點：Gorpcore（機能露營風）持續發燒，機能涼鞋搭配機能襪成為秋冬過渡穿搭示範重點；多篇報導點名永續回收材質是各品牌本季行銷主打話題。',
+          tags: ['市場情報', '雜誌', 'Teva'],
+          systemTags: ['市場情報'],
+          lastUpdateBy: 'Ivy',
+          lastUpdateTime: '2026-07-25 10:00',
+          updateNote: '彙整7月時尚雜誌報導重點',
+          sourceFiles: [{ fileId: 'res-magazine-trend-2026-07', fileName: '2026年7月時尚雜誌趨勢彙整.pdf', linkedVersion: 1 }],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、機能穿搭與永續材質趨勢',
+              content: 'Gorpcore機能露營風持續發燒，機能涼鞋+機能襪成秋冬過渡穿搭示範重點；永續回收材質是各品牌本季行銷主打話題。',
+              tokenCount: 210,
+              sourceType: 'text',
+              gist: '說明時尚雜誌報導的機能穿搭風格與永續材質行銷話題。',
+              qaPairs: [
+                '時尚雜誌現在都在報導什麼穿搭風格？',
+                '機能涼鞋要怎麼搭配？',
+                '永續材質是熱門話題嗎？',
+              ],
+              taxonomyTags: ['市場情報/雜誌報導/機能穿搭'],
+              citationCount: 2,
+            },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 1,
+        },
+      ],
+    },
+    {
+      id: 'k12',
+      title: '戶外機能鞋產業趨勢報告',
+      category: '市場情報',
+      status: 'active',
+      sourceType: 'FILE',
+      pipelineProgress: 100,
+      pipelineStage: null,
+      pipelineError: null,
+      sourceStale: false,
+      staleSourceFileIds: [],
+      lastSyncAt: null,
+      apiSourceId: null,
+      apiSourceName: null,
+      lastUpdateTime: '2026-07-20 09:30',
+      lastUpdateBy: 'Ivy',
+      versions: [
+        {
+          id: 'k12-v1.0',
+          knowledgeId: 'k12',
+          versionNumber: 'v1.0',
+          versionType: 'MAJOR',
+          status: 'active',
+          title: '戶外機能鞋產業趨勢報告',
+          summary: '產業分析報告彙整戶外機能鞋市場成長率、材質偏好與競品促銷風險，共 1 個知識單元。',
+          content: '# 戶外機能鞋產業趨勢報告\n\n2026年戶外機能鞋市場年增率預估達 11%；消費者對永續回收材質的偏好持續上升。需留意競品品牌陸續祭出換季促銷折扣，價格戰風險升高，建議促銷方案應同步規劃差異化話題操作，而非單純比價。',
+          tags: ['市場情報', '產業報告', 'Teva'],
+          systemTags: ['市場情報'],
+          lastUpdateBy: 'Ivy',
+          lastUpdateTime: '2026-07-20 09:30',
+          updateNote: '新增2026戶外機能鞋產業趨勢報告',
+          sourceFiles: [{ fileId: 'res-industry-trend-2026', fileName: '2026戶外機能鞋產業趨勢報告.pdf', linkedVersion: 1 }],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、市場成長與競品風險',
+              content: '2026年戶外機能鞋市場年增率預估11%；消費者對永續回收材質偏好上升；競品陸續祭出換季促銷，價格戰風險升高，建議搭配差異化話題操作。',
+              tokenCount: 232,
+              sourceType: 'text',
+              gist: '說明戶外機能鞋市場成長率、材質偏好趨勢，以及競品促銷帶來的價格戰風險。',
+              qaPairs: [
+                '戶外機能鞋市場成長率多少？',
+                '消費者材質偏好趨勢是什麼？',
+                '競品促銷會帶來什麼風險？',
+              ],
+              taxonomyTags: ['市場情報/產業報告/市場趨勢'],
+              citationCount: 3,
+            },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 1,
+        },
+      ],
+    },
   ]);
 
   const apiSources = ref<ApiSource[]>([
@@ -820,6 +1084,38 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       lastSyncStatus: 'FAILED',
       lastSyncCount: 0,
       lastSyncError: '連線逾時：無法連接至 erp.internal',
+    },
+    {
+      id: 'api-3',
+      name: 'Teva 商品庫存 API',
+      url: 'https://erp.internal/teva/inventory',
+      method: 'GET',
+      headers: [{ key: 'X-API-Key', value: 'erp-key-teva-01' }],
+      body: '',
+      titleField: 'skuName',
+      contentField: 'stockQty',
+      schedule: 'DAILY',
+      enabled: true,
+      lastSyncAt: '2026-07-30 08:00',
+      lastSyncStatus: 'SUCCESS',
+      lastSyncCount: 4,
+      lastSyncError: null,
+    },
+    {
+      id: 'api-4',
+      name: '社群輿情監測 API',
+      url: 'https://social-listening.example.com/reports',
+      method: 'GET',
+      headers: [{ key: 'Authorization', value: 'Bearer social-demo-token' }],
+      body: '',
+      titleField: 'topic',
+      contentField: 'summary',
+      schedule: 'DAILY',
+      enabled: true,
+      lastSyncAt: '2026-07-29 07:00',
+      lastSyncStatus: 'SUCCESS',
+      lastSyncCount: 1,
+      lastSyncError: null,
     },
   ]);
 

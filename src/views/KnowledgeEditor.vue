@@ -108,6 +108,7 @@
                   { name: '系統文件', value: '系統文件' },
                   { name: '客服知識', value: '客服知識' },
                   { name: '規則說明', value: '規則說明' },
+                  { name: '市場情報', value: '市場情報' },
                 ]"
                 :show-search="false"
                 :default-value="formData.category"
