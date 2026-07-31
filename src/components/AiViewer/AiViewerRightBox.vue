@@ -640,6 +640,23 @@
             </div>
           </div>
         </div>
+        <!-- Conv5 促銷方案疑慮回饋懸浮面板 -->
+        <div v-if="conv5ConcernFpVisible && currentConversationId === 'conv5'" class="conv2-fp" @click.stop>
+          <div class="conv2-fp-top">
+            <span class="conv2-fp-title">回報方案疑慮</span>
+            <button class="conv2-fp-close-btn" @click.stop="conv5ConcernFpVisible = false">
+              <i class="material-symbols-outlined">close</i>
+            </button>
+          </div>
+          <div class="conv2-fp-body">
+            <div class="conv2-info-note">✦ 描述您發現的問題</div>
+            <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv5ConcernInput" rows="3" @click.stop
+              placeholder="例如：主打商品的庫存足夠支撐大量曝光嗎？"></textarea>
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-submit-btn" @click.stop="submitConv5Concern()">確認送出 →</button>
+            </div>
+          </div>
+        </div>
         <!-- Conv1 翻譯確認動作列 -->
         <div v-if="conv1TranslConfirmed && currentConversationId === 'conv1'" class="conv1-transl-action-bar" @click.stop>
           <div class="conv1-tab-info">
@@ -2689,6 +2706,50 @@ function conv5Approve() {
     c5Push({ msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
     c5Scroll();
   }, 500);
+}
+
+function submitConv5Concern() {
+  if (conv5FollowUpDone.value) return;
+  const msg = conv5ConcernInput.value.trim();
+  if (!msg) return;
+  conv5FollowUpDone.value = true;
+  c5Push({ forUser: true, msg });
+  conv5ConcernInput.value = '';
+  conv5ConcernFpVisible.value = false;
+  c5Scroll();
+  conv5ReviseStrategy();
+}
+
+function conv5ReviseStrategy() {
+  setTimeout(() => {
+    c5Push({ msg: `您說得對，我重新核對一次庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">InventoryQuery 重新核對 Teva 商品線即時庫存</div>
+</div>` });
+    c5Scroll();
+
+    setTimeout(() => {
+      conv5FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html');
+      } catch { /* 畫布可能尚未初始化 */ }
+      const CONV5_REVISED_SOURCES: KnowledgeSource[] = [
+        { knowledgeId: 'k9', title: 'Teva 商品庫存即時資料', chunkIndexes: [0, 1] },
+        { knowledgeId: 'k7', title: '2026Q1產品銷售數據彙總', chunkIndexes: [1] },
+      ];
+      c5Push({
+        finishResponse: true,
+        msg: `已修正：Original Universal 現貨僅剩 18 件，不適合作為大量曝光的主打商品，已改由庫存充足（320 件）、同樣熱銷的 Hurricane XLT2 接手主打，60% 廣告預算同步轉移；Original Universal 改包裝為「限量珍藏款」，用低庫存做稀缺感話題操作，風險評估表也已同步更新。修正版報告已加入畫布。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">Teva 2026 換季促銷方案（修正版）.html</div>
+    <div class="file-size">HTML · 7.4 KB · 已加到畫布</div>
+  </div>
+</div>`,
+        sources: CONV5_REVISED_SOURCES,
+      });
+      c5Scroll();
+    }, 1800);
+  }, 300);
 }
 // -------- end Conversation 5 流程 --------
 
