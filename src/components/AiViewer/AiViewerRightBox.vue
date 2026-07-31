@@ -937,6 +937,7 @@ const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
   if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
+  if (currentConversationId.value === 'conv5') return conv5Title.value || 'Teva 換季促銷方案規劃';
   return conv1Title.value;
 });
 
@@ -946,6 +947,8 @@ watch(currentConversationId, (id) => {
   } else if (id === 'conv2') {
     aiViewerBlocks.value = [...aiviewerStore.INITIAL_BLOCKS];
   } else if (id === 'conv4') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv5') {
     aiViewerBlocks.value = [];
   }
 }, { immediate: true });
@@ -995,6 +998,9 @@ const cannedTaskItems = computed(() => {
   if (currentConversationId.value === 'conv4') {
     return [{ id: 'salesReport', text: '整理上月產品銷售報告' }];
   }
+  if (currentConversationId.value === 'conv5') {
+    return [{ id: 'tevaPromotion', text: '提供 Teva 換季促銷方案' }];
+  }
   return [
     { id: 'cannedTask1', text: '快速罐頭任務範例文字1' },
     { id: 'cannedTask2', text: '快速罐頭任務範例文字2' },
@@ -1015,6 +1021,11 @@ function sendCannedTask(item: any) {
   if (currentConversationId.value === 'conv4' && item.id === 'salesReport') {
     resetConversation();
     nextTick(() => conv4InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv5' && item.id === 'tevaPromotion') {
+    resetConversation();
+    nextTick(() => conv5InitFlow());
     return;
   }
   send();
@@ -1871,7 +1882,7 @@ const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
-const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
+const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value || conv5ConcernFpVisible.value);
 const conv1TranslConfirmed = computed(() => {
   const record = conv1Msgs.value.find((m: any) => m.id === 'id_3');
   return !!(record?.confirmed && !record?.translationStarted);
@@ -2180,6 +2191,16 @@ function handleChatAreaClick(e: MouseEvent) {
   }
   if (action === 'conv4-skip-skill') {
     conv4SkipSkill();
+    return;
+  }
+
+  // conv5 促銷方案確認／回報疑慮快速按鈕
+  if (action === 'conv5-approve') {
+    conv5Approve();
+    return;
+  }
+  if (action === 'conv5-raise-concern') {
+    conv5ConcernFpVisible.value = true;
     return;
   }
 
@@ -2559,9 +2580,122 @@ function conv4SkipSkill() {
 }
 // -------- end Conversation 4 流程 --------
 
+// -------- Conversation 5 流程 --------
+const conv5Msgs = ref<any[]>([]);
+let conv5IdCounter = 2;
+const conv5Title = ref('');
+const conv5FollowUpDone = ref(false);
+const conv5ConcernFpVisible = ref(false);
+const conv5ConcernInput = ref('');
+
+function c5Push(msg: any) {
+  conv5Msgs.value.push({ id: `c5_${conv5IdCounter++}`, ...msg });
+}
+function c5Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+const CONV5_INVENTORY_SOURCE: KnowledgeSource[] = [
+  { knowledgeId: 'k9', title: 'Teva 商品庫存即時資料', chunkIndexes: [0] },
+];
+const CONV5_TREND_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k10', title: '2026換季社群輿情彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k11', title: '時尚雜誌趨勢報導彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k12', title: '戶外機能鞋產業趨勢報告', chunkIndexes: [0] },
+];
+const CONV5_STRATEGY_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k7', title: '2026Q1產品銷售數據彙總', chunkIndexes: [1] },
+  ...CONV5_INVENTORY_SOURCE,
+  ...CONV5_TREND_SOURCES,
+];
+
+function conv5InitFlow() {
+  if (conv5Msgs.value.length > 0) return;
+  conv5Title.value = 'Teva 換季促銷方案規劃';
+  c5Push({ forUser: true, msg: '換季檔期快到了，幫我提供一份 Teva 的促銷方案，記得先看一下目前庫存，也了解一下現在社群、時尚雜誌跟趨勢報告在流行什麼，最後整理成行銷策略和風險評估。' });
+
+  setTimeout(() => {
+    c5Push({ msg: `收到，我先查詢目前的商品庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">InventoryQuery 查詢 Teva 商品線即時庫存</div>
+</div>` });
+    c5Scroll();
+
+    setTimeout(() => {
+      conv5FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      c5Push({
+        finishResponse: true,
+        msg: '📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。接著我來看看目前社群、時尚雜誌與趨勢報告在流行什麼⋯',
+        sources: CONV5_INVENTORY_SOURCE,
+      });
+      c5Scroll();
+
+      setTimeout(() => {
+        c5Push({ msg: `<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
+  <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
+  <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
+</div>` });
+        c5Scroll();
+
+        setTimeout(() => {
+          conv5FlipSearchCard(
+            ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait'],
+            ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
+          );
+          try {
+            addReportBlock('/justagent/teva_seasonal_promotion_strategy.html', 'Teva 2026 換季促銷方案.html');
+          } catch { /* 畫布可能尚未初始化 */ }
+          c5Push({
+            finishResponse: true,
+            msg: `✅ 已完成 Teva 換季促銷方案，主打商品鎖定 6 月銷售亮眼的 Original Universal，並依 Gorpcore／機能穿搭趨勢規劃社群與雜誌曝光。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">Teva 2026 換季促銷方案.html</div>
+    <div class="file-size">HTML · 7.1 KB · 已加到畫布</div>
+  </div>
+</div>
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv5-approve">✅ 沒問題，可以啟動</span>
+  <span class="conv1-quick-btn" data-action="conv5-raise-concern">⚠️ 我有疑慮</span>
+</div>`,
+            sources: CONV5_STRATEGY_SOURCES,
+          });
+          c5Scroll();
+        }, 1800);
+      }, 500);
+    }, 1600);
+  }, 300);
+}
+
+// 尋找最後一則含 'conv2-search-card' 的訊息，把指定 class 依序替換（比照 conv4FlipSearchCard）
+function conv5FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv5Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv5Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+function conv5Approve() {
+  if (conv5FollowUpDone.value) return;
+  conv5FollowUpDone.value = true;
+  c5Push({ forUser: true, msg: '沒問題，可以啟動' });
+  c5Scroll();
+  setTimeout(() => {
+    c5Push({ msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
+    c5Scroll();
+  }, 500);
+}
+// -------- end Conversation 5 流程 --------
+
 const testMsgs = computed(() => {
   const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
     : currentConversationId.value === 'conv4' ? conv4Msgs.value
+    : currentConversationId.value === 'conv5' ? conv5Msgs.value
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
@@ -2610,6 +2744,14 @@ function resetConversation() {
     conv4Title.value = '';
     conv4Msgs.value = [];
     conv4SkillChoiceMade.value = false;
+  }
+  if (currentConversationId.value === 'conv5') {
+    conv5IdCounter = 2;
+    conv5Title.value = '';
+    conv5Msgs.value = [];
+    conv5FollowUpDone.value = false;
+    conv5ConcernFpVisible.value = false;
+    conv5ConcernInput.value = '';
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
