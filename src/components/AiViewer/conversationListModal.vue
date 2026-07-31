@@ -20,6 +20,10 @@
           <span>產品銷售報告整理</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
+        <li :class="{ active: currentConversationId === 'conv6' }" @click="switchConversation('conv6')">
+          <span>TEVA涼鞋銷售分析</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
       </ul>
     </div>
     <template #footer>

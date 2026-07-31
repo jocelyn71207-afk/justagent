@@ -937,6 +937,7 @@ const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
   if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
+  if (currentConversationId.value === 'conv6') return conv6Title.value || 'TEVA涼鞋銷售分析';
   return conv1Title.value;
 });
 
@@ -946,6 +947,8 @@ watch(currentConversationId, (id) => {
   } else if (id === 'conv2') {
     aiViewerBlocks.value = [...aiviewerStore.INITIAL_BLOCKS];
   } else if (id === 'conv4') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv6') {
     aiViewerBlocks.value = [];
   }
 }, { immediate: true });
@@ -1165,6 +1168,15 @@ function send() {
     userInputModal.value.msg = '';
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     processConv1Msg(msg);
+    return;
+  }
+  if (currentConversationId.value === 'conv6') {
+    const msg = userInputModal.value.msg.trim();
+    if (!msg) return;
+    conv6Msgs.value.push({ id: 'user-' + Date.now(), forUser: true, msg });
+    userInputModal.value.msg = '';
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    processConv6Msg(msg);
     return;
   }
   sendUserInput();
@@ -2559,9 +2571,27 @@ function conv4SkipSkill() {
 }
 // -------- end Conversation 4 流程 --------
 
+// -------- start Conversation 6 流程 --------
+const conv6Msgs = ref<any[]>([]);
+let conv6IdCounter = 2;
+const conv6Title = ref('');
+const conv6ReportChoiceMade = ref(false);
+function c6Push(msg: any) { conv6Msgs.value.push({ id: `c6_${conv6IdCounter++}`, ...msg }); }
+function c6Scroll() { nextTick(() => AiAgentChatListScrollTo('ASC')); }
+
+function processConv6Msg(msg: string) {
+  if (conv6Msgs.value.length > 1) {
+    setTimeout(() => { c6Push({ msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
+    return;
+  }
+  setTimeout(() => { c6Push({ msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
+}
+// -------- end Conversation 6 流程 --------
+
 const testMsgs = computed(() => {
   const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
     : currentConversationId.value === 'conv4' ? conv4Msgs.value
+    : currentConversationId.value === 'conv6' ? conv6Msgs.value
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
@@ -2610,6 +2640,12 @@ function resetConversation() {
     conv4Title.value = '';
     conv4Msgs.value = [];
     conv4SkillChoiceMade.value = false;
+  }
+  if (currentConversationId.value === 'conv6') {
+    conv6IdCounter = 2;
+    conv6Title.value = '';
+    conv6Msgs.value = [];
+    conv6ReportChoiceMade.value = false;
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
