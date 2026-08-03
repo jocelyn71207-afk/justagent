@@ -16,6 +16,10 @@
           <span>未命名對話</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
+        <li :class="{ active: currentConversationId === 'conv3' }" @click="switchConversation('conv3')">
+          <span>TEVA新品特徵貼標</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
         <li :class="{ active: currentConversationId === 'conv4' }" @click="switchConversation('conv4')">
           <span>產品銷售報告整理</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>

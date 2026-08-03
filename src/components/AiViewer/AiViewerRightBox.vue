@@ -471,6 +471,67 @@
         </div>
       </div>
 
+      <!-- Conv3 上傳原廠文件懸浮面板 -->
+      <div v-show="conv3UploadFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">上傳原廠文件</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3UploadFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-info-note">✦ 點擊下方區域附加這批 TEVA 原廠型錄與文件</div>
+          <div v-if="conv3UploadedFiles.length === 0"
+            class="conv2-up-img-box conv2-up-img-box--empty"
+            style="width:100%;height:64px"
+            @click.stop="conv3LoadDemoFiles()">
+            <div class="conv2-up-img-placeholder">
+              <i class="material-symbols-outlined">upload_file</i>
+              <span>點擊附加原廠文件</span>
+            </div>
+          </div>
+          <div v-else>
+            <div class="oneFileItem" v-for="(f, i) in conv3UploadedFiles" :key="'conv3-file-' + i" style="margin-bottom:6px">
+              <img class="file-icon" :src="useIconFileTypes[f.type]" v-if="useIconFileTypes[f.type]" />
+              <span class="noFile-icon" v-else><i class="material-symbols-outlined">draft</i></span>
+              <div class="file-info-box">
+                <div class="file-name">{{ f.name }}</div>
+                <div class="file-size">{{ f.type }}．{{ formatFileSize(f.size) }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="conv2-fp-btn-row">
+            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conv3 貼標維度確認懸浮面板 -->
+      <div v-show="conv3DimFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">貼標維度確認</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3DimFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-pdesc">多選（至少 1 項）</div>
+          <div v-for="d in conv3Dims" :key="d.key"
+            :class="['conv2-feat-item', {sel: d.sel}]"
+            @click.stop="conv3TogDim(d)">
+            <div class="conv2-fcb">
+              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="conv2-ft">{{ d.title }}</div>
+          </div>
+          <div class="conv2-err">{{ conv3DimErr }}</div>
+          <div class="conv2-fp-btn-row">
+            <span class="conv2-cbadge">已選 {{ conv3Dims.filter(d => d.sel).length }} / {{ conv3Dims.length }}</span>
+            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認 →</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 要上傳的附件 -->
       <div v-if="!inputAreaHidden" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
@@ -535,6 +596,27 @@
           <!-- conv2 流程進行中：固定顯示「離開快速任務」 -->
           <div v-if="conv2InputLocked" class="conv2-leave-row">
             <button class="conv2-leave-btn" @click.stop="conv2LeaveFastTask()">
+              <i class="material-symbols-outlined">close</i>離開快速任務
+            </button>
+          </div>
+        </template>
+        <template v-if="currentConversationId === 'conv3'">
+          <div class="conv2-pill-row" v-show="conv3ShowUploadPill || conv3ShowDimPill">
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv3UploadFpVisible}"
+              v-show="conv3ShowUploadPill"
+              @click.stop="conv3UploadFpVisible = !conv3UploadFpVisible">
+              <span class="conv2-pill-dot"></span>上傳原廠文件
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv3UploadFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv3DimFpVisible}"
+              v-show="conv3ShowDimPill"
+              @click.stop="conv3DimFpVisible = !conv3DimFpVisible">
+              <span class="conv2-pill-dot"></span>貼標維度確認
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv3DimFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+          </div>
+          <div v-if="conv3InputLocked" class="conv2-leave-row">
+            <button class="conv2-leave-btn" @click.stop="conv3LeaveFastTask()">
               <i class="material-symbols-outlined">close</i>離開快速任務
             </button>
           </div>
@@ -953,6 +1035,7 @@ const conv2Title = ref('');
 const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
+  if (currentConversationId.value === 'conv3') return conv3Title.value || 'TEVA新品特徵貼標';
   if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
   if (currentConversationId.value === 'conv5') return conv5Title.value || 'Teva 換季促銷方案規劃';
   if (currentConversationId.value === 'conv6') return conv6Title.value || 'TEVA涼鞋銷售分析';
@@ -964,6 +1047,8 @@ watch(currentConversationId, (id) => {
     aiViewerBlocks.value = [];
   } else if (id === 'conv2') {
     aiViewerBlocks.value = [...aiviewerStore.INITIAL_BLOCKS];
+  } else if (id === 'conv3') {
+    aiViewerBlocks.value = [];
   } else if (id === 'conv4') {
     aiViewerBlocks.value = [];
   } else if (id === 'conv5') {
@@ -1015,6 +1100,9 @@ const cannedTaskItems = computed(() => {
   if (currentConversationId.value === 'conv2') {
     return [{ id: 'competitorAnalysis', text: '商品競品分析' }];
   }
+  if (currentConversationId.value === 'conv3') {
+    return [{ id: 'tevaFeatureTagging', text: 'TEVA新品特徵貼標' }];
+  }
   if (currentConversationId.value === 'conv4') {
     return [{ id: 'salesReport', text: '整理上月產品銷售報告' }];
   }
@@ -1036,6 +1124,11 @@ function sendCannedTask(item: any) {
   if (currentConversationId.value === 'conv2' && item.id === 'competitorAnalysis') {
     resetConversation();
     nextTick(() => conv2InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv3' && item.id === 'tevaFeatureTagging') {
+    resetConversation();
+    nextTick(() => conv3InitFlow());
     return;
   }
   if (currentConversationId.value === 'conv4' && item.id === 'salesReport') {
@@ -1911,7 +2004,7 @@ const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
-const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value || (conv5ConcernFpVisible.value && currentConversationId.value === 'conv5'));
+const inputAreaHidden = computed(() => conv2FpActive.value || conv3FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value || (conv5ConcernFpVisible.value && currentConversationId.value === 'conv5'));
 const conv1TranslConfirmed = computed(() => {
   const record = conv1Msgs.value.find((m: any) => m.id === 'id_3');
   return !!(record?.confirmed && !record?.translationStarted);
@@ -2506,6 +2599,81 @@ function conv2ShowReport() {
 }
 // -------- end Conversation 2 流程 --------
 
+// -------- Conversation 3 流程 --------
+const conv3InputLocked = ref(false); // 快速任務觸發後鎖定輸入框
+const conv3Msgs = ref<any[]>([]);
+let conv3IdCounter = 2;
+const conv3Title = ref('');
+
+function c3Push(msg: any) {
+  conv3Msgs.value.push({ id: `c3_${conv3IdCounter++}`, ...msg });
+}
+function c3Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+// Step 1：上傳原廠文件（面板本體於後續任務建立）
+const conv3UploadFpVisible = ref(false);
+const conv3ShowUploadPill = ref(false);
+const conv3UploadedFiles = ref<{ name: string; type: string; size: number }[]>([]);
+const CONV3_DEMO_FILES: { name: string; type: string; size: number }[] = [
+  { name: 'TEVA_AW26_目錄_final_v3(1).pdf', type: 'PDF', size: 8_412_000 },
+  { name: '原廠規格表_更新版.xlsx', type: 'EXCEL', size: 1_204_500 },
+  { name: 'TEVA官網介紹_複製.docx', type: 'WORD', size: 340_200 },
+  { name: '特徵資料_舊版_勿用.txt', type: 'TXT', size: 18_600 },
+];
+
+// Step 2：貼標維度確認（面板本體於後續任務建立）
+const conv3DimFpVisible = ref(false);
+const conv3ShowDimPill = ref(false);
+const conv3Dims = ref([
+  { key: 'color', title: '顏色', sel: true },
+  { key: 'style', title: '款式', sel: true },
+  { key: 'material', title: '材質', sel: true },
+  { key: 'size', title: '尺碼', sel: true },
+  { key: 'theme', title: '風格', sel: true },
+]);
+const conv3DimErr = ref('');
+
+// fp 互動模式中：完全隱藏原始輸入列（比照 conv2FpActive）
+const conv3FpActive = computed(() =>
+  currentConversationId.value === 'conv3' && (conv3ShowUploadPill.value || conv3ShowDimPill.value || conv3InputLocked.value)
+);
+
+function conv3InitFlow() {
+  if (conv3Msgs.value.length > 0) return;
+  conv3InputLocked.value = true;
+  conv3Title.value = 'TEVA新品特徵貼標';
+  c3Push({ forUser: true, msg: '請整理這批 TEVA 新品原廠文件，依顏色、款式、材質、尺碼、風格完成特徵貼標' });
+  setTimeout(() => {
+    c3Push({ msg: '收到！這批原廠文件看起來版本蠻雜亂的，麻煩先在下方面板附加要整理的檔案。' });
+    c3Scroll();
+    conv3UploadFpVisible.value = true;
+    conv3ShowUploadPill.value = true;
+  }, 300);
+}
+
+function conv3LeaveFastTask() {
+  conv3InputLocked.value = false;
+  conv3ShowUploadPill.value = false;
+  conv3UploadFpVisible.value = false;
+  conv3ShowDimPill.value = false;
+  conv3DimFpVisible.value = false;
+}
+
+// 尋找最後一則含 'conv2-search-card' 的處理進度訊息，把指定 class 依序替換（比照 conv2DirectSubmitSku 的做法）
+function conv3FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv3Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv3Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
 // -------- Conversation 4 流程 --------
 const conv4Msgs = ref<any[]>([]);
 let conv4IdCounter = 2;
@@ -2568,6 +2736,72 @@ function conv4FlipSearchCard(from: string[], to: string[]) {
     }
   }
 }
+
+function conv3LoadDemoFiles() {
+  if (conv3UploadedFiles.value.length) return;
+  conv3UploadedFiles.value = [...CONV3_DEMO_FILES];
+}
+
+function conv3ConfirmUpload() {
+  if (!conv3UploadedFiles.value.length) return;
+  conv3UploadFpVisible.value = false;
+  conv3ShowUploadPill.value = false;
+  const fileListHtml = conv3UploadedFiles.value.map((f, i) => `${i + 1}. ${f.name}`).join('<br>');
+  c3Push({ forUser: true, msg: `已附加 ${conv3UploadedFiles.value.length} 份文件：<br>${fileListHtml}` });
+  c3Push({ msg: `收到，我先掃描這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">DocumentParser 解析原廠型錄與規格表</div>
+  <div class="conv2-ss conv2-ss--wait">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
+</div>` });
+  c3Scroll();
+  setTimeout(() => {
+    conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+    c3Push({ msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
+    c3Scroll();
+    conv3DimFpVisible.value = true;
+    conv3ShowDimPill.value = true;
+  }, 1800);
+}
+
+function conv3TogDim(d: any) {
+  const selCount = conv3Dims.value.filter(x => x.sel).length;
+  if (d.sel && selCount <= 1) { conv3DimErr.value = '至少選 1 個維度'; return; }
+  d.sel = !d.sel;
+  conv3DimErr.value = '';
+}
+
+function conv3ConfirmDims() {
+  if (!conv3Dims.value.some(d => d.sel)) { conv3DimErr.value = '至少選 1 個維度'; return; }
+  conv3DimFpVisible.value = false;
+  conv3ShowDimPill.value = false;
+  const dimNames = conv3Dims.value.filter(d => d.sel).map(d => d.title).join('、');
+  c3Push({ forUser: true, msg: `確認以 ${dimNames} 進行貼標，開始執行。` });
+  c3Push({ msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">DocumentParser 解析原廠型錄與規格表</div>
+  <div class="conv2-ss conv2-ss--done">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
+  <div class="conv2-ss conv2-ss--active">FeatureTagger 依 ${dimNames} 進行特徵貼標中</div>
+  <div class="conv2-ss conv2-ss--wait">QualityReview 交叉比對命名與規格一致性</div>
+</div>` });
+  c3Scroll();
+  setTimeout(() => conv3ShowResult(dimNames), 2200);
+}
+
+function conv3ShowResult(dimNames: string) {
+  conv3InputLocked.value = false;
+  conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+  try {
+    addReportBlock('/justagent/teva_feature_tagging_report.html', 'TEVA_特徵貼標報告.html');
+  } catch (e) { /* 畫布可能尚未初始化 */ }
+  c3Push({ msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
+  c3Push({ finishResponse: true, msg: `<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">TEVA_特徵貼標報告.html</div>
+    <div class="file-size">HTML · 7.9 KB · 已加到畫布</div>
+  </div>
+</div>` });
+  c3Scroll();
+}
+// -------- end Conversation 3 流程 --------
 
 function conv4AskBuildSkill() {
   c4Push({
@@ -2906,6 +3140,7 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
 
 const testMsgs = computed(() => {
   const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
+    : currentConversationId.value === 'conv3' ? conv3Msgs.value
     : currentConversationId.value === 'conv4' ? conv4Msgs.value
     : currentConversationId.value === 'conv5' ? conv5Msgs.value
     : currentConversationId.value === 'conv6' ? conv6Msgs.value
@@ -2951,6 +3186,19 @@ function resetConversation() {
     conv2DirectMethod.value = '';
     conv2DirectSkuInput.value = '';
     conv2DirectUrlInput.value = '';
+  }
+  if (currentConversationId.value === 'conv3') {
+    conv3IdCounter = 2;
+    conv3Title.value = '';
+    conv3Msgs.value = [];
+    conv3InputLocked.value = false;
+    conv3UploadFpVisible.value = false;
+    conv3ShowUploadPill.value = false;
+    conv3UploadedFiles.value = [];
+    conv3DimFpVisible.value = false;
+    conv3ShowDimPill.value = false;
+    conv3Dims.value.forEach(d => { d.sel = true; });
+    conv3DimErr.value = '';
   }
   if (currentConversationId.value === 'conv4') {
     conv4IdCounter = 2;
