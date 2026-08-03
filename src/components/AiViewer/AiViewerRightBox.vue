@@ -795,6 +795,11 @@
             @click="isOpenAccessoryFileFnBox = true">
             <i class="material-symbols-outlined">add</i>
           </button>
+          <!-- 展開引用知識庫下拉清單按鈕 -->
+          <button class="custom-btn" v-tooltip.top="'引用知識庫'"
+            @click="isOpenKnowledgeRefFnBox = true">
+            <i class="material-symbols-outlined">menu_book</i>
+          </button>
         </div>
         <!-- 附件功能選項清單 -->
         <div :class="['accessory-file-fn-box next-option-box', {'show': isOpenAccessoryFileFnBox}]"
@@ -810,6 +815,13 @@
           </div>
           <div class="option-item">從專案檔案清單新增</div>
           <div class="option-item">從共享資源庫新增</div>
+        </div>
+        <!-- 引用知識庫下拉清單 -->
+        <div :class="['accessory-file-fn-box next-option-box', {'show': isOpenKnowledgeRefFnBox}]"
+          ref="knowledgeRefFnBox">
+          <div v-if="knowledgeList.length === 0" class="option-item">尚無知識庫項目</div>
+          <div v-else class="option-item" v-for="item in knowledgeList" :key="item.id"
+            @click="insertKnowledgeRef(item)">{{ item.title }}</div>
         </div>
         <!-- 發送按鈕 -->
         <button class="custom-btn" v-if="!inputAreaHidden" v-tooltip="'發送訊息'"
@@ -866,6 +878,7 @@ import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { useJourneyStore } from '@/stores/journeyStore'
+import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
@@ -896,6 +909,8 @@ const { aiViewerBlocks, panToTarget } = storeToRefs(aiviewerStore);
 const { sendUserInput, addReportBlock, addChartBlock } = aiviewerStore;
 const journeyStore = useJourneyStore()
 const { journeyStarted } = storeToRefs(journeyStore)
+const knowledgeStore = useKnowledgeStore();
+const { knowledgeList } = storeToRefs(knowledgeStore);
 const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
 const showJourneyModifyPill = ref(false)
@@ -1197,6 +1212,26 @@ onMounted(() => {
     isOpenAccessoryFileFnBox.value = false;
   });
 });
+
+// 引用知識庫下拉清單
+const knowledgeRefFnBox = ref<HTMLElement|null>(null);
+const isOpenKnowledgeRefFnBox = ref(false);
+onMounted(() => {
+  initClickOutsideListener(knowledgeRefFnBox.value!, () => {
+    isOpenKnowledgeRefFnBox.value = false;
+  });
+});
+// 選擇知識庫項目後，將 @標題 插入輸入框內容
+function insertKnowledgeRef(item: { title: string }) {
+  isOpenKnowledgeRefFnBox.value = false;
+  const current = userInputModal.value.msg;
+  const needsSpace = current.length > 0 && !/\s$/.test(current);
+  userInputModal.value.msg = `${current}${needsSpace ? ' ' : ''}@${item.title} `;
+  nextTick(() => {
+    adjustTextareaHeight();
+    userInputRef.value?.focus();
+  });
+}
 
 // 能支援本地端上傳的檔案類型
 const supportedFileTypes = aiviewerStore.supportedFileTypes;
