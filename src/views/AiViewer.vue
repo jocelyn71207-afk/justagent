@@ -1678,6 +1678,15 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
   }
 }
 // 全域層級的鍵盤事件
+// 離開多選模式（放開 Command/Shift 鍵，或視窗失焦時呼叫）
+function exitMultiChoiceMode(): void {
+  isMultiChoiceAiViewerMode.value = false;
+  if (!mainStage.value) return;
+  mainStage.value.draggable(true);
+  const selectionRect = mainStage.value.findOne(".selectionRect") as Konva.Rect | undefined;
+  selectionRect?.visible(false);
+}
+
 function onKeybordUpEvent(event: KeyboardEvent): void {
   const isCtrlOrCmd = event.ctrlKey || event.metaKey; // 是否按下 ctrl 鍵或 command 鍵
   const isCtrl = event.ctrlKey; // 是否按下 ctrl 鍵
@@ -1687,11 +1696,15 @@ function onKeybordUpEvent(event: KeyboardEvent): void {
 
   // 放開 Command or Shift 鍵 離開多選模式
   if (!isCmd || !isShift) {
-    // 停止多選模式
-    isMultiChoiceAiViewerMode.value = false;
-    mainStage.value.draggable(true);
-    const selectionRect = mainStage.value.findOne(".selectionRect") as Konva.Rect;
-    selectionRect.visible(false);
+    exitMultiChoiceMode();
+  }
+}
+
+// 視窗失焦時（例如觸發 macOS 截圖快捷鍵 Cmd+Shift+3/4/5，畫面焦點被系統截圖工具搶走，
+// 導致放開 Cmd/Shift 的 keyup 事件永遠不會送達頁面）強制離開多選模式，避免卡在多選狀態
+function onWindowBlurExitMultiChoice(): void {
+  if (isMultiChoiceAiViewerMode.value) {
+    exitMultiChoiceMode();
   }
 }
 
@@ -1743,6 +1756,7 @@ onMounted(async() => {
   window.addEventListener("resize", resizeStage);
   window.addEventListener("keydown", onKeybordDownEvent);
   window.addEventListener("keyup", onKeybordUpEvent);
+  window.addEventListener("blur", onWindowBlurExitMultiChoice);
 });
 
 onUnmounted(() => {
@@ -1760,7 +1774,8 @@ onUnmounted(() => {
 
   window.removeEventListener("resize", resizeStage);
   window.removeEventListener("keydown", onKeybordDownEvent);
-  window.removeEventListener("keydown", onKeybordUpEvent);
+  window.removeEventListener("keyup", onKeybordUpEvent);
+  window.removeEventListener("blur", onWindowBlurExitMultiChoice);
 
   resetAiViewerState();
 });
