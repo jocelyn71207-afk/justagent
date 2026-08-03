@@ -532,6 +532,24 @@
         </div>
       </div>
 
+      <!-- Conv3 貼標結果疑慮回饋懸浮面板 -->
+      <div v-show="conv3TaggingConcernFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">回報貼標疑慮</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3TaggingConcernFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-info-note">✦ 描述您發現的問題</div>
+          <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv3TaggingConcernInput" rows="3" @click.stop
+            placeholder="例如：某個 SKU 的材質標籤好像貼錯了..."></textarea>
+          <div class="conv2-fp-btn-row">
+            <button class="conv2-fp-submit-btn" @click.stop="submitConv3TaggingConcern()">確認送出 →</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 要上傳的附件 -->
       <div v-if="!inputAreaHidden" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
@@ -2329,6 +2347,24 @@ function handleChatAreaClick(e: MouseEvent) {
     return;
   }
 
+  // conv3 貼標結果確認／回報疑慮、是否建立知識庫快速按鈕
+  if (action === 'conv3-approve-tagging') {
+    conv3ApproveTagging();
+    return;
+  }
+  if (action === 'conv3-raise-tagging-concern') {
+    if (!conv3TaggingFollowUpDone.value) conv3TaggingConcernFpVisible.value = true;
+    return;
+  }
+  if (action === 'conv3-build-kb') {
+    conv3BuildKnowledgeBase();
+    return;
+  }
+  if (action === 'conv3-skip-kb') {
+    conv3SkipKnowledgeBase();
+    return;
+  }
+
   if (currentConversationId.value !== 'conv2') return;
 
   // more-button 開關：直接操作 DOM，不走 reactive 流程
@@ -2635,9 +2671,16 @@ const conv3Dims = ref([
 ]);
 const conv3DimErr = ref('');
 
+// Step 3：貼標結果確認／回報疑慮
+const conv3TaggingFollowUpDone = ref(false);
+const conv3TaggingConcernFpVisible = ref(false);
+const conv3TaggingConcernInput = ref('');
+// Step 4：是否建立知識庫
+const conv3KbChoiceMade = ref(false);
+
 // fp 互動模式中：完全隱藏原始輸入列（比照 conv2FpActive）
 const conv3FpActive = computed(() =>
-  currentConversationId.value === 'conv3' && (conv3ShowUploadPill.value || conv3ShowDimPill.value || conv3InputLocked.value)
+  currentConversationId.value === 'conv3' && (conv3ShowUploadPill.value || conv3ShowDimPill.value || conv3InputLocked.value || conv3TaggingConcernFpVisible.value)
 );
 
 function conv3InitFlow() {
@@ -2646,7 +2689,7 @@ function conv3InitFlow() {
   conv3Title.value = 'TEVA新品特徵貼標';
   c3Push({ forUser: true, msg: '請整理這批 TEVA 新品原廠文件，依顏色、款式、材質、尺碼、風格完成特徵貼標' });
   setTimeout(() => {
-    c3Push({ msg: '收到！這批原廠文件看起來版本蠻雜亂的，麻煩先在下方面板附加要整理的檔案。' });
+    c3Push({ msg: '收到，請先在下方面板附加要整理的原廠文件。' });
     c3Scroll();
     conv3UploadFpVisible.value = true;
     conv3ShowUploadPill.value = true;
@@ -2659,6 +2702,7 @@ function conv3LeaveFastTask() {
   conv3UploadFpVisible.value = false;
   conv3ShowDimPill.value = false;
   conv3DimFpVisible.value = false;
+  conv3TaggingConcernFpVisible.value = false;
 }
 
 // 尋找最後一則含 'conv2-search-card' 的處理進度訊息，把指定 class 依序替換（比照 conv2DirectSubmitSku 的做法）
@@ -2748,7 +2792,7 @@ function conv3ConfirmUpload() {
   conv3ShowUploadPill.value = false;
   const fileListHtml = conv3UploadedFiles.value.map((f, i) => `${i + 1}. ${f.name}`).join('<br>');
   c3Push({ forUser: true, msg: `已附加 ${conv3UploadedFiles.value.length} 份文件：<br>${fileListHtml}` });
-  c3Push({ msg: `收到，我先掃描這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
+  c3Push({ msg: `收到，這批原廠文件看起來版本蠻雜亂的，我先掃描並整併這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">DocumentParser 解析原廠型錄與規格表</div>
   <div class="conv2-ss conv2-ss--wait">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
 </div>` });
@@ -2792,14 +2836,112 @@ function conv3ShowResult(dimNames: string) {
     addReportBlock('/justagent/teva_feature_tagging_report.html', 'TEVA_特徵貼標報告.html');
   } catch (e) { /* 畫布可能尚未初始化 */ }
   c3Push({ msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
-  c3Push({ finishResponse: true, msg: `<div class="oneFileItem">
+  c3Push({
+    finishResponse: true,
+    msg: `<div class="oneFileItem">
   <img class="file-icon" src="${htmlIcon}" />
   <div class="file-info-box">
     <div class="file-name">TEVA_特徵貼標報告.html</div>
     <div class="file-size">HTML · 7.9 KB · 已加到畫布</div>
   </div>
-</div>` });
+</div>
+麻煩確認一下貼標結果有沒有問題？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv3-approve-tagging">✅ 沒問題，繼續</span>
+  <span class="conv1-quick-btn" data-action="conv3-raise-tagging-concern">⚠️ 我有疑慮</span>
+</div>`,
+  });
   c3Scroll();
+}
+
+function conv3ApproveTagging() {
+  if (conv3TaggingFollowUpDone.value) return;
+  conv3TaggingFollowUpDone.value = true;
+  c3Push({ forUser: true, msg: '沒問題，繼續' });
+  c3Scroll();
+  setTimeout(() => conv3AskBuildKnowledgeBase(), 500);
+}
+
+function submitConv3TaggingConcern() {
+  if (conv3TaggingFollowUpDone.value) return;
+  const msg = conv3TaggingConcernInput.value.trim();
+  if (!msg) return;
+  conv3TaggingFollowUpDone.value = true;
+  c3Push({ forUser: true, msg });
+  conv3TaggingConcernInput.value = '';
+  conv3TaggingConcernFpVisible.value = false;
+  c3Scroll();
+  conv3ReviseTagging();
+}
+
+function conv3ReviseTagging() {
+  setTimeout(() => {
+    c3Push({ msg: `您說得對，我重新比對一次原廠規格表⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">QualityReview 重新交叉比對命名與規格一致性</div>
+</div>` });
+    c3Scroll();
+
+    setTimeout(() => {
+      conv3FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/teva_feature_tagging_report-1.html', 'TEVA_特徵貼標報告（修正版）.html');
+      } catch { /* 畫布可能尚未初始化 */ }
+      c3Push({
+        finishResponse: true,
+        msg: `已修正：TEV-AW26-011（Original Universal Premier）因命名與 TEV-AW26-002（Original Universal）相近，先前合併時誤套用了 002 的材質規格，已重新比對原廠規格表更正為頭層牛皮材質，材質維度分佈也同步由 10 種組合修正為 11 種組合。修正版報告已加入畫布。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">TEVA_特徵貼標報告（修正版）.html</div>
+    <div class="file-size">HTML · 9.1 KB · 已加到畫布</div>
+  </div>
+</div>`,
+      });
+      c3Scroll();
+      setTimeout(() => conv3AskBuildKnowledgeBase(), 600);
+    }, 1800);
+  }, 300);
+}
+
+function conv3AskBuildKnowledgeBase() {
+  c3Push({
+    msg: `這批商品已完成特徵貼標，要不要把整理好的商品資料建成知識庫，方便之後快速查詢與再利用？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv3-build-kb">是，建立知識庫</span>
+  <span class="conv1-quick-btn" data-action="conv3-skip-kb">不用了</span>
+</div>`,
+  });
+  c3Scroll();
+}
+
+function conv3BuildKnowledgeBase() {
+  if (conv3KbChoiceMade.value) return;
+  conv3KbChoiceMade.value = true;
+  c3Push({ forUser: true, msg: '是，建立知識庫' });
+  c3Scroll();
+  setTimeout(() => {
+    c3Push({
+      finishResponse: true,
+      msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+  <span style="font-size:20px;line-height:1">📚</span>
+  <div>
+    <div style="font-weight:700">TEVA AW26 新品特徵資料</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:2px">12 個 SKU 的顏色／款式／材質／尺碼／風格貼標結果</div>
+  </div>
+</div>✅ 已建立知識庫「TEVA AW26 新品特徵資料」，之後可直接查詢這批商品的特徵資訊。`,
+    });
+    c3Scroll();
+  }, 500);
+}
+
+function conv3SkipKnowledgeBase() {
+  if (conv3KbChoiceMade.value) return;
+  conv3KbChoiceMade.value = true;
+  c3Push({ forUser: true, msg: '不用了' });
+  c3Scroll();
+  setTimeout(() => {
+    c3Push({ msg: '好的，這批貼標結果已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c3Scroll();
+  }, 500);
 }
 // -------- end Conversation 3 流程 --------
 
@@ -3199,6 +3341,10 @@ function resetConversation() {
     conv3ShowDimPill.value = false;
     conv3Dims.value.forEach(d => { d.sel = true; });
     conv3DimErr.value = '';
+    conv3TaggingFollowUpDone.value = false;
+    conv3TaggingConcernFpVisible.value = false;
+    conv3TaggingConcernInput.value = '';
+    conv3KbChoiceMade.value = false;
   }
   if (currentConversationId.value === 'conv4') {
     conv4IdCounter = 2;
