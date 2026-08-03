@@ -11,7 +11,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    exclude: [...configDefaults.exclude, 'e2e/**', '.worktrees/**', '.claude/worktrees/**'],
     root: fileURLToPath(new URL('./', import.meta.url)),
   },
 })
