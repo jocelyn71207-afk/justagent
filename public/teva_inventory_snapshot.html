@@ -45,6 +45,8 @@
   .status-low { background: var(--orange-light); color: var(--orange); }
   tr.row-low { background: var(--orange-light); }
   .note { font-size: 11px; color: var(--text-2); margin-top: 14px; padding: 10px 12px; background: var(--orange-light); border: 1px solid rgba(234,88,12,.2); border-radius: 8px; }
+  .bar-track { display: inline-block; width: 90px; height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; vertical-align: middle; margin-left: 8px; }
+  .bar-fill { display: block; height: 100%; border-radius: 3px; }
 </style>
 </head>
 <body>
@@ -62,10 +64,10 @@
       <tr><th>商品編號</th><th>品名</th><th>現有庫存</th><th>狀態</th></tr>
     </thead>
     <tbody>
-      <tr><td class="sku-cell">TEVA-XLT2-2026</td><td class="name-cell">TEVA Hurricane XLT2 涼鞋</td><td>320 件</td><td><span class="status-chip status-ok">🟢 正常</span></td></tr>
-      <tr><td class="sku-cell">TEVA-VERGE-2026</td><td class="name-cell">TEVA Hurricane Verge 水陸機能鞋</td><td>210 件</td><td><span class="status-chip status-ok">🟢 正常</span></td></tr>
-      <tr><td class="sku-cell">TEVA-RIDGE-2026</td><td class="name-cell">TEVA Ridgeview 秋冬機能涼鞋（新品）</td><td>260 件</td><td><span class="status-chip status-ok">🟢 正常，新品剛到貨</span></td></tr>
-      <tr class="row-low"><td class="sku-cell">TEVA-OU-2026</td><td class="name-cell">TEVA Original Universal</td><td>18 件</td><td><span class="status-chip status-low">🟡 低庫存</span></td></tr>
+      <tr><td class="sku-cell">TEVA-XLT2-2026</td><td class="name-cell">TEVA Hurricane XLT2 涼鞋</td><td>320 件<span class="bar-track"><span class="bar-fill" style="width:100%;background:var(--green)"></span></span></td><td><span class="status-chip status-ok">🟢 正常</span></td></tr>
+      <tr><td class="sku-cell">TEVA-VERGE-2026</td><td class="name-cell">TEVA Hurricane Verge 水陸機能鞋</td><td>210 件<span class="bar-track"><span class="bar-fill" style="width:66%;background:var(--green)"></span></span></td><td><span class="status-chip status-ok">🟢 正常</span></td></tr>
+      <tr><td class="sku-cell">TEVA-RIDGE-2026</td><td class="name-cell">TEVA Ridgeview 秋冬機能涼鞋（新品）</td><td>260 件<span class="bar-track"><span class="bar-fill" style="width:81%;background:var(--green)"></span></span></td><td><span class="status-chip status-ok">🟢 正常，新品剛到貨</span></td></tr>
+      <tr class="row-low"><td class="sku-cell">TEVA-OU-2026</td><td class="name-cell">TEVA Original Universal</td><td>18 件<span class="bar-track"><span class="bar-fill" style="width:6%;background:var(--orange)"></span></span></td><td><span class="status-chip status-low">🟡 低庫存</span></td></tr>
     </tbody>
   </table>
 
