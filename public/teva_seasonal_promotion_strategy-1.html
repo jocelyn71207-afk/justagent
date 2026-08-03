@@ -25,6 +25,7 @@
     --red-light: rgba(220,38,38,0.08);
     --purple: #7c3aed;
     --purple-light: rgba(124,58,237,0.08);
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
   }
 
   body {
@@ -139,6 +140,12 @@
     margin-top: 4px;
     line-height: 1.5;
   }
+  .stat-card { border-left: 3px solid var(--blue); box-shadow: var(--shadow); }
+  .stat-card.accent-purple { border-left-color: var(--purple); }
+  .stat-card.accent-green { border-left-color: var(--green); }
+  .stat-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .stat-icon { width: 13px; height: 13px; flex-shrink: 0; }
+  .badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
 
   /* Section title */
   .section-title {
@@ -341,29 +348,45 @@
   <div class="revision-card">
     <div class="revision-title">本版修正說明</div>
     <div class="revision-list">
-      <div class="revision-item">① 主打商品由 <b>TEVA Original Universal</b> 改為 <b>TEVA Hurricane XLT2</b>。</div>
-      <div class="revision-item">② 廣告預算 60% 隨主打商品一併轉移至 Hurricane XLT2。</div>
-      <div class="revision-item">③ 庫存風險評級由「低／無虞」更正為「高」。</div>
+      <div class="revision-item">① 主打商品由 <b>TEVA Original Universal</b> 改為 <b>TEVA Hurricane XLT2</b>。<span class="badge" style="background:var(--blue-light);color:var(--blue);margin-left:6px">已修正</span></div>
+      <div class="revision-item">② 廣告預算 60% 隨主打商品一併轉移至 Hurricane XLT2。<span class="badge" style="background:var(--blue-light);color:var(--blue);margin-left:6px">已修正</span></div>
+      <div class="revision-item">③ 庫存風險評級由「低／無虞」更正為「高」。<span class="badge" style="background:var(--blue-light);color:var(--blue);margin-left:6px">已修正</span></div>
     </div>
   </div>
 
   <div class="stat-row">
-    <div class="stat-card">
+    <div class="stat-card accent-purple">
+      <div class="stat-top" style="color:var(--purple)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L11 3.83A2 2 0 0 0 9.58 3.24H4a2 2 0 0 0-2 2v5.58a2 2 0 0 0 .59 1.42l9.58 9.58a2 2 0 0 0 2.82 0l6.18-6.18a2 2 0 0 0 0-2.82z"/><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg></div>
       <div class="stat-lbl">主打商品</div>
       <div class="stat-val accent">TEVA Hurricane XLT2</div>
     </div>
     <div class="stat-card">
+      <div class="stat-top" style="color:var(--blue)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
       <div class="stat-lbl">促銷檔期</div>
       <div class="stat-val">8/15 – 9/30</div>
     </div>
     <div class="stat-card">
+      <div class="stat-top" style="color:var(--blue)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></div>
       <div class="stat-lbl">廣告預算配置</div>
       <div class="stat-val" style="font-size:12.5px">社群廣告 60%</div>
       <div class="stat-sub">雜誌置入 20% ／電商首頁 20%</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card accent-green">
+      <div class="stat-top" style="color:var(--green)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div class="stat-lbl">預期營收</div>
       <div class="stat-val">NT$4,200,000</div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-top:10px">
+    <svg viewBox="0 0 100 100" width="64" height="64" style="flex-shrink:0">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="var(--surface2)" stroke-width="14"/>
+      <circle cx="50" cy="50" r="40" fill="none" stroke="var(--purple)" stroke-width="14" stroke-dasharray="151 251" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+      <text x="50" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="var(--text)">60%</text>
+    </svg>
+    <div style="font-size:11px;color:var(--text-2);line-height:1.8">
+      <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--purple);margin-right:5px"></span>社群廣告 60%</div>
+      <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);margin-right:5px"></span>雜誌置入 20% ／電商首頁 20%</div>
     </div>
   </div>
 
@@ -400,14 +423,17 @@
       <div class="tactic-item">
         <span class="tactic-dot"></span>
         <span>檔期前 2 週於 Instagram / 小紅書 投放大量素人穿搭與 KOL 開箱內容，導流電商首頁</span>
+        <span class="badge" style="background:var(--surface2);color:var(--text-2);margin-left:auto;flex-shrink:0">檔期前 2 週</span>
       </div>
       <div class="tactic-item">
         <span class="tactic-dot"></span>
         <span>洽談時尚雜誌置入報導，呼應「機能涼鞋＋機能襪」秋冬過渡穿搭話題</span>
+        <span class="badge" style="background:var(--surface2);color:var(--text-2);margin-left:auto;flex-shrink:0">前期籌備</span>
       </div>
       <div class="tactic-item">
         <span class="tactic-dot"></span>
         <span>檔期首週推出 doorbuster 開賣折扣，衝刺初期買氣與聲量</span>
+        <span class="badge" style="background:var(--surface2);color:var(--text-2);margin-left:auto;flex-shrink:0">檔期首週</span>
       </div>
       <div class="tactic-item">
         <span class="tactic-dot"></span>
