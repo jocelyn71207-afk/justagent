@@ -3092,9 +3092,18 @@ function conv5InitFlow() {
 
     setTimeout(() => {
       conv5FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/teva_inventory_snapshot.html', 'Teva 商品庫存即時資料.html');
+      } catch { /* 畫布可能尚未初始化 */ }
       c5Push({
         finishResponse: true,
-        msg: '📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。接著我來看看目前社群、時尚雜誌與趨勢報告在流行什麼⋯',
+        msg: `📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。庫存資料已加入畫布，可直接查看。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">Teva 商品庫存即時資料.html</div>
+    <div class="file-size">HTML · 4.1 KB · 已加到畫布</div>
+  </div>
+</div>接著我來看看目前社群、時尚雜誌與趨勢報告在流行什麼⋯`,
         sources: CONV5_INVENTORY_SOURCE,
       });
       c5Scroll();
