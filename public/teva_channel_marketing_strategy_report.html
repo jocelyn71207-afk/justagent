@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEVA涼鞋 行銷策略建議報告</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f7;
+    --border: #e4e7ed;
+    --text: #1a1d23;
+    --text-2: #5c6370;
+    --text-3: #9ca3af;
+    --blue: #3b72f6;
+    --blue-light: rgba(59,114,246,0.08);
+    --green: #16a34a;
+    --green-light: rgba(22,163,74,0.08);
+    --orange: #ea580c;
+    --orange-light: rgba(234,88,12,0.08);
+    --red: #dc2626;
+    --purple: #7c3aed;
+  }
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    color: var(--text);
+    padding: 28px 24px 48px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+  .report-brand { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+  .report-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+  .report-meta { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .report-tag { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--blue-light); color: var(--blue); border: 1px solid rgba(59,114,246,.2); white-space: nowrap; align-self: flex-start; margin-top: 4px; }
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin: 22px 0 10px; }
+  .data-cols { display: flex; gap: 14px; flex-wrap: wrap; }
+  .data-col { flex: 1; min-width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .data-col-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .data-col ul { padding-left: 16px; }
+  .data-col li { font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
+  .data-col li:last-child { margin-bottom: 0; }
+  .growth-up { color: var(--green); font-weight: 600; }
+  .growth-down { color: var(--red); font-weight: 600; }
+  .strategy-list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px 0; }
+  .strategy-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .strategy-item:last-child { border-bottom: none; }
+  .strategy-item-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .strategy-item-body { font-size: 12px; color: var(--text-2); }
+  .strategy-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-right: 6px; }
+  .tag-channel { background: var(--blue-light); color: var(--blue); }
+  .tag-trend { background: var(--purple); background: rgba(124,58,237,0.08); color: var(--purple); }
+  .tag-member { background: var(--green-light); color: var(--green); }
+  .risk-note { font-size: 11px; color: var(--text-2); margin-top: 14px; padding: 10px 12px; background: var(--orange-light); border: 1px solid rgba(234,88,12,.2); border-radius: 8px; }
+</style>
+</head>
+<body>
+  <div class="report-header">
+    <div>
+      <div class="report-brand">JustAgent · 行銷策略建議</div>
+      <div class="report-title">TEVA涼鞋 行銷策略建議報告</div>
+      <div class="report-meta">資料來源：MCP · Adobe Commerce（Magento）通路／會員數據 ＋ Deep Research 社群／時尚雜誌／產業趨勢報告</div>
+    </div>
+    <span class="report-tag">已完成</span>
+  </div>
+
+  <div class="section-title">數據彙整</div>
+  <div class="data-cols">
+    <div class="data-col">
+      <div class="data-col-title">📊 內部通路與會員數據</div>
+      <ul>
+        <li>天貓旗艦店成長最快：<span class="growth-up">+32%</span></li>
+        <li>實體門市年減：<span class="growth-down">-4%</span>（仍為 TOP 通路）</li>
+        <li>會員回購率達 <strong>68%</strong></li>
+      </ul>
+    </div>
+    <div class="data-col">
+      <div class="data-col-title">🔍 Deep Research 外部趨勢</div>
+      <ul>
+        <li>Gorpcore 機能穿搭聲量較上季成長 <strong>42%</strong>，熱門標籤 #機能涼鞋 #水陸兩用</li>
+        <li>色彩偏好：大地色系為主，螢光點綴色為視覺焦點</li>
+        <li>機能涼鞋＋機能襪為時尚雜誌報導的秋冬過渡穿搭重點；永續回收材質是行銷話題</li>
+        <li>戶外機能鞋市場年增率預估 <strong>11%</strong>；競品陸續祭出換季促銷，價格戰風險升高</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">行銷策略建議</div>
+  <div class="strategy-list">
+    <div class="strategy-item">
+      <div class="strategy-item-title">1. 加碼天貓旗艦店，主打 Gorpcore／大地色系新品</div>
+      <div class="strategy-item-body"><span class="strategy-tag tag-channel">通路</span><span class="strategy-tag tag-trend">趨勢</span>天貓旗艦店是成長最快的通路（+32%），且大地色系＋螢光點綴恰好呼應目前社群聲量最高的 Gorpcore 機能風潮，建議加碼站內廣告與直播帶貨資源，主打對應色系新品延續動能。</div>
+    </div>
+    <div class="strategy-item">
+      <div class="strategy-item-title">2. 實體門市轉型「機能涼鞋＋機能襪」體驗陳列</div>
+      <div class="strategy-item-body"><span class="strategy-tag tag-channel">通路</span><span class="strategy-tag tag-trend">趨勢</span>實體門市年減 4%，但時尚雜誌報導指出機能涼鞋＋機能襪是秋冬過渡穿搭示範重點，建議導入穿搭陳列與門市體驗活動，並檢視庫存深度與線上通路的價格／促銷一致性。</div>
+    </div>
+    <div class="strategy-item">
+      <div class="strategy-item-title">3. 針對回購會員推出永續材質限定色預購</div>
+      <div class="strategy-item-body"><span class="strategy-tag tag-member">會員</span><span class="strategy-tag tag-trend">趨勢</span>68% 會員回購率顯示既有會員貢獻穩定，結合產業報告指出的永續材質偏好上升，建議針對回購會員推出永續回收材質限定色的會員專屬預購，強化會員分級經營與品牌永續形象。</div>
+    </div>
+  </div>
+
+  <div class="risk-note">⚠️ 風險提醒：產業報告指出競品陸續祭出換季促銷，價格戰風險升高。建議以上述話題與體驗行銷做差異化操作，避免直接進入價格競爭。</div>
+</body>
+</html>

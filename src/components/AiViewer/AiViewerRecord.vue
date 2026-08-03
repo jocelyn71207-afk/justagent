@@ -154,8 +154,14 @@ const openDrawer = inject<(sources: KnowledgeSource[]) => void>('openDrawer')!
 
 const displayMsg = ref('')
 
+// 將訊息內文中 @知識庫標題 的引用文字加上特別標注樣式（沿用既有 .conv2-kb-ref chip 樣式）
+function highlightKnowledgeMentions(msg: string): string {
+  if (!msg) return msg
+  return msg.replace(/@([^\s<，。！？、；：]+)/g, '<span class="conv2-kb-ref">@$1</span>')
+}
+
 watchEffect(() => {
-  displayMsg.value = props.source.msg
+  displayMsg.value = highlightKnowledgeMentions(props.source.msg)
 })
 
 function getFileIcon(type: string): string {

@@ -879,6 +879,7 @@ import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { useJourneyStore } from '@/stores/journeyStore'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
+import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
@@ -911,6 +912,7 @@ const journeyStore = useJourneyStore()
 const { journeyStarted } = storeToRefs(journeyStore)
 const knowledgeStore = useKnowledgeStore();
 const { knowledgeList } = storeToRefs(knowledgeStore);
+const router = useRouter();
 const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
 const showJourneyModifyPill = ref(false)
@@ -2372,6 +2374,10 @@ function handleChatAreaClick(e: MouseEvent) {
     conv4ConfirmSaveSkill();
     return;
   }
+  if (action === 'goto-skill-management') {
+    router.push({ name: 'SkillManagement' });
+    return;
+  }
   if (action === 'conv6-report-channel') { conv6ChooseReport('channel'); return; }
   if (action === 'conv6-report-member') { conv6ChooseReport('member'); return; }
   if (action === 'conv6-report-strategy') { conv6ChooseReport('strategy'); return; }
@@ -2593,7 +2599,7 @@ function conv2DirectSelectMethod(method: string) {
 
 function conv2DirectSubmitSku() {
   conv2DirectFpStep.value = 3;
-  c2Push({ forUser: true, msg: `UG1166915BLK <span class="conv2-kb-ref">@2025產品總表-Q3</span>` });
+  c2Push({ forUser: true, msg: `UG1166915BLK @2025產品總表-Q3` });
   c2Push({ msg: `收到！正在讀取知識庫並查詢商品資料⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">KnowledgeReader 讀取知識庫：2025產品總表-Q3</div>
   <div class="conv2-ss conv2-ss--active">ProductLookup 查詢貨號：UG1166915BLK</div>
@@ -3028,7 +3034,7 @@ function conv4ConfirmSaveSkill() {
   setTimeout(() => {
     c4Push({
       finishResponse: true,
-      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到「Skill 管理」頁面查看或調整這個 Skill 的細節設定。`,
+      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到<span data-action="goto-skill-management" style="color:var(--primary);text-decoration:underline;cursor:pointer;font-weight:600">Skill 管理</span>頁面查看或調整這個 Skill 的細節設定。`,
     });
     c4Scroll();
   }, 500);
@@ -3224,6 +3230,12 @@ const CONV6_SOURCES: KnowledgeSource[] = [
   { knowledgeId: 'k13', title: 'TEVA涼鞋2026Q2通路銷售數據彙總', chunkIndexes: [0, 1] },
   { knowledgeId: 'k14', title: 'TEVA會員CRM分群與回購定義', chunkIndexes: [0, 1] },
 ];
+const CONV6_TREND_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k10', title: '2026換季社群輿情彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k11', title: '時尚雜誌趨勢報導彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k12', title: '戶外機能鞋產業趨勢報告', chunkIndexes: [0] },
+];
+const CONV6_STRATEGY_SOURCES: KnowledgeSource[] = [...CONV6_SOURCES, ...CONV6_TREND_SOURCES];
 
 function processConv6Msg(msg: string) {
   if (conv6FlowStarted.value) {
@@ -3339,11 +3351,44 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
 </div>`,
         sources: CONV6_SOURCES,
       });
+      c6Scroll();
+    } else if (kind === 'strategy') {
+      conv6RunStrategyDeepResearch();
     } else {
       c6Push({ msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
+      c6Scroll();
     }
-    c6Scroll();
   }, 500);
+}
+
+function conv6RunStrategyDeepResearch() {
+  c6Push({ msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，再結合通路與會員數據產出策略建議⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
+  <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
+  <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
+</div>` });
+  c6Scroll();
+  setTimeout(() => {
+    conv6FlipSearchCard(
+      ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait'],
+      ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
+    );
+    try {
+      addReportBlock('/justagent/teva_channel_marketing_strategy_report.html', '行銷策略建議報告.html');
+    } catch { /* 畫布可能尚未初始化 */ }
+    c6Push({
+      finishResponse: true,
+      msg: `✅ 已完成「行銷策略建議報告」：結合 Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢，與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，提出對應的行銷策略建議。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">行銷策略建議報告.html</div>
+    <div class="file-size">HTML · 已加到畫布</div>
+  </div>
+</div>`,
+      sources: CONV6_STRATEGY_SOURCES,
+    });
+    c6Scroll();
+  }, 1800);
 }
 // -------- end Conversation 6 流程 --------
 
