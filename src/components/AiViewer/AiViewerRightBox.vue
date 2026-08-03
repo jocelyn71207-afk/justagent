@@ -3318,7 +3318,7 @@ function conv6AskReportChoice() {
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv6-report-channel">通路銷售深度分析報告</span>
   <span class="conv1-quick-btn" data-action="conv6-report-member">會員輪廓與行為洞察報告</span>
-  <span class="conv1-quick-btn" data-action="conv6-report-strategy">行銷策略建議報告</span>
+  <span class="conv1-quick-btn" data-action="conv6-report-strategy">行銷策略與風險評估報告</span>
 </div>`,
   });
   c6Scroll();
@@ -3327,7 +3327,7 @@ function conv6AskReportChoice() {
 const CONV6_REPORT_LABELS: Record<string, string> = {
   channel: '通路銷售深度分析報告',
   member: '會員輪廓與行為洞察報告',
-  strategy: '行銷策略建議報告',
+  strategy: '行銷策略與風險評估報告',
 };
 
 function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
@@ -3362,33 +3362,36 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
 }
 
 function conv6RunStrategyDeepResearch() {
-  c6Push({ msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，再結合通路與會員數據產出策略建議⋯<div class="conv2-search-card" style="margin-top:8px">
+  c6Push({ msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，存入外部市場趨勢庫後再結合通路與會員數據，運用 RAG 產出策略與風險評估⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
   <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
   <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
+  <div class="conv2-ss conv2-ss--wait">TrendDataStoreWriter 存入 Data Store 外部市場趨勢庫</div>
+  <div class="conv2-ss conv2-ss--wait">KeywordOptimizer 生成優化關鍵字</div>
+  <div class="conv2-ss conv2-ss--wait">RAGSynthesizer 運用 RAG 綜合內外部資料生成報告</div>
 </div>` });
   c6Scroll();
   setTimeout(() => {
     conv6FlipSearchCard(
-      ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait'],
-      ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
+      ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait'],
+      ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
     );
     try {
-      addReportBlock('/justagent/teva_channel_marketing_strategy_report.html', '行銷策略建議報告.html');
+      addReportBlock('/justagent/teva_channel_marketing_strategy_report.html', '行銷策略與風險評估報告.html');
     } catch { /* 畫布可能尚未初始化 */ }
     c6Push({
       finishResponse: true,
-      msg: `✅ 已完成「行銷策略建議報告」：結合 Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢，與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，提出對應的行銷策略建議。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+      msg: `✅ 已完成「行銷策略與風險評估報告」：Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢已存入外部市場趨勢庫，並生成優化關鍵字；再透過 RAG 綜合這些外部資料與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，產出對應的行銷策略建議與風險評估。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   <img class="file-icon" src="${htmlIcon}" />
   <div class="file-info-box">
-    <div class="file-name">行銷策略建議報告.html</div>
+    <div class="file-name">行銷策略與風險評估報告.html</div>
     <div class="file-size">HTML · 已加到畫布</div>
   </div>
 </div>`,
       sources: CONV6_STRATEGY_SOURCES,
     });
     c6Scroll();
-  }, 1800);
+  }, 2200);
 }
 // -------- end Conversation 6 流程 --------
 

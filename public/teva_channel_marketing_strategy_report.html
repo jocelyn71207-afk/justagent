@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEVA涼鞋 行銷策略建議報告</title>
+<title>TEVA涼鞋 行銷策略與風險評估報告</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -54,14 +54,23 @@
   .tag-channel { background: var(--blue-light); color: var(--blue); }
   .tag-trend { background: var(--purple); background: rgba(124,58,237,0.08); color: var(--purple); }
   .tag-member { background: var(--green-light); color: var(--green); }
-  .risk-note { font-size: 11px; color: var(--text-2); margin-top: 14px; padding: 10px 12px; background: var(--orange-light); border: 1px solid rgba(234,88,12,.2); border-radius: 8px; }
+  .keyword-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .keyword-chip { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-2); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  thead th { text-align: left; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); background: var(--surface2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  .risk-level { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; display: inline-block; }
+  .risk-high { background: rgba(220,38,38,0.08); color: var(--red); }
+  .risk-mid { background: var(--orange-light); color: var(--orange); }
+  .risk-low { background: var(--green-light); color: var(--green); }
 </style>
 </head>
 <body>
   <div class="report-header">
     <div>
       <div class="report-brand">JustAgent · 行銷策略建議</div>
-      <div class="report-title">TEVA涼鞋 行銷策略建議報告</div>
+      <div class="report-title">TEVA涼鞋 行銷策略與風險評估報告</div>
       <div class="report-meta">資料來源：MCP · Adobe Commerce（Magento）通路／會員數據 ＋ Deep Research 社群／時尚雜誌／產業趨勢報告</div>
     </div>
     <span class="report-tag">已完成</span>
@@ -104,6 +113,27 @@
     </div>
   </div>
 
-  <div class="risk-note">⚠️ 風險提醒：產業報告指出競品陸續祭出換季促銷，價格戰風險升高。建議以上述話題與體驗行銷做差異化操作，避免直接進入價格競爭。</div>
+  <div class="section-title">優化關鍵字</div>
+  <div class="keyword-chips">
+    <span class="keyword-chip">#Gorpcore機能涼鞋</span>
+    <span class="keyword-chip">#水陸兩用穿搭</span>
+    <span class="keyword-chip">#大地色系涼鞋</span>
+    <span class="keyword-chip">#秋冬過渡穿搭</span>
+    <span class="keyword-chip">#永續回收材質</span>
+    <span class="keyword-chip">#機能襪穿搭</span>
+  </div>
+
+  <div class="section-title">風險評估</div>
+  <table>
+    <thead>
+      <tr><th>風險項目</th><th>風險等級</th><th>說明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>競品價格戰</td><td><span class="risk-level risk-high">高</span></td><td>產業報告指出競品陸續祭出換季促銷，若正面應戰價格戰恐侵蝕毛利，建議以話題與體驗行銷做差異化操作，避免直接比價。</td></tr>
+      <tr><td>實體門市業績下滑</td><td><span class="risk-level risk-mid">中</span></td><td>實體門市年減 4%，若未即時導入體驗陳列與庫存調整，可能持續流失客流至線上通路。</td></tr>
+      <tr><td>趨勢退燒</td><td><span class="risk-level risk-mid">中</span></td><td>Gorpcore 風潮屬社群聲量驅動的趨勢，可能隨季節或話題轉移而降溫，建議密切追蹤聲量變化並備妥下一波趨勢題材。</td></tr>
+      <tr><td>永續行銷執行落差</td><td><span class="risk-level risk-low">低</span></td><td>若永續材質限定款供應或行銷執行不到位，可能無法有效轉化回購會員的購買意願。</td></tr>
+    </tbody>
+  </table>
 </body>
 </html>
