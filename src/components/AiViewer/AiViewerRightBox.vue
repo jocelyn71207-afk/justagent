@@ -2368,6 +2368,10 @@ function handleChatAreaClick(e: MouseEvent) {
     conv4SkipSkill();
     return;
   }
+  if (action === 'conv4-confirm-save-skill') {
+    conv4ConfirmSaveSkill();
+    return;
+  }
   if (action === 'conv6-report-channel') { conv6ChooseReport('channel'); return; }
   if (action === 'conv6-report-member') { conv6ChooseReport('member'); return; }
   if (action === 'conv6-report-strategy') { conv6ChooseReport('strategy'); return; }
@@ -2758,6 +2762,7 @@ const conv4Msgs = ref<any[]>([]);
 let conv4IdCounter = 2;
 const conv4Title = ref('');
 const conv4SkillChoiceMade = ref(false);
+const conv4SkillSaveConfirmed = ref(false);
 
 function c4Push(msg: any) {
   conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
@@ -2982,7 +2987,7 @@ function conv3SkipKnowledgeBase() {
 
 function conv4AskBuildSkill() {
   c4Push({
-    msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存成一個 Skill，之後產品部同仁都能快速套用？
+    msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存起來，之後產品部同仁都能快速套用？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv4-build-skill">是，幫我建立 Skill</span>
   <span class="conv1-quick-btn" data-action="conv4-skip-skill">不用了</span>
@@ -2998,14 +3003,32 @@ function conv4BuildSkill() {
   c4Scroll();
   setTimeout(() => {
     c4Push({
-      finishResponse: true,
-      msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+      msg: `好的，我先整理這個流程的設定，請確認以下內容是否正確：
+<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
   <span style="font-size:20px;line-height:1">🧩</span>
   <div>
     <div style="font-weight:700">產品銷售報告整理</div>
-    <div style="font-size:12px;color:#5c6370;margin-top:2px">查詢指定月份產品銷售數據，並依三諾產品部輸出報告規範自動產出報告</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:6px"><strong>觸發條件：</strong>偵測到「查詢銷售資料＋套用部門報告規範」類型的整理需求</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:4px"><strong>執行步驟：</strong>1. 查詢指定月份產品銷售數據　2. 套用三諾產品部輸出報告規範自動產出報告</div>
   </div>
-</div>✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。`,
+</div>
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv4-confirm-save-skill">✅ 確認無誤，儲存</span>
+</div>`,
+    });
+    c4Scroll();
+  }, 500);
+}
+
+function conv4ConfirmSaveSkill() {
+  if (conv4SkillSaveConfirmed.value) return;
+  conv4SkillSaveConfirmed.value = true;
+  c4Push({ forUser: true, msg: '✅ 確認無誤，儲存' });
+  c4Scroll();
+  setTimeout(() => {
+    c4Push({
+      finishResponse: true,
+      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。之後你可以在畫面左上角「⚡ 快速任務」清單裡找到「產品銷售報告整理」，點一下就能重新套用這整套流程；也可以到「Skill 管理」頁面查看或調整這個 Skill 的細節設定。`,
     });
     c4Scroll();
   }, 500);
@@ -3386,6 +3409,7 @@ function resetConversation() {
     conv4Title.value = '';
     conv4Msgs.value = [];
     conv4SkillChoiceMade.value = false;
+    conv4SkillSaveConfirmed.value = false;
   }
   if (currentConversationId.value === 'conv5') {
     conv5IdCounter = 2;
