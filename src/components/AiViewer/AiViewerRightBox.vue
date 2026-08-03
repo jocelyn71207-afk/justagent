@@ -3028,7 +3028,7 @@ function conv4ConfirmSaveSkill() {
   setTimeout(() => {
     c4Push({
       finishResponse: true,
-      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。之後你可以在畫面左上角「⚡ 快速任務」清單裡找到「產品銷售報告整理」，點一下就能重新套用這整套流程；也可以到「Skill 管理」頁面查看或調整這個 Skill 的細節設定。`,
+      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到「Skill 管理」頁面查看或調整這個 Skill 的細節設定。`,
     });
     c4Scroll();
   }, 500);
