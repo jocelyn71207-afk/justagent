@@ -22,6 +22,7 @@
     --orange-light: rgba(234,88,12,0.08);
     --red: #dc2626;
     --purple: #7c3aed;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
   }
   body {
     background: var(--bg);
@@ -45,6 +46,11 @@
   .data-col li:last-child { margin-bottom: 0; }
   .growth-up { color: var(--green); font-weight: 600; }
   .growth-down { color: var(--red); font-weight: 600; }
+  .data-col { border-left: 3px solid var(--blue); box-shadow: var(--shadow); }
+  .data-col.accent-purple { border-left-color: var(--purple); }
+  .badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-up { background: var(--green-light); color: var(--green); }
+  .badge-down { background: rgba(220,38,38,0.08); color: var(--red); }
   .strategy-list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px 0; }
   .strategy-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .strategy-item:last-child { border-bottom: none; }
@@ -81,12 +87,23 @@
     <div class="data-col">
       <div class="data-col-title">📊 內部通路與會員數據</div>
       <ul>
-        <li>天貓旗艦店成長最快：<span class="growth-up">+32%</span></li>
-        <li>實體門市年減：<span class="growth-down">-4%</span>（仍為 TOP 通路）</li>
+        <li>天貓旗艦店成長最快：<span class="badge badge-up">▲ +32%</span></li>
+        <li>實體門市年減：<span class="badge badge-down">▼ -4%</span>（仍為 TOP 通路）</li>
         <li>會員回購率達 <strong>68%</strong></li>
       </ul>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+        <svg viewBox="0 0 100 100" width="56" height="56" style="flex-shrink:0">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--surface2)" stroke-width="14"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--green)" stroke-width="14" stroke-dasharray="171 251" transform="rotate(-90 50 50)"/>
+          <text x="50" y="55" text-anchor="middle" font-size="16" font-weight="800" fill="var(--text)">68%</text>
+        </svg>
+        <div style="font-size:10.5px;color:var(--text-2);line-height:1.7">
+          <div><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:4px"></span>回購會員 68%</div>
+          <div><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);margin-right:4px"></span>新會員 32%</div>
+        </div>
+      </div>
     </div>
-    <div class="data-col">
+    <div class="data-col accent-purple">
       <div class="data-col-title">🔍 Deep Research 外部趨勢</div>
       <ul>
         <li>Gorpcore 機能穿搭聲量較上季成長 <strong>42%</strong>，熱門標籤 #機能涼鞋 #水陸兩用</li>
