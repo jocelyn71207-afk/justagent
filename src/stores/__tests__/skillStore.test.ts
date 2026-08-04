@@ -210,19 +210,10 @@ describe('skillStore', () => {
   })
 
   describe('版本測試選擇（SkillTest 沙盒）', () => {
-    it('getVersionOptions 對多版本個人技能回傳所有版本並標示使用中版本', () => {
+    it('getVersionOptions 對個人技能一律回傳單一項目（不做版控）', () => {
       const store = useSkillStore()
-      const options = store.getVersionOptions('personal-001')
-      expect(options).toEqual([
-        { versionTag: '1.0', isActive: false },
-        { versionTag: '1.1', isActive: true },
-      ])
-    })
-
-    it('getVersionOptions 對單一版本個人技能回傳單一項目', () => {
-      const store = useSkillStore()
-      const options = store.getVersionOptions('personal-002')
-      expect(options).toEqual([{ versionTag: '1.0', isActive: true }])
+      expect(store.getVersionOptions('personal-001')).toEqual([{ versionTag: '1.1.0', isActive: true }])
+      expect(store.getVersionOptions('personal-002')).toEqual([{ versionTag: '1.0.0', isActive: true }])
     })
 
     it('getVersionOptions 對多版本 Library 技能依 status 判斷使用中版本', () => {
@@ -237,22 +228,58 @@ describe('skillStore', () => {
       expect(store.getVersionOptions('nonexistent')).toEqual([])
     })
 
-    it('setSelectedSkill 未指定 versionTag 時預設使用「使用中」版本', () => {
+    it('setSelectedSkill 未指定 versionTag 時預設使用技能目前版本', () => {
       const store = useSkillStore()
       store.setSelectedSkill('personal-001')
-      expect(store.selectedVersionTag).toBe('1.1')
+      expect(store.selectedVersionTag).toBe('1.1.0')
+    })
+  })
+
+  describe('複製為個人技能與名稱衝突', () => {
+    it('duplicateAsPersonalSkill 從 Library 技能建立新的個人技能，skillName 沿用來源名稱', () => {
+      const store = useSkillStore()
+      const before = store.myPersonalSkills.length
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(store.myPersonalSkills.length).toBe(before + 1)
+      expect(copy.zone).toBe('personal')
+      expect(copy.skillName).toBe('通用客服機器人')
+      expect(copy.name).toBe('通用客服機器人')
+      expect(copy.derivedFrom).toBe('sys-cs-001')
     })
 
-    it('setSelectedSkill 指定 versionTag 時採用該版本', () => {
+    it('duplicateAsPersonalSkill 從個人技能複製時，skillName 沿用來源的 skillName（不是來源的 name）', () => {
       const store = useSkillStore()
-      store.setSelectedSkill('personal-001', '1.0')
-      expect(store.selectedVersionTag).toBe('1.0')
+      const copy = store.duplicateAsPersonalSkill('personal-001')
+      expect(copy.skillName).toBe('會議摘要')
+      expect(copy.derivedFrom).toBe('personal-001')
     })
 
-    it('setSelectedSkill 對沒有 active 版本的技能退回第一個版本', () => {
+    it('hasSkillNameConflict 偵測到相同 skillName 的其他個人技能', () => {
       const store = useSkillStore()
-      store.setSelectedSkill('ext-cs-return-001')
-      expect(store.selectedVersionTag).toBe('1.0.0')
+      // personal-001 與 personal-005 的 skillName 都是「會議摘要」（mock 資料刻意設計）
+      expect(store.hasSkillNameConflict('personal-001')).toBe(true)
+      expect(store.hasSkillNameConflict('personal-005')).toBe(true)
+    })
+
+    it('hasSkillNameConflict 對沒有同名技能的個人技能回傳 false', () => {
+      const store = useSkillStore()
+      expect(store.hasSkillNameConflict('personal-004')).toBe(false)
+    })
+
+    it('myPersonalSkills 動態計算 hasLibraryUpdate：來源版本不同才為 true', () => {
+      const store = useSkillStore()
+      const p002 = store.myPersonalSkills.find(s => s.id === 'personal-002')!
+      const p001 = store.myPersonalSkills.find(s => s.id === 'personal-001')!
+      expect(p002.hasLibraryUpdate).toBe(true) // derivedFromVersion 2.4.0 != sys-cs-001 目前 2.5.0
+      expect(p001.hasLibraryUpdate).toBe(false) // derivedFromVersion 2.2.0 == sys-meeting-001 目前 2.2.0
+    })
+
+    it('applyLibraryUpdate 覆蓋內容並清除 hasLibraryUpdate', () => {
+      const store = useSkillStore()
+      store.applyLibraryUpdate('personal-002')
+      const updated = store.myPersonalSkills.find(s => s.id === 'personal-002')!
+      expect(updated.hasLibraryUpdate).toBe(false)
+      expect(updated.instructions).toBe(store.flatSkills.find(s => s.id === 'sys-cs-001')!.instructions)
     })
   })
 })

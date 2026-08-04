@@ -109,19 +109,11 @@ export interface Skill {
   targetScope?: 'enterprise' | 'team'
   targetTeamName?: string
   submittedBy?: string
-  personalVersions?: PersonalSkillVersion[]
-}
-
-export interface PersonalSkillVersion {
-  id: string
-  versionTag: string
-  personalStatus: 'available' | 'reviewing' | 'has_library'
-  isActive: boolean
-  submitNote?: string
-  submitMode?: 'version_update' | 'new_skill'
-  targetScope?: 'enterprise' | 'team'
-  targetTeamName?: string
-  submittedBy?: string
+  skillName?: string
+  derivedFromVersion?: string
+  reviewedBy?: string
+  reviewedAt?: string
+  reviewFeedback?: string
   aiAnalysis?: string[]
 }
 
@@ -650,18 +642,15 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'available',
+    skillName: '會議摘要',
     derivedFrom: 'sys-meeting-001',
-    hasLibraryUpdate: false,
+    derivedFromVersion: '2.2.0',
     version: '1.1.0',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
-    personalVersions: [
-      { id: 'pv-001-1', versionTag: '1.0', personalStatus: 'has_library', isActive: false, submitMode: 'new_skill', submittedBy: 'jocelyn.tseng' },
-      { id: 'pv-001-2', versionTag: '1.1', personalStatus: 'available', isActive: true },
-    ],
   },
   {
     id: 'personal-002',
@@ -672,35 +661,24 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'reviewing',
+    skillName: '通用客服機器人',
     derivedFrom: 'sys-cs-001',
-    hasLibraryUpdate: true,
+    derivedFromVersion: '2.4.0',
     submitMode: 'version_update',
     submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
     targetScope: 'enterprise',
     submittedBy: '陳雅婷',
+    aiAnalysis: [
+      '適合用於處理多輪對話的客服場景，尤其涉及退換貨等複雜流程時表現更穩定',
+      '支援即時情緒辨識，可協助優先處理高風險或情緒激動的對話',
+      '相較現有版本，預估準確率提升 12–15%，誤判率下降約 8%',
+    ],
     version: '1.0.0',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是客服品質評估助理，分析客服對話品質。',
-    personalVersions: [
-      {
-        id: 'pv-002-1',
-        versionTag: '1.0',
-        personalStatus: 'reviewing',
-        isActive: true,
-        submitMode: 'version_update',
-        submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
-        targetScope: 'enterprise',
-        submittedBy: '陳雅婷',
-        aiAnalysis: [
-          '適合用於處理多輪對話的客服場景，尤其涉及退換貨等複雜流程時表現更穩定',
-          '支援即時情緒辨識，可協助優先處理高風險或情緒激動的對話',
-          '相較現有版本，預估準確率提升 12–15%，誤判率下降約 8%',
-        ],
-      },
-    ],
   },
   {
     id: 'personal-004',
@@ -711,35 +689,23 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     creationMethod: 'manual',
     zone: 'personal',
     personalStatus: 'reviewing',
+    skillName: '合約審核摘要',
     submitMode: 'new_skill',
     submitNote: '支援中英文合約自動摘要，標註高風險條款',
     targetScope: 'team',
     targetTeamName: '法務部',
     submittedBy: '林志明',
+    aiAnalysis: [
+      '適合法務、採購等需頻繁審閱合約的場景，可大幅縮短人工閱讀時間',
+      '對常見條款類型（保密、違約、終止）識別率達 91%',
+      '建議後續版本補充對特殊行業合約（金融、醫療）的識別能力',
+    ],
     version: '1.0.0',
     isEnabled: false,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是合約審核助理，負責擷取合約中的關鍵條款並評估潛在法律風險。請以條列方式輸出摘要，並標示高風險條款。',
-    personalVersions: [
-      {
-        id: 'pv-004-1',
-        versionTag: '1.0',
-        personalStatus: 'reviewing',
-        isActive: true,
-        submitMode: 'new_skill',
-        submitNote: '支援中英文合約自動摘要，標註高風險條款',
-        targetScope: 'team',
-        targetTeamName: '法務部',
-        submittedBy: '林志明',
-        aiAnalysis: [
-          '適合法務、採購等需頻繁審閱合約的場景，可大幅縮短人工閱讀時間',
-          '對常見條款類型（保密、違約、終止）識別率達 91%',
-          '建議後續版本補充對特殊行業合約（金融、醫療）的識別能力',
-        ],
-      },
-    ],
   },
   {
     id: 'personal-005',
@@ -750,34 +716,23 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'reviewing',
+    skillName: '會議摘要',
     derivedFrom: 'sys-meeting-001',
+    derivedFromVersion: '2.2.0',
     submitMode: 'version_update',
     submitNote: '新增行動項目追蹤欄位，支援多位發言人識別',
     targetScope: 'enterprise',
     submittedBy: '黃思婷',
+    aiAnalysis: [
+      '多發言人識別功能在 5 人以下會議場景準確率達 95%，可有效減少後製時間',
+      '行動項目自動配對負責人，相較舊版減少約 40% 的手動整理工作',
+    ],
     version: '2.0.0',
     isEnabled: false,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是會議記錄助理，根據逐字稿整理結構化會議記錄，包含主題、決議、行動項目與負責人。',
-    personalVersions: [
-      { id: 'pv-005-1', versionTag: '1.0', personalStatus: 'has_library', isActive: false, submitMode: 'new_skill', targetScope: 'enterprise', submittedBy: 'jocelyn.tseng' },
-      {
-        id: 'pv-005-2',
-        versionTag: '2.0',
-        personalStatus: 'reviewing',
-        isActive: true,
-        submitMode: 'version_update',
-        submitNote: '新增行動項目追蹤欄位，支援多位發言人識別',
-        targetScope: 'enterprise',
-        submittedBy: '黃思婷',
-        aiAnalysis: [
-          '多發言人識別功能在 5 人以下會議場景準確率達 95%，可有效減少後製時間',
-          '行動項目自動配對負責人，相較舊版減少約 40% 的手動整理工作',
-        ],
-      },
-    ],
   },
   {
     id: 'personal-006',
@@ -785,8 +740,10 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     description: '根據產品文件與常見問題資料庫，自動回答用戶提問',
     type: 'extension',
     origin: 'manually_created',
+    creationMethod: 'manual',
     zone: 'personal',
     personalStatus: 'reviewing',
+    skillName: '產品 FAQ 自動回覆',
     submitMode: 'new_skill',
     submitNote: '',
     targetScope: 'team',
@@ -798,19 +755,6 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是產品 FAQ 助理，根據內部文件與常見問題資料庫回答用戶問題，無法回答時請引導至人工客服。',
-    personalVersions: [
-      {
-        id: 'pv-006-1',
-        versionTag: '1.0',
-        personalStatus: 'reviewing',
-        isActive: true,
-        submitMode: 'new_skill',
-        submitNote: '',
-        targetScope: 'team',
-        targetTeamName: '客服部',
-        submittedBy: '王建豪',
-      },
-    ],
   },
   {
     id: 'personal-003',
@@ -818,17 +762,18 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     description: '整合 ERP 系統數據，自動生成週期性報表',
     type: 'extension',
     origin: 'manually_created',
+    creationMethod: 'manual',
     zone: 'personal',
     personalStatus: 'has_library',
+    skillName: 'ERP 報表彙整',
+    targetScope: 'team',
+    targetTeamName: '業務部',
     version: '1.0.0',
     isEnabled: false,
     usageCount: 0,
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是 ERP 報表助理，整合多系統數據生成週期性報表。',
-    personalVersions: [
-      { id: 'pv-003-1', versionTag: '1.0', personalStatus: 'has_library', isActive: true, submitMode: 'new_skill', submittedBy: 'jocelyn.tseng' },
-    ],
   },
 ]
 
@@ -870,7 +815,16 @@ export const useSkillStore = defineStore('skillStore', () => {
   const myPersonalSkillsRef = ref<Skill[]>(JSON.parse(JSON.stringify(MOCK_PERSONAL_SKILLS)))
 
   const myPersonalSkills = computed<Skill[]>(() =>
-    myPersonalSkillsRef.value.filter(s => !s.deletedAt)
+    myPersonalSkillsRef.value
+      .filter(s => !s.deletedAt)
+      .map(s => ({
+        ...s,
+        hasLibraryUpdate: !!(
+          s.derivedFrom &&
+          s.derivedFromVersion &&
+          flatSkills.value.find(p => p.id === s.derivedFrom)?.version !== s.derivedFromVersion
+        ),
+      }))
   )
 
   const selectedSkillId = ref<string | null>(null)
@@ -902,7 +856,12 @@ export const useSkillStore = defineStore('skillStore', () => {
   })
 
   const enabledCount = computed(() => flatSkills.value.filter(s => s.isEnabled).length)
-  const extensionCount = computed(() => flatSkills.value.filter(s => s.type === 'extension').length)
+  const enterpriseExtensionCount = computed(() =>
+    flatSkills.value.filter(s => s.type === 'extension' && s.scope === 'enterprise').length
+  )
+  const teamExtensionCount = computed(() =>
+    flatSkills.value.filter(s => s.type === 'extension' && s.scope === 'team').length
+  )
   const totalUsageCount = computed(() => flatSkills.value.reduce((sum, s) => sum + s.usageCount, 0))
 
   const avgTestPassRate = computed(() => {
@@ -976,9 +935,6 @@ export const useSkillStore = defineStore('skillStore', () => {
   function getVersionOptions(skillId: string): { versionTag: string; isActive: boolean }[] {
     const skill = findSkill(skillId)
     if (!skill) return []
-    if (skill.zone === 'personal' && skill.personalVersions?.length) {
-      return skill.personalVersions.map(v => ({ versionTag: v.versionTag, isActive: v.isActive }))
-    }
     if (skill.versions?.length) {
       return skill.versions.map(v => ({ versionTag: v.versionTag, isActive: v.status === 'active' }))
     }
@@ -1160,23 +1116,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     version.reviewHistory.push({ action: 'REJECTED', by: 'jocelyn.tseng', time: new Date().toISOString(), note: feedback })
   }
 
-  function duplicateSkill(skillId: string): DraftSkill | null {
-    const skill = findSkill(skillId)
-    if (!skill) return null
-    const draft: DraftSkill = {
-      id: `draft-${Date.now()}`,
-      name: `${skill.name}（複本）`,
-      description: skill.description,
-      instructions: skill.instructions ?? '',
-      type: 'extension',
-      forkSourceId: skill.type === 'system' ? skill.id : skill.forkSourceId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    myDrafts.value.unshift(draft)
-    return draft
-  }
-
   function createDraft(): DraftSkill {
     const draft: DraftSkill = {
       id: `draft-${Date.now()}`,
@@ -1209,22 +1148,118 @@ export const useSkillStore = defineStore('skillStore', () => {
     myDrafts.value = myDrafts.value.filter(d => d.id !== id)
   }
 
+  function hasPendingReview(skill: Skill): boolean {
+    return skill.personalStatus === 'reviewing'
+  }
+
   function submitPersonalSkill(
     id: string,
     mode: 'new_skill' | 'version_update',
-    note: string
+    note: string,
+    targetScope: 'enterprise' | 'team' = 'enterprise',
+    targetTeamName?: string
   ): void {
     const skill = myPersonalSkillsRef.value.find(s => s.id === id)
     if (!skill) return
     skill.personalStatus = 'reviewing'
     skill.submitNote = note
     skill.submitMode = mode
+    skill.targetScope = targetScope
+    skill.targetTeamName = targetScope === 'team' ? targetTeamName : undefined
+    skill.submittedBy = 'jocelyn.tseng'
+  }
+
+  function setLibraryActiveVersion(skillId: string, versionId: string): void {
+    let target: Skill | undefined
+    for (const s of skills.value) {
+      if (s.id === skillId) { target = s; break }
+      if (s.children) {
+        const child = s.children.find(c => c.id === skillId)
+        if (child) { target = child; break }
+      }
+    }
+    if (!target?.versions) return
+    const ver = target.versions.find(v => v.id === versionId)
+    if (!ver) return
+    target.versions.forEach(v => {
+      if (v.id === versionId) v.status = 'active'
+      else if (v.status === 'active') v.status = 'history'
+    })
+    target.version = ver.versionTag
   }
 
   function deletePersonalSkill(id: string): void {
     const idx = myPersonalSkillsRef.value.findIndex(s => s.id === id)
     if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
   }
+
+  function applyLibraryUpdate(id: string): void {
+    const skill = myPersonalSkillsRef.value.find(s => s.id === id)
+    if (!skill?.derivedFrom) return
+    const source = flatSkills.value.find(s => s.id === skill.derivedFrom)
+    if (!source) return
+    skill.instructions = source.instructions
+    skill.triggerHint = source.triggerHint
+    skill.capabilities = source.capabilities ? [...source.capabilities] : undefined
+    skill.derivedFromVersion = source.version
+  }
+
+  function duplicateAsPersonalSkill(sourceId: string): Skill {
+    const source = findSkill(sourceId)
+    if (!source) throw new Error(`duplicateAsPersonalSkill: source not found (${sourceId})`)
+    const copy: Skill = {
+      id: `personal-${Date.now()}`,
+      name: source.name,
+      description: source.description,
+      type: source.type,
+      origin: 'manually_created',
+      creationMethod: source.creationMethod,
+      zone: 'personal',
+      personalStatus: 'available',
+      skillName: source.zone === 'personal' ? source.skillName : source.name,
+      derivedFrom: sourceId,
+      derivedFromVersion: source.version,
+      version: source.version,
+      isEnabled: false,
+      usageCount: 0,
+      testPassRate: 0,
+      avgLatencyMs: 0,
+      instructions: source.instructions,
+      triggerHint: source.triggerHint,
+      capabilities: source.capabilities ? [...source.capabilities] : undefined,
+    }
+    myPersonalSkillsRef.value.unshift(copy)
+    return copy
+  }
+
+  function hasSkillNameConflict(skillId: string): boolean {
+    const skill = myPersonalSkillsRef.value.find(s => s.id === skillId)
+    if (!skill) return false
+    return myPersonalSkillsRef.value.some(
+      s => s.id !== skillId && !s.deletedAt && s.skillName === skill.skillName
+    )
+  }
+
+  function approvePersonalSkill(id: string): void {
+    const skill = myPersonalSkillsRef.value.find(s => s.id === id)
+    if (!skill || skill.personalStatus !== 'reviewing') return
+    skill.personalStatus = 'has_library'
+    skill.reviewedBy = 'jocelyn.tseng'
+    skill.reviewedAt = new Date().toISOString()
+  }
+
+  function rejectPersonalSkill(id: string, feedback: string): void {
+    const skill = myPersonalSkillsRef.value.find(s => s.id === id)
+    if (!skill || skill.personalStatus !== 'reviewing') return
+    skill.personalStatus = 'available'
+    skill.reviewedBy = 'jocelyn.tseng'
+    skill.reviewedAt = new Date().toISOString()
+    skill.reviewFeedback = feedback
+  }
+
+  const pendingReviewSkills = computed<Skill[]>(() =>
+    myPersonalSkillsRef.value.filter(s => !s.deletedAt && hasPendingReview(s))
+  )
 
   function submitDraft(id: string, mode: 'new_skill' | 'version_update' = 'new_skill'): void {
     const draft = myDrafts.value.find(d => d.id === id)
@@ -1394,6 +1429,36 @@ export const useSkillStore = defineStore('skillStore', () => {
     testIsRunning.value = false
   }
 
+  // 複製後跟 Agent 對話修改技能：mock 版，把使用者描述的異動附加到 instructions 上
+  const editChatHistory = ref<ChatMessage[]>([])
+  const editChatIsRunning = ref(false)
+
+  function resetEditChat(): void {
+    editChatHistory.value = []
+  }
+
+  async function sendEditChatMessage(skillId: string, message: string): Promise<void> {
+    editChatIsRunning.value = true
+    editChatHistory.value.push({
+      id: `edit-msg-${Date.now()}`,
+      role: 'user',
+      content: message,
+    })
+    await new Promise(r => setTimeout(r, 900))
+
+    const skill = findSkill(skillId)
+    if (skill) {
+      skill.instructions = `${skill.instructions ?? ''}\n\n（依對話更新）${message}`.trim()
+    }
+
+    editChatHistory.value.push({
+      id: `edit-msg-${Date.now() + 1}`,
+      role: 'agent',
+      content: `（Mock）已根據你的描述更新技能指令。你可以繼續補充，或關閉視窗完成修改。`,
+    })
+    editChatIsRunning.value = false
+  }
+
   return {
     skills,
     myDrafts,
@@ -1409,7 +1474,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestIsRunning,
     flatSkills,
     enabledCount,
-    extensionCount,
+    enterpriseExtensionCount,
+    teamExtensionCount,
     totalUsageCount,
     avgTestPassRate,
     deletedSkills,
@@ -1438,7 +1504,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     submitSkillForReview,
     approveSkillVersion,
     rejectSkillVersion,
-    duplicateSkill,
     createDraft,
     saveDraft,
     updateDraft,
@@ -1446,6 +1511,14 @@ export const useSkillStore = defineStore('skillStore', () => {
     submitDraft,
     submitPersonalSkill,
     deletePersonalSkill,
+    applyLibraryUpdate,
+    duplicateAsPersonalSkill,
+    hasSkillNameConflict,
+    setLibraryActiveVersion,
+    approvePersonalSkill,
+    rejectPersonalSkill,
+    hasPendingReview,
+    pendingReviewSkills,
     batchMergeUpstreamUpdates,
     saveTestRun,
     getTestRunHistory,
@@ -1455,5 +1528,9 @@ export const useSkillStore = defineStore('skillStore', () => {
     runAllAITests,
     resetConversation,
     sendChatMessage,
+    editChatHistory,
+    editChatIsRunning,
+    resetEditChat,
+    sendEditChatMessage,
   }
 })
