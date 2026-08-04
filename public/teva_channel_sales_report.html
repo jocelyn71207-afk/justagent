@@ -18,6 +18,7 @@
     --blue-light: rgba(59,114,246,0.08);
     --green: #16a34a;
     --red: #dc2626;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
   }
   body {
     background: var(--bg);
@@ -49,6 +50,21 @@
   .insight-list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
   .insight-list li { margin-bottom: 8px; }
   .insight-list li:last-child { margin-bottom: 0; }
+  .stat-card { border-left: 3px solid var(--blue); box-shadow: var(--shadow); }
+  .stat-card.accent-green { border-left-color: var(--green); }
+  .stat-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .stat-icon { width: 13px; height: 13px; flex-shrink: 0; }
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .bar-row .bar-name { width: 88px; flex-shrink: 0; color: var(--text-2); }
+  .bar-row .bar-track { flex: 1; height: 8px; border-radius: 4px; background: var(--surface2); overflow: hidden; }
+  .bar-row .bar-fill { height: 100%; border-radius: 4px; background: var(--blue); }
+  .bar-row .bar-val { width: 64px; text-align: right; font-weight: 700; flex-shrink: 0; }
+  .bar-row.is-top .bar-fill { background: var(--green); }
+  .bar-row.is-top .bar-name { color: var(--green); font-weight: 700; }
+  .viz-row { display: flex; gap: 16px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; flex-wrap: wrap; }
+  .viz-col { flex: 1; min-width: 220px; }
+  .viz-col-label { font-size: 11px; font-weight: 700; color: var(--text-2); margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -63,20 +79,52 @@
 
   <div class="stat-row">
     <div class="stat-card">
+      <div class="stat-top" style="color:var(--blue)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div class="stat-val">NT$5,120萬</div>
       <div class="stat-lbl">總營業額</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card accent-green">
+      <div class="stat-top" style="color:var(--green)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg></div>
       <div class="stat-val up">+12.6%</div>
       <div class="stat-lbl">整體年成長（YoY）</div>
     </div>
     <div class="stat-card">
+      <div class="stat-top" style="color:var(--blue)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></div>
       <div class="stat-val">實體門市</div>
       <div class="stat-lbl">TOP 通路（1,530萬）</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card accent-green">
+      <div class="stat-top" style="color:var(--green)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 12v-2a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 12v2a4 4 0 0 1-4 4H3"/></svg></div>
       <div class="stat-val">68%</div>
       <div class="stat-lbl">會員回購率</div>
+    </div>
+  </div>
+
+  <div class="section-title">數據視覺化</div>
+  <div class="viz-row">
+    <div class="viz-col">
+      <div class="viz-col-label">各通路銷售額（萬元）</div>
+      <div class="bar-chart">
+        <div class="bar-row is-top"><span class="bar-name">實體門市</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">1,530</span></div>
+        <div class="bar-row"><span class="bar-name">官網直營</span><div class="bar-track"><div class="bar-fill" style="width:81%"></div></div><span class="bar-val">1,240</span></div>
+        <div class="bar-row"><span class="bar-name">天貓旗艦店</span><div class="bar-track"><div class="bar-fill" style="width:64%"></div></div><span class="bar-val">980</span></div>
+        <div class="bar-row"><span class="bar-name">蝦皮商城</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="bar-val">760</span></div>
+        <div class="bar-row"><span class="bar-name">經銷通路</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="bar-val">610</span></div>
+      </div>
+    </div>
+    <div class="viz-col" style="display:flex;align-items:center;gap:14px">
+      <svg viewBox="0 0 100 100" width="72" height="72" style="flex-shrink:0">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--surface2)" stroke-width="14"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--green)" stroke-width="14" stroke-dasharray="171 251" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+        <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="800" fill="var(--text)">68%</text>
+      </svg>
+      <div>
+        <div class="viz-col-label">會員回購結構</div>
+        <div style="font-size:11px;color:var(--text-2);line-height:1.8">
+          <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px"></span>回購會員 68%</div>
+          <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);margin-right:5px"></span>新會員 32%</div>
+        </div>
+      </div>
     </div>
   </div>
 
