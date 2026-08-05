@@ -23,14 +23,19 @@
               </div>
             </div>
             <div class="dh-actions">
-              <button class="custom-btn dh-btn" @click="emit('test', skill!)">
-                <i class="material-symbols-outlined">science</i>測試
-              </button>
-              <button class="custom-btn dh-btn" @click="emit('edit', skill!)">
-                <i class="material-symbols-outlined">edit</i>編輯
-              </button>
+              <template v-if="!isPersonal">
+                <button class="custom-btn dh-btn" @click="emit('edit', skill!)">
+                  <i class="material-symbols-outlined">edit</i>編輯
+                </button>
+                <button class="custom-btn dh-btn" @click="emit('test', skill!)">
+                  <i class="material-symbols-outlined">science</i>測試
+                </button>
+              </template>
               <button class="custom-btn dh-btn" @click="emit('duplicate', skill!)">
                 <i class="material-symbols-outlined">content_copy</i>複製
+              </button>
+              <button class="custom-btn dh-btn" @click="showMarkdown = true">
+                <i class="material-symbols-outlined">description</i>skill.md
               </button>
               <button class="drawer-close-btn" @click="emit('close')">
                 <i class="material-symbols-outlined">close</i>
@@ -46,19 +51,7 @@
               <div class="dm-lbl">本月使用</div>
             </div>
             <div class="dm-divider"></div>
-            <div class="dm-cell">
-              <i :class="['material-symbols-outlined', 'dm-icon', rateIconClass]">verified</i>
-              <div :class="['dm-num', rateNumClass]">{{ Math.round(skill.testPassRate * 100) }}%</div>
-              <div class="dm-lbl">通過率</div>
-            </div>
-            <div class="dm-divider"></div>
-            <div class="dm-cell">
-              <i class="material-symbols-outlined dm-icon">timer</i>
-              <div class="dm-num">{{ skill.avgLatencyMs }}ms</div>
-              <div class="dm-lbl">平均延遲</div>
-            </div>
-            <div class="dm-divider"></div>
-            <div v-if="isPersonal" class="dm-toggle">
+            <div v-if="isPersonal || manageable" class="dm-toggle">
               <button
                 class="custom-btn dm-toggle-btn btn--danger-ghost"
                 @click="emit('toggle', skill!)"
@@ -84,24 +77,19 @@
             <div class="drawer-section">
               <div class="section-label">來源關係</div>
               <div class="lineage-row">
-                <template v-if="skill.type === 'extension' && skill.forkSourceId">
-                  <span class="lineage-node">
-                    系統技能
-                    <span class="lineage-source-version">v{{ skill.forkSourceVersion }}</span>
-                  </span>
-                  <i class="material-symbols-outlined lineage-arrow">arrow_forward</i>
-                  <span class="lineage-node lineage-node--origin">{{ originLabel }}</span>
-                  <i class="material-symbols-outlined lineage-arrow">arrow_forward</i>
-                  <span class="lineage-node lineage-node--current">{{ skill.name }}</span>
-                </template>
-                <template v-else-if="skill.origin === 'manually_created'">
-                  <span class="lineage-node lineage-node--current">{{ skill.name }}</span>
-                  <span class="lineage-badge lineage-badge--manual">手動建立</span>
+                <template v-if="lineageSourceName">
+                  <i class="material-symbols-outlined lineage-icon">call_split</i>
+                  延伸自「{{ lineageSourceName }}」
                 </template>
                 <template v-else>
-                  <span class="lineage-node lineage-node--current">{{ skill.name }}</span>
-                  <span class="lineage-badge">系統技能</span>
+                  <i class="material-symbols-outlined lineage-icon">edit_note</i>
+                  自建
                 </template>
+                <span v-if="creationMethodLabel" class="lineage-divider">·</span>
+                <span v-if="creationMethodLabel" class="lineage-method">
+                  <i class="material-symbols-outlined">{{ skill.creationMethod === 'ai_assisted' ? 'auto_awesome' : 'edit' }}</i>
+                  {{ creationMethodLabel }}
+                </span>
               </div>
             </div>
 
@@ -203,6 +191,13 @@
                     <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
                     <div class="vt-actions">
                       <button
+                        v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                        class="custom-btn vt-activate-btn"
+                        @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
+                      >
+                        <i class="material-symbols-outlined">check_circle</i>設為使用中
+                      </button>
+                      <button
                         v-if="ver.status === 'reviewing'"
                         class="custom-btn"
                         @click="emit('review', skill!.id, ver.id)"
@@ -244,6 +239,80 @@
               </div>
             </div>
 
+            <!-- 個人技能目前狀態 -->
+            <div v-if="isPersonal" class="drawer-section">
+              <div class="section-label">目前狀態</div>
+              <div class="psv-card">
+                <div class="psv-head">
+                  <span
+                    v-if="personalStatusLabel"
+                    :class="['skill-tag', personalStatusClass]"
+                  >
+                    {{ personalStatusLabel }}
+                  </span>
+                  <span v-if="skill.submitMode" class="psv-mode">
+                    {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
+                  </span>
+                  <span
+                    v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
+                    class="skill-tag psv-scope-tag"
+                    :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
+                  >
+                    <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
+                    預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
+                  </span>
+                </div>
+
+                <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
+                  <i class="material-symbols-outlined">system_update_alt</i>
+                  <span>
+                    Library 來源技能有新版本
+                    <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
+                  </span>
+                  <button class="custom-btn psv-upstream-btn" @click="showApplyUpdateConfirm = true">
+                    <i class="material-symbols-outlined">download</i>更新
+                  </button>
+                </div>
+
+                <div v-if="skill.submitNote" class="psv-note">
+                  <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
+                </div>
+                <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
+                  <i class="material-symbols-outlined">feedback</i>
+                  <div>
+                    <div class="psv-reject-feedback-label">審核退回原因</div>
+                    <div>{{ skill.reviewFeedback }}</div>
+                  </div>
+                </div>
+
+                <div class="psv-actions">
+                  <button class="custom-btn psv-ver-btn" @click="emit('test', skill!)">
+                    <i class="material-symbols-outlined">science</i>測試
+                  </button>
+                  <button
+                    v-if="skill.personalStatus !== 'reviewing'"
+                    class="custom-btn psv-ver-btn"
+                    @click="emit('edit', skill!)"
+                  >
+                    <i class="material-symbols-outlined">edit</i>編輯
+                  </button>
+                  <button class="custom-btn psv-ver-btn" @click="emit('duplicate', skill!)">
+                    <i class="material-symbols-outlined">content_copy</i>複製
+                  </button>
+                  <button
+                    v-if="skill.personalStatus !== 'reviewing'"
+                    class="custom-btn psv-submit-btn"
+                    @click="emit('submit', skill!)"
+                  >
+                    <i class="material-symbols-outlined">send</i>送審
+                  </button>
+                  <span v-else class="psv-reviewing">
+                    <i class="material-symbols-outlined">hourglass_top</i>審核進行中
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <!-- 危險操作 -->
             <div v-if="isPersonal" class="drawer-danger-zone">
               <div class="danger-zone-label">危險操作</div>
@@ -268,6 +337,31 @@
       :v2-id="compareV2Id"
     />
 
+    <!-- skill.md 內容 -->
+    <SkillMarkdownModal v-model="showMarkdown" :skill="skill" />
+
+    <!-- 套用來源更新確認 -->
+    <Transition name="confirm-fade">
+      <div v-if="showApplyUpdateConfirm && skill" class="drawer-confirm-overlay" @click.self="showApplyUpdateConfirm = false">
+        <div class="drawer-confirm-dialog">
+          <div class="confirm-icon confirm-icon--update">
+            <i class="material-symbols-outlined">system_update_alt</i>
+          </div>
+          <h4>套用來源技能更新？</h4>
+          <p>
+            套用後將以來源技能<template v-if="derivedFromName">「{{ derivedFromName }}」</template>目前的內容
+            覆蓋這份技能的指令內容，且無法復原。
+          </p>
+          <div class="confirm-actions">
+            <button class="custom-btn" @click="showApplyUpdateConfirm = false">取消</button>
+            <button class="custom-btn custom-main-btn" @click="confirmApplyUpdate">
+              <i class="material-symbols-outlined">download</i>確定套用
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- 刪除確認 -->
     <Transition name="confirm-fade">
       <div v-if="showConfirm && skill" class="drawer-confirm-overlay" @click.self="showConfirm = false">
@@ -282,19 +376,23 @@
         </div>
       </div>
     </Transition>
+
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Skill, SkillVersionStatus, OperationRecord } from '@/stores/skillStore'
+import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
+import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
 
 const CHART_LABELS = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
 
 const props = defineProps<{
   skill: Skill | null
   upstreamVersion?: string
+  manageable?: boolean
 }>()
 const emit = defineEmits<{
   close: []
@@ -305,14 +403,50 @@ const emit = defineEmits<{
   duplicate: [skill: Skill]
   review: [skillId: string, versionId: string]
   openUpstreamUpdate: [skill: Skill]
+  submit: [skill: Skill]
+  update: [skill: Skill]
 }>()
 
+const skillStore = useSkillStore()
 const showConfirm = ref(false)
+const showMarkdown = ref(false)
 const showCompare = ref(false)
 const compareV1Id = ref('')
 const compareV2Id = ref('')
 
+const showApplyUpdateConfirm = ref(false)
+
+function confirmApplyUpdate() {
+  if (!props.skill) return
+  emit('update', props.skill)
+  showApplyUpdateConfirm.value = false
+}
+
 const isPersonal = computed(() => props.skill?.zone === 'personal')
+
+const derivedFromName = computed(() => {
+  if (!props.skill?.derivedFrom) return ''
+  return skillStore.flatSkills.find(s => s.id === props.skill!.derivedFrom)?.name ?? props.skill.derivedFrom
+})
+
+const personalStatusLabel = computed(() => {
+  const s = props.skill
+  if (!s) return null
+  if (s.personalStatus === 'reviewing') return '審核中'
+  if (s.personalStatus === 'has_library') {
+    if (s.targetScope === 'team') return `已有Library版（團隊・${s.targetTeamName ?? '未指定團隊'}）`
+    if (s.targetScope === 'enterprise') return '已有Library版（企業）'
+    return '已有Library版'
+  }
+  return '可使用'
+})
+
+const personalStatusClass = computed(() => {
+  const s = props.skill?.personalStatus
+  if (s === 'reviewing') return 'tag--reviewing'
+  if (s === 'has_library') return 'tag--has-library'
+  return 'tag--available'
+})
 
 const iconName = computed(() =>
   props.skill?.type === 'extension' ? 'extension' : 'psychology'
@@ -333,11 +467,18 @@ const sortedVersions = computed(() => {
   return [...props.skill.versions].reverse()
 })
 
-const originLabel = computed(() => {
-  if (!props.skill) return ''
-  if (props.skill.origin === 'custom_version') return '自訂版本'
-  if (props.skill.origin === 'manually_created') return '手動建立'
-  return '擴充'
+const lineageSourceName = computed(() => {
+  const s = props.skill
+  if (!s) return ''
+  const sourceId = s.forkSourceId ?? s.derivedFrom
+  if (!sourceId) return ''
+  return skillStore.flatSkills.find(x => x.id === sourceId)?.name ?? sourceId
+})
+
+const creationMethodLabel = computed(() => {
+  if (props.skill?.creationMethod === 'ai_assisted') return 'AI 協助建立'
+  if (props.skill?.creationMethod === 'manual') return '手動撰寫'
+  return ''
 })
 
 const auditLog = computed(() => (props.skill?.auditLog ?? []).slice(0, 5))

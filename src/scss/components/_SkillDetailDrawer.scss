@@ -280,60 +280,95 @@
     .custom-btn { flex-shrink: 0; font-size: 12px; padding: 4px 12px; }
   }
 
+  .personal-lib-update-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba($color_main_1, 0.06);
+    border: 1px solid rgba($color_main_1, 0.25);
+    border-radius: 10px;
+    padding: 12px 14px;
+
+    .plub-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .plub-icon {
+      font-size: 20px;
+      color: $color_main_1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .plub-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+    .plub-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .plub-source {
+      font-weight: 400;
+      color: $color_main_1;
+      font-size: 12px;
+    }
+
+    .plub-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .plub-btn {
+      flex-shrink: 0;
+      font-size: 12px;
+      padding: 5px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      .material-symbols-outlined { font-size: 14px; }
+    }
+  }
+
   // ── Lineage ───────────────────────────────────
 
   .lineage-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
     background: var(--page-bg);
     padding: 10px 14px;
     border-radius: 10px;
 
-    .lineage-node {
-      font-size: 13px;
-      color: var(--text-muted);
-      padding: 4px 10px;
-      background: var(--surface);
-      border-radius: 7px;
-      border: 1px solid var(--divider-a50);
+    .lineage-icon {
+      font-size: 16px;
+      color: $color_main_1;
+      flex-shrink: 0;
+    }
+
+    .lineage-divider {
+      color: var(--divider-a50);
+    }
+
+    .lineage-method {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-
-      &--origin  { color: $color-warning-text; background: $color-warning-bg; border-color: $color-warning-border; }
-      &--current { color: $color_main_2; background: $color_main_4; border-color: $color_main_3; font-weight: 600; }
-    }
-
-    .lineage-source-version {
-      font-size: 11px;
-      font-weight: 600;
+      gap: 4px;
       color: var(--text-faint);
-      background: var(--page-bg);
-      border: 1px solid var(--divider-a50);
-      border-radius: 4px;
-      padding: 1px 5px;
-    }
 
-    .lineage-badge {
-      font-size: 11px;
-      color: $color_main_2;
-      background: $color_main_4;
-      padding: 2px 8px;
-      border-radius: 5px;
-      font-weight: 500;
-
-      &--manual {
-        color: var(--text-muted);
-        background: var(--page-bg);
-        border: 1px solid var(--divider-a50);
-      }
-    }
-
-    .lineage-arrow {
-      font-size: 16px;
-      color: var(--text-faint);
+      .material-symbols-outlined { font-size: 15px; }
     }
   }
 
@@ -619,6 +654,144 @@
       gap: 4px;
       .material-symbols-outlined { font-size: 14px; }
     }
+
+    .vt-activate-btn {
+      color: $color_main_1;
+      border-color: $color_main_3;
+      background: $color_main_5;
+      &:hover { background: $color_main_4; }
+    }
+  }
+
+  // ── Personal skill status card ────────────────
+
+  .psv-card {
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .psv-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .psv-mode {
+    font-size: 11px;
+    color: var(--text-faint);
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .psv-scope-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    .material-symbols-outlined { font-size: 12px; }
+  }
+
+  .psv-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-muted);
+    .material-symbols-outlined { font-size: 13px; color: var(--text-faint); flex-shrink: 0; margin-top: 1px; }
+  }
+
+  .psv-reject-feedback {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    color: $color-danger;
+    background: rgba($color-danger, 0.06);
+    border: 1px solid rgba($color-danger, 0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    line-height: 1.5;
+
+    .material-symbols-outlined { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+    &-label {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+  }
+
+
+  .psv-actions { display: flex; align-items: center; gap: 8px; }
+
+  .psv-upstream-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba($color_main_1, 0.06);
+    border: 1px solid rgba($color_main_1, 0.2);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+
+    > .material-symbols-outlined { font-size: 16px; color: $color_main_1; flex-shrink: 0; }
+    > span { flex: 1; min-width: 0; }
+
+    .psv-upstream-src { color: $color_main_1; }
+
+    .psv-upstream-btn {
+      flex-shrink: 0;
+      font-size: 12px;
+      padding: 3px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: $color_main_1;
+      border-color: $color_main_3;
+      background: $color_main_5;
+      &:hover { background: $color_main_4; }
+      .material-symbols-outlined { font-size: 13px; }
+    }
+  }
+
+  .psv-ver-btn {
+    font-size: 12px;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-muted);
+    .material-symbols-outlined { font-size: 13px; }
+    &:hover { color: var(--text); }
+  }
+
+  .psv-submit-btn {
+    font-size: 12px;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: $color_main_1;
+    border-color: $color_main_3;
+    background: $color_main_5;
+    &:hover { background: $color_main_4; }
+    .material-symbols-outlined { font-size: 13px; }
+  }
+
+  .psv-reviewing {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-faint);
+    .material-symbols-outlined { font-size: 14px; }
   }
 
   // ── Danger zone ───────────────────────────────
@@ -668,6 +841,7 @@
   .confirm-icon {
     margin-bottom: 12px;
     .material-symbols-outlined { font-size: 36px; color: $color-danger; }
+    &--update .material-symbols-outlined { color: $color_main_1; }
   }
 
   h4 {
@@ -693,6 +867,18 @@
       color: $color-danger;
       border-color: rgba($color-danger, 0.3);
       &:hover { background: rgba($color-danger, 0.08); }
+    }
+
+    &--column {
+      flex-direction: column;
+
+      .custom-btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
     }
   }
 }
