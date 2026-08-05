@@ -9,6 +9,9 @@
           <div class="banner-title">技能管理</div>
         </div>
         <div class="page-banner-actions">
+          <button class="custom-btn" @click="showLibraryModal = true">
+            <i class="material-symbols-outlined">library_books</i>瀏覽 Library
+          </button>
           <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
             <i class="material-symbols-outlined">add</i>建立技能
           </button>
@@ -28,11 +31,20 @@
         </div>
         <div class="skill-stat-card">
           <div class="skill-stat-icon icon--ext">
-            <i class="material-symbols-outlined">extension</i>
+            <i class="material-symbols-outlined">corporate_fare</i>
           </div>
           <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.extensionCount }}</div>
+            <div class="skill-stat-num">{{ store.enterpriseExtensionCount }}</div>
             <div class="skill-stat-lbl">企業擴充</div>
+          </div>
+        </div>
+        <div class="skill-stat-card">
+          <div class="skill-stat-icon icon--team">
+            <i class="material-symbols-outlined">group</i>
+          </div>
+          <div class="skill-stat-body">
+            <div class="skill-stat-num">{{ store.teamExtensionCount }}</div>
+            <div class="skill-stat-lbl">團隊擴充</div>
           </div>
         </div>
         <div class="skill-stat-card">
@@ -46,43 +58,147 @@
         </div>
       </div>
 
-      <!-- 上游更新 Banner -->
-      <div v-if="store.pendingUpdateCount > 0" class="upstream-banner">
+      <!-- 待審核提醒 -->
+      <div v-if="isManager && store.pendingReviewSkills.length > 0 && activeTab !== 'review'" class="upstream-banner">
         <span>
-          <i class="material-symbols-outlined">upgrade</i>
-          <strong>{{ store.pendingUpdateSkills[0]?.name }}</strong>
-          <template v-if="store.pendingUpdateCount > 1"> 等 {{ store.pendingUpdateCount }} 個技能</template>
-          有上游更新可合併
+          <i class="material-symbols-outlined">rate_review</i>
+          有 {{ store.pendingReviewSkills.length }} 個技能等待審核
         </span>
         <div class="upstream-banner-actions">
-          <button class="custom-btn" @click="upstreamSkill = store.pendingUpdateSkills[0]">查看</button>
-          <button v-if="store.pendingUpdateCount > 1" class="custom-btn" @click="showBatchUpdate = true">
-            全部（{{ store.pendingUpdateCount }}）
-          </button>
+          <button class="custom-btn" @click="activeTab = 'review'">前往審核</button>
         </div>
       </div>
 
-      <!-- 搜尋篩選 -->
-      <SkillFilterBar v-model="filterState" />
-
-      <!-- ── 我的技能 ─────────────────────────────── -->
+      <!-- ── Sections ──────────────────────────────── -->
       <div class="skill-sections">
 
-        <div class="skill-section">
-          <div class="skill-section-header">
+        <!-- Tab bar -->
+        <div class="skill-tabs">
+          <button
+            :class="['skill-tab', { 'is-active': activeTab === 'my' }]"
+            @click="activeTab = 'my'"
+          >
             <i class="material-symbols-outlined">person</i>
-            <span class="skill-section-title">我的技能</span>
-            <span class="skill-section-count">{{ store.myPersonalSkills.length }}</span>
-            <span class="skill-section-desc">你建立或從對話生成的個人技能，可送審加入 Library</span>
+            我的技能
+            <span class="skill-tab-count">{{ store.myPersonalSkills.length }}</span>
+          </button>
+          <button
+            v-if="isManager"
+            :class="['skill-tab', 'skill-tab--review', { 'is-active': activeTab === 'review', 'has-pending': store.pendingReviewSkills.length > 0 }]"
+            @click="activeTab = 'review'"
+          >
+            <i class="material-symbols-outlined">rate_review</i>
+            管理區
+            <span class="skill-tab-count">{{ store.pendingReviewSkills.length }}</span>
+          </button>
+        </div>
+
+        <!-- 管理區：待審核送審 + Library 現有技能管理（限企業擁有者 / 企業管理者） -->
+        <div v-if="isManager" v-show="activeTab === 'review'" class="skill-tab-panel">
+          <div class="skill-review-block">
+            <p class="skill-tab-panel-desc">等待審核的技能送審申請，通過後將發佈至 Library</p>
+            <div v-if="store.pendingReviewSkills.length" class="src-list">
+              <SkillReviewCard
+                v-for="skill in store.pendingReviewSkills"
+                :key="skill.id"
+                :skill="skill"
+                @view="detailSkill = $event"
+                @approve="handleApprove"
+                @reject="handleReject"
+              />
+            </div>
+            <div v-else class="skill-section-empty">目前沒有待審核的技能</div>
           </div>
+
+          <!-- Library 現有技能管理 -->
+          <div class="skill-manage-block">
+            <div class="skill-manage-block-header">
+              <span class="skill-manage-block-title">
+                <i class="material-symbols-outlined">inventory_2</i>Library 現有技能管理
+              </span>
+              <div class="skill-search">
+                <i class="material-symbols-outlined">search</i>
+                <input v-model="libraryManageQuery" class="skill-search-input" placeholder="搜尋技能名稱或描述" />
+              </div>
+            </div>
+            <div v-if="filteredLibrarySkills.length" class="lsr-sections">
+              <!-- 企業技能 -->
+              <div v-if="filteredEnterpriseSkills.length" class="lsr-section-block lsr-section-block--enterprise">
+                <div class="lsr-section-header">
+                  <i class="material-symbols-outlined">corporate_fare</i>
+                  <span class="lsr-section-title">企業技能</span>
+                  <span class="lsr-section-count">{{ filteredEnterpriseSkills.length }}</span>
+                </div>
+                <div class="lsr-section-list">
+                  <LibrarySkillRow
+                    v-for="skill in filteredEnterpriseSkills"
+                    :key="skill.id"
+                    :skill="skill"
+                    @click="detailSkill = skill"
+                  />
+                </div>
+              </div>
+              <!-- 團隊技能（依團隊分組） -->
+              <div v-if="groupedTeamSkills.length" class="lsr-section-block lsr-section-block--team">
+                <div class="lsr-section-header">
+                  <i class="material-symbols-outlined">group</i>
+                  <span class="lsr-section-title">團隊技能</span>
+                  <span class="lsr-section-count">{{ groupedTeamSkills.reduce((s, g) => s + g.skills.length, 0) }}</span>
+                </div>
+                <div class="lsr-team-groups">
+                  <div
+                    v-for="group in groupedTeamSkills"
+                    :key="group.teamName"
+                    class="lsr-team-group"
+                  >
+                    <div class="lsr-team-label">
+                      <i class="material-symbols-outlined">apartment</i>{{ group.teamName }}
+                      <span class="lsr-section-count">{{ group.skills.length }}</span>
+                    </div>
+                    <div class="lsr-section-list">
+                      <LibrarySkillRow
+                        v-for="skill in group.skills"
+                        :key="skill.id"
+                        :skill="skill"
+                        @click="detailSkill = skill"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="skill-section-empty">找不到符合條件的技能</div>
+          </div>
+        </div>
+
+        <!-- 我的技能 -->
+        <div v-show="activeTab === 'my'" class="skill-tab-panel">
           <div v-if="store.myPersonalSkills.length" class="my-skills-list">
-            <PersonalSkillCard
-              v-for="skill in store.myPersonalSkills"
+            <PersonalSkillGroup
+              v-for="skill in pagedSkills"
               :key="skill.id"
               :skill="skill"
-              @view="detailSkill = $event"
-              @submit="handlePersonalSubmit"
+              @manage="detailSkill = $event"
+              @update="handlePersonalUpdate"
             />
+            <!-- 分頁 -->
+            <div v-if="totalPages > 1" class="my-skills-pagination">
+              <button
+                class="custom-btn pag-btn"
+                :disabled="currentPage === 1"
+                @click="currentPage--"
+              >
+                <i class="material-symbols-outlined">chevron_left</i>
+              </button>
+              <span class="pag-info">{{ currentPage }} / {{ totalPages }}</span>
+              <button
+                class="custom-btn pag-btn"
+                :disabled="currentPage === totalPages"
+                @click="currentPage++"
+              >
+                <i class="material-symbols-outlined">chevron_right</i>
+              </button>
+            </div>
           </div>
           <div v-else class="my-skills-empty">
             <i class="material-symbols-outlined">person_search</i>
@@ -90,97 +206,16 @@
           </div>
         </div>
 
-        <!-- 系統技能 -->
-        <div v-if="showSystemSection" class="skill-section">
-          <div class="skill-section-header">
-            <i class="material-symbols-outlined">auto_awesome</i>
-            <span class="skill-section-title">系統技能</span>
-            <span class="skill-section-count">{{ filteredSystemSkills.length }}</span>
-            <span class="skill-section-desc">平台提供的標準 AI 技能，企業可在此基礎上自訂擴充版本</span>
-          </div>
-          <div class="skill-tree">
-            <template v-for="skill in filteredSystemSkills" :key="skill.id">
-              <div class="skill-group-box">
-                <SkillCard
-                  :skill="skill"
-                  :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
-                  @click="detailSkill = $event"
-                  @test="handleTest"
-                  @duplicate="handleDuplicate"
-                />
-                <div
-                  v-if="skill.children?.filter(c => !c.deletedAt).length"
-                  class="skill-group-children"
-                >
-                  <SkillCard
-                    v-for="child in skill.children!.filter(c => !c.deletedAt)"
-                    :key="child.id"
-                    :skill="child"
-                    :is-extension="true"
-                    :has-upstream-update="store.upstreamUpdateSkillIds.has(child.id)"
-                    @click="detailSkill = $event"
-                    @test="handleTest"
-                    @duplicate="handleDuplicate"
-                  />
-                </div>
-              </div>
-            </template>
-            <div v-if="filteredSystemSkills.length === 0" class="skill-section-empty">
-              此層級無符合條件的技能
-            </div>
-          </div>
-        </div>
-
-        <!-- 企業技能 -->
-        <div v-if="showEnterpriseSection" class="skill-section">
-          <div class="skill-section-header">
-            <i class="material-symbols-outlined">corporate_fare</i>
-            <span class="skill-section-title">企業技能</span>
-            <span class="skill-section-count">{{ filteredEnterpriseSkills.length }}</span>
-            <span class="skill-section-desc">企業自行建立，適用於全企業的自訂 AI 技能</span>
-          </div>
-          <div class="skill-tree">
-            <SkillCard
-              v-for="skill in filteredEnterpriseSkills"
-              :key="skill.id"
-              :skill="skill"
-              :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
-              @click="detailSkill = $event"
-              @test="handleTest"
-              @duplicate="handleDuplicate"
-            />
-            <div v-if="filteredEnterpriseSkills.length === 0" class="skill-section-empty">
-              此層級無符合條件的技能
-            </div>
-          </div>
-        </div>
-
-        <!-- 團隊技能 -->
-        <div v-if="showTeamSection" class="skill-section">
-          <div class="skill-section-header">
-            <i class="material-symbols-outlined">groups</i>
-            <span class="skill-section-title">團隊技能</span>
-            <span class="skill-section-count">{{ filteredTeamSkills.length }}</span>
-            <span class="skill-section-desc">由團隊成員建立，僅在本團隊範圍內使用</span>
-          </div>
-          <div class="skill-tree">
-            <SkillCard
-              v-for="skill in filteredTeamSkills"
-              :key="skill.id"
-              :skill="skill"
-              :has-upstream-update="store.upstreamUpdateSkillIds.has(skill.id)"
-              @click="detailSkill = $event"
-              @test="handleTest"
-              @duplicate="handleDuplicate"
-            />
-            <div v-if="filteredTeamSkills.length === 0" class="skill-section-empty">
-              此層級無符合條件的技能
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
+
+    <!-- Library 瀏覽 Modal -->
+    <LibraryBrowseModal
+      v-model="showLibraryModal"
+      @open-detail="(s) => { showLibraryModal = false; detailSkill = s }"
+      @test="handleTest"
+      @duplicate="handleDuplicate"
+    />
 
     <!-- Drawers -->
     <SkillDetailDrawer
@@ -188,10 +223,13 @@
       :upstream-version="upstreamVersionForDetail"
       @close="detailSkill = null"
       @test="handleTest"
-      @toggle="handlePersonalToggle"
-      @edit="(s) => router.push({ path: '/view/SkillEditor', query: { skillId: s.id } })"
+      :manageable="isManager"
+      @toggle="handleToggle"
+      @edit="handleEdit"
       @delete="handlePersonalDelete"
       @duplicate="handleDuplicate"
+      @submit="handlePersonalSubmit"
+      @update="handlePersonalUpdate"
       @review="(skillId, versionId) => { detailSkill = null; openReview(skillId, versionId) }"
       @open-upstream-update="openUpstreamUpdate"
     />
@@ -215,6 +253,39 @@
     <BatchUpdateModal
       v-model="showBatchUpdate"
       @merged="showBatchUpdate = false"
+    />
+
+    <!-- 複製後：選擇修改方式 -->
+    <Teleport to="body">
+      <Transition name="confirm-fade">
+        <div
+          v-if="duplicatedSkill && !showEditChatForDuplicate"
+          class="drawer-confirm-overlay"
+          @click.self="duplicatedSkill = null"
+        >
+          <div class="drawer-confirm-dialog">
+            <div class="confirm-icon confirm-icon--update">
+              <i class="material-symbols-outlined">content_copy</i>
+            </div>
+            <h4>已建立複本</h4>
+            <p>接下來想怎麼修改這份複本？</p>
+            <div class="confirm-actions confirm-actions--column">
+              <button class="custom-btn" @click="handleDuplicateChatEdit">
+                <i class="material-symbols-outlined">forum</i>跟 Agent 對話修改
+              </button>
+              <button class="custom-btn custom-main-btn" @click="handleDuplicateDirectEdit">
+                <i class="material-symbols-outlined">edit</i>直接編輯
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <SkillEditChatModal
+      v-model="showEditChatForDuplicate"
+      :skill="duplicatedSkill"
+      @done="closeDuplicateChatEdit"
     />
 
     <!-- 送審 dialog -->
@@ -278,6 +349,34 @@
               </button>
             </div>
 
+            <div class="dsd-scope">
+              <label class="dsd-note-label">預計發布層級</label>
+              <div class="dsd-scope-options">
+                <button
+                  :class="['dsd-scope-option', submitScope === 'enterprise' && 'is-selected']"
+                  @click="submitScope = 'enterprise'"
+                >
+                  <i class="material-symbols-outlined">corporate_fare</i>企業技能
+                </button>
+                <button
+                  :class="['dsd-scope-option', submitScope === 'team' && 'is-selected']"
+                  :disabled="submitTeamLocked"
+                  @click="!submitTeamLocked && (submitScope = 'team')"
+                >
+                  <i class="material-symbols-outlined">group</i>團隊技能
+                </button>
+              </div>
+              <p v-if="submitTeamLocked" class="dsd-scope-hint">
+                此技能已有團隊版本的 Library 版，本次只能送審企業層級
+              </p>
+              <div v-if="submitScope === 'team'" class="dsd-team">
+                <label class="dsd-note-label">發布團隊</label>
+                <select v-model="submitTeamName" class="dsd-team-select">
+                  <option v-for="t in knownTeamNames" :key="t" :value="t">{{ t }}</option>
+                </select>
+              </div>
+            </div>
+
             <div class="dsd-note">
               <label class="dsd-note-label">說明（選填）</label>
               <textarea
@@ -304,16 +403,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
-import SkillCard from '@/components/Skill/SkillCard.vue'
-import PersonalSkillCard from '@/components/Skill/PersonalSkillCard.vue'
+import LibrarySkillRow from '@/components/Skill/LibrarySkillRow.vue'
+import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
+import SkillReviewCard from '@/components/Skill/SkillReviewCard.vue'
+import LibraryBrowseModal from '@/components/Skill/LibraryBrowseModal.vue'
 import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
-import SkillFilterBar, { type SkillFilterState } from '@/components/Skill/SkillFilterBar.vue'
+import SkillEditChatModal from '@/components/Skill/SkillEditChatModal.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { Skill, ConflictResolution } from '@/stores/skillStore'
 
@@ -325,77 +426,83 @@ const showReviewDrawer = ref(false)
 const reviewingSkillId = ref('')
 const upstreamSkill = ref<Skill | null>(null)
 const showBatchUpdate = ref(false)
-const filterState = ref<SkillFilterState>({ query: '', type: 'all', status: 'all', update: 'all' })
 
-// 送審 dialog 狀態
+const showLibraryModal = ref(false)
+const duplicatedSkill = ref<Skill | null>(null)
+const showEditChatForDuplicate = ref(false)
+
+// 角色（mock：企業管理者可見審核區）
+const currentUserRole = ref<'user' | 'enterprise_admin' | 'enterprise_owner'>('enterprise_admin')
+const isManager = computed(() =>
+  currentUserRole.value === 'enterprise_admin' || currentUserRole.value === 'enterprise_owner'
+)
+
+// Tab：從 side-menu 進入一律預設「我的技能」
+const activeTab = ref<'my' | 'review'>('my')
+
+// 分頁
+const PAGE_SIZE = 10
+const currentPage = ref(1)
+const pagedSkills = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return store.myPersonalSkills.slice(start, start + PAGE_SIZE)
+})
+const totalPages = computed(() => Math.max(1, Math.ceil(store.myPersonalSkills.length / PAGE_SIZE)))
+watch(totalPages, (tp) => {
+  if (currentPage.value > tp) currentPage.value = tp
+})
+
+// Library 現有技能管理（審核區內，限管理者）
+const libraryManageQuery = ref('')
+const filteredLibrarySkills = computed(() => {
+  const q = libraryManageQuery.value.toLowerCase().trim()
+  if (!q) return store.flatSkills
+  return store.flatSkills.filter(s =>
+    s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)
+  )
+})
+const filteredEnterpriseSkills = computed(() =>
+  filteredLibrarySkills.value.filter(s => s.scope === 'enterprise')
+)
+const groupedTeamSkills = computed(() => {
+  const teamSkills = filteredLibrarySkills.value.filter(s => s.scope === 'team')
+  const map = new Map<string, Skill[]>()
+  for (const s of teamSkills) {
+    const key = s.teamName ?? '其他團隊'
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)!.push(s)
+  }
+  return Array.from(map.entries()).map(([teamName, skills]) => ({ teamName, skills }))
+})
+
 const submitConfirmSkill = ref<Skill | null>(null)
 const submitMode = ref<'new_skill' | 'version_update'>('new_skill')
+const submitScope = ref<'enterprise' | 'team'>('enterprise')
+// 若送審的版本已經是團隊 Library 版，團隊層級已經有了，只能往上送企業層級
+const submitTeamLocked = ref(false)
+const submitTeamName = ref('')
 const submitNote = ref('')
+
+// 送審 dialog 的團隊選單：彙整目前 Library 團隊技能與其他個人技能已填寫過的團隊名稱
+const knownTeamNames = computed(() => {
+  const names = new Set<string>()
+  store.flatSkills.forEach(s => { if (s.teamName) names.add(s.teamName) })
+  store.myPersonalSkills.forEach(s => { if (s.targetTeamName) names.add(s.targetTeamName) })
+  return Array.from(names)
+})
 
 const upstreamVersionForDetail = computed(() => {
   if (!detailSkill.value) return undefined
   return store.getUpstreamVersion(detailSkill.value.id)
 })
 
-const showSystemSection = computed(() =>
-  filterState.value.type === 'all' || filterState.value.type === 'system'
-)
-const showEnterpriseSection = computed(() =>
-  filterState.value.type === 'all' || filterState.value.type === 'enterprise'
-)
-const showTeamSection = computed(() =>
-  filterState.value.type === 'all' || filterState.value.type === 'team'
-)
-
-const filteredSystemSkills = computed(() => {
-  const f = filterState.value
-  if (f.type === 'enterprise' || f.type === 'team') return []
-  const q = f.query.toLowerCase().trim()
-  return store.skills.filter(s => {
-    if (s.type !== 'system' || s.deletedAt) return false
-    const selfMatch = (
-      (!q || s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)) &&
-      (f.status === 'all' || (f.status === 'enabled' ? s.isEnabled : !s.isEnabled)) &&
-      (f.update === 'all' || store.upstreamUpdateSkillIds.has(s.id))
-    )
-    const childMatch = (s.children ?? []).some(c =>
-      !c.deletedAt &&
-      (!q || c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)) &&
-      (f.status === 'all' || (f.status === 'enabled' ? c.isEnabled : !c.isEnabled)) &&
-      (f.update === 'all' || store.upstreamUpdateSkillIds.has(c.id))
-    )
-    return selfMatch || childMatch
-  })
-})
-
-const filteredEnterpriseSkills = computed(() => {
-  const f = filterState.value
-  if (f.type === 'system' || f.type === 'team') return []
-  const q = f.query.toLowerCase().trim()
-  return store.skills.filter(s => {
-    if (s.scope !== 'enterprise' || s.deletedAt) return false
-    if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false
-    if (f.status !== 'all' && (f.status === 'enabled' ? !s.isEnabled : s.isEnabled)) return false
-    if (f.update === 'has_update' && !store.upstreamUpdateSkillIds.has(s.id)) return false
-    return true
-  })
-})
-
-const filteredTeamSkills = computed(() => {
-  const f = filterState.value
-  if (f.type === 'system' || f.type === 'enterprise') return []
-  const q = f.query.toLowerCase().trim()
-  return store.skills.filter(s => {
-    if (s.scope !== 'team' || s.deletedAt) return false
-    if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false
-    if (f.status !== 'all' && (f.status === 'enabled' ? !s.isEnabled : s.isEnabled)) return false
-    if (f.update === 'has_update' && !store.upstreamUpdateSkillIds.has(s.id)) return false
-    return true
-  })
-})
 
 function handleTest(skill: Skill) {
   router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
+}
+
+function handleEdit(skill: Skill) {
+  router.push({ path: '/view/SkillEditor', query: { skillId: skill.id } })
 }
 
 function openReview(skillId: string, _versionId: string) {
@@ -419,21 +526,48 @@ function handleDetach(skill: Skill) {
 }
 
 function handleDuplicate(skill: Skill) {
-  store.duplicateSkill(skill.id)
+  const copy = store.duplicateAsPersonalSkill(skill.id)
   detailSkill.value = null
+  duplicatedSkill.value = copy
+}
+
+function handleDuplicateDirectEdit() {
+  if (!duplicatedSkill.value) return
+  router.push({ path: '/view/SkillEditor', query: { skillId: duplicatedSkill.value.id } })
+  duplicatedSkill.value = null
+}
+
+function handleDuplicateChatEdit() {
+  showEditChatForDuplicate.value = true
+}
+
+function closeDuplicateChatEdit() {
+  showEditChatForDuplicate.value = false
+  duplicatedSkill.value = null
 }
 
 // ── 個人技能 handlers ──────────────────────────────
 
 function handlePersonalSubmit(skill: Skill) {
+  const teamAlreadyPublished = skill.personalStatus === 'has_library' && skill.targetScope === 'team'
+
   submitConfirmSkill.value = skill
   submitMode.value = skill.derivedFrom ? 'version_update' : 'new_skill'
+  submitTeamLocked.value = teamAlreadyPublished
+  submitScope.value = teamAlreadyPublished ? 'enterprise' : (skill.targetScope ?? 'enterprise')
+  submitTeamName.value = skill.targetTeamName ?? knownTeamNames.value[0] ?? ''
   submitNote.value = ''
 }
 
 function confirmSubmitSkill() {
   if (!submitConfirmSkill.value) return
-  store.submitPersonalSkill(submitConfirmSkill.value.id, submitMode.value, submitNote.value)
+  store.submitPersonalSkill(
+    submitConfirmSkill.value.id,
+    submitMode.value,
+    submitNote.value,
+    submitScope.value,
+    submitScope.value === 'team' ? submitTeamName.value : undefined
+  )
   submitConfirmSkill.value = null
   submitNote.value = ''
 }
@@ -443,7 +577,19 @@ function handlePersonalDelete(skill: Skill) {
   if (detailSkill.value?.id === skill.id) detailSkill.value = null
 }
 
-function handlePersonalToggle(skill: Skill) {
+function handlePersonalUpdate(skill: Skill) {
+  store.applyLibraryUpdate(skill.id)
+}
+
+function handleApprove(skill: Skill) {
+  store.approvePersonalSkill(skill.id)
+}
+
+function handleReject(skill: Skill, feedback: string) {
+  store.rejectPersonalSkill(skill.id, feedback)
+}
+
+function handleToggle(skill: Skill) {
   store.toggleSkill(skill.id)
 }
 

@@ -3,7 +3,7 @@
     <i class="material-symbols-outlined psg-icon">person</i>
     <span class="psg-name">{{ skill.name }}</span>
     <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
-    <div v-if="skill.hasLibraryUpdate" class="psg-update-hint" @click.stop="emit('update', skill)">
+    <div v-if="skill.hasLibraryUpdate" class="psg-update-hint" @click.stop="emit('manage', skill)">
       <i class="material-symbols-outlined">upgrade</i>更新
     </div>
     <span class="psg-status">
@@ -21,7 +21,6 @@ import type { Skill } from '@/stores/skillStore'
 const props = defineProps<{ skill: Skill }>()
 const emit = defineEmits<{
   manage: [skill: Skill]
-  update: [skill: Skill]
 }>()
 
 const statusLabel = computed(() => {
