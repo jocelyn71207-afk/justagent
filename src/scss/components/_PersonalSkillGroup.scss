@@ -1,0 +1,76 @@
+.PersonalSkillGroup {
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    border-color: $color_main_3;
+  }
+
+  .psg-icon {
+    font-size: 16px;
+    color: $color_main_1;
+    flex-shrink: 0;
+  }
+
+  .psg-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    max-width: 240px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .psg-update-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: $color-warning-amber;
+    border: 1px solid rgba($color-warning-amber, 0.4);
+    background: rgba($color-warning-amber, 0.07);
+    padding: 2px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    .material-symbols-outlined { font-size: 13px; }
+    &:hover { background: rgba($color-warning-amber, 0.14); }
+  }
+
+  .psg-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .psg-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    &.dot--on  { background: $color_main_1; box-shadow: 0 0 0 2px rgba($color_main_1, 0.2); }
+    &.dot--off { background: var(--text-faint); }
+  }
+
+  .psg-arrow {
+    font-size: 18px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+  }
+}
