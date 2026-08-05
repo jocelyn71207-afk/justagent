@@ -9,6 +9,11 @@
         </div>
       </div>
 
+      <div v-if="hasNameConflict" class="name-conflict-banner">
+        <i class="material-symbols-outlined">info</i>
+        你已經有一份來自「{{ conflictSourceName }}」的技能了，建議修改顯示名稱以便區分。
+      </div>
+
       <!-- 步驟指示器 -->
       <div class="se-stepper">
         <div
@@ -208,6 +213,16 @@ const isDraftMode = !!draftId
 
 const existingSkill = editSkillId ? store.findSkill(editSkillId) : null
 const existingDraft = draftId ? (store.myDrafts as DraftSkill[]).find(d => d.id === draftId) ?? null : null
+
+const hasNameConflict = computed(() => {
+  if (!existingSkill || existingSkill.zone !== 'personal' || !existingSkill.derivedFrom) return false
+  return store.hasSkillNameConflict(existingSkill.id)
+})
+
+const conflictSourceName = computed(() => {
+  if (!existingSkill?.derivedFrom) return ''
+  return store.findSkill(existingSkill.derivedFrom)?.name ?? existingSkill.derivedFrom
+})
 
 const form = reactive({
   name: existingSkill?.name ?? existingDraft?.name ?? '',

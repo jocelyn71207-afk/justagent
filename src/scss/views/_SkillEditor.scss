@@ -1,3 +1,18 @@
+.name-conflict-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba($color-warning-amber, 0.08);
+  border: 1px solid rgba($color-warning-amber, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+
+  .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; flex-shrink: 0; }
+}
+
 .SkillEditor {
   // 步驟指示器
   .se-stepper {
