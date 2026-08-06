@@ -1196,17 +1196,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
   }
 
-  function applyLibraryUpdate(id: string): void {
-    const skill = myPersonalSkillsRef.value.find(s => s.id === id)
-    if (!skill?.derivedFrom) return
-    const source = flatSkills.value.find(s => s.id === skill.derivedFrom)
-    if (!source) return
-    skill.instructions = source.instructions
-    skill.triggerHint = source.triggerHint
-    skill.capabilities = source.capabilities ? [...source.capabilities] : undefined
-    skill.derivedFromVersion = source.version
-  }
-
   function duplicateAsPersonalSkill(sourceId: string): Skill {
     const source = findSkill(sourceId)
     if (!source) throw new Error(`duplicateAsPersonalSkill: source not found (${sourceId})`)
@@ -1514,7 +1503,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     submitDraft,
     submitPersonalSkill,
     deletePersonalSkill,
-    applyLibraryUpdate,
     duplicateAsPersonalSkill,
     hasSkillNameConflict,
     setLibraryActiveVersion,

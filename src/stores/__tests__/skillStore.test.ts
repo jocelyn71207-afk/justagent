@@ -274,14 +274,6 @@ describe('skillStore', () => {
       expect(p001.hasLibraryUpdate).toBe(false) // derivedFromVersion 2.2.0 == sys-meeting-001 目前 2.2.0
     })
 
-    it('applyLibraryUpdate 覆蓋內容並清除 hasLibraryUpdate', () => {
-      const store = useSkillStore()
-      store.applyLibraryUpdate('personal-002')
-      const updated = store.myPersonalSkills.find(s => s.id === 'personal-002')!
-      expect(updated.hasLibraryUpdate).toBe(false)
-      expect(updated.instructions).toBe(store.flatSkills.find(s => s.id === 'sys-cs-001')!.instructions)
-    })
-
     it('duplicateAsPersonalSkill 複製「個人技能」時，derivedFrom 指向另一個個人技能不會被誤判為 Library 有更新', () => {
       // personal-001 是個人技能（不在 flatSkills / Library 範圍內）。
       // 複製後的新技能 derivedFrom 會指向 personal-001，flatSkills.find(...) 必然找不到，
@@ -301,8 +293,8 @@ describe('skillStore', () => {
     it('myPersonalSkillsRef 變動後，myPersonalSkills 中未被直接修改的項目也會是全新的物件參照', () => {
       const store = useSkillStore()
       const before = store.myPersonalSkills.find(s => s.id === 'personal-001')!
-      // 觸發的是 personal-002 的更新，personal-001 本身資料沒有變動
-      store.applyLibraryUpdate('personal-002')
+      // 觸發的是 personal-002 的變動，personal-001 本身資料沒有變動
+      store.toggleSkill('personal-002')
       const after = store.myPersonalSkills.find(s => s.id === 'personal-001')!
       expect(before).not.toBe(after)
       expect(before).toEqual(after)
