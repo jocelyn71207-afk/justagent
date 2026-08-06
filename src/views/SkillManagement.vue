@@ -266,6 +266,10 @@
               <i class="material-symbols-outlined">content_copy</i>
             </div>
             <h4>已建立複本</h4>
+            <div class="confirm-warning-banner">
+              <i class="material-symbols-outlined">info</i>
+              這份複本內容目前與原技能完全相同。內容一模一樣的技能會讓後續維運難以區分，也可能造成 Agent 判斷失準，建議修改後再使用。
+            </div>
             <p>接下來想怎麼修改這份複本？</p>
             <div class="confirm-actions confirm-actions--column">
               <button class="custom-btn" @click="handleDuplicateChatEdit">
