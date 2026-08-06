@@ -534,6 +534,7 @@ function handleDetach(skill: Skill) {
 function handleDuplicate(skill: Skill) {
   const copy = store.duplicateAsPersonalSkill(skill.id)
   detailSkillId.value = null
+  showLibraryModal.value = false
   duplicatedSkill.value = copy
 }
 
