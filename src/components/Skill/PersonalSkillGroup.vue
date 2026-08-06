@@ -21,6 +21,7 @@ const emit = defineEmits<{
 }>()
 
 const statusLabel = computed(() => {
+  if (props.skill.personalStatus === 'draft') return '草稿'
   if (props.skill.personalStatus === 'reviewing') return '審核中'
   if (props.skill.personalStatus === 'has_library') {
     const scope = props.skill.targetScope
@@ -32,6 +33,7 @@ const statusLabel = computed(() => {
 })
 
 const statusTagClass = computed(() => {
+  if (props.skill.personalStatus === 'draft') return 'tag--draft'
   if (props.skill.personalStatus === 'reviewing') return 'tag--reviewing'
   if (props.skill.personalStatus === 'has_library') return 'tag--has-library'
   return ''

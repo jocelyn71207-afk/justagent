@@ -400,6 +400,7 @@ const derivedFromName = computed(() => {
 const personalStatusLabel = computed(() => {
   const s = props.skill
   if (!s) return null
+  if (s.personalStatus === 'draft') return '草稿'
   if (s.personalStatus === 'reviewing') return '審核中'
   if (s.personalStatus === 'has_library') {
     if (s.targetScope === 'team') return `已有Library版（團隊・${s.targetTeamName ?? '未指定團隊'}）`
@@ -411,6 +412,7 @@ const personalStatusLabel = computed(() => {
 
 const personalStatusClass = computed(() => {
   const s = props.skill?.personalStatus
+  if (s === 'draft') return 'tag--draft'
   if (s === 'reviewing') return 'tag--reviewing'
   if (s === 'has_library') return 'tag--has-library'
   return 'tag--available'
