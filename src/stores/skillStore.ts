@@ -817,14 +817,17 @@ export const useSkillStore = defineStore('skillStore', () => {
   const myPersonalSkills = computed<Skill[]>(() =>
     myPersonalSkillsRef.value
       .filter(s => !s.deletedAt)
-      .map(s => ({
-        ...s,
-        hasLibraryUpdate: !!(
-          s.derivedFrom &&
-          s.derivedFromVersion &&
-          flatSkills.value.find(p => p.id === s.derivedFrom)?.version !== s.derivedFromVersion
-        ),
-      }))
+      .map(s => {
+        const librarySource = flatSkills.value.find(p => p.id === s.derivedFrom)
+        return {
+          ...s,
+          hasLibraryUpdate: !!(
+            librarySource &&
+            s.derivedFromVersion &&
+            librarySource.version !== s.derivedFromVersion
+          ),
+        }
+      })
   )
 
   const selectedSkillId = ref<string | null>(null)

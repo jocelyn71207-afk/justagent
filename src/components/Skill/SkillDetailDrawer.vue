@@ -426,7 +426,7 @@ const isPersonal = computed(() => props.skill?.zone === 'personal')
 
 const derivedFromName = computed(() => {
   if (!props.skill?.derivedFrom) return ''
-  return skillStore.flatSkills.find(s => s.id === props.skill!.derivedFrom)?.name ?? props.skill.derivedFrom
+  return skillStore.findSkill(props.skill.derivedFrom)?.name ?? props.skill.derivedFrom
 })
 
 const personalStatusLabel = computed(() => {
@@ -472,7 +472,7 @@ const lineageSourceName = computed(() => {
   if (!s) return ''
   const sourceId = s.forkSourceId ?? s.derivedFrom
   if (!sourceId) return ''
-  return skillStore.flatSkills.find(x => x.id === sourceId)?.name ?? sourceId
+  return skillStore.findSkill(sourceId)?.name ?? sourceId
 })
 
 const creationMethodLabel = computed(() => {

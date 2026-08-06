@@ -281,5 +281,31 @@ describe('skillStore', () => {
       expect(updated.hasLibraryUpdate).toBe(false)
       expect(updated.instructions).toBe(store.flatSkills.find(s => s.id === 'sys-cs-001')!.instructions)
     })
+
+    it('duplicateAsPersonalSkill 複製「個人技能」時，derivedFrom 指向另一個個人技能不會被誤判為 Library 有更新', () => {
+      // personal-001 是個人技能（不在 flatSkills / Library 範圍內）。
+      // 複製後的新技能 derivedFrom 會指向 personal-001，flatSkills.find(...) 必然找不到，
+      // 因此 hasLibraryUpdate 必須為 false，否則會出現無法作用的「來源有新版本」提示。
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('personal-001')
+      const found = store.myPersonalSkills.find(s => s.id === copy.id)!
+      expect(found.hasLibraryUpdate).toBe(false)
+    })
+
+    // myPersonalSkills 是用 .map() 動態算出 hasLibraryUpdate 的 computed，一旦底層
+    // myPersonalSkillsRef 有任何變動（哪怕改的是另一筆技能），整個 computed 都會重新
+    // map、產生全新的物件陣列——連沒被動到的項目也會拿到新的物件參照。
+    // 這是刻意的設計，但代表任何 consumer 都不可以快取單一個 myPersonalSkills 項目後長期持有，
+    // 必須每次都重新從 store 取得，否則會拿到過期的快照（先前這個 refactor 就因此出過 bug：
+    // 元件持有了舊的物件參照，畫面沒有跟著 store 的變動更新）。
+    it('myPersonalSkillsRef 變動後，myPersonalSkills 中未被直接修改的項目也會是全新的物件參照', () => {
+      const store = useSkillStore()
+      const before = store.myPersonalSkills.find(s => s.id === 'personal-001')!
+      // 觸發的是 personal-002 的更新，personal-001 本身資料沒有變動
+      store.applyLibraryUpdate('personal-002')
+      const after = store.myPersonalSkills.find(s => s.id === 'personal-001')!
+      expect(before).not.toBe(after)
+      expect(before).toEqual(after)
+    })
   })
 })

@@ -179,7 +179,6 @@
               :key="skill.id"
               :skill="skill"
               @manage="detailSkillId = $event.id"
-              @update="handlePersonalUpdate"
             />
             <!-- 分頁 -->
             <div v-if="totalPages > 1" class="my-skills-pagination">
@@ -601,6 +600,6 @@ function handleToggle(skill: Skill) {
 }
 
 function getDerivedFromName(derivedFrom: string): string {
-  return store.flatSkills.find(s => s.id === derivedFrom)?.name ?? derivedFrom
+  return store.findSkill(derivedFrom)?.name ?? derivedFrom
 }
 </script>
