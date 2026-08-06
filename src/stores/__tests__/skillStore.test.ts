@@ -247,6 +247,12 @@ describe('skillStore', () => {
       expect(copy.derivedFrom).toBe('sys-cs-001')
     })
 
+    it('duplicateAsPersonalSkill 建立的副本 personalStatus 為 draft（尚未修改，內容與原技能相同）', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(copy.personalStatus).toBe('draft')
+    })
+
     it('duplicateAsPersonalSkill 從個人技能複製時，skillName 沿用來源的 skillName（不是來源的 name）', () => {
       const store = useSkillStore()
       const copy = store.duplicateAsPersonalSkill('personal-001')

@@ -101,7 +101,7 @@ export interface Skill {
   auditLog?: OperationRecord[]
   upstreamConflicts?: ConflictItem[]
   zone?: 'personal' | 'library'
-  personalStatus?: 'available' | 'reviewing' | 'has_library'
+  personalStatus?: 'draft' | 'available' | 'reviewing' | 'has_library'
   derivedFrom?: string
   hasLibraryUpdate?: boolean
   submitNote?: string
@@ -1207,7 +1207,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       origin: 'manually_created',
       creationMethod: source.creationMethod,
       zone: 'personal',
-      personalStatus: 'available',
+      personalStatus: 'draft',
       skillName: source.zone === 'personal' ? source.skillName : source.name,
       derivedFrom: sourceId,
       derivedFromVersion: source.version,
