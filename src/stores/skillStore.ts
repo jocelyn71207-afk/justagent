@@ -1022,6 +1022,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.triggerHint = data.triggerHint
     skill.isEnabled = data.isEnabled
     skill.assignedAgents = data.assignedAgents
+    if (skill.personalStatus === 'draft') skill.personalStatus = 'available'
   }
 
   function submitSkillForReview(skillId: string, versionId: string, note: string): void {
@@ -1441,6 +1442,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     const skill = findSkill(skillId)
     if (skill) {
       skill.instructions = `${skill.instructions ?? ''}\n\n（依對話更新）${message}`.trim()
+      if (skill.personalStatus === 'draft') skill.personalStatus = 'available'
     }
 
     editChatHistory.value.push({

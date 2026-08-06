@@ -305,5 +305,44 @@ describe('skillStore', () => {
       expect(before).not.toBe(after)
       expect(before).toEqual(after)
     })
+
+    it('updateSkill 更新草稿狀態的個人技能後，personalStatus 轉為 available', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(copy.personalStatus).toBe('draft')
+      store.updateSkill(copy.id, {
+        name: copy.name!,
+        instructions: '已修改過的指令內容',
+        triggerHint: copy.triggerHint ?? '',
+        isEnabled: false,
+        assignedAgents: [],
+      })
+      const updated = store.findSkill(copy.id)
+      expect(updated?.personalStatus).toBe('available')
+      expect(updated?.instructions).toBe('已修改過的指令內容')
+    })
+
+    it('updateSkill 對非草稿狀態的個人技能不會意外改動 personalStatus', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.personalStatus === 'available')!
+      store.updateSkill(skill.id, {
+        name: skill.name!,
+        instructions: '再次修改',
+        triggerHint: skill.triggerHint ?? '',
+        isEnabled: skill.isEnabled ?? false,
+        assignedAgents: [],
+      })
+      expect(store.findSkill(skill.id)?.personalStatus).toBe('available')
+    })
+
+    it('sendEditChatMessage 對草稿狀態的個人技能對話修改後，personalStatus 轉為 available', async () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(copy.personalStatus).toBe('draft')
+      await store.sendEditChatMessage(copy.id, '請幫我調整語氣')
+      const updated = store.findSkill(copy.id)
+      expect(updated?.personalStatus).toBe('available')
+      expect(updated?.instructions).toContain('請幫我調整語氣')
+    })
   })
 })
