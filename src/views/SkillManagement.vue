@@ -102,7 +102,7 @@
                 v-for="skill in store.pendingReviewSkills"
                 :key="skill.id"
                 :skill="skill"
-                @view="detailSkill = $event"
+                @view="detailSkillId = $event.id"
                 @approve="handleApprove"
                 @reject="handleReject"
               />
@@ -134,7 +134,7 @@
                     v-for="skill in filteredEnterpriseSkills"
                     :key="skill.id"
                     :skill="skill"
-                    @click="detailSkill = skill"
+                    @click="detailSkillId = skill.id"
                   />
                 </div>
               </div>
@@ -160,7 +160,7 @@
                         v-for="skill in group.skills"
                         :key="skill.id"
                         :skill="skill"
-                        @click="detailSkill = skill"
+                        @click="detailSkillId = skill.id"
                       />
                     </div>
                   </div>
@@ -178,7 +178,7 @@
               v-for="skill in pagedSkills"
               :key="skill.id"
               :skill="skill"
-              @manage="detailSkill = $event"
+              @manage="detailSkillId = $event.id"
               @update="handlePersonalUpdate"
             />
             <!-- 分頁 -->
@@ -212,7 +212,7 @@
     <!-- Library 瀏覽 Modal -->
     <LibraryBrowseModal
       v-model="showLibraryModal"
-      @open-detail="(s) => { showLibraryModal = false; detailSkill = s }"
+      @open-detail="(s) => { showLibraryModal = false; detailSkillId = s.id }"
       @test="handleTest"
       @duplicate="handleDuplicate"
     />
@@ -221,7 +221,7 @@
     <SkillDetailDrawer
       :skill="detailSkill"
       :upstream-version="upstreamVersionForDetail"
-      @close="detailSkill = null"
+      @close="detailSkillId = null"
       @test="handleTest"
       :manageable="isManager"
       @toggle="handleToggle"
@@ -230,7 +230,7 @@
       @duplicate="handleDuplicate"
       @submit="handlePersonalSubmit"
       @update="handlePersonalUpdate"
-      @review="(skillId, versionId) => { detailSkill = null; openReview(skillId, versionId) }"
+      @review="(skillId, versionId) => { detailSkillId = null; openReview(skillId, versionId) }"
       @open-upstream-update="openUpstreamUpdate"
     />
 
@@ -421,7 +421,13 @@ import type { Skill, ConflictResolution } from '@/stores/skillStore'
 const router = useRouter()
 const store = useSkillStore()
 
-const detailSkill = ref<Skill | null>(null)
+const detailSkillId = ref<string | null>(null)
+const detailSkill = computed<Skill | null>(() => {
+  if (!detailSkillId.value) return null
+  return store.myPersonalSkills.find(s => s.id === detailSkillId.value)
+    ?? store.flatSkills.find(s => s.id === detailSkillId.value)
+    ?? null
+})
 const showReviewDrawer = ref(false)
 const reviewingSkillId = ref('')
 const upstreamSkill = ref<Skill | null>(null)
@@ -511,7 +517,7 @@ function openReview(skillId: string, _versionId: string) {
 }
 
 function openUpstreamUpdate(skill: Skill) {
-  detailSkill.value = null
+  detailSkillId.value = null
   upstreamSkill.value = skill
 }
 
@@ -527,7 +533,7 @@ function handleDetach(skill: Skill) {
 
 function handleDuplicate(skill: Skill) {
   const copy = store.duplicateAsPersonalSkill(skill.id)
-  detailSkill.value = null
+  detailSkillId.value = null
   duplicatedSkill.value = copy
 }
 
@@ -574,7 +580,7 @@ function confirmSubmitSkill() {
 
 function handlePersonalDelete(skill: Skill) {
   store.deletePersonalSkill(skill.id)
-  if (detailSkill.value?.id === skill.id) detailSkill.value = null
+  if (detailSkillId.value === skill.id) detailSkillId.value = null
 }
 
 function handlePersonalUpdate(skill: Skill) {
