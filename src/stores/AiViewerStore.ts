@@ -954,7 +954,7 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     aiViewerBlocks.value.push(tempMsg);
   }
   // 報告生成後自動加入畫布
-  function addReportBlock(fileUrl: string, blockName: string) {
+  function addReportBlock(fileUrl: string, blockName: string, pan: boolean = true) {
     const BLOCK_W = 640;
     const BLOCK_H = 750;
     const GAP = 24;
@@ -976,7 +976,9 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
       data: { blockType: 'HTML', data: { fileUrl } }
     };
     aiViewerBlocks.value.push(temp);
-    panToTarget.value = { x: temp.x, y: temp.y, width: temp.width, height: temp.height };
+    if (pan) {
+      panToTarget.value = { x: temp.x, y: temp.y, width: temp.width, height: temp.height };
+    }
   }
 
   // 圖表生成後自動加入畫布

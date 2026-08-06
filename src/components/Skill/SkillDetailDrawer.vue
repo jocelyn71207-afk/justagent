@@ -80,6 +80,8 @@
                 <template v-if="lineageSourceName">
                   <i class="material-symbols-outlined lineage-icon">call_split</i>
                   延伸自「{{ lineageSourceName }}」
+                  <span v-if="lineageSourceVersion" class="skill-tag tag--version">v{{ lineageSourceVersion }}</span>
+                  <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
                 </template>
                 <template v-else>
                   <i class="material-symbols-outlined lineage-icon">edit_note</i>
@@ -269,9 +271,6 @@
                     Library 來源技能有新版本
                     <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
                   </span>
-                  <button class="custom-btn psv-upstream-btn" @click="showApplyUpdateConfirm = true">
-                    <i class="material-symbols-outlined">download</i>更新
-                  </button>
                 </div>
 
                 <div v-if="skill.submitNote" class="psv-note">
@@ -340,28 +339,6 @@
     <!-- skill.md 內容 -->
     <SkillMarkdownModal v-model="showMarkdown" :skill="skill" />
 
-    <!-- 套用來源更新確認 -->
-    <Transition name="confirm-fade">
-      <div v-if="showApplyUpdateConfirm && skill" class="drawer-confirm-overlay" @click.self="showApplyUpdateConfirm = false">
-        <div class="drawer-confirm-dialog">
-          <div class="confirm-icon confirm-icon--update">
-            <i class="material-symbols-outlined">system_update_alt</i>
-          </div>
-          <h4>套用來源技能更新？</h4>
-          <p>
-            套用後將以來源技能<template v-if="derivedFromName">「{{ derivedFromName }}」</template>目前的內容
-            覆蓋這份技能的指令內容，且無法復原。
-          </p>
-          <div class="confirm-actions">
-            <button class="custom-btn" @click="showApplyUpdateConfirm = false">取消</button>
-            <button class="custom-btn custom-main-btn" @click="confirmApplyUpdate">
-              <i class="material-symbols-outlined">download</i>確定套用
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
     <!-- 刪除確認 -->
     <Transition name="confirm-fade">
       <div v-if="showConfirm && skill" class="drawer-confirm-overlay" @click.self="showConfirm = false">
@@ -404,7 +381,6 @@ const emit = defineEmits<{
   review: [skillId: string, versionId: string]
   openUpstreamUpdate: [skill: Skill]
   submit: [skill: Skill]
-  update: [skill: Skill]
 }>()
 
 const skillStore = useSkillStore()
@@ -413,14 +389,6 @@ const showMarkdown = ref(false)
 const showCompare = ref(false)
 const compareV1Id = ref('')
 const compareV2Id = ref('')
-
-const showApplyUpdateConfirm = ref(false)
-
-function confirmApplyUpdate() {
-  if (!props.skill) return
-  emit('update', props.skill)
-  showApplyUpdateConfirm.value = false
-}
 
 const isPersonal = computed(() => props.skill?.zone === 'personal')
 
@@ -467,12 +435,46 @@ const sortedVersions = computed(() => {
   return [...props.skill.versions].reverse()
 })
 
+const lineageSource = computed(() => {
+  const s = props.skill
+  if (!s) return null
+  const sourceId = s.forkSourceId ?? s.derivedFrom
+  if (!sourceId) return null
+  return skillStore.findSkill(sourceId) ?? null
+})
+
 const lineageSourceName = computed(() => {
   const s = props.skill
   if (!s) return ''
   const sourceId = s.forkSourceId ?? s.derivedFrom
   if (!sourceId) return ''
-  return skillStore.findSkill(sourceId)?.name ?? sourceId
+  return lineageSource.value?.name ?? sourceId
+})
+
+const lineageSourceVersion = computed(() => {
+  const s = props.skill
+  if (!s) return ''
+  return s.forkSourceVersion ?? s.derivedFromVersion ?? ''
+})
+
+const lineageSourceScopeLabel = computed(() => {
+  const src = lineageSource.value
+  if (!src) return ''
+  if (src.zone === 'personal') return '個人技能'
+  if (src.scope === 'team') return `團隊技能${src.teamName ? `・${src.teamName}` : ''}`
+  if (src.scope === 'enterprise') return '企業技能'
+  if (src.scope === 'system') return '系統技能'
+  return ''
+})
+
+const lineageSourceScopeClass = computed(() => {
+  const src = lineageSource.value
+  if (!src) return ''
+  if (src.zone === 'personal') return 'tag--personal'
+  if (src.scope === 'team') return 'tag--team'
+  if (src.scope === 'enterprise') return 'tag--enterprise'
+  if (src.scope === 'system') return 'tag--sys'
+  return ''
 })
 
 const creationMethodLabel = computed(() => {

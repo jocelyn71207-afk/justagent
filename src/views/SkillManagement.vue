@@ -228,7 +228,6 @@
       @delete="handlePersonalDelete"
       @duplicate="handleDuplicate"
       @submit="handlePersonalSubmit"
-      @update="handlePersonalUpdate"
       @review="(skillId, versionId) => { detailSkillId = null; openReview(skillId, versionId) }"
       @open-upstream-update="openUpstreamUpdate"
     />
@@ -581,10 +580,6 @@ function confirmSubmitSkill() {
 function handlePersonalDelete(skill: Skill) {
   store.deletePersonalSkill(skill.id)
   if (detailSkillId.value === skill.id) detailSkillId.value = null
-}
-
-function handlePersonalUpdate(skill: Skill) {
-  store.applyLibraryUpdate(skill.id)
 }
 
 function handleApprove(skill: Skill) {

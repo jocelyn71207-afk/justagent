@@ -5,7 +5,6 @@
 - [AI_RULES.md](./AI_RULES.md) — 程式規範、命名慣例、元件寫法
 - [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) — 業務背景、功能模組、術語表
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — 技術架構、資料流、設計決策
-- [TASK.md](./TASK.md) — 待實作項目清單
 
 ## 常用指令
 

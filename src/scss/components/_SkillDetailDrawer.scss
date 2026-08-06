@@ -669,26 +669,29 @@
     background: var(--page-bg);
     border: 1px solid var(--divider-a50);
     border-radius: 10px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .psv-head {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
   }
 
   .psv-mode {
+    display: inline-flex;
+    align-items: center;
     font-size: 11px;
+    font-weight: 500;
     color: var(--text-faint);
     background: var(--surface);
     border: 1px solid var(--divider-a50);
-    padding: 1px 6px;
-    border-radius: 4px;
+    padding: 2px 8px;
+    border-radius: 5px;
   }
 
   .psv-scope-tag {
@@ -728,7 +731,13 @@
   }
 
 
-  .psv-actions { display: flex; align-items: center; gap: 8px; }
+  .psv-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--divider-a50);
+  }
 
   .psv-upstream-hint {
     display: flex;
@@ -745,20 +754,6 @@
     > span { flex: 1; min-width: 0; }
 
     .psv-upstream-src { color: $color_main_1; }
-
-    .psv-upstream-btn {
-      flex-shrink: 0;
-      font-size: 12px;
-      padding: 3px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      color: $color_main_1;
-      border-color: $color_main_3;
-      background: $color_main_5;
-      &:hover { background: $color_main_4; }
-      .material-symbols-outlined { font-size: 13px; }
-    }
   }
 
   .psv-ver-btn {

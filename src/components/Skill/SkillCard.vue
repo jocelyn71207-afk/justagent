@@ -5,10 +5,11 @@
       { 'is-extension': isExtension },
       { 'is-standalone': isExtension && !skill.forkSourceId },
       { 'is-disabled': !skill.isEnabled },
+      { 'is-compact': compact },
     ]"
     @click="emit('click', skill)"
   >
-    <div :class="['skill-card-icon', isExtension ? 'icon--ext' : 'icon--sys']">
+    <div :class="['skill-card-icon', scopeIconClass]">
       <i class="material-symbols-outlined">{{ isExtension ? 'extension' : 'psychology' }}</i>
     </div>
 
@@ -16,14 +17,8 @@
       <div class="skill-card-name">
         {{ skill.name }}
         <span class="skill-tag tag--version">v{{ skill.version }}</span>
-        <span v-if="isExtension && skill.scope === 'enterprise'" class="skill-tag tag--enterprise">企業</span>
-        <span v-if="isExtension && skill.scope === 'team'" class="skill-tag tag--team">團隊</span>
-        <span v-if="hasReviewingVersion" class="skill-tag tag--reviewing">審核中</span>
-        <span v-if="hasUpstreamUpdate" class="skill-tag tag--upstream">
-          <i class="material-symbols-outlined">upgrade</i>待更新
-        </span>
       </div>
-      <div class="skill-card-desc">{{ skill.description }}</div>
+      <div v-if="!compact" class="skill-card-desc">{{ skill.description }}</div>
       <div class="skill-card-stats">
         <span class="sk-stat">
           <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }}
@@ -63,10 +58,10 @@ import type { Skill } from '@/stores/skillStore'
 const props = withDefaults(defineProps<{
   skill: Skill
   isExtension?: boolean
-  hasUpstreamUpdate?: boolean
+  compact?: boolean
 }>(), {
   isExtension: false,
-  hasUpstreamUpdate: false,
+  compact: false,
 })
 
 const emit = defineEmits<{
@@ -81,9 +76,13 @@ const rateClass = computed(() =>
   : 'sk-stat--bad'
 )
 
-const hasReviewingVersion = computed(() =>
-  props.skill.versions?.some(v => v.status === 'reviewing') ?? false
-)
+// 圖示配色改為跟著技能的分類（系統／企業／團隊）走，跟 Library 技能庫的分類標籤配色一致，
+// 不再只是依 isExtension 分兩色。
+const scopeIconClass = computed(() => {
+  if (props.skill.scope === 'enterprise') return 'icon--enterprise'
+  if (props.skill.scope === 'team') return 'icon--team'
+  return 'icon--system'
+})
 
 function formatCount(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)

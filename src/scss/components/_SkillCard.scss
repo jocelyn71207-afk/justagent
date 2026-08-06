@@ -59,13 +59,19 @@
 
     .material-symbols-outlined { font-size: 24px; }
 
-    &.icon--sys {
+    // 配色跟 Library 技能庫的分類標籤（.lbm-section-label--*）一致，
+    // 依技能的 scope（系統／企業／團隊）決定顏色，不再只依 isExtension 分兩色。
+    &.icon--system {
+      background: rgba(#1565c0, 0.12);
+      color: #1565c0;
+    }
+    &.icon--enterprise {
       background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
       color: $color_main_2;
     }
-    &.icon--ext {
-      background: $color-badge-hot-bg;
-      color: $color-badge-hot-text;
+    &.icon--team {
+      background: rgba(#7c5fba, 0.12);
+      color: #7c5fba;
     }
   }
 
@@ -134,6 +140,57 @@
     }
   }
 
+  // ── Compact mode ─────────────────────────────
+  &.is-compact {
+    padding: 7px 16px;
+    border-radius: 10px;
+    gap: 10px;
+
+    .skill-card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      .material-symbols-outlined { font-size: 16px; }
+    }
+
+    .skill-card-body {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .skill-card-name {
+        font-size: 13.5px;
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+
+      .skill-card-stats {
+        margin: 0;
+        .sk-stat { font-size: 10px; padding: 1px 6px 1px 5px; }
+      }
+    }
+
+    .skill-card-right {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .skill-card-actions {
+      opacity: 0;
+      transition: opacity 0.15s;
+
+      .skill-action-btn {
+        font-size: 10px;
+        padding: 1px 7px;
+        &--icon { padding: 1px 5px; }
+      }
+    }
+
+    &:hover .skill-card-actions { opacity: 1; }
+  }
+
   // Right column: status stacked above actions
   .skill-card-right {
     display: flex;
@@ -186,6 +243,9 @@
   &.tag--update    { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
   &.tag--reviewing { background: $color-warning-bg; color: $color-warning-text; border: 1px solid $color-warning-border; }
   &.tag--draft     { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
+  &.tag--available   { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  &.tag--has-library { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  &.tag--personal { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
   &.tag--enterprise {
     background: $color_main_5;
     color: $color_main_1;

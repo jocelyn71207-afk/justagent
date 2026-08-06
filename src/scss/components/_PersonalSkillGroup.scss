@@ -32,22 +32,6 @@
     flex-shrink: 0;
   }
 
-  .psg-update-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    color: $color-warning-amber;
-    border: 1px solid rgba($color-warning-amber, 0.4);
-    background: rgba($color-warning-amber, 0.07);
-    padding: 2px 8px;
-    border-radius: 6px;
-    flex-shrink: 0;
-    .material-symbols-outlined { font-size: 13px; }
-    &:hover { background: rgba($color-warning-amber, 0.14); }
-  }
-
   .psg-status {
     display: inline-flex;
     align-items: center;

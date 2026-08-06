@@ -1524,6 +1524,7 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
   const isCtrl = event.ctrlKey; // 是否按下 ctrl 鍵
   const isCmd = event.metaKey; // 是否按下 command 鍵
   const isShift = event.shiftKey; // 是否按下 Shift 鍵
+  const isAlt = event.altKey; // 是否按下 Option/Alt 鍵
   isAspectRatioMode.value = isTouchDevice.value ? false : isShift; // 是否等比例縮放模式 (觸控類的裝置強制為false)
 
  console.log("onKeybordDownEvent >>> ", key);
@@ -1549,8 +1550,8 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
     nowMultiChoiceAiViewerIds.value = []; // 取消多選清單
   }
 
-  // 按下 Command + Shift 鍵 進入多選模式
-  if (isCmd && isShift) {
+  // 按下 Command + Option 鍵 進入多選模式
+  if (isCmd && isAlt) {
     isMultiChoiceAiViewerMode.value = true;
     (document.activeElement as HTMLElement | null)?.blur(); // 強制滑鼠 blur
   } else {
@@ -1678,7 +1679,7 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
   }
 }
 // 全域層級的鍵盤事件
-// 離開多選模式（放開 Command/Shift 鍵，或視窗失焦時呼叫）
+// 離開多選模式（放開 Command/Option 鍵，或視窗失焦時呼叫）
 function exitMultiChoiceMode(): void {
   isMultiChoiceAiViewerMode.value = false;
   if (!mainStage.value) return;
@@ -1692,10 +1693,11 @@ function onKeybordUpEvent(event: KeyboardEvent): void {
   const isCtrl = event.ctrlKey; // 是否按下 ctrl 鍵
   const isCmd = event.metaKey; // 是否按下 command 鍵
   const isShift = event.shiftKey; // 是否按下 Shift 鍵
+  const isAlt = event.altKey; // 是否按下 Option/Alt 鍵
   isAspectRatioMode.value = isTouchDevice.value ? false : isShift; // 是否等比例縮放模式 (觸控類的裝置強制為false)
 
-  // 放開 Command or Shift 鍵 離開多選模式
-  if (!isCmd || !isShift) {
+  // 放開 Command or Option 鍵 離開多選模式
+  if (!isCmd || !isAlt) {
     exitMultiChoiceMode();
   }
 }

@@ -3128,7 +3128,7 @@ function conv5InitFlow() {
             ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
           );
           try {
-            addReportBlock('/justagent/teva_seasonal_promotion_strategy.html', 'Teva 2026 換季促銷方案.html');
+            addReportBlock('/justagent/teva_seasonal_promotion_strategy.html', 'Teva 2026 換季促銷方案.html', false);
           } catch { /* 畫布可能尚未初始化 */ }
           c5Push({
             finishResponse: true,
@@ -3198,7 +3198,7 @@ function conv5ReviseStrategy() {
     setTimeout(() => {
       conv5FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
       try {
-        addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html');
+        addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html', false);
       } catch { /* 畫布可能尚未初始化 */ }
       c5Push({
         finishResponse: true,
