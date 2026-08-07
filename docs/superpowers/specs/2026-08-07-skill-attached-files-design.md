@@ -186,4 +186,4 @@ function updateSkill(id: string, data: UpdateSkillPayload): void {
 - `SkillCard.vue`（列表/卡片）不顯示檔案數量提示 —— 使用者確認過只需要詳情抽屜顯示
 - 不接真實後端／S3 上傳，`SkillFile` 沒有 `fileUrl`，無法下載或預覽檔案內容
 - `CreateSkillModal.vue`（目前專案內沒有任何地方 import 使用的快速建立 modal）不處理
-- 個人技能「複製」流程是否複製 `files` —— 沿用複製功能現有的完整複製語意（複製會整包複製 Skill 物件），不需要額外程式碼即可自然涵蓋，不特別測試
+- `duplicateAsPersonalSkill()`（「複製至草稿」）不複製 `files` —— 該函式是逐欄位手動組出新 `Skill` 物件（非整包 clone），本次不擴充它去帶 `files`，複製出來的草稿一律視為未附檔案，使用者可在編輯時重新上傳
