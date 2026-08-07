@@ -322,6 +322,21 @@ describe('skillStore', () => {
       expect(updated?.instructions).toBe('已修改過的指令內容')
     })
 
+    it('updateSkill 儲存內容未變動的草稿時，personalStatus 保持 draft（不因為單純按下儲存就清除）', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      const source = store.flatSkills.find(s => s.id === 'sys-cs-001')!
+      expect(copy.personalStatus).toBe('draft')
+      store.updateSkill(copy.id, {
+        name: copy.name!,
+        instructions: source.instructions!, // 跟來源完全相同，代表使用者沒有真的修改內容
+        triggerHint: copy.triggerHint ?? '',
+        isEnabled: false,
+        assignedAgents: [],
+      })
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('draft')
+    })
+
     it('updateSkill 對非草稿狀態的個人技能不會意外改動 personalStatus', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills.find(s => s.personalStatus === 'available')!
@@ -333,6 +348,35 @@ describe('skillStore', () => {
         assignedAgents: [],
       })
       expect(store.findSkill(skill.id)?.personalStatus).toBe('available')
+    })
+
+    it('updateSkill 對 reviewing 狀態的個人技能不會意外改動 personalStatus', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills[0]
+      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明')
+      expect(store.findSkill(skill.id)?.personalStatus).toBe('reviewing')
+      store.updateSkill(skill.id, {
+        name: skill.name!,
+        instructions: '再次修改',
+        triggerHint: skill.triggerHint ?? '',
+        isEnabled: skill.isEnabled ?? false,
+        assignedAgents: [],
+      })
+      expect(store.findSkill(skill.id)?.personalStatus).toBe('reviewing')
+    })
+
+    it('updateSkill 對 has_library 狀態的個人技能不會意外改動 personalStatus', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.personalStatus === 'has_library')
+      expect(skill).toBeDefined()
+      store.updateSkill(skill!.id, {
+        name: skill!.name!,
+        instructions: '再次修改',
+        triggerHint: skill!.triggerHint ?? '',
+        isEnabled: skill!.isEnabled ?? false,
+        assignedAgents: [],
+      })
+      expect(store.findSkill(skill!.id)?.personalStatus).toBe('has_library')
     })
 
     it('sendEditChatMessage 對草稿狀態的個人技能對話修改後，personalStatus 轉為 available', async () => {
