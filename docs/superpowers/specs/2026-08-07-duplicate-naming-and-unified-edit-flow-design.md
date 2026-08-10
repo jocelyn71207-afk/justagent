@@ -71,7 +71,9 @@ function wouldSkillNameConflict(sourceId: string): boolean {
   if (!source) return false
   const proposedSkillName = source.zone === 'personal' ? source.skillName : source.name
   if (!proposedSkillName) return false
-  return myPersonalSkillsRef.value.some(s => !s.deletedAt && s.skillName === proposedSkillName)
+  return myPersonalSkillsRef.value.some(
+    s => s.id !== sourceId && !s.deletedAt && s.skillName === proposedSkillName,
+  )
 }
 ```
 

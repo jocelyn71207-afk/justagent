@@ -290,6 +290,34 @@ describe('skillStore', () => {
       expect(found.hasLibraryUpdate).toBe(false)
     })
 
+    it('duplicateAsPersonalSkill 傳入 nameOverride 時，副本的顯示名稱採用使用者確認後的名稱，skillName 仍沿用來源', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001', '客服機器人（我的版本）')
+      expect(copy.name).toBe('客服機器人（我的版本）')
+      expect(copy.skillName).toBe('通用客服機器人')
+    })
+
+    it('duplicateAsPersonalSkill 傳入空白 nameOverride 時，退回使用來源名稱', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001', '   ')
+      expect(copy.name).toBe('通用客服機器人')
+    })
+
+    it('wouldSkillNameConflict 在建立副本之前，就能依來源預判是否會撞名', () => {
+      const store = useSkillStore()
+      // sys-cs-001（通用客服機器人）已經是 personal-002 的來源，複製前就該偵測到衝突
+      expect(store.wouldSkillNameConflict('sys-cs-001')).toBe(true)
+      // ERP 庫存查詢目前沒有任何個人技能衍生自它
+      expect(store.wouldSkillNameConflict('ext-erp-001')).toBe(false)
+    })
+
+    it('wouldSkillNameConflict 對沒有同名副本的個人技能來源不會自我誤判為撞名', () => {
+      const store = useSkillStore()
+      // personal-004（合約審核摘要）的 skillName 在個人技能清單中沒有其他同名者，
+      // 修正前 .some() 沒有排除自己，會把來源自己算進去而永遠回傳 true。
+      expect(store.wouldSkillNameConflict('personal-004')).toBe(false)
+    })
+
     // myPersonalSkills 是用 .map() 動態算出 hasLibraryUpdate 的 computed，一旦底層
     // myPersonalSkillsRef 有任何變動（哪怕改的是另一筆技能），整個 computed 都會重新
     // map、產生全新的物件陣列——連沒被動到的項目也會拿到新的物件參照。
