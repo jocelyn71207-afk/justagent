@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import type { FileType } from '@/utils/file'
 
 export interface SkillCapability {
   name: string
@@ -115,6 +116,15 @@ export interface Skill {
   reviewedAt?: string
   reviewFeedback?: string
   aiAnalysis?: string[]
+  files?: SkillFile[]
+}
+
+export interface SkillFile {
+  id: string
+  fileName: string
+  fileSize: number
+  fileType: FileType
+  uploadedAt: string
 }
 
 export interface CreateSkillPayload {
@@ -125,6 +135,7 @@ export interface CreateSkillPayload {
   isEnabled: boolean
   assignedAgents: string[]
   scope?: 'enterprise' | 'team'
+  files?: SkillFile[]
 }
 
 export interface UpdateSkillPayload {
@@ -134,6 +145,7 @@ export interface UpdateSkillPayload {
   triggerHint: string
   isEnabled: boolean
   assignedAgents: string[]
+  files?: SkillFile[]
 }
 
 export interface DraftSkill {
@@ -147,6 +159,7 @@ export interface DraftSkill {
   updatedAt: string
   triggerHint?: string
   assignedAgents?: string[]
+  files?: SkillFile[]
 }
 
 export interface ChatMessage {
@@ -1010,6 +1023,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       usageCount: 0,
       testPassRate: 0,
       avgLatencyMs: 0,
+      files: data.files ?? [],
     })
   }
 
@@ -1022,6 +1036,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.triggerHint = data.triggerHint
     skill.isEnabled = data.isEnabled
     skill.assignedAgents = data.assignedAgents
+    skill.files = data.files ?? []
     if (skill.personalStatus === 'draft' && skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions) {
       skill.personalStatus = 'available'
     }

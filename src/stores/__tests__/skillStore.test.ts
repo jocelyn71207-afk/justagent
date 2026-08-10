@@ -389,4 +389,60 @@ describe('skillStore', () => {
       expect(updated?.instructions).toContain('請幫我調整語氣')
     })
   })
+
+  describe('附加檔案 files', () => {
+    it('createSkill 帶入 files 會存到新技能上', () => {
+      const store = useSkillStore()
+      const file = { id: 'sf-1', fileName: 'rules.pdf', fileSize: 1024, fileType: 'PDF' as const, uploadedAt: '2026-08-07T00:00:00Z' }
+      store.createSkill({
+        name: '測試技能',
+        instructions: '',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+        files: [file],
+      })
+      const created = store.flatSkills.find(s => s.name === '測試技能')
+      expect(created?.files).toEqual([file])
+    })
+
+    it('createSkill 未帶 files 時，新技能的 files 是空陣列', () => {
+      const store = useSkillStore()
+      store.createSkill({
+        name: '無附檔技能',
+        instructions: '',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.flatSkills.find(s => s.name === '無附檔技能')
+      expect(created?.files).toEqual([])
+    })
+
+    it('updateSkill 帶入 files 會覆蓋技能的 files', () => {
+      const store = useSkillStore()
+      const file = { id: 'sf-2', fileName: 'faq.md', fileSize: 512, fileType: 'MD' as const, uploadedAt: '2026-08-07T00:00:00Z' }
+      store.updateSkill('ext-cs-return-001', {
+        name: '客服機器人 (退貨版)',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+        files: [file],
+      })
+      expect(store.findSkill('ext-cs-return-001')?.files).toEqual([file])
+    })
+
+    it('updateSkill 未帶 files 時，技能的 files 被清空為空陣列', () => {
+      const store = useSkillStore()
+      store.updateSkill('ext-cs-return-001', {
+        name: '客服機器人 (退貨版)',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      expect(store.findSkill('ext-cs-return-001')?.files).toEqual([])
+    })
+  })
 })
