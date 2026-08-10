@@ -291,29 +291,31 @@
       </Transition>
     </Teleport>
 
-    <!-- 複製後：選擇修改方式 -->
+    <!-- 選擇修改方式：複製完成後，或點個人技能的「編輯」 -->
     <Teleport to="body">
       <Transition name="confirm-fade">
         <div
-          v-if="duplicatedSkill && !showEditChatForDuplicate"
+          v-if="editChoiceSkill && !showEditChatForDuplicate"
           class="drawer-confirm-overlay"
-          @click.self="duplicatedSkill = null"
+          @click.self="editChoiceSkill = null"
         >
           <div class="drawer-confirm-dialog">
             <div class="confirm-icon confirm-icon--update">
               <i class="material-symbols-outlined">content_copy</i>
             </div>
-            <h4>已建立複本</h4>
-            <div class="confirm-warning-banner">
+            <h4>{{ editChoiceIsFreshDuplicate ? '已建立複本' : '編輯技能' }}</h4>
+            <div v-if="editChoiceSkill.personalStatus === 'draft'" class="confirm-warning-banner">
               <i class="material-symbols-outlined">info</i>
               這份複本內容目前與原技能完全相同。內容一模一樣的技能會讓後續維運難以區分，也可能造成 Agent 判斷失準，建議修改後再使用。
             </div>
-            <p>接下來想怎麼修改這份複本？</p>
+            <p>
+              {{ editChoiceIsFreshDuplicate ? '接下來想怎麼修改這份複本？' : `接下來想怎麼修改「${editChoiceSkill.name}」？` }}
+            </p>
             <div class="confirm-actions confirm-actions--column">
-              <button class="custom-btn" @click="handleDuplicateChatEdit">
+              <button class="custom-btn" @click="handleChatEdit">
                 <i class="material-symbols-outlined">forum</i>跟 Agent 對話修改
               </button>
-              <button class="custom-btn custom-main-btn" @click="handleDuplicateDirectEdit">
+              <button class="custom-btn custom-main-btn" @click="handleDirectEdit">
                 <i class="material-symbols-outlined">edit</i>直接編輯
               </button>
             </div>
@@ -324,8 +326,8 @@
 
     <SkillEditChatModal
       v-model="showEditChatForDuplicate"
-      :skill="duplicatedSkill"
-      @done="closeDuplicateChatEdit"
+      :skill="editChoiceSkill"
+      @done="closeChatEdit"
     />
 
     <!-- 送審 dialog -->
@@ -474,7 +476,8 @@ const upstreamSkill = ref<Skill | null>(null)
 const showBatchUpdate = ref(false)
 
 const showLibraryModal = ref(false)
-const duplicatedSkill = ref<Skill | null>(null)
+const editChoiceSkill = ref<Skill | null>(null)
+const editChoiceIsFreshDuplicate = ref(false)
 const showEditChatForDuplicate = ref(false)
 
 // 建立副本第一步：先確認顯示名稱，確認後才真正建立副本（此時才會出現在「我的技能」列表）
@@ -555,7 +558,14 @@ function handleTest(skill: Skill) {
 }
 
 function handleEdit(skill: Skill) {
-  router.push({ path: '/view/SkillEditor', query: { skillId: skill.id } })
+  if (skill.zone !== 'personal') {
+    router.push({ path: '/view/SkillEditor', query: { skillId: skill.id } })
+    return
+  }
+  detailSkillId.value = null
+  showLibraryModal.value = false
+  editChoiceSkill.value = skill
+  editChoiceIsFreshDuplicate.value = false
 }
 
 function openReview(skillId: string, _versionId: string) {
@@ -594,22 +604,23 @@ function confirmPendingDuplicate() {
   if (!pendingDuplicateSource.value) return
   const copy = store.duplicateAsPersonalSkill(pendingDuplicateSource.value.id, pendingDuplicateName.value)
   cancelPendingDuplicate()
-  duplicatedSkill.value = copy
+  editChoiceSkill.value = copy
+  editChoiceIsFreshDuplicate.value = true
 }
 
-function handleDuplicateDirectEdit() {
-  if (!duplicatedSkill.value) return
-  router.push({ path: '/view/SkillEditor', query: { skillId: duplicatedSkill.value.id } })
-  duplicatedSkill.value = null
+function handleDirectEdit() {
+  if (!editChoiceSkill.value) return
+  router.push({ path: '/view/SkillEditor', query: { skillId: editChoiceSkill.value.id } })
+  editChoiceSkill.value = null
 }
 
-function handleDuplicateChatEdit() {
+function handleChatEdit() {
   showEditChatForDuplicate.value = true
 }
 
-function closeDuplicateChatEdit() {
+function closeChatEdit() {
   showEditChatForDuplicate.value = false
-  duplicatedSkill.value = null
+  editChoiceSkill.value = null
 }
 
 // ── 個人技能 handlers ──────────────────────────────
