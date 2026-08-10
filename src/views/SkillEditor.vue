@@ -94,6 +94,11 @@
             />
           </div>
           <div class="se-section">
+            <label class="se-label">所需檔案（選填）</label>
+            <p class="se-hint">上傳技能執行時需要參考的檔案，例如規則表、範本、FAQ 文件。</p>
+            <SkillFileUpload v-model="form.files" />
+          </div>
+          <div class="se-section">
             <label class="se-label">指派 Agent（選填）</label>
             <p class="se-hint">選擇哪些 Agent 可以調用此技能。未指派時技能仍可建立，之後可再補充。</p>
             <div class="se-agent-grid">
@@ -135,6 +140,13 @@
               <span class="se-confirm-val">
                 <span v-if="form.assignedAgents.length">{{ form.assignedAgents.join('、') }}</span>
                 <span v-else class="se-empty">（未指派）</span>
+              </span>
+            </div>
+            <div class="se-confirm-row">
+              <span class="se-confirm-key">所需檔案</span>
+              <span class="se-confirm-val">
+                <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
+                <span v-else class="se-empty">（未上傳）</span>
               </span>
             </div>
             <div class="se-confirm-row se-confirm-row--toggle">
@@ -190,8 +202,9 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { DraftSkill } from '@/stores/skillStore'
+import type { DraftSkill, SkillFile } from '@/stores/skillStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -234,6 +247,7 @@ const form = reactive({
       ? [...existingDraft.assignedAgents]
       : [] as string[],
   isEnabled: existingSkill?.isEnabled ?? true,
+  files: existingSkill?.files ?? existingDraft?.files ?? [] as SkillFile[],
 })
 
 const fillWidth = computed(() => `${(currentStep.value / (STEPS.length - 1)) * 100}%`)
@@ -262,6 +276,7 @@ function handleSubmit() {
     triggerHint: form.triggerHint.trim(),
     assignedAgents: [...form.assignedAgents],
     isEnabled: form.isEnabled,
+    files: [...form.files],
   }
   if (isDraftMode && draftId) {
     store.updateDraft(draftId, payload)
