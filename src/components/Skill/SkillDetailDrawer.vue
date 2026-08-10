@@ -31,8 +31,27 @@
                   <i class="material-symbols-outlined">science</i>測試
                 </button>
               </template>
+              <template v-else>
+                <button class="custom-btn dh-btn" @click="emit('test', skill!)">
+                  <i class="material-symbols-outlined">science</i>測試
+                </button>
+                <button
+                  v-if="skill.personalStatus !== 'reviewing'"
+                  class="custom-btn dh-btn"
+                  @click="emit('edit', skill!)"
+                >
+                  <i class="material-symbols-outlined">edit</i>編輯
+                </button>
+              </template>
               <button class="custom-btn dh-btn" @click="emit('duplicate', skill!)">
                 <i class="material-symbols-outlined">content_copy</i>複製
+              </button>
+              <button
+                v-if="isPersonal && skill.personalStatus !== 'reviewing'"
+                class="custom-btn dh-btn dh-btn--submit"
+                @click="emit('submit', skill!)"
+              >
+                <i class="material-symbols-outlined">send</i>送審
               </button>
               <button class="custom-btn dh-btn" @click="showMarkdown = true">
                 <i class="material-symbols-outlined">description</i>skill.md
@@ -282,32 +301,6 @@
                     <div class="psv-reject-feedback-label">審核退回原因</div>
                     <div>{{ skill.reviewFeedback }}</div>
                   </div>
-                </div>
-
-                <div class="psv-actions">
-                  <button class="custom-btn psv-ver-btn" @click="emit('test', skill!)">
-                    <i class="material-symbols-outlined">science</i>測試
-                  </button>
-                  <button
-                    v-if="skill.personalStatus !== 'reviewing'"
-                    class="custom-btn psv-ver-btn"
-                    @click="emit('edit', skill!)"
-                  >
-                    <i class="material-symbols-outlined">edit</i>編輯
-                  </button>
-                  <button class="custom-btn psv-ver-btn" @click="emit('duplicate', skill!)">
-                    <i class="material-symbols-outlined">content_copy</i>複製
-                  </button>
-                  <button
-                    v-if="skill.personalStatus !== 'reviewing'"
-                    class="custom-btn psv-submit-btn"
-                    @click="emit('submit', skill!)"
-                  >
-                    <i class="material-symbols-outlined">send</i>送審
-                  </button>
-                  <span v-else class="psv-reviewing">
-                    <i class="material-symbols-outlined">hourglass_top</i>審核進行中
-                  </span>
                 </div>
               </div>
             </div>

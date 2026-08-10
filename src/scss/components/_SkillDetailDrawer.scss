@@ -116,6 +116,8 @@
   .dh-actions {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 6px;
     flex-shrink: 0;
     margin-top: 1px;
@@ -128,6 +130,13 @@
     align-items: center;
     gap: 4px;
     .material-symbols-outlined { font-size: 15px; }
+
+    &--submit {
+      color: $color_main_1;
+      border-color: $color_main_3;
+      background: $color_main_5;
+      &:hover { background: $color_main_4; }
+    }
   }
 
   .drawer-close-btn {
@@ -731,14 +740,6 @@
   }
 
 
-  .psv-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid var(--divider-a50);
-  }
-
   .psv-upstream-hint {
     display: flex;
     align-items: center;
@@ -754,39 +755,6 @@
     > span { flex: 1; min-width: 0; }
 
     .psv-upstream-src { color: $color_main_1; }
-  }
-
-  .psv-ver-btn {
-    font-size: 12px;
-    padding: 3px 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: var(--text-muted);
-    .material-symbols-outlined { font-size: 13px; }
-    &:hover { color: var(--text); }
-  }
-
-  .psv-submit-btn {
-    font-size: 12px;
-    padding: 3px 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: $color_main_1;
-    border-color: $color_main_3;
-    background: $color_main_5;
-    &:hover { background: $color_main_4; }
-    .material-symbols-outlined { font-size: 13px; }
-  }
-
-  .psv-reviewing {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--text-faint);
-    .material-symbols-outlined { font-size: 14px; }
   }
 
   // ── Danger zone ───────────────────────────────
@@ -854,6 +822,20 @@
     margin: 4px 0 12px;
 
     .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; flex-shrink: 0; }
+  }
+
+  .pdd-name-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-faint);
+    text-align: left;
+    margin-bottom: 6px;
+  }
+
+  .pdd-name-input {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 20px;
   }
 
   h4 {

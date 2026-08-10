@@ -1199,12 +1199,12 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
   }
 
-  function duplicateAsPersonalSkill(sourceId: string): Skill {
+  function duplicateAsPersonalSkill(sourceId: string, nameOverride?: string): Skill {
     const source = findSkill(sourceId)
     if (!source) throw new Error(`duplicateAsPersonalSkill: source not found (${sourceId})`)
     const copy: Skill = {
       id: `personal-${Date.now()}`,
-      name: source.name,
+      name: nameOverride?.trim() || source.name,
       description: source.description,
       type: source.type,
       origin: 'manually_created',
@@ -1233,6 +1233,16 @@ export const useSkillStore = defineStore('skillStore', () => {
     return myPersonalSkillsRef.value.some(
       s => s.id !== skillId && !s.deletedAt && s.skillName === skill.skillName
     )
+  }
+
+  // 複製前的名稱衝突檢查——用來源技能推算出「複製後會得到的 skillName」，
+  // 在還沒真正建立副本、副本也還沒出現在列表前，就先讓使用者知道要不要改名。
+  function wouldSkillNameConflict(sourceId: string): boolean {
+    const source = findSkill(sourceId)
+    if (!source) return false
+    const proposedSkillName = source.zone === 'personal' ? source.skillName : source.name
+    if (!proposedSkillName) return false
+    return myPersonalSkillsRef.value.some(s => !s.deletedAt && s.skillName === proposedSkillName)
   }
 
   function approvePersonalSkill(id: string): void {
@@ -1511,6 +1521,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     deletePersonalSkill,
     duplicateAsPersonalSkill,
     hasSkillNameConflict,
+    wouldSkillNameConflict,
     setLibraryActiveVersion,
     approvePersonalSkill,
     rejectPersonalSkill,

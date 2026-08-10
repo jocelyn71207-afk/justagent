@@ -253,6 +253,44 @@
       @merged="showBatchUpdate = false"
     />
 
+    <!-- 複製第一步：確認顯示名稱（確認後才真正建立副本，出現在「我的技能」列表） -->
+    <Teleport to="body">
+      <Transition name="confirm-fade">
+        <div
+          v-if="pendingDuplicateSource"
+          class="drawer-confirm-overlay"
+          @click.self="cancelPendingDuplicate"
+        >
+          <div class="drawer-confirm-dialog">
+            <div class="confirm-icon confirm-icon--update">
+              <i class="material-symbols-outlined">content_copy</i>
+            </div>
+            <h4>建立副本</h4>
+            <div v-if="pendingDuplicateConflict" class="confirm-warning-banner">
+              <i class="material-symbols-outlined">info</i>
+              你已經有一份來自「{{ pendingDuplicateSource.name }}」的技能了，建議修改顯示名稱以便區分。
+            </div>
+            <label class="dsd-note-label pdd-name-label">顯示名稱</label>
+            <input
+              v-model="pendingDuplicateName"
+              class="custom-input pdd-name-input"
+              placeholder="輸入顯示名稱"
+              @keydown.enter="confirmPendingDuplicate"
+            />
+            <div class="confirm-actions">
+              <button
+                class="custom-btn custom-main-btn"
+                :disabled="!pendingDuplicateName.trim()"
+                @click="confirmPendingDuplicate"
+              >
+                <i class="material-symbols-outlined">check_circle</i>確認
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- 複製後：選擇修改方式 -->
     <Teleport to="body">
       <Transition name="confirm-fade">
@@ -439,6 +477,13 @@ const showLibraryModal = ref(false)
 const duplicatedSkill = ref<Skill | null>(null)
 const showEditChatForDuplicate = ref(false)
 
+// 建立副本第一步：先確認顯示名稱，確認後才真正建立副本（此時才會出現在「我的技能」列表）
+const pendingDuplicateSource = ref<Skill | null>(null)
+const pendingDuplicateName = ref('')
+const pendingDuplicateConflict = computed(() =>
+  pendingDuplicateSource.value ? store.wouldSkillNameConflict(pendingDuplicateSource.value.id) : false
+)
+
 // 角色（mock：企業管理者可見審核區）
 const currentUserRole = ref<'user' | 'enterprise_admin' | 'enterprise_owner'>('enterprise_admin')
 const isManager = computed(() =>
@@ -534,9 +579,21 @@ function handleDetach(skill: Skill) {
 }
 
 function handleDuplicate(skill: Skill) {
-  const copy = store.duplicateAsPersonalSkill(skill.id)
   detailSkillId.value = null
   showLibraryModal.value = false
+  pendingDuplicateSource.value = skill
+  pendingDuplicateName.value = skill.name
+}
+
+function cancelPendingDuplicate() {
+  pendingDuplicateSource.value = null
+  pendingDuplicateName.value = ''
+}
+
+function confirmPendingDuplicate() {
+  if (!pendingDuplicateSource.value) return
+  const copy = store.duplicateAsPersonalSkill(pendingDuplicateSource.value.id, pendingDuplicateName.value)
+  cancelPendingDuplicate()
   duplicatedSkill.value = copy
 }
 
