@@ -31,7 +31,7 @@
 - 不重新設計任一 view 的版面結構/資訊架構（側邊欄、頁面資訊架構維持現狀，那是 Phase 1+ 的工作）
 - 不更換 icon 套件（全站 86 個元件都在用 Material Symbols Outlined，替換成本遠高於效益，維持現狀）
 - 不更換字體家族（Noto Sans TC / Public Sans / JetBrains Mono 維持，Jade Mist 02 已確立）
-- 不移除 JourneyDashboard 既有的節點語意色（D0 藍、D3 橙、D30 綠等，來自 `2026-04-21-journey-dashboard-redesign.md`）——這套顏色是 Journey 功能自己的、有文件依據的語意系統，不是隨意寫死；Phase 0 只把它從 inline hex 轉成 CSS 變數，讓它能在 dark mode 下正確顯示，語意色本身不變
+- 不移除 JourneyDashboard 既有的節點語意色（D0 藍、D3 橙、D30 綠等，來自 `2026-04-21-journey-dashboard-redesign.md`）——這套顏色是 Journey 功能自己的、有文件依據的語意系統，不是隨意寫死。Phase 0 只在第 3 節的分類色 token 中預留對應值（讓語意色有 CSS 變數可用）；實際把 `JourneyDashboard.vue` 從 inline hex 換成這些變數，留到 Phase 2（工作區與探索組）處理該頁面時再做——`JourneyDashboard.vue` 目前沒有對應的 `_JourneyDashboard.scss`（`src/scss/views/_index.scss` 未註冊），新增檔案與轉換樣式屬於「動到該 view」的工作，不在 Phase 0 範圍內
 - 不處理 API 串接、假互動（假的 toggleSort、社群登入無反應等）——那些是功能性 bug，屬於另一批技術債，不在這次視覺重新設計範圍內（可另開票處理）
 
 ---
@@ -107,7 +107,7 @@ $font-h-lg:    28px;   // 頁面標題
 
 - 本次一併修正稽核發現的所有「顏色寫死導致 dark mode 顯示錯誤」的案例（已於問題澄清中確認）。
 - 修正方式一律是「把寫死的 hex/rgba/SCSS 常數換成對應的 CSS 變數」，不新增 dark 模式專屬的視覺設計（例如不做 dark-only 的漸層、特殊效果）。
-- JourneyDashboard 的節點語意色（D0/D1/D3/D30）保留語意，但改用 CSS 變數實作，確保深色模式下也有對應、可讀的配色（沿用第 3 節分類色 token 的 dark 版本）。
+- JourneyDashboard 的節點語意色（D0/D1/D3/D30）保留語意，Phase 0 先在分類色 token 中預留對應值，實際套用到 `JourneyDashboard.vue` 留給 Phase 2。
 - 驗證方式：Phase 1 實作完成後，手動切換 `[data-theme="dark"]` 檢查該群組所有頁面。
 
 ---
