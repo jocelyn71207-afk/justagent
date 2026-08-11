@@ -80,6 +80,18 @@
     // ── Compat aliases ────────────────────────────────────────────────────
     --color-tab-active-bg:    var(--text);
     --color-switch-active-bg: var(--surface);
+
+    // ── Phase 0：分類色（dark）──────────────────────────────────────────────
+    --tag-violet-bg:          #241F45;
+    --tag-violet-text:        #B7B0F5;
+    --tag-blue-bg:            #12283F;
+    --tag-blue-text:          #7EB3ED;
+    --tag-amber-bg:           #3A2A10;
+    --tag-amber-text:         #F0C878;
+    --tag-teal-bg:            #0E3E32;
+    --tag-teal-text:          #6EE7C4;
+
+    --danger-soft:            #3A1E1A;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -158,5 +170,17 @@
     // ── Compat aliases ────────────────────────────────────────────────────
     --color-tab-active-bg:    var(--text);
     --color-switch-active-bg: var(--surface);
+
+    // ── Phase 0：分類色（dark）──────────────────────────────────────────────
+    --tag-violet-bg:          #241F45;
+    --tag-violet-text:        #B7B0F5;
+    --tag-blue-bg:            #12283F;
+    --tag-blue-text:          #7EB3ED;
+    --tag-amber-bg:           #3A2A10;
+    --tag-amber-text:         #F0C878;
+    --tag-teal-bg:            #0E3E32;
+    --tag-teal-text:          #6EE7C4;
+
+    --danger-soft:            #3A1E1A;
   }
 }
