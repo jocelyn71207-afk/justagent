@@ -116,6 +116,26 @@ $font-size-base: 16px;
 $font-form-size: 14px;
 $line-height-base: 1.5;
 
+// ── Phase 0：字級階梯（新增，$font-size-base/$font-form-size 維持原意不變）──
+$font-caption: 12px;  // 時間戳、次要說明
+$font-label:   13px;  // badge、tag、表單 label
+$font-h-sm:    18px;  // 卡片標題
+$font-h-md:    22px;  // 區塊標題
+$font-h-lg:    28px;  // 頁面主標題
+
+// ── Phase 0：間距階梯 ──────────────────────────────────────────────────
+$spacing: (
+  1: 4px,
+  2: 8px,
+  3: 12px,
+  4: 16px,
+  5: 20px,
+  6: 24px,
+  8: 32px,
+  10: 40px,
+  12: 48px,
+);
+
 // 下拉選單的三角形
 $select_triangle: "data:image/gif;base64,R0lGODlhZABCAPMAAJ+ruqWxv7K8yLnBzL/H0cXN1szS2tLY39nd4+Xp7ezu8fL09vn5+gAAAAAAAAAAACH5BAEAAA0ALAAAAABkAEIAAAT+sMlJq7046827/2AojmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqdDENhYUMQEkaGAAAIKGgFLgBB1Iq731j4TBYSzlwvbA2nBgPweJpFhx+ECHl6fIIAAgxDgYJyKX1nh0WKeYwmjmKQRpJwlCOWXJhHmmecIJ6GiEqiYqQdpqCphawarqhNqoOtha+2sXsZtE8Ut2izurXBEsOyDcDIFcq+Es3Oz70U09TVi2nY2dqTCt3e34V5u+MWw4Ln6Onlj8ftGeqf8fLz5ez3GLf6+/xw/P0DWG+gCAQBBtgzyLChw4cQI0qcSLGixYsYM2rcyLGjRwoCEQAAOw==";
 
