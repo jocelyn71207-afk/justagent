@@ -664,6 +664,22 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
+    files: [
+      {
+        id: 'sf-personal-001-1',
+        fileName: '週報範本.docx',
+        fileSize: 24576,
+        fileType: 'WORD',
+        uploadedAt: '2026-07-20T03:00:00Z',
+      },
+      {
+        id: 'sf-personal-001-2',
+        fileName: '會議記錄格式規則.md',
+        fileSize: 3072,
+        fileType: 'MD',
+        uploadedAt: '2026-07-20T03:05:00Z',
+      },
+    ],
   },
   {
     id: 'personal-002',
