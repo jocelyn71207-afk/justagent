@@ -36,10 +36,10 @@
               <th width="200">名稱</th>
               <th>郵件</th>
               <th width="130">
-                <span class="sort-btn" @click="toggleSort">
+                <button type="button" class="sort-btn" aria-label="依職位排序" @click="toggleSort">
                   職位
                   <i class="material-symbols-outlined">arrow_downward</i>
-                </span>
+                </button>
               </th>
               <th width="140">最後登入時間</th>
               <th width="100" class="col-action"></th>
@@ -62,8 +62,8 @@
               <td class="fc-grey-1">{{ formatTimeToDisplay(member.lastLogin) }}</td>
               <td class="col-action">
                 <template v-if="member.role !== '企業擁有者' && member.role !== '平台管理者'">
-                  <i class="material-symbols-outlined action-btn" @click="deleteMember(member)">delete</i>
-                  <i class="material-symbols-outlined action-btn" @click="editMember(member)">edit</i>
+                  <button type="button" class="icon-btn action-btn" aria-label="刪除成員" @click="deleteMember(member)"><i class="material-symbols-outlined">delete</i></button>
+                  <button type="button" class="icon-btn action-btn" aria-label="編輯成員" @click="editMember(member)"><i class="material-symbols-outlined">edit</i></button>
                 </template>
               </td>
             </tr>
