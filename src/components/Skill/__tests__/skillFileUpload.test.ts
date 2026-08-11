@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { extToFileType, skillFileIcon, validateSkillFiles, SKILL_FILE_MAX_COUNT, SKILL_FILE_MAX_SINGLE_SIZE } from '../skillFileUpload'
+import { extToFileType, skillFileIcon, validateSkillFiles, SKILL_FILE_MAX_COUNT, SKILL_FILE_MAX_SINGLE_SIZE, SKILL_FILE_MAX_TOTAL_SIZE } from '../skillFileUpload'
 import type { SkillFile } from '@/stores/skillStore'
 
 describe('skillFileUpload', () => {
@@ -58,6 +58,40 @@ describe('skillFileUpload', () => {
         (_, i) => new File(['x'], `f${i}.txt`, { type: 'text/plain' })
       )
       const result = validateSkillFiles(files, existing)
+      expect(result.valid).toBe(false)
+    })
+
+    it('加上既有檔案後超過檔案數量上限會驗證失敗', () => {
+      const existingFiles: SkillFile[] = Array.from(
+        { length: SKILL_FILE_MAX_COUNT - 1 },
+        (_, i) => ({
+          id: `sf-existing-${i + 1}`,
+          fileName: `existing-${i + 1}.txt`,
+          fileSize: 1024,
+          fileType: 'TXT' as const,
+          uploadedAt: new Date().toISOString(),
+        })
+      )
+      const newFiles = Array.from(
+        { length: 2 },
+        (_, i) => new File(['x'.repeat(100)], `new-${i + 1}.txt`, { type: 'text/plain' })
+      )
+      const result = validateSkillFiles(newFiles, existingFiles)
+      expect(result.valid).toBe(false)
+    })
+
+    it('加上既有檔案後超過總檔案大小上限會驗證失敗', () => {
+      const existingFiles: SkillFile[] = [
+        {
+          id: 'sf-existing-1',
+          fileName: 'large-existing.pdf',
+          fileSize: SKILL_FILE_MAX_TOTAL_SIZE - 1024,
+          fileType: 'PDF' as const,
+          uploadedAt: new Date().toISOString(),
+        },
+      ]
+      const newFile = new File(['x'.repeat(2048)], 'small.txt', { type: 'text/plain' })
+      const result = validateSkillFiles([newFile], existingFiles)
       expect(result.valid).toBe(false)
     })
   })
