@@ -16,18 +16,21 @@
 
       <!-- 步驟指示器 -->
       <div class="se-stepper">
-        <div
+        <button
+          type="button"
           v-for="(label, i) in STEPS"
           :key="i"
           :class="['se-step', { 'is-active': currentStep === i, 'is-done': currentStep > i }]"
+          :disabled="currentStep <= i"
+          :aria-current="currentStep === i ? 'step' : undefined"
           @click="currentStep > i ? (currentStep = i) : undefined"
         >
-          <div class="se-step-bubble">
+          <span class="se-step-bubble">
             <i v-if="currentStep > i" class="material-symbols-outlined">check</i>
             <span v-else>{{ i + 1 }}</span>
-          </div>
+          </span>
           <span class="se-step-label">{{ label }}</span>
-        </div>
+        </button>
         <div class="se-step-track">
           <div class="se-step-fill" :style="{ width: fillWidth }" />
         </div>
