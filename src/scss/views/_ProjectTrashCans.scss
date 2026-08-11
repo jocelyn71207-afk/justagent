@@ -50,8 +50,8 @@
         z-index: 2;
         pointer-events: none;
 
-        &--urgent  { background: $color-danger; }
-        &--warning { background: $color-warning-amber; color: $color-warning-text-dark; }
+        &--urgent  { background: var(--danger); }
+        &--warning { background: var(--warning); color: $color-warning-text-dark; }
         &--normal  { background: rgba($black, 0.38); }
       }
     }
@@ -71,8 +71,8 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: $color-warning-bg;
-    border: 1px solid $color-warning-border;
+    background: var(--warning-soft, #FBF1E0);
+    border: 1px solid var(--warning);
     border-radius: 10px;
     padding: 11px 14px;
     font-size: 14px;

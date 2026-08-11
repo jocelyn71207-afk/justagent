@@ -43,7 +43,7 @@
               <div class="project-name">{{ item.name }}</div>
               <div class="lastModify">{{ item.deletedBy }}刪除・剩餘 {{ calcRemainingDays(item.remainingDays) }} 天</div>
             </div>
-            <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = true">more_horiz</i>
+            <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click="item.showMoreOption = true"><i class="material-symbols-outlined">more_horiz</i></button>
             <div :class="['next-option-box', { 'show': item.showMoreOption }]">
               <div class="option-item" @click="restoreProject(item)">還原</div>
               <div class="option-item danger" @click="permanentlyDelete(item)">永久刪除</div>
