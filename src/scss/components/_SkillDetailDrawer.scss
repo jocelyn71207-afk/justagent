@@ -262,6 +262,42 @@
     overflow-y: auto;
   }
 
+  // ── 附加檔案 ──────────────────────────────
+
+  .attached-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .attached-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    font-size: 12.5px;
+
+    > .material-symbols-outlined { font-size: 15px; color: $color_main_1; flex-shrink: 0; }
+  }
+
+  .af-name {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .af-size {
+    color: var(--text-faint);
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
   // ── Upstream update banner ────────────────────
 
   .upstream-update-banner {

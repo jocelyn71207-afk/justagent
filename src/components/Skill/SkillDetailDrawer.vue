@@ -120,6 +120,18 @@
               <div class="instructions-block">{{ skill.instructions }}</div>
             </div>
 
+            <!-- 附加檔案 -->
+            <div v-if="skill.files?.length" class="drawer-section">
+              <div class="section-label">附加檔案</div>
+              <div class="attached-file-list">
+                <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
+                  <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
+                  <span class="af-name">{{ f.fileName }}</span>
+                  <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
+                </div>
+              </div>
+            </div>
+
             <!-- 覆蓋能力 -->
             <div v-if="skill.capabilities?.length" class="drawer-section">
               <div class="section-label">覆蓋能力</div>
@@ -356,6 +368,8 @@ import type { Skill, SkillVersionStatus, OperationRecord } from '@/stores/skillS
 import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
+import { skillFileIcon } from '@/components/Skill/skillFileUpload'
+import { formatFileSize } from '@/utils/file'
 
 const CHART_LABELS = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
 
