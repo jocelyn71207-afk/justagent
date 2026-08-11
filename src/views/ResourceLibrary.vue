@@ -73,7 +73,7 @@
                   @blur="saveModifyFileName()" />
               </div>
               <div class="more-menu-wrap" @click.stop>
-                <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = !item.showMoreOption">more_horiz</i>
+                <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click="item.showMoreOption = !item.showMoreOption"><i class="material-symbols-outlined">more_horiz</i></button>
                 <div :class="['next-option-box', { show: item.showMoreOption }]">
                   <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
                   <div class="option-item">下載檔案</div>
@@ -140,7 +140,7 @@
                 <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
                 <td>
                   <div class="d-flex">
-                    <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
+                    <button type="button" class="icon-btn more-btn material-fill" aria-label="更多選項" @click.stop="item.showMoreOption = true"><i class="material-symbols-outlined">more_horiz</i></button>
                   </div>
                   <!-- 更多選項小介面 -->
                   <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
