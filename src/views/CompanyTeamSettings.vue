@@ -67,7 +67,7 @@
             </div>
           </div>
 
-          <div class="settings-block">
+          <div class="settings-block settings-block--wide">
             <div class="settings-block-header">
               <span class="material-symbols-outlined settings-block-icon">admin_panel_settings</span>
               <span class="settings-block-title">平台管理者</span>

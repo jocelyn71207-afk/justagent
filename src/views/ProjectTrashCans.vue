@@ -26,7 +26,7 @@
         <div class="hero">
           <div class="tag">最緊急</div>
           <div class="big">{{ urgentCount }} 個</div>
-          <div class="cap">3 天內即將永久刪除</div>
+          <div class="cap">3 天內即將永久刪除，請盡快還原或確認刪除</div>
         </div>
         <div class="side"><b>{{ warningCount }}</b><span>7 天內到期</span></div>
         <div class="side"><b>{{ trashList.length }}</b><span>全部項目</span></div>
@@ -160,6 +160,13 @@ function expiryUrgency(dateStr: string): 'urgent' | 'warning' | 'normal' {
   return 'normal';
 }
 
+// 計算「現在起算第 n 天後」的 datetime string，供假資料的 remainingDays 使用，
+// 確保假資料的到期急迫度分佈永遠相對於「現在」，不會隨時間推移而全部過期
+function daysFromNow(n: number): string {
+  const d = new Date(Date.now() + n * 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 // 取得垃圾桶專案清單
 function getTrashList() {
   // TODO... 之後改成呼叫後端API，先造假資料測試UI
@@ -170,7 +177,7 @@ function getTrashList() {
       name: '專案名稱1',
       imgSrc: 'https://picsum.photos/410/240.webp?random=71',
       deletedBy: 'Syney',
-      remainingDays: '2026-04-09 12:08:00',
+      remainingDays: daysFromNow(0), // urgent
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -179,7 +186,7 @@ function getTrashList() {
       name: '專案名稱2',
       imgSrc: 'https://picsum.photos/410/240.webp?random=72',
       deletedBy: 'Lucas',
-      remainingDays: '2026-04-07 08:00:00',
+      remainingDays: daysFromNow(2), // urgent
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -188,7 +195,7 @@ function getTrashList() {
       name: '專案名稱3',
       imgSrc: 'https://picsum.photos/410/240.webp?random=73',
       deletedBy: 'Lucas',
-      remainingDays: '2026-04-07 08:00:00',
+      remainingDays: daysFromNow(5), // warning
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -197,7 +204,7 @@ function getTrashList() {
       name: '專案名稱4',
       imgSrc: 'https://picsum.photos/410/240.webp?random=74',
       deletedBy: '小烏龜',
-      remainingDays: '2026-03-21 09:30:00',
+      remainingDays: daysFromNow(6), // warning
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -206,7 +213,7 @@ function getTrashList() {
       name: '專案名稱5',
       imgSrc: 'https://picsum.photos/410/240.webp?random=75',
       deletedBy: 'Lucas',
-      remainingDays: '2026-03-15 18:00:00',
+      remainingDays: daysFromNow(15), // normal
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -215,7 +222,7 @@ function getTrashList() {
       name: '專案名稱6',
       imgSrc: 'https://picsum.photos/410/240.webp?random=76',
       deletedBy: 'Syney',
-      remainingDays: '2026-03-11 12:08:00',
+      remainingDays: daysFromNow(30), // normal
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
   ];

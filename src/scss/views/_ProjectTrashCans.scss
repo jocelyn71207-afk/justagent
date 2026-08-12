@@ -55,6 +55,12 @@
     &.bento-urgent {
       grid-column: span 2;
       max-width: none;
+
+      // 低於 tablet 斷點時，.card-list-box 已收成單欄，span 2 會多出一個隱形欄，
+      // 讓卡片比內容區更寬且跟上方統計列的邊界對不齊，需重設回 auto
+      @media (max-width: $breakpoint-tablet) {
+        grid-column: auto;
+      }
     }
 
     &:hover {
@@ -117,31 +123,6 @@
       &:hover {
         background-color: rgba($color-danger, 0.08);
       }
-    }
-  }
-
-  // ── Info 橫幅 ──────────────────────────────────
-  .trash-info-banner {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    background: var(--tag-amber-bg);
-    border: 1px solid var(--warning);
-    border-radius: 10px;
-    padding: 11px 14px;
-    font-size: 14px;
-    color: var(--tag-amber-text);
-    margin-bottom: 20px;
-    line-height: 1.5;
-
-    .material-symbols-outlined {
-      font-size: 18px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    strong {
-      font-weight: 700;
     }
   }
 

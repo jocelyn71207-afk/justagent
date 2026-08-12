@@ -97,38 +97,6 @@
     color: var(--text-muted);
   }
 
-  .stats-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    background-color: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 14px;
-  }
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    background-color: var(--page-bg);
-    border: 1px solid var(--divider);
-  }
-
-  .stat-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .stat-label { font-size: 13px; color: var(--text-muted); }
-  .stat-count { font-size: 13px; font-weight: 700; color: var(--text); }
-
   // ── 角色統計：hero + tile ───────────────────────────
   // 注意：hero 卡在 light mode use 品牌淺色調（--tag-teal-bg），不可用深色/近黑色底
   .role-stats-row {
@@ -184,7 +152,10 @@
     gap: 16px;
     align-items: start;
 
-    @media (max-width: $breakpoint-tablet) {
+    // 斷點刻意比 $breakpoint-desktop（1024px）更寬：1fr 欄在 ~900-1150px 之間
+    // 會被壓縮到小於表格 min-content 寬度，導致操作按鈕被裁切且無法捲動觸及，
+    // 需在表格被壓縮前就先收成單欄
+    @media (max-width: 1200px) {
       grid-template-columns: 1fr;
     }
   }
@@ -231,6 +202,8 @@
     border-radius: 14px;
     border: 1px solid var(--divider);
     overflow: hidden;
+    // 防禦性措施：萬一容器又被壓窄，讓表格水平捲動而不是把操作按鈕裁切到畫面外
+    overflow-x: auto;
 
     .custom-table {
       border-radius: 0;
@@ -303,31 +276,26 @@
   .role-owner {
     background-color: var(--tag-teal-bg);
     color: var(--tag-teal-text);
-    &.stat-dot { background-color: var(--tag-teal-text); }
   }
 
   .role-admin {
     background-color: var(--tag-blue-bg);
     color: var(--tag-blue-text);
-    &.stat-dot { background-color: var(--tag-blue-text); }
   }
 
   .role-manager {
     background-color: var(--color-wise-badge-hot-bg);
     color: var(--color-wise-badge-hot-text);
-    &.stat-dot { background-color: var(--color-wise-badge-hot-text); }
   }
 
   .role-staff {
     background-color: var(--hint);
     color: var(--primary);
-    &.stat-dot { background-color: var(--primary); }
   }
 
   .role-viewer {
     background-color: var(--page-bg);
     color: var(--text-faint);
     border: 1px solid var(--divider);
-    &.stat-dot { background-color: var(--text-faint); }
   }
 }

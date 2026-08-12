@@ -152,6 +152,11 @@
     }
   }
 
+  // 內容較寬（如含表格）的設定區塊，跨滿整個 grid 寬度，避免與另一欄互相擠壓
+  .settings-block--wide {
+    grid-column: 1 / -1;
+  }
+
   .settings-block {
     border: 1px solid rgba(14, 15, 12, 0.10);
     border-radius: 16px;
@@ -244,6 +249,7 @@
     border: 1px solid rgba(14, 15, 12, 0.10);
     background-color: var(--page-bg);
     overflow: hidden;
+    overflow-x: auto;
 
     .custom-table {
       border-radius: 0;

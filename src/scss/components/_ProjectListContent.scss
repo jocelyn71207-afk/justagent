@@ -189,7 +189,9 @@
     &.is-spotlight {
       grid-column: span 2;
 
-      .card-img { height: 220px; }
+      // card-chart 是 hover 時取代 card-img 的面板（v-show 切換），兩者高度需一致，
+      // 否則 hover spotlight 卡片時，stretch 對齊的整列格線會跟著收縮 44px 造成跳動
+      .card-img, .card-chart { height: 220px; }
       .card-footer .card-name {
         font-size: 15px;
         -webkit-line-clamp: 1;

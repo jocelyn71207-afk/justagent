@@ -1,12 +1,21 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
+import { nextTick } from 'vue'
 import { useRootStore } from '@/stores/rootStore'
 import { useApiSimulatorStore } from '@/stores/apiSimulatorStore'
 import ProjectListContent from '../ProjectListContent.vue'
 
 describe('ProjectListContent spotlight 卡片', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('卡片檢視下，清單第一張卡片有 is-spotlight class，其餘沒有', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
@@ -28,11 +37,11 @@ describe('ProjectListContent spotlight 卡片', () => {
         directives: { tooltip: () => {} }
       },
     })
-    await wrapper.vm.$nextTick()
+    await nextTick()
 
-    // Wait for useApiCall to finish (delay is 200ms)
-    await new Promise(r => setTimeout(r, 250))
-    await wrapper.vm.$nextTick()
+    // 假資料透過 useApiCall 的 setTimeout（200ms）非同步寫入，推進計時器取代真實等待，避免 flaky
+    await vi.runAllTimersAsync()
+    await nextTick()
 
     const cards = wrapper.findAll('.project-card')
     expect(cards.length).toBeGreaterThan(1)
