@@ -129,6 +129,104 @@
   .stat-label { font-size: 13px; color: var(--text-muted); }
   .stat-count { font-size: 13px; font-weight: 700; color: var(--text); }
 
+  // ── 角色統計：hero + tile ───────────────────────────
+  // 注意：hero 卡在 light mode use 品牌淺色調（--tag-teal-bg），不可用深色/近黑色底
+  .role-stats-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .role-stat-hero {
+    flex: 1.4 1 240px;
+    background: var(--tag-teal-bg);
+    border: 1px solid var(--primary);
+    border-radius: 14px;
+    padding: 14px 18px;
+
+    .cap {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--tag-teal-text);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .big {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: $font-family-heading;
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .role-stat-tile {
+    flex: 1 1 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 14px;
+    padding: 10px 16px;
+
+    b { font-size: 20px; color: var(--text); font-variant-numeric: tabular-nums; }
+    span { font-size: 11.5px; color: var(--text-faint); }
+  }
+
+  // ── 表格 ＋ 最近異動側欄 ─────────────────────────────
+  .access-split-layout {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 16px;
+    align-items: start;
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .access-activity-panel {
+    background: var(--sidebar-bg);
+    border: 1px solid var(--divider);
+    border-radius: 12px;
+    padding: 16px;
+
+    h4 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+  }
+
+  .access-activity-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    font-size: 12px;
+
+    &:last-child { margin-bottom: 0; }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    p { margin: 0; color: var(--text); }
+    time { font-size: 10.5px; color: var(--text-faint); }
+  }
+
   .new-table-box {
     border-radius: 14px;
     border: 1px solid var(--divider);
