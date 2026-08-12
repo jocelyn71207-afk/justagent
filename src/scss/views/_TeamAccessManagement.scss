@@ -143,7 +143,8 @@
       tbody tr {
         transition: background-color 0.1s ease;
         .action-btn { opacity: 0; transition: opacity 0.1s ease; }
-        &:hover .action-btn { opacity: 1; }
+        &:hover .action-btn,
+        &:focus-within .action-btn { opacity: 1; }
       }
     }
 
@@ -155,6 +156,7 @@
       font-size: 18px;
       &:hover { background-color: var(--accent-soft); color: var(--text); }
       & + .action-btn { margin-left: 4px; }
+      &:focus-visible { opacity: 1; }
     }
   }
 
@@ -201,9 +203,9 @@
 
   // 角色色彩對應（Wise 配色）
   .role-owner {
-    background-color: var(--accent);
-    color: var(--primary-hover);
-    &.stat-dot { background-color: var(--primary-hover); }
+    background-color: var(--tag-teal-bg);
+    color: var(--tag-teal-text);
+    &.stat-dot { background-color: var(--tag-teal-text); }
   }
 
   .role-admin {

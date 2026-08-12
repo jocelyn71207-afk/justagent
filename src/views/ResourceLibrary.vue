@@ -140,7 +140,7 @@
                 <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
                 <td>
                   <div class="d-flex">
-                    <button type="button" class="icon-btn more-btn material-fill" aria-label="更多選項" @click.stop="item.showMoreOption = true"><i class="material-symbols-outlined">more_horiz</i></button>
+                    <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click.stop="item.showMoreOption = true"><i class="material-symbols-outlined material-fill">more_horiz</i></button>
                   </div>
                   <!-- 更多選項小介面 -->
                   <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>

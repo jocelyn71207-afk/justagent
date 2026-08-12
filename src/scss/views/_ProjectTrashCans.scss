@@ -71,12 +71,12 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: var(--warning-soft, #FBF1E0);
+    background: var(--tag-amber-bg);
     border: 1px solid var(--warning);
     border-radius: 10px;
     padding: 11px 14px;
     font-size: 14px;
-    color: $color-warning-text;
+    color: var(--tag-amber-text);
     margin-bottom: 20px;
     line-height: 1.5;
 
