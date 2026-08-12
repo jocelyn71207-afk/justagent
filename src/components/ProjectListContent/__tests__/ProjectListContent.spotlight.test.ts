@@ -13,8 +13,8 @@ describe('ProjectListContent spotlight 卡片', () => {
 
     // Configure API simulator to succeed immediately
     const apiSimulator = useApiSimulatorStore()
-    apiSimulator.mode = 'success'
-    apiSimulator.delay = 0
+    apiSimulator.setMode('normal')
+    apiSimulator.setDelay(200)
 
     const rootStore = useRootStore()
     rootStore.projectListMode = 'card'
@@ -30,8 +30,8 @@ describe('ProjectListContent spotlight 卡片', () => {
     })
     await wrapper.vm.$nextTick()
 
-    // Wait a bit for useApiCall to finish
-    await new Promise(r => setTimeout(r, 50))
+    // Wait for useApiCall to finish (delay is 200ms)
+    await new Promise(r => setTimeout(r, 250))
     await wrapper.vm.$nextTick()
 
     const cards = wrapper.findAll('.project-card')
