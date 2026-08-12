@@ -22,14 +22,19 @@
         </div>
       </div>
 
-      <div class="trash-info-banner" v-if="trashList.length">
-        <i class="material-symbols-outlined">warning</i>
-        <span>專案將依剩餘天數自動永久刪除。<strong>紅色標籤</strong>代表 3 天內到期，請盡快還原或確認刪除。</span>
+      <div class="trash-bento-summary" v-if="trashList.length">
+        <div class="hero">
+          <div class="tag">最緊急</div>
+          <div class="big">{{ urgentCount }} 個</div>
+          <div class="cap">3 天內即將永久刪除</div>
+        </div>
+        <div class="side"><b>{{ warningCount }}</b><span>7 天內到期</span></div>
+        <div class="side"><b>{{ trashList.length }}</b><span>全部項目</span></div>
       </div>
 
       <!-- 卡片列表 -->
       <div class="card-list-box mt-2" v-if="displayProjectList.length">
-        <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="i"
+        <div :class="['one-card-box', 'project-card', `bento-${expiryUrgency(item.remainingDays)}`]" v-for="(item, i) in displayProjectList" :key="i"
           @mouseleave="item.showMoreOption = false;">
           <div class="img-box">
             <img :src="item.imgSrc" alt="">
@@ -108,6 +113,10 @@ const displayProjectList = computed(() => {
   if (!filterDeleter.value) return trashList.value;
   return trashList.value.filter((item: any) => item.deletedBy === filterDeleter.value);
 });
+
+// 急迫（3 天內到期）與警示（7 天內到期）的數量統計，供 bento 統計列使用
+const urgentCount = computed(() => trashList.value.filter((item: any) => expiryUrgency(item.remainingDays) === 'urgent').length);
+const warningCount = computed(() => trashList.value.filter((item: any) => expiryUrgency(item.remainingDays) === 'warning').length);
 
 // 還原專案：彈出確認 dialog，確認後從清單移除（TODO 後端實作後改為 API 呼叫）
 function restoreProject(item: any) {
