@@ -185,6 +185,17 @@
       box-shadow: 0 0 0 3px rgba(0,160,120,0.13);
     }
 
+    // ── Spotlight 卡片（清單第一張，通常是最近更新的專案）──
+    &.is-spotlight {
+      grid-column: span 2;
+
+      .card-img { height: 220px; }
+      .card-footer .card-name {
+        font-size: 15px;
+        -webkit-line-clamp: 1;
+      }
+    }
+
     // ── 狀態色條（卡片頂部 4px）─────────────────────
     .card-status-strip {
       height: 4px;
