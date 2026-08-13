@@ -343,3 +343,61 @@
   &--amber  { background: var(--tag-amber-bg);  color: var(--tag-amber-text); }
   &--teal   { background: var(--tag-teal-bg);   color: var(--tag-teal-text); }
 }
+
+// ── Phase 2：活潑感互動系統（進場 stagger + hover 彈性回饋 + 不規則圓角）─────
+// 使用方式：
+//   容器套 .lively-stagger，直接子元素會依序淡入上浮（最多 8 個有 delay，第 9 個起沿用第 8 個的 delay）
+//   卡片套 .lively-card（+ 卡片內想要有微旋轉回饋的 icon 套 .lively-icon）
+//   想要不規則圓角交錯的清單，配合 nth-child(odd)/(even) 分別加 .lively-corner-a / .lively-corner-b
+@media (prefers-reduced-motion: no-preference) {
+  .lively-stagger {
+    > * {
+      opacity: 0;
+      animation: lively-fade-in-up 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+    }
+    @for $i from 1 through 8 {
+      > *:nth-child(#{$i}) { animation-delay: #{$i * 0.08}s; }
+    }
+    > *:nth-child(n + 9) { animation-delay: 0.64s; }
+  }
+
+  @keyframes lively-fade-in-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .lively-card {
+    transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+
+    &:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+    }
+  }
+
+  .lively-icon {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .lively-card:hover .lively-icon {
+    transform: rotate(-8deg) scale(1.1);
+  }
+
+  .lively-corner-a { border-radius: 18px 6px 18px 6px; }
+  .lively-corner-b { border-radius: 6px 18px 6px 18px; }
+  .lively-card.lively-corner-a:hover,
+  .lively-card.lively-corner-b:hover {
+    transform: translateY(-3px) scale(1.02) rotate(-0.5deg);
+  }
+}
+
+// reduced-motion 時仍保留顏色類回饋，只是沒有位移/旋轉/進場動畫
+@media (prefers-reduced-motion: reduce) {
+  .lively-card {
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    &:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+    }
+  }
+}
