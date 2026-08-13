@@ -113,6 +113,30 @@
     margin-bottom: 22px;
   }
 
+  .se-primary-section {
+    border: 1.5px solid var(--tag-teal-bg);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    background: var(--surface);
+  }
+
+  .se-secondary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+
+    @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
+  }
+
+  .se-secondary-section {
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+  }
+
   .se-label {
     display: block;
     font-size: 14px;
