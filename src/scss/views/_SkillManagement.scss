@@ -34,11 +34,6 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
       border-color: $color_main_3;
     }
-
-    &--alert {
-      border-color: $color-warning-border;
-      background: $color-warning-bg;
-    }
   }
 
   .skill-stat-icon {
@@ -67,15 +62,6 @@
     &.icon--usage {
       background: $color-badge-ai-bg;
       color: $color-badge-ai-text;
-    }
-    &.icon--pending {
-      background: $color-warning-bg;
-      color: $color-warning-amber;
-      border: 1px solid $color-warning-border;
-    }
-    &.icon--pass {
-      background: $color_main_4;
-      color: $color_main_2;
     }
   }
 
@@ -130,206 +116,6 @@
 
       &::placeholder { color: var(--text-faint); }
     }
-
-    .skill-search-clear {
-      border: none;
-      background: none;
-      padding: 0;
-      cursor: pointer;
-      color: var(--text-faint);
-      display: flex;
-      align-items: center;
-
-      .material-symbols-outlined { font-size: 14px; }
-      &:hover { color: var(--text); }
-    }
-  }
-
-  // ── Filter chips ──────────────────────────────
-
-  .filter-chips {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-
-  .filter-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 13px;
-    border-radius: 20px;
-    border: 1px solid var(--divider-a50);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
-
-    .material-symbols-outlined { font-size: 14px; }
-
-    &:hover {
-      background: var(--page-bg);
-      color: var(--text);
-      border-color: var(--text-faint);
-    }
-
-    &.is-active {
-      background: $color_main_4;
-      color: $color_main_2;
-      border-color: $color_main_3;
-      font-weight: 600;
-      box-shadow: 0 1px 6px rgba($color_main_1, 0.15);
-    }
-
-    &--reviewing.is-active {
-      background: $color-warning-bg;
-      color: $color-warning-text;
-      border-color: $color-warning-border;
-      box-shadow: none;
-    }
-
-    &--upstream.is-active {
-      background: rgba($color-warning-amber, 0.1);
-      color: $color-warning-amber;
-      border-color: rgba($color-warning-amber, 0.35);
-      box-shadow: none;
-    }
-
-    .fc-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 16px;
-      height: 16px;
-      border-radius: 8px;
-      background: $color_main_1;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 0 4px;
-
-      &--amber { background: $color-warning-amber; }
-    }
-  }
-
-  // ── Skill tree ────────────────────────────────
-
-  .skill-tree {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  // ── Group box: system-skill header + extension grid ──
-
-  .skill-group-box {
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: border-color 0.18s, box-shadow 0.2s;
-
-    &:hover {
-      border-color: $color_main_3;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
-    }
-
-    // System skill = group header row
-    > .SkillCard {
-      background: rgba($color_main_1, 0.025);
-      border: none;
-      border-radius: 0;
-      transform: none !important;
-
-      &:hover {
-        background: rgba($color_main_1, 0.045);
-        box-shadow: none;
-        transform: none !important;
-      }
-
-      // Stronger icon for the parent skill
-      .skill-card-icon.icon--sys {
-        background: $color_main_1;
-        color: #fff;
-        box-shadow: 0 4px 12px rgba($color_main_1, 0.28);
-      }
-    }
-
-    // Extensions grid
-    .skill-group-children {
-      background: var(--page-bg);
-      border-top: 1px solid var(--divider-a50);
-      padding: 10px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 8px;
-
-      > .SkillCard,
-      > .SkillCard.is-extension,
-      > .SkillCard.is-standalone {
-        // Reset all extension/standalone positioning styles
-        margin-left: 0 !important;
-        border: 1px solid var(--divider-a50) !important;
-        border-radius: 12px !important;
-        position: static;
-        background: var(--surface);
-        padding: 13px 16px;
-
-        &::before { display: none !important; }
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-          border-color: $color_main_3 !important;
-        }
-
-        // Compact icon for extension cards in grid
-        .skill-card-icon {
-          width: 42px;
-          height: 42px;
-          border-radius: 11px;
-          .material-symbols-outlined { font-size: 20px; }
-        }
-
-        .skill-card-name { font-size: 13.5px; }
-
-        .skill-card-desc {
-          font-size: 12px;
-          margin-bottom: 7px;
-          max-width: none;
-        }
-
-        // Compact right side: status dot only + copy icon, no button row below
-        .skill-card-right {
-          flex-direction: row;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .skill-card-meta .status-text { display: none; }
-
-        // Hide test/toggle buttons; keep only the copy icon
-        .skill-card-actions {
-          .skill-action-btn:not(.skill-action-btn--icon) { display: none; }
-        }
-      }
-    }
-  }
-
-  // ── Empty state ───────────────────────────────
-
-  .skill-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 60px 20px;
-    color: var(--text-faint);
-    gap: 10px;
-
-    .material-symbols-outlined { font-size: 40px; }
-    span { font-size: 14px; }
   }
 
   // ── Upstream banner ───────────────────────────
@@ -479,14 +265,6 @@
     color: var(--text);
 
     .material-symbols-outlined { font-size: 18px; color: $color_main_1; }
-  }
-
-  .skill-manage-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-
-    @media (max-width: 860px) { grid-template-columns: 1fr; }
   }
 
   .skill-section-empty {
