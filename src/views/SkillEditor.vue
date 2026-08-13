@@ -127,8 +127,8 @@
           <h3 class="se-confirm-title">{{ form.name }}</h3>
 
           <div class="se-confirm-grid lively-stagger">
-            <div class="se-confirm-card2 lively-card">
-              <div class="se-confirm-card2-hd">
+            <div class="se-confirm-group lively-card">
+              <div class="se-confirm-group-hd">
                 <i class="material-symbols-outlined lively-icon">description</i>內容摘要
               </div>
               <div class="se-confirm-row">
@@ -151,8 +151,8 @@
               </div>
             </div>
 
-            <div class="se-confirm-card2 lively-card">
-              <div class="se-confirm-card2-hd">
+            <div class="se-confirm-group lively-card">
+              <div class="se-confirm-group-hd">
                 <i class="material-symbols-outlined lively-icon">tune</i>設定
               </div>
               <div class="se-confirm-row">

@@ -114,7 +114,7 @@
   }
 
   .se-primary-section {
-    border: 1.5px solid var(--tag-teal-bg);
+    border: 1.5px solid var(--tag-teal-text);
     border-radius: 14px;
     padding: 16px 18px;
     margin-bottom: 18px;
@@ -202,14 +202,14 @@
     @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
   }
 
-  .se-confirm-card2 {
+  .se-confirm-group {
     background: var(--surface);
     border: 1px solid var(--divider-a50);
     border-radius: 14px;
     padding: 16px 18px;
   }
 
-  .se-confirm-card2-hd {
+  .se-confirm-group-hd {
     display: flex;
     align-items: center;
     gap: 7px;

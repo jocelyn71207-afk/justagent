@@ -349,11 +349,15 @@
 //   容器套 .lively-stagger，直接子元素會依序淡入上浮（最多 8 個有 delay，第 9 個起沿用第 8 個的 delay）
 //   卡片套 .lively-card（+ 卡片內想要有微旋轉回饋的 icon 套 .lively-icon）
 //   想要不規則圓角交錯的清單，配合 nth-child(odd)/(even) 分別加 .lively-corner-a / .lively-corner-b
+// 不規則圓角是靜態造型屬性，與動態偏好無關，永遠套用
+.lively-corner-a { border-radius: 18px 6px 18px 6px; }
+.lively-corner-b { border-radius: 6px 18px 6px 18px; }
+
 @media (prefers-reduced-motion: no-preference) {
   .lively-stagger {
     > * {
-      opacity: 0;
-      animation: lively-fade-in-up 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+      opacity: 1;
+      animation: lively-fade-in-up 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
     }
     @for $i from 1 through 8 {
       > *:nth-child(#{$i}) { animation-delay: #{$i * 0.08}s; }
@@ -383,8 +387,6 @@
     transform: rotate(-8deg) scale(1.1);
   }
 
-  .lively-corner-a { border-radius: 18px 6px 18px 6px; }
-  .lively-corner-b { border-radius: 6px 18px 6px 18px; }
   .lively-card.lively-corner-a:hover,
   .lively-card.lively-corner-b:hover {
     transform: translateY(-3px) scale(1.02) rotate(-0.5deg);
