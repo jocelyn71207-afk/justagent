@@ -124,42 +124,51 @@
 
         <!-- Step 2：確認 -->
         <template v-else>
-          <div class="se-confirm-card">
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">技能名稱</span>
-              <span class="se-confirm-val">{{ form.name }}</span>
+          <h3 class="se-confirm-title">{{ form.name }}</h3>
+
+          <div class="se-confirm-grid lively-stagger">
+            <div class="se-confirm-card2 lively-card">
+              <div class="se-confirm-card2-hd">
+                <i class="material-symbols-outlined lively-icon">description</i>內容摘要
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">指令</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.instructions">{{ form.instructions.length }} 字元</span>
+                  <span v-else class="se-empty">（未填寫）</span>
+                </span>
+              </div>
+              <div v-if="form.triggerHint" class="se-confirm-row">
+                <span class="se-confirm-key">觸發時機</span>
+                <span class="se-confirm-val">{{ form.triggerHint }}</span>
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">所需檔案</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
+                  <span v-else class="se-empty">（未上傳）</span>
+                </span>
+              </div>
             </div>
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">指令</span>
-              <span class="se-confirm-val">
-                <span v-if="form.instructions">{{ form.instructions.length }} 字元</span>
-                <span v-else class="se-empty">（未填寫）</span>
-              </span>
-            </div>
-            <div v-if="form.triggerHint" class="se-confirm-row">
-              <span class="se-confirm-key">觸發時機</span>
-              <span class="se-confirm-val">{{ form.triggerHint }}</span>
-            </div>
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">指派 Agent</span>
-              <span class="se-confirm-val">
-                <span v-if="form.assignedAgents.length">{{ form.assignedAgents.join('、') }}</span>
-                <span v-else class="se-empty">（未指派）</span>
-              </span>
-            </div>
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">所需檔案</span>
-              <span class="se-confirm-val">
-                <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
-                <span v-else class="se-empty">（未上傳）</span>
-              </span>
-            </div>
-            <div class="se-confirm-row se-confirm-row--toggle">
-              <span class="se-confirm-key">{{ isEditMode ? '啟用狀態' : '建立後立即啟用' }}</span>
-              <label class="se-toggle">
-                <input type="checkbox" v-model="form.isEnabled" />
-                <span class="se-toggle-track"></span>
-              </label>
+
+            <div class="se-confirm-card2 lively-card">
+              <div class="se-confirm-card2-hd">
+                <i class="material-symbols-outlined lively-icon">tune</i>設定
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">指派 Agent</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.assignedAgents.length">{{ form.assignedAgents.join('、') }}</span>
+                  <span v-else class="se-empty">（未指派）</span>
+                </span>
+              </div>
+              <div class="se-confirm-row se-confirm-row--toggle">
+                <span class="se-confirm-key">{{ isEditMode ? '啟用狀態' : '建立後立即啟用' }}</span>
+                <label class="se-toggle">
+                  <input type="checkbox" v-model="form.isEnabled" />
+                  <span class="se-toggle-track"></span>
+                </label>
+              </div>
             </div>
           </div>
 

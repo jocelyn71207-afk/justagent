@@ -184,21 +184,48 @@
     pointer-events: none;
   }
 
-  // 確認卡片
-  .se-confirm-card {
+  // 確認頁：標題 + 分組卡片
+  .se-confirm-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: $font-family-heading;
+    margin: 0 0 16px;
+  }
+
+  .se-confirm-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
+  }
+
+  .se-confirm-card2 {
     background: var(--surface);
     border: 1px solid var(--divider-a50);
-    border-radius: 12px;
-    padding: 4px 0;
-    margin-bottom: 16px;
-    max-width: 560px;
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .se-confirm-card2-hd {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+
+    i { font-size: 17px; color: var(--primary); }
   }
 
   .se-confirm-row {
     display: flex;
     align-items: flex-start;
     gap: 16px;
-    padding: 12px 20px;
+    padding: 8px 0;
     border-bottom: 1px solid var(--divider-a50);
 
     &:last-child { border-bottom: none; }
