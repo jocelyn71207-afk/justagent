@@ -20,7 +20,7 @@ describe('SkillManagement Library 團隊技能卡片', () => {
     await wrapper.vm.$nextTick()
 
     const teamSkillCount = store.flatSkills.filter(s => s.scope === 'team').length
-    if (teamSkillCount === 0) return // mock 資料若無團隊技能，此測試無從驗證，交由後續資料調整
+    expect(teamSkillCount).toBeGreaterThan(0)
 
     const teamGrid = wrapper.find('.lsr-team-grid')
     expect(teamGrid.exists()).toBe(true)

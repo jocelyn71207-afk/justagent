@@ -12,12 +12,12 @@ describe('SkillEditor 第 3 步版面', () => {
       global: { plugins: [router], stubs: { AppBreadcrumb: true } },
     })
     await wrapper.find('input.custom-input').setValue('庫存查詢助理')
-    const buttons = wrapper.findAll('button')
-    await buttons.find(b => b.text().includes('下一步'))!.trigger('click')
-    await buttons.find(b => b.text().includes('下一步'))!.trigger('click')
+    await wrapper.findAll('button').find(b => b.text().includes('下一步'))!.trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.findAll('button').find(b => b.text().includes('下一步'))!.trigger('click')
 
     expect(wrapper.find('.se-confirm-title').text()).toBe('庫存查詢助理')
-    const cards = wrapper.findAll('.se-confirm-card2')
+    const cards = wrapper.findAll('.se-confirm-group')
     expect(cards.length).toBe(2)
     expect(cards[0].text()).toContain('內容摘要')
     expect(cards[1].text()).toContain('設定')
