@@ -19,9 +19,9 @@
       </div>
 
       <!-- Hero 統計列 -->
-      <div class="skill-stats-row">
-        <div class="skill-stat-card">
-          <div class="skill-stat-icon icon--enabled">
+      <div class="skill-stats-row lively-stagger">
+        <div class="skill-stat-card lively-card">
+          <div class="skill-stat-icon icon--enabled lively-icon">
             <i class="material-symbols-outlined">check_circle</i>
           </div>
           <div class="skill-stat-body">
@@ -29,8 +29,8 @@
             <div class="skill-stat-lbl">啟用中技能</div>
           </div>
         </div>
-        <div class="skill-stat-card">
-          <div class="skill-stat-icon icon--ext">
+        <div class="skill-stat-card lively-card">
+          <div class="skill-stat-icon icon--ext lively-icon">
             <i class="material-symbols-outlined">corporate_fare</i>
           </div>
           <div class="skill-stat-body">
@@ -38,8 +38,8 @@
             <div class="skill-stat-lbl">企業擴充</div>
           </div>
         </div>
-        <div class="skill-stat-card">
-          <div class="skill-stat-icon icon--team">
+        <div class="skill-stat-card lively-card">
+          <div class="skill-stat-icon icon--team lively-icon">
             <i class="material-symbols-outlined">group</i>
           </div>
           <div class="skill-stat-body">
@@ -47,8 +47,8 @@
             <div class="skill-stat-lbl">團隊擴充</div>
           </div>
         </div>
-        <div class="skill-stat-card">
-          <div class="skill-stat-icon icon--usage">
+        <div class="skill-stat-card lively-card">
+          <div class="skill-stat-icon icon--usage lively-icon">
             <i class="material-symbols-outlined">bolt</i>
           </div>
           <div class="skill-stat-body">
@@ -97,7 +97,7 @@
         <div v-if="isManager" v-show="activeTab === 'review'" class="skill-tab-panel">
           <div class="skill-review-block">
             <p class="skill-tab-panel-desc">等待審核的技能送審申請，通過後將發佈至 Library</p>
-            <div v-if="store.pendingReviewSkills.length" class="src-list">
+            <div v-if="store.pendingReviewSkills.length" class="src-list lively-stagger">
               <SkillReviewCard
                 v-for="skill in store.pendingReviewSkills"
                 :key="skill.id"
@@ -138,24 +138,24 @@
                   />
                 </div>
               </div>
-              <!-- 團隊技能（依團隊分組） -->
+              <!-- 團隊技能（依團隊分組，每團隊一張卡片） -->
               <div v-if="groupedTeamSkills.length" class="lsr-section-block lsr-section-block--team">
                 <div class="lsr-section-header">
                   <i class="material-symbols-outlined">group</i>
                   <span class="lsr-section-title">團隊技能</span>
                   <span class="lsr-section-count">{{ groupedTeamSkills.reduce((s, g) => s + g.skills.length, 0) }}</span>
                 </div>
-                <div class="lsr-team-groups">
+                <div class="lsr-team-grid lively-stagger">
                   <div
-                    v-for="group in groupedTeamSkills"
+                    v-for="(group, gi) in groupedTeamSkills"
                     :key="group.teamName"
-                    class="lsr-team-group"
+                    :class="['lsr-team-card', 'lively-card', gi % 2 === 0 ? 'lively-corner-a' : 'lively-corner-b']"
                   >
                     <div class="lsr-team-label">
                       <i class="material-symbols-outlined">apartment</i>{{ group.teamName }}
                       <span class="lsr-section-count">{{ group.skills.length }}</span>
                     </div>
-                    <div class="lsr-section-list">
+                    <div class="lsr-section-list lsr-section-list--in-card">
                       <LibrarySkillRow
                         v-for="skill in group.skills"
                         :key="skill.id"

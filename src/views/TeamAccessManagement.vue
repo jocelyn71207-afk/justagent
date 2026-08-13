@@ -20,55 +20,76 @@
         </div>
       </div>
 
-      <!-- 角色統計概覽 -->
-      <div class="stats-bar">
-        <div class="stat-item" v-for="stat in roleStats" :key="stat.role">
-          <span class="stat-dot" :class="getRoleClass(stat.role)"></span>
-          <span class="stat-label">{{ stat.role }}</span>
-          <span class="stat-count">{{ stat.count }}</span>
+      <!-- 角色統計概覽：企業擁有者是唯一的 hero，其餘是 tile -->
+      <div class="role-stats-row">
+        <div
+          v-for="(stat, si) in roleStats"
+          :key="stat.role"
+          :class="si === 0 ? 'role-stat-hero' : 'role-stat-tile'"
+        >
+          <template v-if="si === 0">
+            <div class="cap">{{ stat.role }}</div>
+            <div class="big">{{ stat.count }}</div>
+          </template>
+          <template v-else>
+            <b>{{ stat.count }}</b>
+            <span>{{ stat.role }}</span>
+          </template>
         </div>
       </div>
 
-      <div class="table-box new-table-box">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th width="200">名稱</th>
-              <th>郵件</th>
-              <th width="130">
-                <span class="sort-btn" @click="toggleSort">
-                  職位
-                  <i class="material-symbols-outlined">arrow_downward</i>
-                </span>
-              </th>
-              <th width="140">最後登入時間</th>
-              <th width="100" class="col-action"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="member in filteredList" :key="member.id">
-              <td>
-                <div class="member-cell">
-                  <div class="member-avatar" :class="getRoleClass(member.role)">
-                    {{ member.name.charAt(0) }}
+      <div class="access-split-layout">
+        <div class="table-box new-table-box">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th width="200">名稱</th>
+                <th>郵件</th>
+                <th width="130">
+                  <button type="button" class="sort-btn" aria-label="依職位排序" @click="toggleSort">
+                    職位
+                    <i class="material-symbols-outlined">arrow_downward</i>
+                  </button>
+                </th>
+                <th width="140">最後登入時間</th>
+                <th width="100" class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="member in filteredList" :key="member.id">
+                <td>
+                  <div class="member-cell">
+                    <div class="member-avatar" :class="getRoleClass(member.role)">
+                      {{ member.name.charAt(0) }}
+                    </div>
+                    <span>{{ member.name }}</span>
                   </div>
-                  <span>{{ member.name }}</span>
-                </div>
-              </td>
-              <td class="fc-grey-1">{{ member.email }}</td>
-              <td>
-                <span class="role-badge" :class="getRoleClass(member.role)">{{ member.role }}</span>
-              </td>
-              <td class="fc-grey-1">{{ formatTimeToDisplay(member.lastLogin) }}</td>
-              <td class="col-action">
-                <template v-if="member.role !== '企業擁有者' && member.role !== '平台管理者'">
-                  <i class="material-symbols-outlined action-btn" @click="deleteMember(member)">delete</i>
-                  <i class="material-symbols-outlined action-btn" @click="editMember(member)">edit</i>
-                </template>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="fc-grey-1">{{ member.email }}</td>
+                <td>
+                  <span class="role-badge" :class="getRoleClass(member.role)">{{ member.role }}</span>
+                </td>
+                <td class="fc-grey-1">{{ formatTimeToDisplay(member.lastLogin) }}</td>
+                <td class="col-action">
+                  <template v-if="member.role !== '企業擁有者' && member.role !== '平台管理者'">
+                    <button type="button" class="icon-btn action-btn" aria-label="刪除成員" @click="deleteMember(member)"><i class="material-symbols-outlined">delete</i></button>
+                    <button type="button" class="icon-btn action-btn" aria-label="編輯成員" @click="editMember(member)"><i class="material-symbols-outlined">edit</i></button>
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="access-activity-panel">
+          <h4>最近異動</h4>
+          <div class="access-activity-item" v-for="act in recentActivity" :key="act.id">
+            <span class="dot"></span>
+            <div>
+              <p><b>{{ act.memberName }}</b> {{ act.action }}</p>
+              <time>{{ act.time }}</time>
+            </div>
+          </div>
+        </div>
       </div>
 
       <compPagination class="mt-5"
@@ -178,6 +199,19 @@ function getRoleClass(role: string): string {
   };
   return map[role] ?? 'role-viewer';
 }
+
+// 最近權限異動紀錄  TODO... 後端吐資料（目前無對應 API，純前端展示用）
+interface AccessActivity {
+  id: string;
+  memberName: string;
+  action: string;
+  time: string;
+}
+const recentActivity = ref<AccessActivity[]>([
+  { id: 'act1', memberName: 'Kevin',  action: '被設為團隊主管',   time: '2 小時前' },
+  { id: 'act2', memberName: 'Iris',   action: '加入專案人員',     time: '昨天' },
+  { id: 'act3', memberName: 'Wendy',  action: '權限被調整',       time: '3 天前' },
+]);
 
 function toggleSort() {
   // TODO... 排序邏輯

@@ -69,13 +69,17 @@
 
 // ── 團隊子群組 ───────────────────────────────────────
 
-.lsr-team-groups {
-  display: flex;
-  flex-direction: column;
+.lsr-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 12px;
+  padding: 12px;
 }
 
-.lsr-team-group {
-  & + & { border-top: 1px solid var(--divider-a50); }
+.lsr-team-card {
+  border: 1px solid var(--divider-a50);
+  background: var(--surface);
+  padding: 12px 14px 14px;
 }
 
 .lsr-team-label {
@@ -85,10 +89,15 @@
   font-size: 12px;
   font-weight: 600;
   color: #7c5fba;
-  padding: 8px 16px 4px;
+  padding: 0 0 8px;
 
   .material-symbols-outlined { font-size: 14px; }
   .lsr-section-count { background: rgba(#7c5fba, 0.1); color: #7c5fba; }
+}
+
+.lsr-section-list--in-card {
+  padding: 0;
+  grid-template-columns: 1fr;
 }
 
 // ── 技能列 ───────────────────────────────────────────

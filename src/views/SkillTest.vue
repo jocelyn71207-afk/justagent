@@ -5,7 +5,7 @@
       <!-- 左側：技能選擇 -->
       <div class="test-sidebar">
         <div class="sidebar-head">測試的技能</div>
-        <div class="sidebar-list">
+        <div class="sidebar-list lively-stagger">
 
           <template v-if="personalSkills.length">
             <div class="section-badge-row">
@@ -33,7 +33,7 @@
 
             <template v-for="group in librarySubgroups" :key="group.key">
               <template v-if="group.skills.length">
-                <div class="subgroup-label">{{ group.label }}</div>
+                <div :class="['subgroup-label', `subgroup-label--${group.key}`]">{{ group.label }}</div>
                 <div
                   v-for="skill in group.skills"
                   :key="skill.id"

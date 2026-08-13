@@ -16,17 +16,23 @@ button.custom-btn {
   vertical-align: middle;
   white-space: nowrap;
   cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
   &:hover {
     border-color: $color_main_2;
     color: $color_main_2;
   }
-  &:active,
-  &:focus {
+  &:active {
     border-color: $color_main_2;
     color: $color_main_2;
     background-color: var(--page-bg);
+    transform: scale(0.98);
+  }
+  &:focus {
     outline: none;
-    box-shadow: none;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
   }
   &:disabled {
     opacity: 0.3;
@@ -119,5 +125,42 @@ button.custom-btn {
   }
   &.error {
     background-color: transparent;
+  }
+}
+
+// ── Phase 0：共用 icon-only 按鈕（取代 <i>/<div> 加 @click 的模式）──────────
+// 使用方式：<button type="button" class="icon-btn" aria-label="說明文字"><i class="material-symbols-outlined">icon_name</i></button>
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px;
+  color: var(--text-faint);
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+
+  > i,
+  > .material-symbols-outlined {
+    font-size: inherit;
+  }
+
+  &:hover {
+    background-color: var(--sidebar-hover);
+    color: var(--text);
+  }
+  &:active {
+    transform: scale(0.92);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    &:hover { background-color: transparent; color: var(--text-faint); }
   }
 }

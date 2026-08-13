@@ -16,18 +16,21 @@
 
       <!-- 步驟指示器 -->
       <div class="se-stepper">
-        <div
+        <button
+          type="button"
           v-for="(label, i) in STEPS"
           :key="i"
           :class="['se-step', { 'is-active': currentStep === i, 'is-done': currentStep > i }]"
+          :disabled="currentStep <= i"
+          :aria-current="currentStep === i ? 'step' : undefined"
           @click="currentStep > i ? (currentStep = i) : undefined"
         >
-          <div class="se-step-bubble">
+          <span class="se-step-bubble">
             <i v-if="currentStep > i" class="material-symbols-outlined">check</i>
             <span v-else>{{ i + 1 }}</span>
-          </div>
+          </span>
           <span class="se-step-label">{{ label }}</span>
-        </div>
+        </button>
         <div class="se-step-track">
           <div class="se-step-fill" :style="{ width: fillWidth }" />
         </div>
@@ -65,7 +68,7 @@
 
         <!-- Step 1：技能指令 -->
         <template v-else-if="currentStep === 1">
-          <div class="se-section">
+          <div class="se-primary-section">
             <label class="se-label">技能指令（Instructions）</label>
             <p class="se-hint">
               定義此技能的角色、行為規則與限制。Agent 執行此技能時依照這份指令運作。
@@ -80,33 +83,35 @@
               <div class="se-char-count">{{ form.instructions.length }} 字元</div>
             </div>
           </div>
-          <div class="se-section">
-            <label class="se-label">觸發時機（選填）</label>
-            <p class="se-hint">
-              描述 Agent 在什麼情境下應優先選用此技能，幫助路由判斷更準確。
-            </p>
-            <textarea
-              v-model="form.triggerHint"
-              class="custom-input se-textarea-sm"
-              placeholder="例：當用戶詢問庫存數量、倉庫存量、缺貨狀態等相關問題時使用"
-              rows="3"
-              maxlength="300"
-            />
+
+          <div class="se-secondary-row">
+            <div class="se-secondary-section">
+              <label class="se-label">觸發時機（選填）</label>
+              <p class="se-hint">描述 Agent 在什麼情境下應優先選用此技能，幫助路由判斷更準確。</p>
+              <textarea
+                v-model="form.triggerHint"
+                class="custom-input se-textarea-sm"
+                placeholder="例：當用戶詢問庫存數量、倉庫存量、缺貨狀態等相關問題時使用"
+                rows="3"
+                maxlength="300"
+              />
+            </div>
+            <div class="se-secondary-section">
+              <label class="se-label">所需檔案（選填）</label>
+              <p class="se-hint">上傳技能執行時需要參考的檔案，例如規則表、範本、FAQ 文件。</p>
+              <SkillFileUpload v-model="form.files" />
+            </div>
           </div>
-          <div class="se-section">
-            <label class="se-label">所需檔案（選填）</label>
-            <p class="se-hint">上傳技能執行時需要參考的檔案，例如規則表、範本、FAQ 文件。</p>
-            <SkillFileUpload v-model="form.files" />
-          </div>
+
           <div class="se-section">
             <label class="se-label">指派 Agent（選填）</label>
             <p class="se-hint">選擇哪些 Agent 可以調用此技能。未指派時技能仍可建立，之後可再補充。</p>
-            <div class="se-agent-grid">
+            <div class="se-agent-grid lively-stagger">
               <button
                 v-for="agent in AVAILABLE_AGENTS"
                 :key="agent"
                 type="button"
-                :class="['se-agent-chip', { 'is-selected': form.assignedAgents.includes(agent) }]"
+                :class="['se-agent-chip', 'lively-card', { 'is-selected': form.assignedAgents.includes(agent) }]"
                 @click="toggleAgent(agent)"
               >
                 <i class="material-symbols-outlined">smart_toy</i>
@@ -119,42 +124,51 @@
 
         <!-- Step 2：確認 -->
         <template v-else>
-          <div class="se-confirm-card">
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">技能名稱</span>
-              <span class="se-confirm-val">{{ form.name }}</span>
+          <h3 class="se-confirm-title">{{ form.name }}</h3>
+
+          <div class="se-confirm-grid lively-stagger">
+            <div class="se-confirm-group lively-card">
+              <div class="se-confirm-group-hd">
+                <i class="material-symbols-outlined lively-icon">description</i>內容摘要
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">指令</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.instructions">{{ form.instructions.length }} 字元</span>
+                  <span v-else class="se-empty">（未填寫）</span>
+                </span>
+              </div>
+              <div v-if="form.triggerHint" class="se-confirm-row">
+                <span class="se-confirm-key">觸發時機</span>
+                <span class="se-confirm-val">{{ form.triggerHint }}</span>
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">所需檔案</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
+                  <span v-else class="se-empty">（未上傳）</span>
+                </span>
+              </div>
             </div>
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">指令</span>
-              <span class="se-confirm-val">
-                <span v-if="form.instructions">{{ form.instructions.length }} 字元</span>
-                <span v-else class="se-empty">（未填寫）</span>
-              </span>
-            </div>
-            <div v-if="form.triggerHint" class="se-confirm-row">
-              <span class="se-confirm-key">觸發時機</span>
-              <span class="se-confirm-val">{{ form.triggerHint }}</span>
-            </div>
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">指派 Agent</span>
-              <span class="se-confirm-val">
-                <span v-if="form.assignedAgents.length">{{ form.assignedAgents.join('、') }}</span>
-                <span v-else class="se-empty">（未指派）</span>
-              </span>
-            </div>
-            <div class="se-confirm-row">
-              <span class="se-confirm-key">所需檔案</span>
-              <span class="se-confirm-val">
-                <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
-                <span v-else class="se-empty">（未上傳）</span>
-              </span>
-            </div>
-            <div class="se-confirm-row se-confirm-row--toggle">
-              <span class="se-confirm-key">{{ isEditMode ? '啟用狀態' : '建立後立即啟用' }}</span>
-              <label class="se-toggle">
-                <input type="checkbox" v-model="form.isEnabled" />
-                <span class="se-toggle-track"></span>
-              </label>
+
+            <div class="se-confirm-group lively-card">
+              <div class="se-confirm-group-hd">
+                <i class="material-symbols-outlined lively-icon">tune</i>設定
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">指派 Agent</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.assignedAgents.length">{{ form.assignedAgents.join('、') }}</span>
+                  <span v-else class="se-empty">（未指派）</span>
+                </span>
+              </div>
+              <div class="se-confirm-row se-confirm-row--toggle">
+                <span class="se-confirm-key">{{ isEditMode ? '啟用狀態' : '建立後立即啟用' }}</span>
+                <label class="se-toggle">
+                  <input type="checkbox" v-model="form.isEnabled" />
+                  <span class="se-toggle-track"></span>
+                </label>
+              </div>
             </div>
           </div>
 

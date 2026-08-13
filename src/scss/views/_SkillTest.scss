@@ -159,12 +159,18 @@
     }
 
     .subgroup-label {
-      padding: 8px 16px 3px;
+      padding: 8px 16px 3px 13px;
       font-size: 11px;
       font-weight: 600;
       color: var(--text-faint);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      border-left: 3px solid transparent;
+      margin-left: 3px;
+
+      &--system     { border-left-color: var(--primary); }
+      &--enterprise { border-left-color: var(--tag-blue-text); }
+      &--team       { border-left-color: var(--tag-amber-text); }
     }
   }
 

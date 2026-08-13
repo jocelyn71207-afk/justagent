@@ -22,14 +22,19 @@
         </div>
       </div>
 
-      <div class="trash-info-banner" v-if="trashList.length">
-        <i class="material-symbols-outlined">warning</i>
-        <span>專案將依剩餘天數自動永久刪除。<strong>紅色標籤</strong>代表 3 天內到期，請盡快還原或確認刪除。</span>
+      <div class="trash-bento-summary" v-if="trashList.length">
+        <div class="hero">
+          <div class="tag">最緊急</div>
+          <div class="big">{{ urgentCount }} 個</div>
+          <div class="cap">3 天內即將永久刪除，請盡快還原或確認刪除</div>
+        </div>
+        <div class="side"><b>{{ warningCount }}</b><span>7 天內到期</span></div>
+        <div class="side"><b>{{ trashList.length }}</b><span>全部項目</span></div>
       </div>
 
       <!-- 卡片列表 -->
       <div class="card-list-box mt-2" v-if="displayProjectList.length">
-        <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="i"
+        <div :class="['one-card-box', 'project-card', `bento-${expiryUrgency(item.remainingDays)}`]" v-for="(item, i) in displayProjectList" :key="i"
           @mouseleave="item.showMoreOption = false;">
           <div class="img-box">
             <img :src="item.imgSrc" alt="">
@@ -43,7 +48,7 @@
               <div class="project-name">{{ item.name }}</div>
               <div class="lastModify">{{ item.deletedBy }}刪除・剩餘 {{ calcRemainingDays(item.remainingDays) }} 天</div>
             </div>
-            <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = true">more_horiz</i>
+            <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click="item.showMoreOption = true"><i class="material-symbols-outlined">more_horiz</i></button>
             <div :class="['next-option-box', { 'show': item.showMoreOption }]">
               <div class="option-item" @click="restoreProject(item)">還原</div>
               <div class="option-item danger" @click="permanentlyDelete(item)">永久刪除</div>
@@ -109,6 +114,10 @@ const displayProjectList = computed(() => {
   return trashList.value.filter((item: any) => item.deletedBy === filterDeleter.value);
 });
 
+// 急迫（3 天內到期）與警示（7 天內到期）的數量統計，供 bento 統計列使用
+const urgentCount = computed(() => trashList.value.filter((item: any) => expiryUrgency(item.remainingDays) === 'urgent').length);
+const warningCount = computed(() => trashList.value.filter((item: any) => expiryUrgency(item.remainingDays) === 'warning').length);
+
 // 還原專案：彈出確認 dialog，確認後從清單移除（TODO 後端實作後改為 API 呼叫）
 function restoreProject(item: any) {
   popDialog.confirm(`
@@ -151,6 +160,13 @@ function expiryUrgency(dateStr: string): 'urgent' | 'warning' | 'normal' {
   return 'normal';
 }
 
+// 計算「現在起算第 n 天後」的 datetime string，供假資料的 remainingDays 使用，
+// 確保假資料的到期急迫度分佈永遠相對於「現在」，不會隨時間推移而全部過期
+function daysFromNow(n: number): string {
+  const d = new Date(Date.now() + n * 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 // 取得垃圾桶專案清單
 function getTrashList() {
   // TODO... 之後改成呼叫後端API，先造假資料測試UI
@@ -161,7 +177,7 @@ function getTrashList() {
       name: '專案名稱1',
       imgSrc: 'https://picsum.photos/410/240.webp?random=71',
       deletedBy: 'Syney',
-      remainingDays: '2026-04-09 12:08:00',
+      remainingDays: daysFromNow(0), // urgent
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -170,7 +186,7 @@ function getTrashList() {
       name: '專案名稱2',
       imgSrc: 'https://picsum.photos/410/240.webp?random=72',
       deletedBy: 'Lucas',
-      remainingDays: '2026-04-07 08:00:00',
+      remainingDays: daysFromNow(2), // urgent
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -179,7 +195,7 @@ function getTrashList() {
       name: '專案名稱3',
       imgSrc: 'https://picsum.photos/410/240.webp?random=73',
       deletedBy: 'Lucas',
-      remainingDays: '2026-04-07 08:00:00',
+      remainingDays: daysFromNow(5), // warning
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -188,7 +204,7 @@ function getTrashList() {
       name: '專案名稱4',
       imgSrc: 'https://picsum.photos/410/240.webp?random=74',
       deletedBy: '小烏龜',
-      remainingDays: '2026-03-21 09:30:00',
+      remainingDays: daysFromNow(6), // warning
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -197,7 +213,7 @@ function getTrashList() {
       name: '專案名稱5',
       imgSrc: 'https://picsum.photos/410/240.webp?random=75',
       deletedBy: 'Lucas',
-      remainingDays: '2026-03-15 18:00:00',
+      remainingDays: daysFromNow(15), // normal
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
     {
@@ -206,7 +222,7 @@ function getTrashList() {
       name: '專案名稱6',
       imgSrc: 'https://picsum.photos/410/240.webp?random=76',
       deletedBy: 'Syney',
-      remainingDays: '2026-03-11 12:08:00',
+      remainingDays: daysFromNow(30), // normal
       team: { id: teamId.value || 'testTeam1', name: teamName.value || '團隊一' },
     },
   ];

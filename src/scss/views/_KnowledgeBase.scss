@@ -2370,7 +2370,7 @@
   justify-content: center;
   padding: 48px 24px;
   gap: 8px;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-faint);
 
   .material-symbols-outlined {
     font-size: 40px;
@@ -2398,13 +2398,13 @@
   border-radius: 6px;
 
   &.badge--success {
-    background: #E8FAA0;
-    color: #2A3500;
+    background: var(--accent-soft);
+    color: var(--primary-hover);
   }
 
   &.badge--failed {
-    background: #FFE4E4;
-    color: var(--color-error, #BA1A1A);
+    background: var(--danger-soft);
+    color: var(--danger);
   }
 }
 
@@ -2415,13 +2415,13 @@
 }
 
 .conversion-step-card {
-  border: 1px solid var(--color-outline, #C3C8BB);
+  border: 1px solid var(--divider);
   border-radius: 8px;
   overflow: hidden;
 
-  &.step--success .step-header { background: var(--color-primary-container, #E8FAA0); }
-  &.step--failed .step-header { background: #FFE4E4; }
-  &.step--skipped .step-header { background: var(--color-surface-container, #F3F3F0); opacity: 0.7; }
+  &.step--success .step-header { background: var(--accent-soft); }
+  &.step--failed .step-header { background: var(--danger-soft); }
+  &.step--skipped .step-header { background: var(--page-bg); opacity: 0.7; }
 }
 
 .step-header {
@@ -2442,7 +2442,7 @@
   font-size: 13px;
   font-weight: 600;
   flex: 1;
-  color: var(--color-on-surface, #1A1C18);
+  color: var(--text);
 }
 
 .step-duration {
@@ -2451,12 +2451,12 @@
 
 .step-body {
   padding: 10px 14px;
-  background: var(--color-surface, #FAFAFA);
+  background: var(--surface);
 }
 
 .step-skipped-note {
   font-size: 12px;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-faint);
   opacity: 0.6;
   margin: 0;
 }
@@ -2470,20 +2470,20 @@
 }
 
 .step-detail-key {
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-faint);
   font-size: 11px;
   opacity: 0.7;
 }
 
 .step-detail-val {
-  color: var(--color-on-surface, #1A1C18);
+  color: var(--text);
 }
 
 .step-error-msg {
   font-size: 11px;
-  color: var(--color-error, #BA1A1A);
-  background: #FFF5F5;
-  border: 1px solid #FFD0D0;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
   border-radius: 6px;
   padding: 8px 10px;
   margin: 10px 0 0;
@@ -2495,12 +2495,12 @@
 // ── KPI 轉換率卡片 ──────────────────────────────────────
 .stat-card--kpi {
   position: relative;
-  border-color: var(--color-primary, #C8F135);
-  background: #F0FFD4;
+  border-color: var(--primary);
+  background: var(--accent-soft);
   cursor: default;
   &:hover {
-    border-color: var(--color-primary, #C8F135);
-    box-shadow: 0 2px 12px rgba(200, 241, 53, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 2px 12px var(--primary-a20);
   }
 }
 
@@ -2508,8 +2508,8 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: var(--color-primary, #C8F135);
-  color: #2A3500;
+  background: var(--primary);
+  color: var(--primary-fg);
   font-size: 9px;
   font-weight: 700;
   padding: 1px 5px;
@@ -2518,23 +2518,23 @@
 }
 
 .stat-icon--kpi {
-  background: #E8FAA0;
-  color: #5B6342;
+  background: var(--accent-soft);
+  color: var(--text-muted);
 }
 
 .stat-number--kpi {
-  color: #2A3500;
+  color: var(--primary-hover);
 }
 
 .kpi-target {
   font-size: 11px;
-  color: #5B6342;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
 .kpi-progress-bar {
   height: 3px;
-  background: #D0D9C0;
+  background: var(--divider);
   border-radius: 2px;
   margin-top: 8px;
   overflow: hidden;
@@ -2542,7 +2542,7 @@
 
 .kpi-progress-fill {
   height: 100%;
-  background: var(--color-primary, #C8F135);
+  background: var(--primary);
   border-radius: 2px;
   transition: width 0.5s ease;
 }
@@ -2563,9 +2563,9 @@
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 12px;
   line-height: 1.7;
-  color: var(--color-danger, #BA1A1A);
-  background: #FFF5F5;
-  border: 1px solid #FFD0D0;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
   border-radius: 8px;
   padding: 12px 14px;
   white-space: pre-wrap;
@@ -2578,13 +2578,13 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #E8FAA0;
-  border: 1px solid var(--color-primary, #C8F135);
+  background: var(--accent-soft);
+  border: 1px solid var(--primary);
   border-radius: 10px;
   padding: 12px 16px;
   margin-bottom: 16px;
   font-size: 13px;
-  color: #2A3500;
+  color: var(--primary-hover);
   line-height: 1.6;
 
   .material-symbols-outlined {
