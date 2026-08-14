@@ -1,0 +1,284 @@
+.JourneyDashboard {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: $font-family;
+  padding: 32px 40px 60px;
+}
+
+// ── Header ──────────────────────────────────────────
+.jd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.jd-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tag-blue-text);
+  margin-bottom: 4px;
+}
+
+.jd-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: var(--text);
+}
+
+.jd-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.jd-back-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--divider);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
+// ── Empty state ─────────────────────────────────────
+.jd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--text-faint);
+  gap: 12px;
+}
+
+.jd-empty-icon {
+  font-size: 40px;
+  opacity: 0.3;
+}
+
+.jd-empty-title {
+  font-size: 14px;
+}
+
+.jd-empty-desc {
+  font-size: 12px;
+}
+
+// ── Journey card list ───────────────────────────────
+.jd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.jd-card {
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.jd-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.jd-user {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.jd-meta {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.jd-card-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.jd-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.jd-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+
+  &--done {
+    background: var(--tag-teal-bg);
+    color: var(--success);
+    border-color: var(--success);
+  }
+
+  &--running {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+    border-color: var(--tag-blue-text);
+  }
+}
+
+// ── Progress bar ────────────────────────────────────
+.jd-progress {
+  background: var(--page-bg);
+  border-radius: 6px;
+  height: 6px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
+.jd-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+
+  &--done {
+    background: linear-gradient(90deg, var(--success), var(--accent));
+  }
+
+  &--running {
+    background: linear-gradient(90deg, var(--tag-blue-text), var(--primary));
+  }
+}
+
+// ── Node step track ─────────────────────────────────
+.jd-track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  row-gap: 20px;
+}
+
+.jd-step {
+  flex: 1;
+  min-width: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  padding-top: 4px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: var(--divider);
+    z-index: 0;
+  }
+
+  &:first-child::before {
+    display: none;
+  }
+
+  &--done::before,
+  &--running::before {
+    background: var(--success);
+  }
+}
+
+.jd-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  z-index: 1;
+  border: 2px solid;
+  margin-bottom: 8px;
+  background: var(--surface);
+}
+
+.jd-step--done .jd-dot {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--primary-fg);
+}
+
+.jd-step--running .jd-dot {
+  border-color: var(--tag-blue-text);
+  color: var(--tag-blue-text);
+}
+
+.jd-step--pending .jd-dot {
+  border-color: var(--divider);
+  color: var(--text-faint);
+}
+
+.jd-step-key {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.jd-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 2px;
+  max-width: 96px;
+}
+
+.jd-step-running {
+  font-size: 9px;
+  color: var(--tag-blue-text);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.jd-blink-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tag-blue-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jd-blink-dot {
+    animation: jd-blink 1s ease-in-out infinite;
+  }
+}
+
+@keyframes jd-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.jd-step-time {
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
