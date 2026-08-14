@@ -10,17 +10,13 @@
         </div>
       </div>
 
-      <!-- 操作列 -->
+      <!-- 操作列：儲存草稿在任何步驟都可以按 -->
       <div class="views-page-header">
         <div class="d-flex align-items-center"></div>
         <div class="header-right-box">
           <button class="custom-btn" @click="handleSave">
             <i class="material-symbols-outlined">save</i>
             儲存草稿
-          </button>
-          <button class="custom-btn custom-main-btn ml-2" @click="isReviewModalOpen = true">
-            <i class="material-symbols-outlined">send</i>
-            送出審核
           </button>
         </div>
       </div>
@@ -35,14 +31,34 @@
         </div>
       </div>
 
-      <!-- 主要編輯區 + 右側資訊欄 -->
-      <div class="row">
+      <!-- 步驟指示器 -->
+      <div class="ke-stepper">
+        <button
+          type="button"
+          v-for="(label, i) in STEPS"
+          :key="i"
+          :class="['ke-step', { 'is-active': currentStep === i, 'is-done': currentStep > i }]"
+          :disabled="currentStep <= i"
+          :aria-current="currentStep === i ? 'step' : undefined"
+          @click="currentStep > i ? (currentStep = i) : undefined"
+        >
+          <span class="ke-step-bubble">
+            <i v-if="currentStep > i" class="material-symbols-outlined">check</i>
+            <span v-else>{{ i + 1 }}</span>
+          </span>
+          <span class="ke-step-label">{{ label }}</span>
+        </button>
+        <div class="ke-step-track">
+          <div class="ke-step-fill" :style="{ width: fillWidth }" />
+        </div>
+      </div>
 
-        <!-- 左側：主要欄位 -->
-        <div class="col-8">
+      <!-- 步驟內容 -->
+      <div class="ke-body">
+
+        <!-- Step 0：基本資訊 -->
+        <template v-if="currentStep === 0">
           <div class="editor-card">
-
-            <!-- 標題 -->
             <div class="field-group">
               <label class="field-label">知識標題 <span class="required">*</span></label>
               <input
@@ -52,8 +68,6 @@
                 placeholder="輸入知識條目標題"
               />
             </div>
-
-            <!-- 摘要 -->
             <div class="field-group">
               <label class="field-label">內容摘要</label>
               <textarea
@@ -63,8 +77,44 @@
                 placeholder="一句話說明此知識條目的用途"
               ></textarea>
             </div>
+            <div class="field-group">
+              <label class="field-label">分類</label>
+              <compDropDown
+                :options="[
+                  { name: '商品文件', value: '商品文件' },
+                  { name: '系統文件', value: '系統文件' },
+                  { name: '客服知識', value: '客服知識' },
+                  { name: '規則說明', value: '規則說明' },
+                  { name: '市場情報', value: '市場情報' },
+                ]"
+                :show-search="false"
+                :default-value="formData.category"
+                class="w-100"
+                @select="(item: any) => formData.category = String(item.value)"
+              />
+            </div>
+            <div class="field-group">
+              <label class="field-label">標籤</label>
+              <div class="tags-input-wrap" @click="focusTagInput">
+                <span class="tag-chip" v-for="tag in formData.tags" :key="tag">
+                  {{ tag }}
+                  <i class="material-symbols-outlined" @click.stop="removeTag(tag)">close</i>
+                </span>
+                <input
+                  ref="tagInputRef"
+                  v-model="tagInputValue"
+                  placeholder="輸入標籤後按 Enter"
+                  @keydown.enter.prevent="addTag"
+                  @keydown.backspace="handleBackspaceTag"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
 
-            <!-- 內容編輯器（Rich Text placeholder） -->
+        <!-- Step 1：內容與來源 -->
+        <template v-else-if="currentStep === 1">
+          <div class="editor-card">
             <div class="field-group">
               <label class="field-label">知識內容 <span class="required">*</span></label>
               <div class="editor-toolbar">
@@ -87,55 +137,6 @@
 2. 第二項"
               ></textarea>
             </div>
-
-          </div>
-        </div>
-
-        <!-- 右側：發布設定 -->
-        <div class="col-4">
-          <div class="editor-card">
-            <h6 class="fw-700 mb-4 pb-3 border-bottom d-flex align-items-center">
-              <i class="material-symbols-outlined mr-2 fs-18">settings</i>
-              發布設定
-            </h6>
-
-            <!-- 分類 -->
-            <div class="field-group">
-              <label class="field-label">分類</label>
-              <compDropDown
-                :options="[
-                  { name: '商品文件', value: '商品文件' },
-                  { name: '系統文件', value: '系統文件' },
-                  { name: '客服知識', value: '客服知識' },
-                  { name: '規則說明', value: '規則說明' },
-                  { name: '市場情報', value: '市場情報' },
-                ]"
-                :show-search="false"
-                :default-value="formData.category"
-                class="w-100"
-                @select="(item: any) => formData.category = String(item.value)"
-              />
-            </div>
-
-            <!-- 標籤 -->
-            <div class="field-group">
-              <label class="field-label">標籤</label>
-              <div class="tags-input-wrap" @click="focusTagInput">
-                <span class="tag-chip" v-for="tag in formData.tags" :key="tag">
-                  {{ tag }}
-                  <i class="material-symbols-outlined" @click.stop="removeTag(tag)">close</i>
-                </span>
-                <input
-                  ref="tagInputRef"
-                  v-model="tagInputValue"
-                  placeholder="輸入標籤後按 Enter"
-                  @keydown.enter.prevent="addTag"
-                  @keydown.backspace="handleBackspaceTag"
-                />
-              </div>
-            </div>
-
-            <!-- 關聯來源檔案 -->
             <div class="field-group">
               <label class="field-label">關聯來源檔案</label>
               <div class="source-files-list" v-if="formData.sourceFiles.length">
@@ -154,8 +155,6 @@
                 從共用檔案管理選取
               </button>
             </div>
-
-            <!-- 可見範圍 -->
             <div class="field-group">
               <label class="field-label">可見範圍</label>
               <compDropDown
@@ -170,8 +169,73 @@
                 @select="(item: any) => formData.visibility = item.value"
               />
             </div>
+          </div>
+        </template>
 
-            <!-- 本次更新說明 -->
+        <!-- Step 2：確認與發布 -->
+        <template v-else>
+          <h3 class="ke-confirm-title">{{ formData.title }}</h3>
+
+          <div class="ke-confirm-grid lively-stagger">
+            <div class="ke-confirm-group lively-card">
+              <div class="ke-confirm-group-hd">
+                <i class="material-symbols-outlined lively-icon">description</i>內容摘要
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">分類</span>
+                <span class="ke-confirm-val">
+                  <span v-if="formData.category">{{ formData.category }}</span>
+                  <span v-else class="ke-empty">（未選擇）</span>
+                </span>
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">標籤</span>
+                <span class="ke-confirm-val">
+                  <span v-if="formData.tags.length">{{ formData.tags.join('、') }}</span>
+                  <span v-else class="ke-empty">（未設定）</span>
+                </span>
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">內容字數</span>
+                <span class="ke-confirm-val">{{ formData.content.length }} 字元</span>
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">來源檔案</span>
+                <span class="ke-confirm-val">
+                  <span v-if="formData.sourceFiles.length">{{ formData.sourceFiles.length }} 個檔案</span>
+                  <span v-else class="ke-empty">（未關聯）</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="ke-confirm-group lively-card">
+              <div class="ke-confirm-group-hd">
+                <i class="material-symbols-outlined lively-icon">settings</i>狀態資訊
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">狀態</span>
+                <span class="ke-confirm-val">
+                  <span :class="['status-badge', `status-badge--${draft.status}`]">
+                    {{ statusLabelMap[draft.status] ?? draft.status }}
+                  </span>
+                </span>
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">草稿版本</span>
+                <span class="ke-confirm-val">{{ draft.versionNumber }}</span>
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">前一版本</span>
+                <span class="ke-confirm-val">{{ knowledge?.versions.find(v => v.status === 'active')?.versionNumber ?? '—' }}</span>
+              </div>
+              <div class="ke-confirm-row">
+                <span class="ke-confirm-key">最後編輯</span>
+                <span class="ke-confirm-val">{{ draft.lastUpdateBy }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-card">
             <div class="field-group">
               <label class="field-label">本次更新說明 <span class="required">*</span></label>
               <textarea
@@ -181,36 +245,35 @@
                 placeholder="例如：修正產品保固說明有誤的段落"
               ></textarea>
             </div>
-
-            <div class="divider my-4"></div>
-
-            <!-- 狀態資訊 -->
-            <div class="meta-info-list">
-              <div class="meta-info-item">
-                <span class="meta-label">狀態</span>
-                <span :class="['status-badge', `status-badge--${draft.status}`]">
-                  {{ statusLabelMap[draft.status] ?? draft.status }}
-                </span>
-              </div>
-              <div class="meta-info-item">
-                <span class="meta-label">草稿版本</span>
-                <span class="version-badge">{{ draft.versionNumber }}</span>
-              </div>
-              <div class="meta-info-item">
-                <span class="meta-label">前一版本</span>
-                <span class="fc-grey-1 fs-13">{{ knowledge?.versions.find(v => v.status === 'active')?.versionNumber ?? '—' }}</span>
-              </div>
-              <div class="meta-info-item">
-                <span class="meta-label">最後編輯</span>
-                <span class="fc-grey-1 fs-13">{{ draft.lastUpdateBy }}</span>
-              </div>
-              <div class="meta-info-item">
-                <span class="meta-label">建立時間</span>
-                <span class="fc-grey-1 fs-13">{{ draft.lastUpdateTime }}</span>
-              </div>
-            </div>
-
           </div>
+        </template>
+
+      </div>
+
+      <!-- 底部導覽 -->
+      <div class="ke-footer">
+        <button v-if="currentStep > 0" class="custom-btn" @click="currentStep--">
+          <i class="material-symbols-outlined">arrow_back</i>上一步
+        </button>
+        <span v-else />
+        <div class="ke-footer-right">
+          <button
+            v-if="currentStep < STEPS.length - 1"
+            class="custom-btn custom-main-btn"
+            :disabled="!canGoNext"
+            @click="currentStep++"
+          >
+            下一步<i class="material-symbols-outlined">arrow_forward</i>
+          </button>
+          <button
+            v-else
+            class="custom-btn custom-main-btn"
+            :disabled="!formData.updateNote.trim()"
+            @click="isReviewModalOpen = true"
+          >
+            <i class="material-symbols-outlined">send</i>
+            送出審核
+          </button>
         </div>
       </div>
 
@@ -263,6 +326,17 @@ const statusLabelMap: Record<string, string> = {
   draft:    '草稿',
   rejected: '已退回',
 };
+
+const STEPS = ['基本資訊', '內容與來源', '確認與發布'] as const;
+const currentStep = ref(0);
+
+const fillWidth = computed(() => `${(currentStep.value / (STEPS.length - 1)) * 100}%`);
+
+const canGoNext = computed(() => {
+  if (currentStep.value === 0) return !!formData.title.trim();
+  if (currentStep.value === 1) return !!formData.content.trim();
+  return true;
+});
 
 const formData = reactive({
   title: '',

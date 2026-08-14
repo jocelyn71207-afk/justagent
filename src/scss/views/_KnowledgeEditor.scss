@@ -166,3 +166,175 @@
     }
   }
 }
+
+.KnowledgeEditor {
+  .ke-stepper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 36px;
+    max-width: 560px;
+  }
+
+  .ke-step {
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: inherit;
+    padding: 0;
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    &:disabled { cursor: default; }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    cursor: default;
+
+    &.is-done { cursor: pointer; }
+  }
+
+  .ke-step-bubble {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--divider-a50);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+    i { font-size: 16px; }
+
+    .is-active & {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+    .is-done & {
+      border-color: var(--primary);
+      background: var(--accent-soft);
+      color: var(--primary);
+    }
+  }
+
+  .ke-step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+
+    .is-active & { color: var(--primary); font-weight: 600; }
+    .is-done  & { color: var(--primary-hover); }
+  }
+
+  .ke-step-track {
+    position: absolute;
+    top: 15px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: var(--divider-a50);
+    z-index: 0;
+
+    .ke-step-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+  }
+
+  .ke-body {
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+
+  .ke-footer {
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-a50);
+  }
+
+  .ke-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  // 確認頁：標題 + 分組卡片（比照 SkillEditor 的 se-confirm-* 語言）
+  .ke-confirm-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+
+  .ke-confirm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
+  }
+
+  .ke-confirm-group {
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .ke-confirm-group-hd {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+
+    i { font-size: 17px; color: var(--primary); }
+  }
+
+  .ke-confirm-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--divider-a50);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  .ke-confirm-key {
+    flex-shrink: 0;
+    width: 80px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .ke-confirm-val {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .ke-empty { color: var(--text-faint); font-style: italic; }
+}
