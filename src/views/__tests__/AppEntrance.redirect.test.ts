@@ -38,4 +38,19 @@ describe('AppEntrance 品牌 Loading 過渡畫面', () => {
     expect(wrapper.find('.entrance-text').text()).toBe('正在為您準備工作環境...')
     wrapper.unmount()
   })
+
+  it('spinner 由 .entrance-spinner-wrap 包裹，不是 .entrance-content 的直接子元素', () => {
+    // 迴歸鎖定：避免 .lively-stagger > * 的 fade-in animation 覆蓋 spinner 自己的 entrance-spin 旋轉動畫
+    const { wrapper } = mountEntrance()
+    const content = wrapper.find('.entrance-content')
+    const directChildren = Array.from(content.element.children)
+    const spinnerIsDirectChild = directChildren.some(el => el.classList.contains('entrance-spinner'))
+    expect(spinnerIsDirectChild).toBe(false)
+
+    const wrap = wrapper.find('.entrance-spinner-wrap')
+    expect(wrap.exists()).toBe(true)
+    expect(directChildren).toContain(wrap.element)
+    expect(wrap.find('.entrance-spinner').exists()).toBe(true)
+    wrapper.unmount()
+  })
 })

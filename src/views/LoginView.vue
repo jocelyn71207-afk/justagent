@@ -36,7 +36,12 @@
           <li class="login-brand-feature">版本控管與異動稽核</li>
         </ul>
       </div>
-      <p class="login-brand-foot">© 2026 莫比機器人股份有限公司</p>
+      <p class="login-brand-foot">
+        © 2026 莫比機器人股份有限公司
+        <a href="#" class="login-brand-foot-link">隱私政策</a>
+        <span aria-hidden="true">·</span>
+        <a href="#" class="login-brand-foot-link">服務條款</a>
+      </p>
     </div>
 
     <div class="login-form-side">

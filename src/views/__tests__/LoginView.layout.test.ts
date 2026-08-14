@@ -41,6 +41,13 @@ describe('LoginView 左右分栅版面', () => {
     expect(wrapper.find('.login-form-side').text()).not.toContain('莫比機器人股份有限公司')
   })
 
+  it('隱私政策/服務條款連結保留在左側品牌面板（版權行旁）', () => {
+    const wrapper = mountLoginView()
+    expect(wrapper.find('.login-brand').text()).toContain('隱私政策')
+    expect(wrapper.find('.login-brand').text()).toContain('服務條款')
+    expect(wrapper.findAll('.login-brand-foot-link')).toHaveLength(2)
+  })
+
   it('送出表單會導覽到 /entrance，不再直接跳 ProjectDashboard', async () => {
     const router = createRouter({
       history: createWebHistory(),

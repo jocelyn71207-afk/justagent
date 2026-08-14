@@ -5,7 +5,9 @@
         <span class="entrance-dot" aria-hidden="true"></span>
         <span>JustAgent</span>
       </div>
-      <div class="entrance-spinner" role="status" aria-label="載入中"></div>
+      <div class="entrance-spinner-wrap">
+        <div class="entrance-spinner" role="status" aria-label="載入中"></div>
+      </div>
       <p class="entrance-text">正在為您準備工作環境...</p>
     </div>
   </div>
