@@ -129,7 +129,7 @@
 
   &--done {
     background: var(--tag-teal-bg);
-    color: var(--success);
+    color: var(--tag-teal-text);
     border-color: var(--success);
   }
 
@@ -142,7 +142,7 @@
 
 // ── Progress bar ────────────────────────────────────
 .jd-progress {
-  background: var(--page-bg);
+  background: var(--divider);
   border-radius: 6px;
   height: 6px;
   margin-bottom: 18px;
