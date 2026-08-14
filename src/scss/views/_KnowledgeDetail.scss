@@ -1,0 +1,518 @@
+// ══════════════════════════════════════════════════
+//  KnowledgeDetail 詳情頁專屬樣式
+// ══════════════════════════════════════════════════
+
+.KnowledgeDetail {
+  // ── 詳情頁元件 ──
+  .detail-header-card {
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+
+    // standalone info-label used in 4-tab detail page
+    > .info-label {
+      font-size: 12px;
+      color: var(--text-faint);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--divider-a30);
+
+      .info-label {
+        font-size: 12px;
+        color: var(--text-faint);
+        margin-bottom: 6px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .info-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+      }
+    }
+  }
+
+  // ── 內容預覽區 ──
+  .content-preview {
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 16px;
+    padding: 32px;
+    min-height: 400px;
+
+    .article-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--divider-a20);
+    }
+
+    .article-body {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text-a90);
+
+      p { margin-bottom: 1.5em; }
+      h3 { margin: 1.5em 0 0.8em; }
+
+      .markdown-body {
+        background: transparent;
+        color: inherit;
+        font-size: inherit;
+        font-family: inherit;
+
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          margin: 20px 0;
+          font-size: 14px;
+
+          th, td {
+            border: 1px solid var(--divider-a50);
+            padding: 10px 16px;
+            text-align: left;
+            vertical-align: top;
+            line-height: 1.5;
+          }
+
+          thead th {
+            background: var(--surface);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            white-space: nowrap;
+          }
+
+          tbody tr:nth-child(even) td {
+            background: rgba(0, 0, 0, 0.02);
+          }
+
+          tbody tr:hover td {
+            background: var(--accent-a10, rgba(59, 114, 246, 0.05));
+          }
+        }
+      }
+    }
+  }
+
+  // ── KnowledgeDetail 4-Tab ──
+  .detail-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border, #e2e8f0);
+    margin-bottom: 16px;
+  }
+
+  .detail-tab-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-faint);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+
+    &.is-active {
+      color: var(--primary, #2563eb);
+      border-bottom-color: var(--primary, #2563eb);
+      font-weight: 700;
+    }
+
+    &:hover:not(.is-active) {
+      color: var(--text);
+    }
+  }
+
+  .detail-tab-panel {
+    display: none;
+    &.is-active { display: block; }
+  }
+
+  // 概覽 Tab：主內容 + 固定寬度側欄
+  .detail-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+    align-items: start;
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // 側欄單卡片
+  .detail-sidebar-card {
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 16px;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+  }
+
+  .sidebar-section {
+    padding: 14px 18px;
+  }
+
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--divider-a30);
+  }
+
+  .sidebar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    margin-bottom: 8px;
+    &:last-child { margin-bottom: 0; }
+    &--top { align-items: flex-start; }
+  }
+
+  .sidebar-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    min-width: 50px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+
+  .sidebar-file-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--divider-a30);
+    font-size: 12px;
+    color: var(--text-a80);
+
+    i { color: var(--primary); flex-shrink: 0; }
+  }
+
+  // 原檔預覽 modal
+  .file-preview-body {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0 16px;
+  }
+
+  .file-preview-img {
+    max-width: 100%;
+    max-height: 520px;
+    border-radius: 8px;
+    object-fit: contain;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+
+  .file-no-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .file-no-preview-icon {
+    font-size: 56px;
+    color: var(--text-muted);
+  }
+
+  // 版本時間軸
+  .version-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .version-timeline-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border, #f1f5f9);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  .version-timeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 12px;
+
+    .node-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      margin-top: 3px;
+      flex-shrink: 0;
+
+      &.is-active { background: #16a34a; }
+    }
+
+    .node-line {
+      width: 1px;
+      flex: 1;
+      background: #e2e8f0;
+      margin-top: 4px;
+      min-height: 24px;
+    }
+  }
+
+  .version-timeline-body { flex: 1; }
+
+  // Chunk 卡片（分段預覽 Tab）
+  .chunk-card {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+
+    .chunk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text, #1e293b);
+    }
+
+    .chunk-token {
+      font-size: 11px;
+      color: var(--color-grey-1, #94a3b8);
+      font-weight: 400;
+    }
+
+    .chunk-content {
+      font-size: 12px;
+      color: var(--text-secondary, #475569);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  // Pipeline 徽章群（Detail 頁 Pipeline 三階段）
+  .pipeline-stages {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .pipeline-stage-badge {
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    background: #f1f5f9;
+    color: #64748b;
+
+    &.is-done {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    &.is-active {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+  }
+
+  // ── ConversionLogTab ──────────────────────────────────────
+  .conversion-log-tab {
+    padding: 4px 0;
+  }
+
+  .conversion-log-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    gap: 8px;
+    color: var(--text-faint);
+
+    .material-symbols-outlined {
+      font-size: 40px;
+      opacity: 0.4;
+    }
+
+    p {
+      font-size: 14px;
+      opacity: 0.6;
+      margin: 0;
+    }
+  }
+
+  .conversion-log-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .conversion-status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+
+    &.badge--success {
+      background: var(--accent-soft);
+      color: var(--primary-hover);
+    }
+
+    &.badge--failed {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+  }
+
+  .conversion-step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .conversion-step-card {
+    border: 1px solid var(--divider);
+    border-radius: 8px;
+    overflow: hidden;
+
+    &.step--success .step-header { background: var(--accent-soft); }
+    &.step--failed .step-header { background: var(--danger-soft); }
+    &.step--skipped .step-header { background: var(--page-bg); opacity: 0.7; }
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+  }
+
+  .step-status-icon {
+    font-size: 14px;
+    font-weight: 700;
+    width: 16px;
+    text-align: center;
+  }
+
+  .step-title {
+    font-size: 13px;
+    font-weight: 600;
+    flex: 1;
+    color: var(--text);
+  }
+
+  .step-duration {
+    flex-shrink: 0;
+  }
+
+  .step-body {
+    padding: 10px 14px;
+    background: var(--surface);
+  }
+
+  .step-skipped-note {
+    font-size: 12px;
+    color: var(--text-faint);
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  .step-detail-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 16px;
+    row-gap: 4px;
+    font-size: 12px;
+  }
+
+  .step-detail-key {
+    color: var(--text-faint);
+    font-size: 11px;
+    opacity: 0.7;
+  }
+
+  .step-detail-val {
+    color: var(--text);
+  }
+
+  .step-error-msg {
+    font-size: 11px;
+    color: var(--danger);
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 10px 0 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: monospace;
+  }
+
+  // ── Pipeline 審核提示 banner ─────────────────────────────
+  .pipeline-review-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--primary-hover);
+    line-height: 1.6;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+  }
+}

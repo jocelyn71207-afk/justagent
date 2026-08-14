@@ -826,22 +826,6 @@
     }
   }
 
-  // ── 通用頁面區塊 ──
-  .search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-    > i {
-      position: absolute;
-      left: 8px;
-      color: var(--text-muted);
-      pointer-events: none;
-    }
-    .custom-input {
-      padding-left: 34px;
-    }
-  }
-
   // 統計卡片列
   .stats-row {
     display: grid;
@@ -1146,48 +1130,6 @@
     }
   }
 
-  // ── 詳情頁元件 ──
-  .detail-header-card {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 28px;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-
-    // standalone info-label used in 4-tab detail page
-    > .info-label {
-      font-size: 12px;
-      color: var(--text-faint);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 24px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--divider-a30);
-
-      .info-label {
-        font-size: 12px;
-        color: var(--text-faint);
-        margin-bottom: 6px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .info-value {
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--text);
-      }
-    }
-  }
-
   // ── tag-chip (standalone, outside .custom-table) ──
   .tag-chip {
     display: inline-flex;
@@ -1208,24 +1150,9 @@
     }
   }
 
-  // ── 草稿編輯頁 Banner ──
-  .editor-banner {
-    background: rgba(30, 136, 229, 0.08);
-    border-left: 4px solid #1565c0;
-    padding: 14px 20px;
-    margin-bottom: 24px;
-    border-radius: 4px 12px 12px 4px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 14px;
-    color: #1565c0;
-    font-weight: 500;
-
-    i { font-size: 24px; }
-  }
-
   // ── 差異比較 版本選擇器 ──
+  // 跨頁共用：VersionCompareModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
+  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
   .compare-selectors {
     display: flex;
     align-items: center;
@@ -1258,6 +1185,7 @@
   }
 
   // ── 差異圖例 ──
+  // 跨頁共用：VersionCompareModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
   .diff-legends {
     display: flex;
     align-items: center;
@@ -1286,17 +1214,18 @@
   }
 
   // ── 差異比較檢視 (Side-by-side) ──
+  // 跨頁共用：VersionCompareModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
   .diff-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     height: 100%;
-    
+
     .diff-column {
       display: flex;
       flex-direction: column;
       gap: 20px;
-      
+
       h6 {
         margin: 0;
         padding-bottom: 12px;
@@ -1321,7 +1250,7 @@
     .diff-item {
       margin-bottom: 20px;
       &:last-child { margin-bottom: 0; }
-      
+
       .diff-label {
         font-size: 12px;
         color: var(--text-faint);
@@ -1338,7 +1267,7 @@
         min-height: 44px;
         white-space: pre-wrap;
         word-break: break-word;
-        
+
         &.is-added {
           background-color: rgba(0, 160, 120, 0.08);
           border: 1px solid rgba(0, 160, 120, 0.2);
@@ -1358,169 +1287,9 @@
     }
   }
 
-  // ── 版本紀錄清單 ──
-  .history-item {
-    padding: 18px;
-    border-radius: 14px;
-    border: 1px solid var(--divider-a50);
-    margin-bottom: 16px;
-    background: var(--page-bg);
-    transition: all 0.2s ease;
-    
-    &:hover {
-      border-color: var(--primary-hover);
-      transform: translateX(4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    }
-
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-
-      .more-menu-wrap {
-        position: relative;
-      }
-
-      .more-btn {
-        color: var(--text-faint);
-        cursor: pointer;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: var(--sidebar-hover-a20);
-          color: var(--text);
-        }
-      }
-    }
-
-    .history-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .history-note {
-      font-size: 13px;
-      color: var(--text-a80);
-      background: var(--surface);
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin-top: 10px;
-      line-height: 1.5;
-      border: 1px solid var(--divider-a30);
-    }
-    
-    &.is-published {
-      border-left: 5px solid var(--primary);
-    }
-  }
-
-  // ── 編輯器主體卡片 ──
-  .editor-card {
-    background: var(--page-bg);
-    border-radius: 16px;
-    border: 1px solid var(--divider-a50);
-    padding: 28px;
-    margin-bottom: 20px;
-
-    h6 {
-      font-size: 16px;
-      color: var(--text);
-    }
-  }
-
-  .field-group {
-    margin-bottom: 22px;
-    &:last-child { margin-bottom: 0; }
-
-    .field-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-a90);
-      margin-bottom: 8px;
-
-      .required { color: #e53935; }
-    }
-  }
-
-  .editor-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: var(--surface);
-    border-radius: 8px 8px 0 0;
-    border: 1px solid var(--divider-a50);
-    border-bottom: none;
-
-    .toolbar-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba($color-wise-green, 0.12);
-      color: var(--primary-hover);
-    }
-  }
-
-  .editor-textarea {
-    border-radius: 0 0 8px 8px !important;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    resize: vertical;
-  }
-
-  // ── 來源檔案清單 ──
-  .source-files-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-
-  .source-file-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--divider-a30);
-    font-size: 13px;
-  }
-
-  // ── 右側 meta 資訊欄 ──
-  .meta-info-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .meta-info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-
-    .meta-label {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-  }
-
   // ── 版本紀錄 Drawer ──
+  // 跨群組共用：src/components/Skill/SkillDetailDrawer.vue、
+  // src/components/Skill/UpstreamUpdateDrawer.vue 也在用同一組 class，勿移動/改名
   .drawer-panel {
     position: fixed;
     top: 0;
@@ -1569,6 +1338,8 @@
   }
 
   // ── 建立版本 Modal 版本類型選擇 ──
+  // 跨頁共用：CreateVersionModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
+  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
   .version-type-btn {
     border: 1.5px solid var(--divider-a50);
     border-radius: 12px;
@@ -1602,131 +1373,9 @@
     }
   }
 
-  // ── 編輯器標籤輸入 ──
-  .tags-input-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 10px;
-    border: 1px solid var(--divider-a50);
-    border-radius: 8px;
-    min-height: 42px;
-    background: var(--surface);
-    cursor: text;
-    transition: border-color 0.2s;
-
-    &:focus-within {
-      border-color: var(--primary-hover);
-      background: var(--page-bg);
-    }
-
-    .tag-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px 2px 10px;
-      border-radius: 20px;
-      background: rgba($color-wise-green, 0.10);
-      color: var(--primary-hover);
-      font-size: 12px;
-      font-weight: 600;
-      border: 1px solid rgba($color-wise-green, 0.15);
-
-      i {
-        font-size: 14px;
-        cursor: pointer;
-        opacity: 0.7;
-        &:hover { opacity: 1; }
-      }
-    }
-
-    input {
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 13px;
-      min-width: 80px;
-      flex: 1;
-      color: var(--text);
-
-      &::placeholder { color: var(--text-faint); }
-    }
-  }
-
-  // ── 內容預覽區 ──
-  .content-preview {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 32px;
-    min-height: 400px;
-    
-    .article-title {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 24px;
-      color: var(--text);
-    }
-    
-    .article-meta {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--divider-a20);
-    }
-
-    .article-body {
-      font-size: 15px;
-      line-height: 1.75;
-      color: var(--text-a90);
-
-      p { margin-bottom: 1.5em; }
-      h3 { margin: 1.5em 0 0.8em; }
-
-      .markdown-body {
-        background: transparent;
-        color: inherit;
-        font-size: inherit;
-        font-family: inherit;
-
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin: 20px 0;
-          font-size: 14px;
-
-          th, td {
-            border: 1px solid var(--divider-a50);
-            padding: 10px 16px;
-            text-align: left;
-            vertical-align: top;
-            line-height: 1.5;
-          }
-
-          thead th {
-            background: var(--surface);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            white-space: nowrap;
-          }
-
-          tbody tr:nth-child(even) td {
-            background: rgba(0, 0, 0, 0.02);
-          }
-
-          tbody tr:hover td {
-            background: var(--accent-a10, rgba(59, 114, 246, 0.05));
-          }
-        }
-      }
-    }
-  }
-
   // ── ReviewDrawer 審核抽屜 ──
+  // 跨頁共用：ReviewDrawer 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
+  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
   .review-drawer-panel {
     width: 520px;
     right: -520px;
@@ -1833,90 +1482,6 @@
       flex: 1;
     }
   }
-
-  // ── 版本紀錄內的稽核時間軸 ──
-  .review-timeline {
-    margin-top: 10px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--divider-a20);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .review-timeline-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .review-timeline-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-
-    &--submitted  { background: #1565c0; }
-    &--approved   { background: var(--primary); }
-    &--rejected   { background: #c62828; }
-    &--withdrawn  { background: var(--text-faint); }
-  }
-
-  .review-timeline-content {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .review-timeline-action {
-    font-weight: 700;
-    color: var(--text-a80);
-  }
-
-  .review-timeline-by {
-    color: var(--text-muted);
-    &::before { content: '·'; margin-right: 6px; }
-  }
-
-  .review-timeline-time {
-    color: var(--text-faint);
-    font-size: 11px;
-  }
-
-  .review-timeline-note {
-    width: 100%;
-    font-size: 12px;
-    color: var(--text-a60);
-    margin-top: 2px;
-    padding: 4px 8px;
-    background: var(--page-bg);
-    border-radius: 4px;
-    border-left: 2px solid var(--divider-a50);
-  }
-}
-
-// ── 新增知識條目下拉選單 ──
-.add-knowledge-dropdown {
-  position: relative;
-
-  .add-dropdown-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    min-width: 160px;
-    z-index: 20;
-  }
-
-  .rotate-180 {
-    transform: rotate(180deg);
-    transition: transform 0.2s ease;
-  }
 }
 
 // ── 新狀態 badge（小寫，對齊 store ItemStatus） ──
@@ -1964,6 +1529,7 @@
 }
 
 // ── Pipeline 進度條（列表列內用）──
+// 跨頁共用：KnowledgeBase 列表列與 KnowledgeDetail 概覽 Tab 都使用同一組 class
 .pipeline-progress-wrap {
   display: flex;
   align-items: center;
@@ -2040,252 +1606,9 @@
   }
 }
 
-// ── KnowledgeDetail 4-Tab ──
-.detail-tabs {
-  display: flex;
-  border-bottom: 2px solid var(--border, #e2e8f0);
-  margin-bottom: 16px;
-}
-
-.detail-tab-btn {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-faint);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-
-  &.is-active {
-    color: var(--primary, #2563eb);
-    border-bottom-color: var(--primary, #2563eb);
-    font-weight: 700;
-  }
-
-  &:hover:not(.is-active) {
-    color: var(--text);
-  }
-}
-
-.detail-tab-panel {
-  display: none;
-  &.is-active { display: block; }
-}
-
-// 概覽 Tab：主內容 + 固定寬度側欄
-.detail-overview-grid {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 20px;
-  align-items: start;
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-// 側欄單卡片
-.detail-sidebar-card {
-  background: var(--page-bg);
-  border: 1px solid var(--divider-a50);
-  border-radius: 16px;
-  overflow: hidden;
-  position: sticky;
-  top: 20px;
-}
-
-.sidebar-section {
-  padding: 14px 18px;
-}
-
-.sidebar-section-title {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-faint);
-  margin-bottom: 10px;
-}
-
-.sidebar-divider {
-  height: 1px;
-  background: var(--divider-a30);
-}
-
-.sidebar-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  margin-bottom: 8px;
-  &:last-child { margin-bottom: 0; }
-  &--top { align-items: flex-start; }
-}
-
-.sidebar-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-faint);
-  min-width: 50px;
-  flex-shrink: 0;
-  padding-top: 1px;
-}
-
-.sidebar-file-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  background: var(--surface);
-  border: 1px solid var(--divider-a30);
-  font-size: 12px;
-  color: var(--text-a80);
-
-  i { color: var(--primary); flex-shrink: 0; }
-}
-
-// 原檔預覽 modal
-.file-preview-body {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 0 16px;
-}
-
-.file-preview-img {
-  max-width: 100%;
-  max-height: 520px;
-  border-radius: 8px;
-  object-fit: contain;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-}
-
-.file-no-preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 24px;
-  text-align: center;
-}
-
-.file-no-preview-icon {
-  font-size: 56px;
-  color: var(--text-muted);
-}
-
-// 版本時間軸
-.version-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.version-timeline-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border, #f1f5f9);
-
-  &:last-child { border-bottom: none; }
-}
-
-.version-timeline-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 12px;
-
-  .node-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #cbd5e1;
-    margin-top: 3px;
-    flex-shrink: 0;
-
-    &.is-active { background: #16a34a; }
-  }
-
-  .node-line {
-    width: 1px;
-    flex: 1;
-    background: #e2e8f0;
-    margin-top: 4px;
-    min-height: 24px;
-  }
-}
-
-.version-timeline-body { flex: 1; }
-
-// Chunk 卡片（分段預覽 Tab）
-.chunk-card {
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 8px;
-
-  .chunk-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text, #1e293b);
-  }
-
-  .chunk-token {
-    font-size: 11px;
-    color: var(--color-grey-1, #94a3b8);
-    font-weight: 400;
-  }
-
-  .chunk-content {
-    font-size: 12px;
-    color: var(--text-secondary, #475569);
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-
 // Needs-update 列高亮
 .table-row--needs-update {
   background: #fffbeb;
-}
-
-// Pipeline 徽章群（Detail 頁 Pipeline 三階段）
-.pipeline-stages {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
-.pipeline-stage-badge {
-  padding: 1px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  background: #f1f5f9;
-  color: #64748b;
-
-  &.is-done {
-    background: #dcfce7;
-    color: #16a34a;
-  }
-
-  &.is-active {
-    background: #ede9fe;
-    color: #7c3aed;
-  }
 }
 
 // ── CreateKnowledgeWizardModal ──
@@ -2356,140 +1679,6 @@
     min-width: 100px;
     flex: 1;
   }
-}
-
-// ── ConversionLogTab ──────────────────────────────────────
-.conversion-log-tab {
-  padding: 4px 0;
-}
-
-.conversion-log-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  gap: 8px;
-  color: var(--text-faint);
-
-  .material-symbols-outlined {
-    font-size: 40px;
-    opacity: 0.4;
-  }
-
-  p {
-    font-size: 14px;
-    opacity: 0.6;
-    margin: 0;
-  }
-}
-
-.conversion-log-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.conversion-status-badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-
-  &.badge--success {
-    background: var(--accent-soft);
-    color: var(--primary-hover);
-  }
-
-  &.badge--failed {
-    background: var(--danger-soft);
-    color: var(--danger);
-  }
-}
-
-.conversion-step-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.conversion-step-card {
-  border: 1px solid var(--divider);
-  border-radius: 8px;
-  overflow: hidden;
-
-  &.step--success .step-header { background: var(--accent-soft); }
-  &.step--failed .step-header { background: var(--danger-soft); }
-  &.step--skipped .step-header { background: var(--page-bg); opacity: 0.7; }
-}
-
-.step-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-}
-
-.step-status-icon {
-  font-size: 14px;
-  font-weight: 700;
-  width: 16px;
-  text-align: center;
-}
-
-.step-title {
-  font-size: 13px;
-  font-weight: 600;
-  flex: 1;
-  color: var(--text);
-}
-
-.step-duration {
-  flex-shrink: 0;
-}
-
-.step-body {
-  padding: 10px 14px;
-  background: var(--surface);
-}
-
-.step-skipped-note {
-  font-size: 12px;
-  color: var(--text-faint);
-  opacity: 0.6;
-  margin: 0;
-}
-
-.step-detail-grid {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 16px;
-  row-gap: 4px;
-  font-size: 12px;
-}
-
-.step-detail-key {
-  color: var(--text-faint);
-  font-size: 11px;
-  opacity: 0.7;
-}
-
-.step-detail-val {
-  color: var(--text);
-}
-
-.step-error-msg {
-  font-size: 11px;
-  color: var(--danger);
-  background: var(--danger-soft);
-  border: 1px solid var(--danger);
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin: 10px 0 0;
-  white-space: pre-wrap;
-  word-break: break-all;
-  font-family: monospace;
 }
 
 // ── KPI 轉換率卡片 ──────────────────────────────────────
@@ -2571,25 +1760,4 @@
   white-space: pre-wrap;
   word-break: break-all;
   margin: 0;
-}
-
-// ── Pipeline 審核提示 banner ─────────────────────────────
-.pipeline-review-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: var(--accent-soft);
-  border: 1px solid var(--primary);
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: var(--primary-hover);
-  line-height: 1.6;
-
-  .material-symbols-outlined {
-    font-size: 18px;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
 }
