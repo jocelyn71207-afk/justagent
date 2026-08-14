@@ -24,24 +24,24 @@
 
       <template v-if="activeTab === 'items'">
         <!-- 統計卡 -->
-        <div class="stats-row" style="grid-template-columns: repeat(5, 1fr);">
-          <div class="stat-card">
+        <div class="stats-row lively-stagger" style="grid-template-columns: repeat(5, 1fr);">
+          <div class="stat-card lively-card">
             <div class="stat-icon stat-icon--main"><i class="material-symbols-outlined">description</i></div>
             <div><div class="stat-number">{{ stats.total }}</div><div class="stat-label">全部</div></div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card lively-card">
             <div class="stat-icon stat-icon--green"><i class="material-symbols-outlined">verified</i></div>
             <div><div class="stat-number">{{ stats.active }}</div><div class="stat-label">已發布</div></div>
           </div>
-          <div class="stat-card" style="background: #fffbeb; border-color: #fde68a;">
-            <div class="stat-icon" style="background:#fef3c7;color:#b45309;"><i class="material-symbols-outlined">update</i></div>
-            <div><div class="stat-number" style="color:#b45309;">{{ stats.needsUpdate }}</div><div class="stat-label">需更新</div></div>
+          <div class="stat-card stat-card--needs-update lively-card">
+            <div class="stat-icon stat-icon--needs-update"><i class="material-symbols-outlined">update</i></div>
+            <div><div class="stat-number stat-number--needs-update">{{ stats.needsUpdate }}</div><div class="stat-label">需更新</div></div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card lively-card">
             <div class="stat-icon stat-icon--blue"><i class="material-symbols-outlined">rate_review</i></div>
             <div><div class="stat-number">{{ stats.reviewing }}</div><div class="stat-label">審核中</div></div>
           </div>
-          <div class="stat-card stat-card--kpi">
+          <div class="stat-card stat-card--kpi lively-card">
             <span class="kpi-badge">KPI</span>
             <div class="stat-icon stat-icon--kpi"><i class="material-symbols-outlined">insights</i></div>
             <div>

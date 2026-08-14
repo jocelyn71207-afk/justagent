@@ -201,6 +201,11 @@
       justify-content: center;
       margin-bottom: 10px;
       font-size: 18px;
+
+      &--custom-api {
+        background: var(--tag-violet-bg);
+        i { color: var(--tag-violet-text); }
+      }
     }
 
     .app-name {

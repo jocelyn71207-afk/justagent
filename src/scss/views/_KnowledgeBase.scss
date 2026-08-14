@@ -871,6 +871,10 @@
         background: rgba(255, 140, 0, 0.12);
         i { color: #ff8c00; }
       }
+      &--needs-update {
+        background: var(--tag-amber-bg);
+        i { color: var(--tag-amber-text); }
+      }
     }
 
     .stat-number {
@@ -1736,6 +1740,15 @@
   transition: width 0.5s ease;
 }
 
+.stat-card--needs-update {
+  background: var(--tag-amber-bg);
+  border-color: var(--tag-amber-text);
+}
+
+.stat-number--needs-update {
+  color: var(--tag-amber-text);
+}
+
 // ── ErrorLogModal 樣式 ─────────────────────────────────
 .error-log-modal {
   width: 560px;
@@ -1760,4 +1773,16 @@
   white-space: pre-wrap;
   word-break: break-all;
   margin: 0;
+}
+
+@mixin knowledge-base-dark {
+  .stat-card {
+    box-shadow: none;
+  }
+}
+
+[data-theme="dark"] { @include knowledge-base-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include knowledge-base-dark; }
 }

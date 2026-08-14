@@ -195,8 +195,8 @@
 
         <!-- 自訂 API -->
         <div class="app-card" @click="showWizard = true">
-          <div class="app-icon" style="background:#f0f0ff;">
-            <i class="material-symbols-outlined" style="color:#5c35d9;">api</i>
+          <div class="app-icon app-icon--custom-api">
+            <i class="material-symbols-outlined">api</i>
           </div>
           <div class="app-name">自訂 API</div>
           <div class="app-desc">連接任意 REST API 端點</div>
