@@ -1,51 +1,141 @@
-.login-wrapper {
+// ── LoginView：左右分栅登入頁 ──────────────────────────────
+// 左側品牌面板固定深色 teal（品牌識別，不隨 light/dark 切換）
+// 右側表單面板跟隨 --surface/--text/--divider 等 token
+
+.login-split {
   min-height: 100vh;
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-family: 'Microsoft JhengHei', sans-serif;
+}
+
+// ── 左側品牌面板 ────────────────────────────────────────────
+.login-brand {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 56px 48px;
+  color: #fff;
+  background:
+    radial-gradient(1200px 600px at 20% 0%, var(--accent) 0%, transparent 55%),
+    linear-gradient(160deg, var(--primary) 0%, #00614A 100%);
+}
+
+.login-brand-nodes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.login-brand-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.login-brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.login-brand-copy {
+  position: relative;
+}
+
+.login-brand-headline {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.35;
+  max-width: 380px;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+}
+
+.login-brand-sub {
+  font-size: 14px;
+  opacity: 0.85;
+  max-width: 360px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.login-brand-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 28px 0 0;
+  padding: 0;
+}
+
+.login-brand-feature {
+  position: relative;
+  padding-left: 34px;
+  font-size: 13.5px;
+  opacity: 0.92;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+}
+
+.login-brand-foot {
+  position: relative;
+  font-size: 11.5px;
+  opacity: 0.6;
+  margin: 0;
+}
+
+// ── 右側表單面板 ────────────────────────────────────────────
+.login-form-side {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 40px;
   background: var(--page-bg);
-  font-family: 'Microsoft JhengHei', sans-serif;
 }
 
-.login-card {
+.login-form-inner {
   width: 100%;
-  max-width: 440px;
-  background: var(--surface);
-  border: 1px solid var(--divider);
-  border-radius: 28px;
-  padding: 40px;
-  box-shadow: 0 8px 24px rgba(var(--shadow), 0.08);
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
-.login-logo {
-  display: flex;
-  justify-content: center;
-
-  img {
-    height: 36px;
-    filter: brightness(0.2);
-  }
+.login-form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
 }
 
-.login-header {
-  text-align: center;
-
-  h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-
-  p {
-    font-size: 14px;
-    color: var(--text-muted);
-  }
+.login-form-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 4px;
 }
 
 .social-login {
@@ -67,14 +157,12 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   appearance: none;
   -webkit-appearance: none;
+  transition: background 0.2s ease;
 
   &:hover {
     background: var(--sidebar-bg);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(var(--shadow), 0.08);
   }
 
   svg {
@@ -82,27 +170,7 @@
   }
 }
 
-.login-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 12px;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid var(--divider);
-  }
-
-  span {
-    padding: 0 12px;
-  }
-}
-
-// ── HTML element conflict: keep .divider class working too ───
-.login-card .divider {
+.divider {
   display: flex;
   align-items: center;
   text-align: center;
@@ -127,7 +195,7 @@
   gap: 16px;
 }
 
-.login-input-group {
+.input-group {
   position: relative;
   display: flex;
   align-items: center;
@@ -161,7 +229,7 @@
       outline: none;
       background: var(--surface);
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 160, 120, 0.15);
+      box-shadow: 0 0 0 3px var(--primary-a20);
     }
   }
 
@@ -177,58 +245,7 @@
   }
 }
 
-// Fallback for old .input-group class name used in template
-.login-card .input-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  .material-symbols-rounded {
-    position: absolute;
-    left: 16px;
-    color: var(--text-muted);
-    font-size: 20px;
-    font-family: 'Material Symbols Rounded';
-    pointer-events: none;
-  }
-
-  input {
-    width: 100%;
-    height: 48px;
-    background: var(--page-bg);
-    border: 1px solid var(--divider);
-    border-radius: 9999px;
-    padding: 0 48px;
-    color: var(--text);
-    font-size: 15px;
-    font-family: inherit;
-    transition: all 0.2s ease;
-
-    &::placeholder {
-      color: var(--text-faint);
-    }
-
-    &:focus {
-      outline: none;
-      background: var(--surface);
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 160, 120, 0.15);
-    }
-  }
-
-  .visibility-toggle {
-    left: auto;
-    right: 16px;
-    cursor: pointer;
-    pointer-events: auto;
-
-    &:hover {
-      color: var(--primary);
-    }
-  }
-}
-
-.login-form-actions {
+.form-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -236,17 +253,7 @@
   color: var(--text-muted);
 }
 
-// Also support old .form-actions class used in template
-.login-card .form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.login-remember-me,
-.login-card .remember-me {
+.remember-me {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -265,8 +272,7 @@
   }
 }
 
-.login-forgot-password,
-.login-card .forgot-password {
+.forgot-password {
   color: var(--primary);
   font-weight: 500;
   text-decoration: none;
@@ -289,13 +295,11 @@
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
   margin-top: 8px;
+  transition: background 0.2s ease;
 
   &:hover {
     background: var(--primary-hover);
-    transform: scale(1.02);
-    box-shadow: 0 8px 20px rgba(var(--shadow), 0.18);
   }
 
   &:active {
@@ -319,41 +323,14 @@
   }
 }
 
-.login-company-info,
-.login-wrapper .company-info {
-  margin-top: 40px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  .footer-links {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    align-items: center;
-
-    a {
-      color: var(--text-muted);
-      text-decoration: none;
-
-      &:hover {
-        color: var(--text);
-      }
-    }
-
-    .sep {
-      opacity: 0.3;
-    }
+// ── 響應式：< 900px 隱藏品牌面板，只顯示置中表單 ───────────────
+@media (max-width: 899px) {
+  .login-split {
+    grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 480px) {
-  .login-card {
-    max-width: 90%;
-    padding: 30px 20px;
+  .login-brand {
+    display: none;
   }
 
   .social-login {
@@ -361,21 +338,17 @@
   }
 }
 
-// ── Dark mode overrides ────────────────────────────────────
+// ── Dark mode：只調整右側表單面板，左側品牌面板固定不變 ───────
 @mixin login-dark {
-  .login-logo img {
-    filter: brightness(5);
-  }
-
-  .login-card {
-    box-shadow: 0 24px 80px -16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  .social-btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
   .login-submit-btn {
-    box-shadow: 0 1px 2px rgba(0,200,150,0.20);
+    box-shadow: 0 1px 2px rgba(0, 200, 150, 0.2);
 
     &:hover {
-      box-shadow: 0 4px 16px rgba(0,200,150,0.25), 0 8px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 16px rgba(0, 200, 150, 0.25), 0 8px 20px rgba(0, 0, 0, 0.3);
     }
   }
 }
