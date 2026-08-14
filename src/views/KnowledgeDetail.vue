@@ -165,7 +165,7 @@
                   <span class="pipeline-stage-badge is-done">✓ 建立索引</span>
                 </div>
               </template>
-              <div v-if="knowledge.pipelineError" class="fs-12 mt-2" style="color:var(--color-danger,#dc2626);">
+              <div v-if="knowledge.pipelineError" class="fs-12 mt-2 pipeline-error-text" style="color:var(--danger);">
                 {{ knowledge.pipelineError }}
               </div>
             </div>
@@ -202,11 +202,11 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div class="fc-grey-1 fs-13">共 {{ knowledge.versions.length }} 個版本</div>
         </div>
-        <div class="version-timeline">
+        <div class="version-timeline lively-stagger">
           <div
             v-for="(ver, idx) in [...knowledge.versions].reverse()"
             :key="ver.id"
-            class="version-timeline-item"
+            class="version-timeline-item lively-card"
           >
             <div class="version-timeline-node">
               <div :class="['node-dot', { 'is-active': ver.status === 'active' }]"></div>
@@ -369,7 +369,7 @@ const renderedContent = computed(() => {
     return md.render(items)
   }
 
-  return '<span style="color:#999">（此版本無內容）</span>'
+  return '<span style="color:var(--text-faint)">（此版本無內容）</span>'
 })
 
 // ── Tabs ──

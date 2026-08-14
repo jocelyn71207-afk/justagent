@@ -516,3 +516,16 @@
     }
   }
 }
+
+@mixin knowledge-detail-dark {
+  .detail-header-card,
+  .content-preview {
+    box-shadow: none;
+  }
+}
+
+[data-theme="dark"] { @include knowledge-detail-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include knowledge-detail-dark; }
+}
