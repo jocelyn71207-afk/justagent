@@ -694,8 +694,8 @@ console.log('使用者是否已登入:', isLogged);
 
 // 測試 httpService service
 async function testCallAjax () {
-  // 借用 IM 的 token
-  httpService.setAuthToken('eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI3NWVlZDZmOC02NWNhLTQ2OGItOTg3YS0wMTA5MTgzY2M1ZmUiLCJhdWQiOiJjN2E1NzQ2My0yYTJiLTQ4MzQtOWNiZi0yNzAwZmM4M2NmOGMiLCJvcGVuSWRQcm92aWRlciI6eyJvcGVuSWRVc2VySWQiOiJudWxsIiwibmFtZSI6IkV5ZXNtZWRpYSIsInJlZklkIjoibnVsbCJ9LCJleHAiOjE3NjI1OTY2MjYsImlhdCI6MTc2MDAwNDYyNiwidXNlciI6eyJhY2NvdW50SWQiOiI4NDc1OTRlYy05NDc5LTQwNTEtODAzYi1jZjA0NWRjZjQ5NjQiLCJuYW1lIjoi57Ch56eL55GeIiwibW9iaWxlIjoiOTE1KioqNjg1IiwiaWQiOiI3NWVlZDZmOC02NWNhLTQ2OGItOTg3YS0wMTA5MTgzY2M1ZmUiLCJhdmF0YXIiOm51bGwsImNvdW50cnlNY29kZSI6Ijg4NiIsImVtYWlsIjpudWxsLCJhY2NvdW50VXNlcklkIjoiZmRjZjliYzctMjg4Mi00YjY4LTk4ZjUtZjg2NDc1YWI2MjVjIiwicmVnaXN0ZXJEYXRlIjoiMTY3ODg3NDY0NyJ9LCJpc3MiOiJleWVzbWVkaWEuY29tLnR3In0.VbqGgW1B18Ro_XMzYPj8KscLbGlkMcB0tfGqDOU20yEltkObox7Q1qg0oKAscx3ph7xs7_xHbTm5ARZ4q9W90A1JFwbluzqx5BDVyUL-MdlO3nbaFMJ6zPrM29YLO3yCbSR9mhSkc9G5ZRC28zGqLm4Os9SEmGfqs-FAv1nUnroEvwzZl4o00ocrFI4XYPpjOfeHyCb0YMkPnhKfLNcHRFTQUEvmmP0DgT5SyK7gVeAA4-6DcHLThqnamPvYrsnZ3-vUZrl40IWWj7yPI9q_5aLTMz4YM9NR50MIvBVDTCsTIuwdwKpw7Me5sNzardenYxsVFlRoPu9bm5r36tnxuQ')
+  // 注意：此處原本寫死一組借用的 JWT token，已移除（安全疑慮）。
+  // 需要手動測試時，請改用目前登入狀態下 httpService 既有的 auth token。
   const param = {
     "clientChannel": "IM", // 借用 IM 的 channel
     "id": null,
@@ -710,8 +710,6 @@ async function testCallAjax () {
     console.error('API 呼叫失敗，錯誤代碼: ', result.data.errorCode)
   }
 }
-testCallAjax();
-testCallAjax();
 
 async function testAjaxAll () {
   const param = {
