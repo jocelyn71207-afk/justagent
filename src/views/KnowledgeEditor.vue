@@ -394,6 +394,11 @@ onMounted(() => {
 
 function handleSave() {
   if (!formData.updateNote.trim()) {
+    if (currentStep.value !== STEPS.length - 1) {
+      // 「本次更新說明」欄位只存在於最後一步（確認與發布），
+      // 若使用者在前面步驟按下「儲存草稿」，先導覽過去讓欄位可見，再提示原因。
+      currentStep.value = STEPS.length - 1;
+    }
     popDialog.alert('請填寫本次更新說明後再儲存。');
     return;
   }

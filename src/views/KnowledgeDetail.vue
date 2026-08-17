@@ -165,7 +165,7 @@
                   <span class="pipeline-stage-badge is-done">✓ 建立索引</span>
                 </div>
               </template>
-              <div v-if="knowledge.pipelineError" class="fs-12 mt-2 pipeline-error-text" style="color:var(--danger);">
+              <div v-if="knowledge.pipelineError" class="fs-12 mt-2 pipeline-error-text">
                 {{ knowledge.pipelineError }}
               </div>
             </div>

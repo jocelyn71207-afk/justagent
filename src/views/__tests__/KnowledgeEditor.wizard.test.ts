@@ -33,12 +33,15 @@ describe('KnowledgeEditor 3 步驟向導', () => {
     expect(wrapper.find('input.custom-input').exists()).toBe(true) // 標題欄位在 Step 0
   })
 
-  it('Step 0 標題為空時，下一步按鈕disabled', () => {
+  it('Step 0 標題為空時，下一步按鈕disabled；填寫後啟用', async () => {
     const wrapper = mountEditor()
     const titleInput = wrapper.find('.ke-body input.custom-input')
-    titleInput.setValue('')
+    await titleInput.setValue('')
     const nextBtn = wrapper.find('.ke-footer-right button.custom-main-btn')
     expect(nextBtn.attributes('disabled')).toBeDefined()
+
+    await titleInput.setValue('測試知識標題')
+    expect(nextBtn.attributes('disabled')).toBeUndefined()
   })
 
   it('填寫標題後可以進到 Step 1（內容與來源）', async () => {

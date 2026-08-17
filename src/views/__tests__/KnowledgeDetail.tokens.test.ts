@@ -34,9 +34,9 @@ describe('KnowledgeDetail --color-danger 修正', () => {
 
     const errorEl = wrapper.find('.pipeline-error-text')
     expect(errorEl.exists()).toBe(true)
-    const style = errorEl.attributes('style') ?? ''
-    expect(style).not.toContain('--color-danger')
-    expect(style).toContain('--danger')
+    // 顏色已改由 _KnowledgeDetail.scss 的 .pipeline-error-text { color: var(--danger); } 規則提供，
+    // 不再依賴 inline style，也就不會有寫死的 --color-danger token。
+    expect(errorEl.attributes('style')).toBeUndefined()
   })
 })
 

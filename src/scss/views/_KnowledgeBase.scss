@@ -888,6 +888,22 @@
       color: var(--text-muted);
       margin-top: 2px;
     }
+
+    // 修飾類別（&--xxx）必須巢狀在 .stat-card 內部才能沿用同一層 specificity，
+    // 否則獨立宣告的頂層規則（0,1,0）會輸給 .KnowledgeBase .stat-card 這條基礎規則（0,2,0），
+    // background/border 永遠不會生效（Finding 1 / 5）。
+    &--needs-update {
+      background: var(--tag-amber-bg);
+      border-color: var(--tag-amber-text);
+    }
+
+    // hover 交給 .lively-card 統一處理（Finding 6），此處不覆寫 &:hover
+    &--kpi {
+      position: relative;
+      border-color: var(--primary);
+      background: var(--accent-soft);
+      cursor: default;
+    }
   }
 
   // 過濾區域
@@ -1291,9 +1307,12 @@
     }
   }
 
-  // ── 版本紀錄 Drawer ──
-  // 跨群組共用：src/components/Skill/SkillDetailDrawer.vue、
-  // src/components/Skill/UpstreamUpdateDrawer.vue 也在用同一組 class，勿移動/改名
+  // ── Drawer 基礎版型（審核抽屜 ReviewDrawer 使用）──
+  // ReviewDrawer.vue 套用 class="KnowledgeBase drawer-panel review-drawer-panel"，
+  // 這裡提供共用的固定定位/寬度/開合位移等基礎版型，尺寸由後面的 .review-drawer-panel 覆寫。
+  // SkillDetailDrawer.vue / UpstreamUpdateDrawer.vue 雖然也有 .drawer-panel class，
+  // 但各自在 _SkillDetailDrawer.scss / _UpstreamUpdateDrawer.scss 內有獨立定義，
+  // 且渲染時不在 .KnowledgeBase 範圍內，不會用到這裡的規則（已用 grep 確認）。
   .drawer-panel {
     position: fixed;
     top: 0;
@@ -1686,17 +1705,7 @@
 }
 
 // ── KPI 轉換率卡片 ──────────────────────────────────────
-.stat-card--kpi {
-  position: relative;
-  border-color: var(--primary);
-  background: var(--accent-soft);
-  cursor: default;
-  &:hover {
-    border-color: var(--primary);
-    box-shadow: 0 2px 12px var(--primary-a20);
-  }
-}
-
+// .stat-card--kpi 本體已移入 .KnowledgeBase .stat-card 內以 &--kpi 巢狀宣告（見上方 Finding 1/5/6 修正）
 .kpi-badge {
   position: absolute;
   top: 8px;
@@ -1740,11 +1749,7 @@
   transition: width 0.5s ease;
 }
 
-.stat-card--needs-update {
-  background: var(--tag-amber-bg);
-  border-color: var(--tag-amber-text);
-}
-
+// .stat-card--needs-update 本體已移入 .KnowledgeBase .stat-card 內以 &--needs-update 巢狀宣告（見上方 Finding 1/5 修正）
 .stat-number--needs-update {
   color: var(--tag-amber-text);
 }

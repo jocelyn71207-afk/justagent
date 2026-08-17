@@ -3,48 +3,6 @@
 // ══════════════════════════════════════════════════
 
 .KnowledgeDetail {
-  // ── 詳情頁元件 ──
-  .detail-header-card {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 28px;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-
-    // standalone info-label used in 4-tab detail page
-    > .info-label {
-      font-size: 12px;
-      color: var(--text-faint);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 24px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--divider-a30);
-
-      .info-label {
-        font-size: 12px;
-        color: var(--text-faint);
-        margin-bottom: 6px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .info-value {
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--text);
-      }
-    }
-  }
-
   // ── 內容預覽區 ──
   .content-preview {
     background: var(--page-bg);
@@ -52,13 +10,6 @@
     border-radius: 16px;
     padding: 32px;
     min-height: 400px;
-
-    .article-title {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 24px;
-      color: var(--text);
-    }
 
     .article-meta {
       display: flex;
@@ -308,31 +259,16 @@
     padding: 10px 14px;
     margin-bottom: 8px;
 
-    .chunk-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text, #1e293b);
-    }
-
     .chunk-token {
       font-size: 11px;
       color: var(--color-grey-1, #94a3b8);
       font-weight: 400;
     }
+  }
 
-    .chunk-content {
-      font-size: 12px;
-      color: var(--text-secondary, #475569);
-      line-height: 1.6;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+  // Pipeline 錯誤訊息文字
+  .pipeline-error-text {
+    color: var(--danger);
   }
 
   // Pipeline 徽章群（Detail 頁 Pipeline 三階段）
@@ -518,7 +454,6 @@
 }
 
 @mixin knowledge-detail-dark {
-  .detail-header-card,
   .content-preview {
     box-shadow: none;
   }
