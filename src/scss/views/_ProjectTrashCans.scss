@@ -1,70 +1,61 @@
 .ProjectTrashCans {
-  // ── Bento 統計摘要列 ─────────────────────────────
-  .trash-bento-summary {
-    display: flex;
-    gap: 10px;
+  // ── 統計摘要：真正緊急的用一行警示，其餘用安靜的文字，
+  // 不再套用跟 Dashboard/TeamAccessManagement 同一種 hero+tile 卡片公式 ──
+  .trash-summary {
     margin-bottom: 20px;
+  }
+
+  .trash-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 600;
+
+    i { font-size: 18px; }
+  }
+
+  .trash-stats-row {
+    display: flex;
+    gap: 20px;
     flex-wrap: wrap;
+  }
 
-    .hero {
-      flex: 1.3 1 260px;
-      background: linear-gradient(135deg, var(--surface), var(--danger-soft));
-      border: 1px solid var(--danger);
-      border-radius: 14px;
-      padding: 16px 20px;
+  .trash-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
 
-      .tag {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--danger);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      .big {
-        font-size: 30px;
-        font-weight: 700;
-        color: var(--text);
-        font-family: $font-family-heading;
-        margin-top: 4px;
-        font-variant-numeric: tabular-nums;
-      }
-      .cap { font-size: 12.5px; color: var(--text-faint); margin-top: 2px; }
+    b {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      margin-right: 2px;
     }
 
-    .side {
-      flex: 1 1 160px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-      background: var(--surface);
-      border: 1px solid var(--divider);
-      border-radius: 14px;
-      padding: 12px 16px;
-
-      b { font-size: 20px; color: var(--text); font-variant-numeric: tabular-nums; }
-      span { font-size: 11.5px; color: var(--text-faint); }
+    .stat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
     }
   }
 
-  // ── 卡片整體 ─────────────────────────────────────
+  // ── 卡片整體：跟其他頁面一樣統一大小，不再讓 urgent 卡片跨欄放大 ──
   .card-list-box .one-card-box.project-card {
     cursor: default;
 
-    // ── Bento 分級：urgent 卡片放大跨欄 ─────────────
-    &.bento-urgent {
-      grid-column: span 2;
-      max-width: none;
-
-      // 低於 tablet 斷點時，.card-list-box 已收成單欄，span 2 會多出一個隱形欄，
-      // 讓卡片比內容區更寬且跟上方統計列的邊界對不齊，需重設回 auto
-      @media (max-width: $breakpoint-tablet) {
-        grid-column: auto;
-      }
-    }
-
     &:hover {
-      transform: translateY(-2px) scale(1.005);
+      transform: translateY(-2px);
     }
 
     // ── 圖片灰階 ─────────────────────────────────
