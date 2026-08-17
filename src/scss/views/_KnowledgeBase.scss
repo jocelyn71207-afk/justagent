@@ -122,7 +122,7 @@
       width: 44px;
       height: 44px;
       border-radius: 10px;
-      background: #fff;
+      background: var(--surface);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -188,7 +188,7 @@
 
       &--generating {
         background: rgba(124, 58, 237, 0.08);
-        i { color: #7c3aed; }
+        i { color: var(--tag-violet-text); }
         animation-name: ai-pulse-purple;
       }
     }
@@ -222,14 +222,14 @@
     }
 
     &--success {
-      background: #ecfdf5;
+      background: var(--accent-soft);
       color: var(--primary);
       border: 1px solid rgba(0, 160, 120, 0.2);
     }
 
     &--warning {
-      background: #FFF8E1;
-      color: #856404;
+      background: var(--tag-amber-bg);
+      color: var(--tag-amber-text);
       border: 1px solid rgba(255, 193, 7, 0.2);
     }
   }
@@ -249,7 +249,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--divider-a30);
     border-radius: 12px;
     transition: all 0.2s ease;
@@ -380,18 +380,18 @@
 
     .ai-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent), #7c3aed);
+      background: linear-gradient(90deg, var(--accent), var(--tag-violet-text));
       transition: width 0.3s ease;
       min-width: 0;
     }
 
-    .progress-text { font-size: 13px; font-weight: 800; color: #7c3aed; }
+    .progress-text { font-size: 13px; font-weight: 800; color: var(--tag-violet-text); }
   }
 
   .ai-preview-container {
     border: 1px solid var(--divider-a40);
     border-radius: 16px;
-    background: #fff;
+    background: var(--surface);
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 
@@ -410,8 +410,8 @@
         .title-icon { color: var(--accent); font-size: 20px; }
         .header-title { font-size: 14px; font-weight: 700; color: var(--text); }
         .template-badge {
-          background: rgba(124, 58, 237, 0.1);
-          color: #7c3aed;
+          background: var(--tag-violet-bg);
+          color: var(--tag-violet-text);
           font-size: 11px;
           padding: 2px 8px;
           border-radius: 6px;
@@ -472,7 +472,7 @@
       height: 18px;
       border-radius: 50%;
       background: var(--accent);
-      color: #fff;
+      color: var(--primary-fg);
       font-size: 10px;
       font-weight: 700;
       display: flex;
@@ -561,8 +561,8 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: rgba(251, 140, 0, 0.12);
-    color: #e65100;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -581,8 +581,8 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(251, 140, 0, 0.06);
-    border: 1px solid rgba(251, 140, 0, 0.20);
+    background: var(--tag-amber-bg);
+    border: 1px solid var(--tag-amber-bg);
     border-radius: 12px;
     padding: 14px 18px;
     margin-bottom: 20px;
@@ -861,15 +861,15 @@
       }
       &--green {
         background: rgba(0, 160, 120, 0.12);
-        i { color: #34d399; }
+        i { color: var(--success); }
       }
       &--yellow {
         background: rgba(251, 192, 0, 0.15);
-        i { color: #e0a800; }
+        i { color: var(--tag-amber-text); }
       }
       &--orange {
         background: rgba(255, 140, 0, 0.12);
-        i { color: #ff8c00; }
+        i { color: var(--tag-amber-text); }
       }
       &--needs-update {
         background: var(--tag-amber-bg);
@@ -973,15 +973,15 @@
     }
     &--REVIEWING {
       background: rgba(251, 192, 0, 0.15);
-      color: #b07d00;
+      color: var(--tag-amber-text);
     }
     &--DRAFT {
       background: rgba(30, 136, 229, 0.10);
-      color: #1565c0;
+      color: var(--tag-blue-text);
     }
     &--REJECTED {
       background: rgba(209, 68, 55, 0.10);
-      color: #c62828;
+      color: var(--danger);
     }
     &--HISTORY {
       background: rgba(232,238,240,0.1);
@@ -998,9 +998,9 @@
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 20px;
-    background: rgba(251, 140, 0, 0.12);
-    color: #e65100;
-    border: 1px solid rgba(251, 140, 0, 0.25);
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+    border: 1px solid var(--tag-amber-bg);
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.15s;
@@ -1008,7 +1008,7 @@
     i { font-size: 13px; }
 
     &:hover {
-      background: rgba(251, 140, 0, 0.22);
+      background: var(--tag-amber-bg);
     }
   }
 
@@ -1025,7 +1025,7 @@
 
     &.major {
       background: rgba(138, 63, 252, 0.08);
-      color: #7c3aed;
+      color: var(--tag-violet-text);
       border-color: rgba(138, 63, 252, 0.20);
     }
   }
@@ -1038,9 +1038,9 @@
     font-weight: 700;
     padding: 3px 10px;
     border-radius: 6px;
-    background: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.20);
-    color: #4f46e5;
+    background: var(--tag-violet-bg);
+    border: 1px solid var(--tag-violet-bg);
+    color: var(--tag-violet-text);
     letter-spacing: 0.2px;
     white-space: nowrap;
   }
@@ -1064,9 +1064,9 @@
       font-weight: 700;
       padding: 3px 10px;
       border-radius: 6px;
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.20);
-      color: #4f46e5;
+      background: var(--tag-violet-bg);
+      border: 1px solid var(--tag-violet-bg);
+      color: var(--tag-violet-text);
       white-space: nowrap;
     }
     .tag-chip {
@@ -1144,8 +1144,8 @@
       &.show { display: block; }
 
       .option-item--danger {
-        color: var(--color-danger, #dc2626);
-        &:hover { background: var(--color-danger-bg, #fee2e2); }
+        color: var(--danger);
+        &:hover { background: var(--danger-soft); }
       }
     }
   }
@@ -1228,7 +1228,7 @@
     }
     &--removed {
       background: rgba(209, 68, 55, 0.10);
-      color: #c62828;
+      color: var(--danger);
       text-decoration: line-through;
     }
   }
@@ -1297,7 +1297,7 @@
           background-color: rgba(209, 68, 55, 0.08);
           border: 1px solid rgba(209, 68, 55, 0.2);
           text-decoration: line-through;
-          color: #c62828;
+          color: var(--danger);
         }
         &.is-changed {
           background-color: rgba(251, 192, 0, 0.08);
@@ -1337,7 +1337,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 28px !important; // 增加水平間距
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px 0 0 0;
 
     .drawer-title {
@@ -1509,46 +1509,46 @@
 
 // ── 新狀態 badge（小寫，對齊 store ItemStatus） ──
 .status-badge--active {
-  background: var(--color-success-bg, #dcfce7);
-  color: var(--color-success, #16a34a);
+  background: var(--accent-soft);
+  color: var(--success);
 }
 .status-badge--processing {
-  background: #ede9fe;
-  color: #7c3aed;
+  background: var(--tag-violet-bg);
+  color: var(--tag-violet-text);
 }
 .status-badge--reviewing {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
 }
 .status-badge--needs_update {
-  background: #fef3c7;
-  color: #b45309;
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
 }
 .status-badge--pending {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--surface);
+  color: var(--text-muted);
 }
 .status-badge--failed {
-  background: var(--color-danger-bg, #fee2e2);
-  color: var(--color-danger, #dc2626);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 .status-badge--archived {
-  background: #f8fafc;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
+  background: var(--page-bg);
+  color: var(--text-faint);
+  border: 1px solid var(--divider);
 }
 // ── Version status badge（小寫） ──
 .status-badge--draft {
-  background: #fef9c3;
-  color: #92400e;
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
 }
 .status-badge--history {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--surface);
+  color: var(--text-muted);
 }
 .status-badge--rejected {
-  background: var(--color-danger-bg, #fee2e2);
-  color: var(--color-danger, #dc2626);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 // ── Pipeline 進度條（列表列內用）──
@@ -1563,21 +1563,21 @@
 .pipeline-progress-bar {
   width: 80px;
   height: 4px;
-  background: #e9d5ff;
+  background: var(--tag-violet-bg);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .pipeline-progress-fill {
   height: 100%;
-  background: #7c3aed;
+  background: var(--tag-violet-text);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
 
 .pipeline-stage-label {
   font-size: 11px;
-  color: #7c3aed;
+  color: var(--tag-violet-text);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -1588,7 +1588,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 14px;
-  background: #1e40af;
+  background: var(--tag-blue-text);
   color: white;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -1615,8 +1615,8 @@
     transition: background 0.15s;
 
     &:hover { background: rgba(255, 255, 255, 0.25); }
-    &.is-danger { background: #dc2626; border-color: transparent; }
-    &.is-danger:hover { background: #b91c1c; }
+    &.is-danger { background: var(--danger); border-color: transparent; }
+    &.is-danger:hover { background: var(--danger); filter: brightness(0.9); }
   }
 
   .batch-cancel {
@@ -1631,7 +1631,7 @@
 
 // Needs-update 列高亮
 .table-row--needs-update {
-  background: #fffbeb;
+  background: var(--tag-amber-bg);
 }
 
 // ── CreateKnowledgeWizardModal ──

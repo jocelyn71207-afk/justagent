@@ -5,8 +5,8 @@
 .KnowledgeEditor {
   // ── 草稿編輯頁 Banner ──
   .editor-banner {
-    background: rgba(30, 136, 229, 0.08);
-    border-left: 4px solid #1565c0;
+    background: var(--tag-blue-bg);
+    border-left: 4px solid var(--tag-blue-text);
     padding: 14px 20px;
     margin-bottom: 24px;
     border-radius: 4px 12px 12px 4px;
@@ -14,7 +14,7 @@
     align-items: center;
     gap: 12px;
     font-size: 14px;
-    color: #1565c0;
+    color: var(--tag-blue-text);
     font-weight: 500;
 
     i { font-size: 24px; }
@@ -45,7 +45,7 @@
       color: var(--text-a90);
       margin-bottom: 8px;
 
-      .required { color: #e53935; }
+      .required { color: var(--danger); }
     }
   }
 
@@ -335,4 +335,16 @@
   }
 
   .ke-empty { color: var(--text-faint); font-style: italic; }
+}
+
+@mixin knowledge-editor-dark {
+  .editor-card {
+    box-shadow: none;
+  }
+}
+
+[data-theme="dark"] { @include knowledge-editor-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include knowledge-editor-dark; }
 }

@@ -72,7 +72,7 @@
   // ── KnowledgeDetail 4-Tab ──
   .detail-tabs {
     display: flex;
-    border-bottom: 2px solid var(--border, #e2e8f0);
+    border-bottom: 2px solid var(--divider);
     margin-bottom: 16px;
   }
 
@@ -89,8 +89,8 @@
     transition: color 0.15s, border-color 0.15s;
 
     &.is-active {
-      color: var(--primary, #2563eb);
-      border-bottom-color: var(--primary, #2563eb);
+      color: var(--primary);
+      border-bottom-color: var(--primary);
       font-weight: 700;
     }
 
@@ -218,7 +218,7 @@
     display: flex;
     gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px solid var(--border, #f1f5f9);
+    border-bottom: 1px solid var(--divider);
 
     &:last-child { border-bottom: none; }
   }
@@ -233,17 +233,17 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #cbd5e1;
+      background: var(--divider);
       margin-top: 3px;
       flex-shrink: 0;
 
-      &.is-active { background: #16a34a; }
+      &.is-active { background: var(--success); }
     }
 
     .node-line {
       width: 1px;
       flex: 1;
-      background: #e2e8f0;
+      background: var(--divider);
       margin-top: 4px;
       min-height: 24px;
     }
@@ -253,15 +253,15 @@
 
   // Chunk 卡片（分段預覽 Tab）
   .chunk-card {
-    background: var(--surface, #fff);
-    border: 1px solid var(--border, #e2e8f0);
+    background: var(--surface);
+    border: 1px solid var(--divider);
     border-radius: 8px;
     padding: 10px 14px;
     margin-bottom: 8px;
 
     .chunk-token {
       font-size: 11px;
-      color: var(--color-grey-1, #94a3b8);
+      color: var(--color-grey-1);
       font-weight: 400;
     }
   }
@@ -283,17 +283,17 @@
     padding: 1px 8px;
     border-radius: 4px;
     font-size: 11px;
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--surface);
+    color: var(--text-muted);
 
     &.is-done {
-      background: #dcfce7;
-      color: #16a34a;
+      background: var(--accent-soft);
+      color: var(--success);
     }
 
     &.is-active {
-      background: #ede9fe;
-      color: #7c3aed;
+      background: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
     }
   }
 
