@@ -76,12 +76,35 @@
     flex-wrap: wrap;
   }
 
+  // 這一列同時也是篩選器：點擊可依角色篩選下方名單，所以做成 <button>，
+  // hover / active 都要有清楚回饋，讓「這個可以點」跟「現在篩選的是誰」看得出來
   .role-stat {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 13px;
     color: var(--text-muted);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: color-mix(in srgb, currentColor 10%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    &.is-active {
+      background: color-mix(in srgb, currentColor 15%, transparent);
+      font-weight: 600;
+    }
 
     b {
       font-size: 15px;

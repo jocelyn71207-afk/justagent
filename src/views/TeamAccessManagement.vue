@@ -20,15 +20,17 @@
         </div>
       </div>
 
-      <!-- 角色統計概覽：安靜的一行文字，不用邊框卡片堆砌 -->
+      <!-- 角色統計概覽：同時也是篩選器，點擊可依角色篩選下方名單 -->
       <div class="role-stats-row">
-        <span
+        <button
           v-for="stat in roleStats"
           :key="stat.role"
-          :class="['role-stat', getRoleClass(stat.role)]"
+          type="button"
+          :class="['role-stat', getRoleClass(stat.role), { 'is-active': activeRoleFilter === stat.role }]"
+          @click="activeRoleFilter = activeRoleFilter === stat.role ? '' : stat.role"
         >
           <i class="stat-dot"></i><b>{{ stat.count }}</b>{{ stat.role }}
-        </span>
+        </button>
       </div>
 
       <div class="access-split-layout">
@@ -160,15 +162,21 @@ const memberList = ref([
   { id: 'u20', name: 'Peter',   email: 'peter.tang@ugg.com',        role: '檢視者',     lastLogin: '2026-02-28 07:35:14' },
 ]);
 
+// 角色統計列同時也是篩選器，空字串代表不篩選
+const activeRoleFilter = ref('');
+
 const filteredList = computed(() => {
   const keyword = searchText.value.trim().toLowerCase();
-  const list = keyword
+  let list = keyword
     ? memberList.value.filter(m =>
         m.name.toLowerCase().includes(keyword) ||
         m.email.toLowerCase().includes(keyword) ||
         m.role.includes(keyword)
       )
     : memberList.value;
+  if (activeRoleFilter.value) {
+    list = list.filter(m => m.role === activeRoleFilter.value);
+  }
   return [...list].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
 });
 
