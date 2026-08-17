@@ -35,15 +35,6 @@
     background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px; // js 會覆蓋此值
     background-position: 0 0;
 
-    // 特別客製深色主題
-    @media (prefers-color-scheme: dark) {
-      background-image:
-        repeating-linear-gradient(rgba($white, 0.04) 0px, transparent 1px),
-        repeating-linear-gradient(90deg, rgba($white, 0.04) 0px, transparent 1px),
-        repeating-linear-gradient(rgba($white, 0.018) 0px, transparent 1px),
-        repeating-linear-gradient(90deg, rgba($white, 0.018) 0px, transparent 1px);
-    }
-
     // 包著每一個小區塊的容器
     .scaleBox {
       position: fixed;
@@ -2520,7 +2511,7 @@
       justify-content: center;
       font-size: 9px;
     }
-    &.conv2-ss--done { color: var(--success); &::before { content: '✓'; background: var(--tag-teal-bg); font-weight: 700; } }
+    &.conv2-ss--done { color: var(--tag-teal-text); &::before { content: '✓'; background: var(--tag-teal-bg); font-weight: 700; } }
     &.conv2-ss--active { color: var(--tag-blue-text); &::before { content: '⋯'; background: var(--tag-blue-bg); font-size: 11px; } }
     &.conv2-ss--wait { color: var(--text-faint); &::before { content: '○'; background: var(--surface); } }
   }
@@ -2719,12 +2710,12 @@
       height: 32px;
       border-radius: 8px;
       background: var(--tag-teal-bg);
-      border: 1px solid var(--success);
+      border: 1px solid var(--tag-teal-text);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: var(--success);
+      color: var(--tag-teal-text);
     }
     .conv2-report-title { font-size: 13px; font-weight: 500; }
     .conv2-report-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
@@ -2867,7 +2858,7 @@
     color: var(--text-faint);
     background: var(--surface);
     flex-shrink: 0;
-    &--done { background: var(--tag-teal-bg); border-color: var(--success); color: var(--success); }
+    &--done { background: var(--tag-teal-bg); border-color: var(--tag-teal-text); color: var(--tag-teal-text); }
     &--active { background: var(--tag-blue-bg); border-color: var(--tag-blue-text); color: var(--tag-blue-text); }
   }
   .conv2-sl { width: 8px; height: 0.5px; background: var(--divider); flex-shrink: 0; }
@@ -2876,8 +2867,8 @@
   // ── Step content ──
   .conv2-info-note {
     font-size: 11px;
-    background: var(--tag-teal-bg); color: var(--success);
-    border: 0.5px solid var(--success);
+    background: var(--tag-teal-bg); color: var(--tag-teal-text);
+    border: 0.5px solid var(--tag-teal-text);
     border-radius: 6px; padding: 5px 9px; margin-bottom: 8px;
   }
   .conv2-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
@@ -3674,12 +3665,12 @@
     @at-root .jcd-section--hover-marketing & {
       opacity: 1;
       background: var(--tag-blue-text);
-      color: var(--primary-fg);
+      color: var(--tag-blue-bg);
     }
     @at-root .jcd-section--hover-birthday & {
       opacity: 1;
       background: var(--tag-violet-text);
-      color: var(--primary-fg);
+      color: var(--tag-violet-bg);
     }
   }
 
@@ -3860,7 +3851,7 @@
     transform: scale(1.08);
     box-shadow: 0 6px 20px var(--tag-blue-bg);
   }
-  .jcd-fab-icon { font-size: 22px; line-height: 1; color: var(--primary-fg); }
+  .jcd-fab-icon { font-size: 22px; line-height: 1; color: var(--tag-blue-bg); }
   .jcd-fab-badge {
     position: absolute;
     top: -3px;
@@ -3904,4 +3895,31 @@
 .jcd-dimmed {
   opacity: 0.35 !important;
   transition: opacity 0.2s;
+}
+
+// ── 十字格線背景（.center-box / .conv1-empty-overlay 共用）：
+//    深色模式覆蓋需依實際套用的主題（手動切換的 [data-theme] 優先），而非僅依 OS 偏好判斷，
+//    否則手動主題與 OS 偏好不一致時，格線會消失或顯示錯誤顏色 ──
+@mixin aiviewer-crosshatch-grid-dark {
+  background-image:
+    repeating-linear-gradient(rgba($white, 0.04) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba($white, 0.04) 0px, transparent 1px),
+    repeating-linear-gradient(rgba($white, 0.018) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba($white, 0.018) 0px, transparent 1px);
+}
+
+[data-theme="dark"] {
+  .AiViewer .center-box,
+  .conv1-empty-overlay {
+    @include aiviewer-crosshatch-grid-dark;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    .AiViewer .center-box,
+    .conv1-empty-overlay {
+      @include aiviewer-crosshatch-grid-dark;
+    }
+  }
 }
