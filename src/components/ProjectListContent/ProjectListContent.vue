@@ -13,17 +13,6 @@
       </div>
       <div class="plc-banner-right">
         <slot name="createBtnSlot" :openProjectSettingModal="openProjectSettingModal" />
-        <!-- KPI 數字 -->
-        <div v-if="!isLoading && !hasError && displayProjectList.length" class="plc-banner-kpi">
-          <div class="kpi-item">
-            <div class="kpi-num">{{ kpiActive }}</div>
-            <div class="kpi-label">Active</div>
-          </div>
-          <div class="kpi-item kpi-review">
-            <div class="kpi-num review">{{ kpiReview }}</div>
-            <div class="kpi-label">Review</div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -75,8 +64,6 @@
 
           <!-- 圖片區（預設顯示） -->
           <div class="card-img" v-show="!item.isHovered">
-            <div class="team-name-box" v-if="mode === 'recent'">{{ item.team.name }}</div>
-            <div class="card-project-id" v-else>PRJ-{{ String(i + 1).padStart(3, '0') }}</div>
             <img :src="item.imgSrc" alt="">
             <div class="card-img-overlay"></div>
             <i :class="['material-symbols-outlined card-star', {
@@ -114,6 +101,7 @@
 
           <!-- 卡片 footer -->
           <div class="card-footer">
+            <div class="card-team" v-if="mode === 'recent'">{{ item.team.name }}</div>
             <div class="card-name" v-show="!item.isHovered">{{ item.name }}</div>
             <div class="card-meta">
               <div class="card-meta-left">
@@ -283,10 +271,6 @@ const displayProjectList = computed(() => {
   }
   return list;
 });
-
-// KPI 計算
-const kpiActive = computed(() => displayProjectList.value.filter((p: any) => p.status === 'active').length);
-const kpiReview = computed(() => displayProjectList.value.filter((p: any) => p.status === 'review').length);
 
 // 開啟專案設定 Modal 相關
 const isOpenProjectSettingModal = ref(false);

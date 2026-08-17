@@ -12,10 +12,11 @@
   min-height: 100%;
 
   // ── Banner ──────────────────────────────────────────
+  // 單一強調手法：只用下方 hairline 分隔，不疊加左側色條，
+  // 讓標題與留白說話，而不是靠多層邊框裝飾。
   .plc-banner {
-    padding: 20px 46px;
+    padding: 28px 46px 24px;
     background: var(--page-bg);
-    border-left: 3px solid var(--primary);
     border-bottom: 1px solid var(--divider);
     flex-shrink: 0;
     display: flex;
@@ -26,17 +27,16 @@
     .plc-banner-left {}
 
     .plc-banner-title {
-      font-size: 24px;
-      font-weight: 900;
+      font-size: 26px;
+      font-weight: 700;
       color: var(--text);
-      letter-spacing: -0.4px;
+      letter-spacing: -0.3px;
     }
 
     .plc-banner-subtitle {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-faint);
-      margin-top: 3px;
-      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
     }
 
     .plc-banner-right {
@@ -44,46 +44,6 @@
       align-items: center;
       gap: 16px;
       flex-shrink: 0;
-    }
-
-    // KPI 數字區
-    .plc-banner-kpi {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-shrink: 0;
-
-      .kpi-item {
-        text-align: center;
-        background: var(--page-bg);
-        border: 1px solid var(--accent-soft);
-        border-top: 2px solid var(--primary);
-        border-radius: 8px;
-        padding: 8px 16px;
-
-        &.kpi-review { border-top-color: var(--warning); }
-        &.kpi-done   { border-top-color: var(--text-faint); }
-
-        .kpi-num {
-          font-size: 22px;
-          font-weight: 900;
-          color: var(--primary);
-          line-height: 1;
-          font-family: 'JetBrains Mono', monospace;
-
-          &.review { color: var(--warning); }
-          &.done   { color: var(--text-faint); }
-        }
-
-        .kpi-label {
-          font-size: 8px;
-          font-weight: 700;
-          letter-spacing: 1.2px;
-          text-transform: uppercase;
-          color: var(--text-faint);
-          margin-top: 3px;
-        }
-      }
     }
   }
 
@@ -143,8 +103,7 @@
   .compDropDown .dropdown-trigger,
   :deep(.compDropDown .dropdown-trigger) {
     border-radius: 999px !important;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 13px;
   }
 
   // ── Content 區域 ────────────────────────────────────
@@ -284,30 +243,6 @@
         }
       }
 
-      // 卡片右上角專案 ID
-      .card-project-id {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: rgba(255,255,255,0.7);
-        font-family: 'JetBrains Mono', monospace;
-        z-index: 3;
-      }
-
-      .team-name-box {
-        position: absolute;
-        left: 10px;
-        top: 10px;
-        background: rgba(0,0,0,0.4);
-        color: $white;
-        border-radius: 6px;
-        padding: 3px 8px;
-        font-size: 10px;
-        z-index: 3;
-      }
     }
 
     // ── 長條圖區（hover）────────────────────────────
@@ -370,6 +305,13 @@
     .card-footer {
       padding: 11px 13px 13px;
       position: relative;
+
+      // 團隊名稱：改放圖片下方的說明文字，不再疊在照片上
+      .card-team {
+        font-size: 11px;
+        color: var(--text-faint);
+        margin-bottom: 4px;
+      }
 
       .card-name {
         font-size: 13px;
@@ -435,8 +377,7 @@
 
     // ── 狀態 badge ──────────────────────────────────
     .status-badge {
-      font-family: $font-family-mono;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
       border-radius: 999px;
       font-size: 11px;
       background: var(--surface);

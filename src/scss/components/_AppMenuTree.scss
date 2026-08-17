@@ -147,17 +147,17 @@
     // 子選單縮排區
     .sub-menu-box {
       padding-left: 14px;
-      margin-top: 2px;
-      border-left: 2px solid var(--divider);
+      margin-top: 3px;
+      border-left: 1px solid var(--divider-a50);
       margin-left: 19px;
       .one-btn-item {
-        margin-bottom: 2px;
+        margin-bottom: 3px;
       }
     }
 
     // 單一個團隊區塊
     .one-group-box {
-      margin-top: 4px;
+      margin-top: 14px;
       .group-name-box {
         display: flex;
         align-items: center;

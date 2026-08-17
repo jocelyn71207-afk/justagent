@@ -27,63 +27,61 @@
 
 ---
 
-## 1. 品牌主色（Spring Green 系統）
+## 1. 品牌主色（Jade Mist 02 系統）
+
+> 本節先前記載的是更早期的 Emerald / Spring Green 色票，程式碼已在後續幾輪 redesign
+> （`_theme.scss` / `_themeDark.scss`，代號 "Jade Mist 02"）換成下列 teal-green 系統，
+> 本次一併校正文件使其符合現行程式碼，避免文件與 `:root` 實際定義的 CSS 變數不一致。
 
 | 變數名 | Hex | 用途 |
 |--------|-----|------|
-| `$color_main_1` | `#059669` | 主色 Emerald-600：按鈕、連結、主題文字 |
-| `$color_main_2` | `#047857` | Emerald-700：Active / Focus 狀態 |
-| `$color_main_3` | `#34d399` | Emerald-400 Spring：Hover / CTA |
-| `$color_main_4` | `#d1fae5` | Emerald-100：Pill highlight 填充、badge 背景 |
-| `$color_main_5` | `#ecfdf5` | Emerald-50：Hover surface |
-| `$color_main_6` | `#f0fdf8` | 最淺背景頁面底色 |
+| `$color_main_1` / `--primary` | `#00A078` | 主色：按鈕、連結、Active 狀態 |
+| `$color_main_2` / `--primary-hover` | `#007F5F` | Hover / 深色輔助文字 |
+| `$color_main_3` / `--accent` | `#00C896` | Accent：CTA、進度條、強調 |
+| `$color_main_4` / `--accent-soft` | `#CFEFE2` | Pill highlight 填充、badge 背景 |
+| `$color_main_5` | `#E6F7F0` | 淺色 tint |
+| `$color_main_6` / `--page-bg` | `#F0FAF6` / `#FAFCFC` | 頁面底色 |
 
-**Wise 設計系統 tokens（Spring Green）**
-
-| 變數 | Hex | 用途 |
-|------|-----|------|
-| `--color-wise-green` | `#34d399` | Spring CTA / active |
-| `--color-wise-dark-green` | `#047857` | CTA 文字 / 深色輔助 |
-| `--color-wise-surface` | `#ecfdf5` | Hover 底色（emerald-50） |
-| `--color-wise-mint` | `#d1fae5` | Badge 淡綠底（emerald-100） |
-| `--color-wise-bg` | `#f0fdf8` | 頁面背景色 |
-
-**Sidebar Active State（Highlight Style A）**
+**Sidebar Active State**
 
 | 元素 | 規格 |
 |------|------|
-| 背景色 | `#d1fae5`（Pill 圓角，border-radius: 999px） |
-| 文字色 | `#059669`，font-weight: 600 |
-| 側欄底色 | `#f8fafc` |
-| Hover | `rgba(52, 211, 153, 0.06)` |
+| 背景色 | `var(--sidebar-active)`（無 pill，維持矩形 8px 圓角） |
+| 文字色 | `var(--sidebar-fg)`，font-weight: 500 |
+| 側欄底色 | `var(--sidebar-bg)` |
+| Hover | `var(--sidebar-hover)` |
 
 **灰色系**
 
 | 變數名 | Hex | 用途 |
 |--------|-----|------|
-| `$grey-border` | `#d3d4d8` | 邊框灰 |
-| `$grey-font` | `#232735` | 主文字灰 |
+| `$grey-border` | `#DDE4E5` | 邊框灰 |
+| `$grey-font` / `--text` | `#09151A` | 主文字灰 |
 | `$grey-shadow` | `#29323c` | 陰影灰 |
-| `$color_grey_1` | `#8b90a0` | 次要文字 |
-| `$color_grey_2` | `#9fabba` | 更淡次要文字 |
+| `$color_grey_1` / `--text-muted` | `#8b90a0` | 次要文字 |
+| `$color_grey_2` / `--text-faint` | `#9fabba` | 更淡次要文字 |
 
-**狀態色（Status Badge）**
+**狀態色（Status Badge，檔案處理流程）**
 
 | 狀態 | 背景 | 文字 |
 |------|------|------|
 | uploading（藍） | `rgba(30, 136, 229, 0.10)` | `#1565c0` |
 | parsing（黃） | `rgba(251, 192, 0, 0.15)` | `#b07d00` |
-| stored（綠） | `rgba(52, 211, 153, 0.10)` | `#059669` |
-| saved（青） | `rgba(52, 211, 153, 0.10)` | `#059669` |
-| failed（紅） | `rgba(229, 57, 53, 0.10)` | `#c62828` |
+| stored（綠） | `rgba(2, 195, 0, 0.10)` | `#02a100` |
+| saved（青） | `rgba(0, 150, 136, 0.10)` | `#00695c` |
+| failed（紅） | `rgba(209, 68, 55, 0.10)` | `#c62828` |
 
 **Explore 頁面 Badge**
 
 | 標籤 | 背景 | 文字 |
 |------|------|------|
-| New（綠） | `#d1fae5` | `#059669` |
+| New（綠） | `#CFEFE2` | `#00A078` |
 | Hot（橙） | `#FAEEDA` | `#854F0B` |
-| Sat（青） | `#d1fae5` | `#059669` |
+| Sat（青） | `#CFEFE2` | `#00A078` |
+
+**深色模式（Jade Mist 02 Dark）**：`--primary` 維持 `#00A078`，`--primary-hover` 在深色模式改為較亮的
+`#00C896`；`--page-bg` / `--surface` / `--sidebar-bg` 分別為 `#0F1719` / `#152124` / `#0B1315`。
+完整定義見 `src/scss/base/_themeDark.scss`。
 
 ---
 
@@ -585,4 +583,23 @@ accent-color: $color_main_1;
 
 ---
 
-*最後更新：2026-08-06*
+## 18. 變更紀錄
+
+### 2026-08-17 — 入口頁 / 側邊導覽 taste pass（品牌保留，排版與密度重做）
+
+範圍：`ProjectDashboard` + `AppMenuTree`。保留 Jade Mist 02 品牌色與現有路由 / IA，只調整排版節奏與裝飾密度：
+
+- **Banner 去疊框**：拿掉 `.plc-banner` 左側 3px 色條，只留底部 hairline，標題放大並加重（26px / 700），
+  不再用多層邊框互相堆疊做強調。
+- **移除右上角 KPI 迷你框**：原本「建立新專案」按鈕旁還擠了 Active / Review 兩個各自帶邊框的統計框，
+  版面擁擠且 Review 數字在目前假資料下永遠是 0（無 `status: 'review'` 的專案），視覺上等於一塊空白。
+  直接移除，專案數量已由 banner 副標「N projects」承載。
+- **卡片移除疊加在照片上的 pill 標籤**：`.team-name-box`（團隊名稱）與 `.card-project-id`（假流水號
+  `PRJ-001` 之類的裝飾性編號，並非真實資料）不再疊在圖片上，團隊名稱改成圖片下方的說明文字
+  （`.card-team`），流水號直接移除。
+- **收斂 JetBrains Mono 的使用範圍**：banner 副標題、排序下拉、狀態 badge 不再套用等寬字體；只保留在
+  真正對應「表格 / 時間戳 / 數值」的地方（如卡片時間戳、hover 長條圖數字）。
+- **側邊選單呼吸感**：團隊區塊之間的間距從 4px 拉開到 14px，子選單縮排線改用較淡的
+  `--divider-a50` 且改為 1px，降低「檔案樹」的視覺重量。
+
+*最後更新：2026-08-17*
