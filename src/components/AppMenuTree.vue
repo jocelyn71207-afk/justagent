@@ -98,22 +98,43 @@
         class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam.id }">
         <i class="material-symbols-outlined">folder</i>團隊專案
       </RouterLink>
-      <RouterLink to="/view/Skills"
-        class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
-        <i class="material-symbols-outlined">auto_awesome</i>技能清單
-      </RouterLink>
-      <RouterLink to="/view/SkillTest"
-        class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
-        <i class="material-symbols-outlined">science</i>技能測試沙盒
-      </RouterLink>
-      <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam.id }">
-        <i class="material-symbols-outlined">folder_open</i>共用檔案管理
-      </RouterLink>
-      <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam.id }">
-        <i class="material-symbols-outlined">menu_book</i>知識庫管理
-      </RouterLink>
+
+      <!-- 技能管理：第二層，展開才看到子項目 -->
+      <div class="side-panel-item side-panel-group"
+        :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
+        @click="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen">
+        <i class="material-symbols-outlined">psychology</i>技能管理
+        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+      </div>
+      <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
+        <RouterLink to="/view/Skills"
+          class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
+          <i class="material-symbols-outlined">auto_awesome</i>技能清單
+        </RouterLink>
+        <RouterLink to="/view/SkillTest"
+          class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
+          <i class="material-symbols-outlined">science</i>技能測試沙盒
+        </RouterLink>
+      </div>
+
+      <!-- 共享資源庫：第二層，展開才看到子項目 -->
+      <div class="side-panel-item side-panel-group"
+        :class="{ active: route.path === '/view/ResourceLibrary' || route.path === '/view/KnowledgeBase' }"
+        @click="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen">
+        <i class="material-symbols-outlined">cloud</i>共享資源庫
+        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+      </div>
+      <div class="side-panel-sub" v-show="selectedTeam.isResourceOpen">
+        <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+          class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam.id }">
+          <i class="material-symbols-outlined">folder_open</i>共用檔案管理
+        </RouterLink>
+        <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+          class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam.id }">
+          <i class="material-symbols-outlined">menu_book</i>知識庫管理
+        </RouterLink>
+      </div>
+
       <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
         class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam.id }">
         <i class="material-symbols-outlined">lock_person</i>權限管理

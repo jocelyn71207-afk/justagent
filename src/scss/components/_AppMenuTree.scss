@@ -272,6 +272,7 @@
   color: var(--sidebar-muted);
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 
   i { font-size: 19px; color: var(--sidebar-muted); flex-shrink: 0; }
 
@@ -284,6 +285,26 @@
     font-weight: 500;
     i { color: var(--sidebar-fg); }
   }
+}
+
+// 第二層可展開群組（技能管理／共享資源庫）：本身也是一個項目，
+// 但點擊是展開/收合子項目，不是導覽
+.side-panel-group {
+  user-select: none;
+
+  .side-panel-caret {
+    margin-left: auto;
+    font-size: 17px;
+    color: var(--text-faint);
+  }
+}
+
+.side-panel-sub {
+  padding-left: 14px;
+  margin: 0 0 2px 12px;
+  border-left: 1px solid var(--divider-a50);
+
+  .side-panel-item { font-size: 13px; }
 }
 
 // 漢堡按鈕預設隱藏（非手機尺寸不顯示）
