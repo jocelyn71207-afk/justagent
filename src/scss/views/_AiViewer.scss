@@ -1145,9 +1145,9 @@
       border-radius: 12px; // 與 AiViewerContentBox 同步
     }
     .AiViewerContentBox {
-      border-color: rgba(0, 160, 120, 0.60);
+      border-color: var(--primary-a40);
       box-shadow:
-        0 0 0 2px rgba(0, 160, 120, 0.20),
+        0 0 0 2px var(--primary-a20),
         0 4px 20px rgba(5, 150, 105, 0.10);
     }
     // 提升內容區塊避免拖曳時誤觸內容區塊為 iframe 時造成的卡頓問題
@@ -1216,20 +1216,16 @@
   width: 100%;
   height: 100%;
   padding: 0px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(0, 160, 120, 0.28);
+  background: var(--surface-a70);
+  border: 1px solid var(--primary-a20);
   border-radius: 12px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow:
     0 4px 20px rgba(5, 150, 105, 0.09),
     0 1px 4px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(0, 160, 120, 0.10);
+    0 0 0 1px var(--primary-a08);
   // box-shadow: 0 2px 8px rgba(var(--shadow),0.2);
-  @media (prefers-color-scheme: dark) {
-    background: rgba(40, 42, 46, 0.82);
-    border-color: rgba(0, 160, 120, 0.22);
-  }
   display: flex;
   flex-direction: column;
 
@@ -1427,11 +1423,6 @@
     &.isMobile {
       right: 30px;
     }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    background: rgba(40, 42, 46, 0.82);
-    border-color: rgba(0, 160, 120, 0.22);
   }
 }
 
