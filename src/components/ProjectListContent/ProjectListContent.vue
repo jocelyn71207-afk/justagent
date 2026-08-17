@@ -78,7 +78,6 @@
                 :style="{ backgroundColor: avatarColor(ci) }"
               >
                 {{ c.name.slice(0, 1) }}
-                <span v-if="ci === 0" class="owner-crown">👑</span>
               </div>
               <span class="collab-count">{{ item.collaborators.length }} 人</span>
             </div>
@@ -292,7 +291,8 @@ function openProjectSettingModal(modifyProject: any, isCreate = false, createTea
   isOpenProjectSettingModal.value = true;
 }
 
-const AVATAR_COLORS = ['#7c6aff', '#f472b6', '#34d399', '#fb923c', '#60a5fa'];
+// 協作者頭像色：與品牌色同一組調性（去飽和），不用跟主題無關的彩虹色
+const AVATAR_COLORS = ['#00A078', '#5B7B8C', '#8A6D3B', '#6B5B95', '#B5654A'];
 function avatarColor(index: number): string {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }

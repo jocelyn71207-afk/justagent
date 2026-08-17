@@ -27,6 +27,7 @@
     .plc-banner-left {}
 
     .plc-banner-title {
+      font-family: $font-family-heading;
       font-size: 26px;
       font-weight: 700;
       color: var(--text);
@@ -226,13 +227,10 @@
 
           &:first-child { margin-left: 0; }
 
-          .owner-crown {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            line-height: 1;
+          // 擁有者：用一圈強調色的 ring 取代原本的皇冠 emoji 做區分
+          &.avatar-owner {
+            z-index: 1;
+            box-shadow: 0 0 0 2px var(--accent);
           }
         }
 
