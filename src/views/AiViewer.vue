@@ -391,7 +391,8 @@
                   :title="node.key + ' ' + node.label"></span>
               </div>
               <span :class="['jcd-row-badge', journey.status]">
-                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
+                <i v-if="journey.status === 'done'" class="material-symbols-outlined">check</i>
+                <template v-else>{{ journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}</template>
               </span>
             </div>
             <div v-if="jcdStats.marketing.total > 8" class="jcd-rows-more">+{{ jcdStats.marketing.total - 8 }} 人</div>
@@ -442,7 +443,8 @@
                   :title="node.key + ' ' + node.label"></span>
               </div>
               <span :class="['jcd-row-badge', journey.status]">
-                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
+                <i v-if="journey.status === 'done'" class="material-symbols-outlined">check</i>
+                <template v-else>{{ journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}</template>
               </span>
             </div>
             <div v-if="jcdStats.birthday.total > 8" class="jcd-rows-more">+{{ jcdStats.birthday.total - 8 }} 人</div>
