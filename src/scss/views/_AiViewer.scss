@@ -26,10 +26,6 @@
     clip-path: inset(0); // 讓 position:fixed 的子層也被裁切，防止畫布塊拖出邊界蓋住右側對話欄
     min-height: 100%;
     // border: 1px solid red; // 開發測試用
-    // 網格背景  TODO.. 先不給
-    // background:
-    //   linear-gradient(-90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 20px 20px,
-    //   linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 20px 20px;
     // 細十字格線背景（大格 96px / 小格 24px，js 會依縮放比例動態調整 background-size）
     background-image:
       repeating-linear-gradient(rgba($black, 0.055) 0px, transparent 1px),
@@ -119,7 +115,6 @@
       top: 0;
       left: 0;
       z-index: 0;
-      // background-color: blue; // 開發測試用
       box-sizing: border-box;
       @include user-select-none;
     }
@@ -844,7 +839,7 @@
         content: "多選模式中";
         text-align: center;
         font-size: 12px;
-        color: #fff;
+        color: var(--primary-fg);
         background-color: rgba($color-wise-green, 0.7);
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(2px);
@@ -864,21 +859,17 @@
   position: absolute;
   top: calc($header-AiViewer-height + 11px);
   z-index: 8;
-  background: rgba(255, 255, 255, 0.80);
-  border: 1px solid rgba(0, 160, 120, 0.20);
+  background: var(--surface-a90);
+  border: 1px solid var(--primary-a20);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0 8px;
   border-radius: 28px;
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.07),
-    0 0 0 1px rgba(0, 160, 120, 0.08);
+    0 0 0 1px var(--primary-a08);
   color: var(--text);
   @include user-select-none;
-  @media (prefers-color-scheme: dark) {
-    background: rgba(30, 32, 36, 0.85);
-    border-color: rgba(0, 160, 120, 0.15);
-  }
 
   .ctrl-btn {
     height: 24px;
@@ -893,19 +884,18 @@
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a08);
       color: var(--primary-hover);
     }
 
     &.active {
-      background: rgba(0, 160, 120, 0.15);
+      background: var(--primary-a12);
       color: var(--primary-hover);
     }
   }
 
   // 左右介面開合按鈕
-  &.right-ctrl-box,
-  &.left-ctrl-box {
+  &.right-ctrl-box {
     right: 60px; // js 給值
     padding: 10px 5px;
     cursor: pointer;
@@ -914,11 +904,6 @@
       align-items: center;
       justify-content: center;
     }
-  }
-  &.left-ctrl-box {
-    right: auto;
-    left: 10px;
-    display: none; // 左區塊目前沒規劃先隱藏起來
   }
 
   // 專案控制小介面
@@ -945,8 +930,8 @@
       justify-content: center;
       font-size: 12px;
       font-weight: 600;
-      color: #fff;
-      background-color: red; // TODO... 之後 js 改成動態給予顏色
+      color: var(--primary-fg);
+      background-color: var(--text-faint); // TODO... 之後 js 改成動態給予顏色
       cursor: pointer;
       user-select: none;
       margin: 0 6px;

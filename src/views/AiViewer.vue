@@ -59,21 +59,6 @@
   </VueDragResizeRotate>
 
   <!-- 左右區塊顯示控制按鈕 -->
-  <div :class="['AiViewr-ctrl-box left-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]" v-if="false"
-    @wheel="stopWhellZoomEvent($event)"
-    @touchmove="stopTouchpadZoomEvent($event)"
-    @click="() => {
-      isShowLeftFrame = !isShowLeftFrame;
-      // nextTick(() => {
-      //   checkRightSize(handleLREndResize);
-      // });
-    }">
-    <i :class="['uil fs-24', {
-        'uil-toggle-on': isShowLeftFrame,
-        'uil-toggle-off': !isShowLeftFrame,
-      }]">
-    </i>
-  </div>
   <div :class="['AiViewr-ctrl-box right-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
     v-show="!conv1IsEmpty"
     :style="{
