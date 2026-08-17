@@ -3,7 +3,11 @@
 // Layout
 $header-height: 36px;
 $header-AiViewer-height: 0px;
-$menuWidth: 64px; // 側邊改為圖示 rail，團隊/常用單元 hover 才彈出選單（見 AppMenuTree）
+// 側邊欄改為圖示 rail ＋ 常駐展開的團隊選單面板（見 AppMenuTree）：
+// $menuWidth 是兩者合計的總寬度，供 .views-page 等版面寬度計算使用
+$railWidth: 64px;
+$sidePanelWidth: 216px;
+$menuWidth: $railWidth + $sidePanelWidth;
 $menuHeaderHeight: 216px;
 $menuFooterHeight: 50px;
 $menutransition: 0.2s;

@@ -1,10 +1,11 @@
 // ============================================================
-// AppMenuTree — 圖示 rail + hover 彈出選單
+// AppMenuTree — 圖示 rail ＋ 常駐展開的團隊選單面板
 //
 // 骨架邏輯：
-//   .rail-top    常駐圖示：logo、通用單元（最近使用/探索/搜尋），點擊直接切換內容
-//   .rail-teams  每個團隊各一顆圖示，hover/點擊才彈出該團隊專屬的選單
-//   .rail-bottom 常駐圖示：企業/團隊設定、使用者頭像（彈出帳號選單）
+//   .rail        圖示條：使用者頭像（上）、通用單元（最近使用/探索/搜尋）、
+//                企業/團隊圖示（點擊切換右側面板內容）、企業設定、產品 logo（下）
+//   .side-panel  常駐展開的面板，顯示「目前選中團隊」的 7 個導覽項目，
+//                不是 hover 才彈出、滑鼠移開就消失的浮層
 // ============================================================
 
 .AppMenuTree {
@@ -12,11 +13,18 @@
   top: 0;
   left: 0;
   z-index: 10;
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--divider);
-  width: $menuWidth;
   height: 100svh;
   flex: none;
+  display: flex;
+  width: $menuWidth;
+}
+
+.rail {
+  width: $railWidth;
+  flex: none;
+  height: 100%;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--divider);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,7 +85,7 @@
   flex-shrink: 0;
 }
 
-// ── 團隊圖示：獨立可捲動區塊，避免團隊一多把下方常駐按鈕擠出畫面 ──
+// ── 企業/團隊圖示：獨立可捲動區塊，避免團隊一多把下方常駐按鈕擠出畫面 ──
 .rail-teams {
   flex: 1 1 auto;
   min-height: 0;
@@ -105,10 +113,14 @@
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 
-  &:hover,
-  &.is-open { transform: scale(1.06); }
+  &:hover { transform: scale(1.06); }
+
+  // 目前選中、內容顯示在右側常駐面板裡的團隊
+  &.is-selected {
+    box-shadow: 0 0 0 2px var(--sidebar-bg), 0 0 0 4px currentColor;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--accent);
@@ -149,7 +161,7 @@
   }
 }
 
-// ── 彈出面板共用外觀：一律貼著觸發按鈕右側展開的卡片 ──
+// ── 使用者選單／搜尋框：這兩個還是「點擊才出現」的浮層，貼著 rail 展開 ──
 .rail-popover {
   position: absolute;
   left: calc(100% + 10px);
@@ -161,7 +173,7 @@
   transform-origin: left center;
 }
 
-// 滑過去展開：從貼著 rail 的位置「長出來」，不是瞬間出現/消失
+// 展開動畫：從貼著 rail 的位置「長出來」，不是瞬間出現/消失
 .rail-expand-enter-active,
 .rail-expand-leave-active {
   transition: opacity 0.14s ease, transform 0.14s ease;
@@ -212,48 +224,6 @@
   }
 }
 
-// Teleport 到 body，用 JS 算好的 fixed 座標定位（見 AppMenuTree.vue 的
-// positionFlyout，top/left 由 inline style 帶入），不要沿用
-// .rail-popover 的 position:absolute 預設
-.team-flyout {
-  position: fixed;
-  width: 216px;
-  padding: 8px;
-
-  .team-flyout-title {
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--text);
-    padding: 4px 8px 8px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--divider);
-  }
-}
-
-.flyout-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--text);
-  text-decoration: none;
-  white-space: nowrap;
-
-  i { font-size: 18px; color: var(--sidebar-muted); flex-shrink: 0; }
-
-  &:hover { background: var(--sidebar-hover); }
-
-  &.active,
-  &.router-link-active {
-    background: var(--sidebar-active);
-    color: var(--sidebar-fg);
-    font-weight: 500;
-    i { color: var(--sidebar-fg); }
-  }
-}
-
 .user-flyout {
   top: -4px;
   width: 200px;
@@ -272,13 +242,57 @@
   }
 }
 
+// ── 常駐團隊選單面板：跟企業/團隊圖示同步，不是浮層 ──
+.side-panel {
+  width: $sidePanelWidth;
+  flex: none;
+  height: 100%;
+  background: var(--surface);
+  border-right: 1px solid var(--divider);
+  padding: 20px 10px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.side-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 2px 10px 12px;
+}
+
+.side-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  margin-bottom: 2px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--sidebar-muted);
+  text-decoration: none;
+  white-space: nowrap;
+
+  i { font-size: 19px; color: var(--sidebar-muted); flex-shrink: 0; }
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active,
+  &.router-link-active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-fg);
+    font-weight: 500;
+    i { color: var(--sidebar-fg); }
+  }
+}
+
 // 漢堡按鈕預設隱藏（非手機尺寸不顯示）
 .hamburger-btn {
   display: none;
 }
 
 // ============================================================
-// 手機：漢堡選單改回清單式抽屜（hover 選單在觸控裝置上不適用）
+// 手機：漢堡選單改回清單式抽屜（常駐雙欄在小螢幕上放不下）
 // ============================================================
 @media (max-width: $breakpoint-mobile) {
   .AppMenuTree { display: none; }
