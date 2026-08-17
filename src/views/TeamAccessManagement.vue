@@ -20,22 +20,15 @@
         </div>
       </div>
 
-      <!-- 角色統計概覽：企業擁有者是唯一的 hero，其餘是 tile -->
+      <!-- 角色統計概覽：安靜的一行文字，不用邊框卡片堆砌 -->
       <div class="role-stats-row">
-        <div
-          v-for="(stat, si) in roleStats"
+        <span
+          v-for="stat in roleStats"
           :key="stat.role"
-          :class="si === 0 ? 'role-stat-hero' : 'role-stat-tile'"
+          :class="['role-stat', getRoleClass(stat.role)]"
         >
-          <template v-if="si === 0">
-            <div class="cap">{{ stat.role }}</div>
-            <div class="big">{{ stat.count }}</div>
-          </template>
-          <template v-else>
-            <b>{{ stat.count }}</b>
-            <span>{{ stat.role }}</span>
-          </template>
-        </div>
+          <i class="stat-dot"></i><b>{{ stat.count }}</b>{{ stat.role }}
+        </span>
       </div>
 
       <div class="access-split-layout">

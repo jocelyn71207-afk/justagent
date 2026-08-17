@@ -109,29 +109,29 @@
     }
 
     // 新版頁面 banner（取代 views-page-header）
+    // 只用一種強調手法（底部 hairline），不再疊加左側色條；
+    // 這是全站 9 個頁面共用的類別，改這裡會一次套用到全部。
     .page-banner {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 16px;
-      padding-left: 16px;
       padding-bottom: 20px;
-      border-left: 3px solid var(--accent);
-      border-bottom: 1px solid var(--accent-soft);
+      border-bottom: 1px solid var(--divider);
       margin-bottom: 24px;
 
       .banner-title {
-        font-size: 24px;
-        font-weight: 900;
+        font-family: $font-family-heading;
+        font-size: 26px;
+        font-weight: 700;
         color: var(--text);
-        letter-spacing: -0.4px;
+        letter-spacing: -0.3px;
       }
 
       .banner-sub {
-        font-size: 11px;
+        font-size: 13px;
         color: var(--text-faint);
-        margin-top: 3px;
-        font-family: 'JetBrains Mono', monospace;
+        margin-top: 4px;
       }
 
       .banner-right {
