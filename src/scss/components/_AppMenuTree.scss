@@ -158,6 +158,29 @@
   border: 1px solid var(--divider);
   border-radius: 12px;
   box-shadow: 0 12px 32px -8px rgba(var(--shadow), 0.24);
+  transform-origin: left center;
+}
+
+// 滑過去展開：從貼著 rail 的位置「長出來」，不是瞬間出現/消失
+.rail-expand-enter-active,
+.rail-expand-leave-active {
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+.rail-expand-enter-from,
+.rail-expand-leave-to {
+  opacity: 0;
+  transform: scale(0.94) translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-expand-enter-active,
+  .rail-expand-leave-active {
+    transition: opacity 0.1s linear;
+  }
+  .rail-expand-enter-from,
+  .rail-expand-leave-to {
+    transform: none;
+  }
 }
 
 .search-popover {

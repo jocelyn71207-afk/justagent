@@ -18,17 +18,19 @@
       <div :class="['rail-user-btn', { active: isOpenUserOptionsBox }]" @click="isOpenUserOptionsBox = true">
         <div class="user-avatar">L</div>
 
-        <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
-          <div class="user-flyout-title">
-            <p class="user-name">Lucas.chien</p>
-            <select class="custom-select w-100 mt-1" v-model="rootStore.nowMenuTreeCompanyName" @click.stop>
-              <option value="UGG">UGG</option>
-              <option value="UGG">UGG</option>
-            </select>
+        <Transition name="rail-expand">
+          <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
+            <div class="user-flyout-title">
+              <p class="user-name">Lucas.chien</p>
+              <select class="custom-select w-100 mt-1" v-model="rootStore.nowMenuTreeCompanyName" @click.stop>
+                <option value="UGG">UGG</option>
+                <option value="UGG">UGG</option>
+              </select>
+            </div>
+            <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
+            <div class="option-item" @click="handleLogout">登出</div>
           </div>
-          <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
-          <div class="option-item" @click="handleLogout">登出</div>
-        </div>
+        </Transition>
       </div>
 
       <div class="rail-divider"></div>
@@ -46,18 +48,20 @@
       </button>
 
       <!-- 搜尋彈出框：點擊搜尋圖示才出現，不佔用 rail 常駐空間 -->
-      <div class="rail-popover search-popover" v-show="isSearchOpen" ref="searchPopoverEl">
-        <div class="universal-search-box">
-          <i class="material-symbols-outlined">search</i>
-          <i class="material-symbols-outlined fc-grey-1 clear-btn" v-if="appSearchKeyword" @click="appSearchKeyword = ''; isEnterAppSearchPage = false;">close</i>
-          <input type="text" class="custom-input w-100" placeholder="搜尋" v-model="appSearchKeyword" ref="searchInputEl" @keyup="() => {
-            isEnterAppSearchPage = true;
-            if (appSearchKeyword === '') {
-              isEnterAppSearchPage = false;
-            }
-          }"/>
+      <Transition name="rail-expand">
+        <div class="rail-popover search-popover" v-show="isSearchOpen" ref="searchPopoverEl">
+          <div class="universal-search-box">
+            <i class="material-symbols-outlined">search</i>
+            <i class="material-symbols-outlined fc-grey-1 clear-btn" v-if="appSearchKeyword" @click="appSearchKeyword = ''; isEnterAppSearchPage = false;">close</i>
+            <input type="text" class="custom-input w-100" placeholder="搜尋" v-model="appSearchKeyword" ref="searchInputEl" @keyup="() => {
+              isEnterAppSearchPage = true;
+              if (appSearchKeyword === '') {
+                isEnterAppSearchPage = false;
+              }
+            }"/>
+          </div>
         </div>
-      </div>
+      </Transition>
 
       <div class="rail-divider"></div>
     </div>
@@ -79,8 +83,9 @@
     <!-- 團隊選單彈出框：Teleport 到 body，避免被 .rail-teams 的 overflow-y:auto 裁切；
          位置依當前 hover/點擊的圖示座標動態計算（見 openTeamFlyout） -->
     <Teleport to="body">
-      <div class="rail-popover team-flyout" ref="teamFlyoutEl" v-show="openTeamId && activeTeam" :style="flyoutStyle"
-        @mouseenter="cancelCloseTeamFlyout" @mouseleave="scheduleCloseTeamFlyout">
+      <Transition name="rail-expand">
+        <div class="rail-popover team-flyout" ref="teamFlyoutEl" v-show="openTeamId && activeTeam" :style="flyoutStyle"
+          @mouseenter="cancelCloseTeamFlyout" @mouseleave="scheduleCloseTeamFlyout">
         <template v-if="activeTeam">
           <div class="team-flyout-title">{{ activeTeam.name }}</div>
 
@@ -120,7 +125,8 @@
             <i class="material-symbols-outlined">auto_delete</i>專案垃圾桶
           </RouterLink>
         </template>
-      </div>
+        </div>
+      </Transition>
     </Teleport>
 
     <div class="rail-bottom">
