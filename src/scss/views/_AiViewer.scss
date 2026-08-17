@@ -3179,7 +3179,7 @@
         position: absolute;
         inset: 3px;
         border-radius: 50%;
-        background: #fff;
+        background: var(--primary-fg);
       }
     }
   }
@@ -3365,7 +3365,7 @@
 
     &--primary {
       background: var(--primary);
-      color: #fff;
+      color: var(--primary-fg);
       display: flex;
       align-items: center;
       gap: 3px;
@@ -3381,10 +3381,10 @@
   z-index: 999;
   background-color: var(--page-bg);
   background-image:
-    repeating-linear-gradient(rgba(0, 0, 0, 0.055) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.055) 0px, transparent 1px),
-    repeating-linear-gradient(rgba(0, 0, 0, 0.025) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.025) 0px, transparent 1px);
+    repeating-linear-gradient(rgba(var(--shadow), 0.055) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(var(--shadow), 0.055) 0px, transparent 1px),
+    repeating-linear-gradient(rgba(var(--shadow), 0.025) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(var(--shadow), 0.025) 0px, transparent 1px);
   background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
   display: flex;
   align-items: center;
@@ -3415,7 +3415,7 @@
   border-radius: 12px;
   padding: 12px;
   box-sizing: border-box;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(var(--shadow), 0.06);
 }
 
 .conv1-empty-textarea {
@@ -3508,7 +3508,7 @@
   white-space: nowrap;
   &:hover { background: var(--sidebar-hover); }
   &--collapsed { opacity: 0.6; }
-  .conv2-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+  .conv2-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
