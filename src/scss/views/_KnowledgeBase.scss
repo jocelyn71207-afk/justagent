@@ -115,7 +115,7 @@
 
     &:hover {
       border-color: var(--accent-a30);
-      background: rgba(232,238,240,0.1);
+      background: var(--divider-a20);
     }
 
     .file-icon-box {
@@ -187,7 +187,7 @@
       i { font-size: 34px; color: var(--accent); }
 
       &--generating {
-        background: rgba(124, 58, 237, 0.08);
+        background: var(--tag-violet-bg);
         i { color: var(--tag-violet-text); }
         animation-name: ai-pulse-purple;
       }
@@ -224,13 +224,13 @@
     &--success {
       background: var(--accent-soft);
       color: var(--primary);
-      border: 1px solid rgba(0, 160, 120, 0.2);
+      border: 1px solid var(--primary-a20);
     }
 
     &--warning {
       background: var(--tag-amber-bg);
       color: var(--tag-amber-text);
-      border: 1px solid rgba(255, 193, 7, 0.2);
+      border: 1px solid var(--tag-amber-text);
     }
   }
 
@@ -628,9 +628,9 @@
     }
 
     &--new {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a12);
       color: var(--primary);
-      border: 1px solid rgba(0, 160, 120, 0.20);
+      border: 1px solid var(--primary-a20);
     }
   }
 
@@ -860,15 +860,15 @@
         i { color: var(--primary-hover); }
       }
       &--green {
-        background: rgba(0, 160, 120, 0.12);
+        background: var(--primary-a12);
         i { color: var(--success); }
       }
       &--yellow {
-        background: rgba(251, 192, 0, 0.15);
+        background: var(--tag-amber-bg);
         i { color: var(--tag-amber-text); }
       }
       &--orange {
-        background: rgba(255, 140, 0, 0.12);
+        background: var(--tag-amber-bg);
         i { color: var(--tag-amber-text); }
       }
       &--needs-update {
@@ -968,23 +968,23 @@
     i { font-size: 14px; }
 
     &--PUBLISHED {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a12);
       color: var(--primary);
     }
     &--REVIEWING {
-      background: rgba(251, 192, 0, 0.15);
+      background: var(--tag-amber-bg);
       color: var(--tag-amber-text);
     }
     &--DRAFT {
-      background: rgba(30, 136, 229, 0.10);
+      background: var(--tag-blue-bg);
       color: var(--tag-blue-text);
     }
     &--REJECTED {
-      background: rgba(209, 68, 55, 0.10);
+      background: var(--danger-soft);
       color: var(--danger);
     }
     &--HISTORY {
-      background: rgba(232,238,240,0.1);
+      background: var(--divider-a20);
       color: var(--text-muted);
     }
   }
@@ -1024,9 +1024,9 @@
     text-transform: uppercase;
 
     &.major {
-      background: rgba(138, 63, 252, 0.08);
+      background: var(--tag-violet-bg);
       color: var(--tag-violet-text);
-      border-color: rgba(138, 63, 252, 0.20);
+      border-color: var(--tag-violet-text);
     }
   }
 
@@ -1164,9 +1164,9 @@
     border: 1px solid rgba($color-wise-green, 0.12);
 
     &--system {
-      background: rgba(0, 160, 120, 0.12);
+      background: var(--primary-a12);
       color: var(--primary);
-      border-color: rgba(0, 160, 120, 0.20);
+      border-color: var(--primary-a20);
     }
   }
 
@@ -1223,11 +1223,11 @@
     white-space: nowrap;
 
     &--added {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a12);
       color: var(--primary);
     }
     &--removed {
-      background: rgba(209, 68, 55, 0.10);
+      background: var(--danger-soft);
       color: var(--danger);
       text-decoration: line-through;
     }
@@ -1289,19 +1289,19 @@
         word-break: break-word;
 
         &.is-added {
-          background-color: rgba(0, 160, 120, 0.08);
-          border: 1px solid rgba(0, 160, 120, 0.2);
+          background-color: var(--primary-a08);
+          border: 1px solid var(--primary-a20);
           color: var(--primary);
         }
         &.is-removed {
-          background-color: rgba(209, 68, 55, 0.08);
-          border: 1px solid rgba(209, 68, 55, 0.2);
+          background-color: var(--danger-soft);
+          border: 1px solid var(--danger-soft);
           text-decoration: line-through;
           color: var(--danger);
         }
         &.is-changed {
-          background-color: rgba(251, 192, 0, 0.08);
-          border: 1px solid rgba(251, 192, 0, 0.2);
+          background-color: var(--tag-amber-bg);
+          border: 1px solid var(--tag-amber-text);
         }
       }
     }
