@@ -3,8 +3,7 @@
 // Layout
 $header-height: 36px;
 $header-AiViewer-height: 0px;
-$menuWidth: 260px;
-$menuSmallWidth: 200px;
+$menuWidth: 64px; // 側邊改為圖示 rail，團隊/常用單元 hover 才彈出選單（見 AppMenuTree）
 $menuHeaderHeight: 216px;
 $menuFooterHeight: 50px;
 $menutransition: 0.2s;

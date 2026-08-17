@@ -159,7 +159,7 @@
 @media (max-width: $breakpoint-mobile) {
   .main {
     .views-page {
-      width: calc(100vw - #{$menuSmallWidth});
+      width: 100vw;
       padding-top: 66px;
       padding-left: 20px;
       padding-right: 20px;

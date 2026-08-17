@@ -1,268 +1,250 @@
+// ============================================================
+// AppMenuTree — 圖示 rail + hover 彈出選單
+//
+// 骨架邏輯：
+//   .rail-top    常駐圖示：logo、通用單元（最近使用/探索/搜尋），點擊直接切換內容
+//   .rail-teams  每個團隊各一顆圖示，hover/點擊才彈出該團隊專屬的選單
+//   .rail-bottom 常駐圖示：企業/團隊設定、使用者頭像（彈出帳號選單）
+// ============================================================
+
 .AppMenuTree {
   position: sticky;
   top: 0;
   left: 0;
   z-index: 10;
   background-color: var(--sidebar-bg);
-  // border-right: 1px solid var(--divider);
+  border-right: 1px solid var(--divider);
   width: $menuWidth;
   height: 100svh;
-  transition: all $menutransition;
-  display: grid;
-  grid-template-rows: $menuHeaderHeight 1fr $menuFooterHeight;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  .header-box {
-    padding: 16px;
-    // background-color: var(--surface);
-    height: $menuHeaderHeight;
-    border-bottom: 1px solid var(--divider);
-    .user-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-      .user-avatar {
-        font-weight: bold;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        margin-right: 12px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        background-color: var(--primary);
-        color: var(--primary-fg);
-        font-size: 14px;
-      }
-      .user-name {
-        font-size: 16px;
-        user-select: none;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        p {
-          max-width: 155px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          margin: 0;
-        }
-        > i {
-          margin-left: 5px;
-          border-radius: 6px;
-        }
-      }
-      &.active {
-        .user-name > i {
-          background-color: var(--accent-soft);
-        }
-      }
-      // 更多用戶選項選單
-      .more-userOption-box {
-        position: absolute;
-        top: 100%;
-        right: 0%;
-      }
-    }
+// ── 常駐圖示共用樣式（.rail-btn 用於通用單元；.rail-team-btn 用於團隊）──
+.rail-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sidebar-muted);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
 
-    // 通用性查詢關鍵字輸入框
-    .universal-search-box {
-      position: relative;
-      margin: 12px 0;
-      background: var(--sidebar-hover);
-      border-radius: 8px;
-      i {
-        position: absolute;
-        left: 11px;
-        top: 8px;
-        font-size: 21px;
-        color: var(--sidebar-muted);
-        &.clear-btn {
-          left: auto;
-          right: 11px;
-          cursor: pointer;
-        }
-      }
-      input {
-        padding-left: 40px;
-        background: transparent;
-        border: none;
-        color: var(--sidebar-muted);
-        &::placeholder {
-          color: var(--sidebar-muted);
-        }
-      }
-    }
+  i { font-size: 21px; }
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active,
+  &.router-link-active {
+    background: var(--sidebar-active);
+    color: var(--primary);
   }
 
-  .menu-list-box {
-    // position: sticky;
-    // top: $menuHeaderHeight + 20px;
-    // z-index: 1;
-    // height: calc(100dvh - #{$menuHeaderHeight} - #{$menuFooterHeight} - 20px);
-    height: 100%;
-    width: 100%;
-    overflow-y: auto;
-    height: 100%;
-    padding: 16px;
-    @include no-scroll-bar();
-    // @include use-scroll-bar(var(--scrollbar-a50));
-
-    .company-box {
-      select {
-        margin-bottom: 5px;
-      }
-    }
-
-    // 可展開的父層項目（非 <a>，直接是 div）— 適用 company-box 和 group-btn-box
-    .sub-group-header {
-      display: flex;
-      align-items: center;
-      font-size: 14px;
-      color: var(--text);
-      padding: 9px 10px;
-      border-radius: $radius;
-      cursor: pointer;
-      user-select: none;
-      &:hover {
-        background-color: var(--sidebar-hover);
-      }
-      &.active {
-        background-color: var(--accent-soft);
-        box-shadow: none;
-        border-radius: $radius;
-        color: var(--primary);
-        font-weight: 500;
-      }
-      > i:first-child {
-        margin: 0 10px 0 0;
-        font-size: 19px;
-      }
-      .sub-arrow {
-        margin-left: auto;
-        font-size: 17px;
-        color: var(--text-muted);
-      }
-    }
-    // 子選單縮排區
-    .sub-menu-box {
-      padding-left: 14px;
-      margin-top: 3px;
-      border-left: 1px solid var(--divider-a50);
-      margin-left: 19px;
-      .one-btn-item {
-        margin-bottom: 3px;
-      }
-    }
-
-    // 單一個團隊區塊
-    .one-group-box {
-      margin-top: 14px;
-      .group-name-box {
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        font-size: 14px;
-        color: var(--text-muted);
-        border-radius: $radius;
-        user-select: none;
-        cursor: pointer;
-        &:hover {
-          background-color: var(--sidebar-hover);
-        }
-        .group-name {
-          max-width: 90%;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          padding: 10px 10px 10px 10px;
-        }
-        i {
-          font-size: 19px;
-          color: var(--text-muted);
-        }
-      }
-      .group-btn-box {
-        margin-top: 4px;
-        .one-btn-item {
-          margin-bottom: 4px;
-        }
-      }
-    }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
+}
 
-  .menu-footer {
-    // position: fixed;
-    // bottom: 0px;
-    // z-index: 1;
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 5px;
-    height: $menuFooterHeight;
-    width: $menuWidth;
-    // border-top: 1px solid var(--divider);
+.rail-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0 10px;
+  flex-shrink: 0;
+}
+
+.rail-logo {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 8px;
+}
+
+.rail-divider {
+  width: 26px;
+  height: 1px;
+  background: var(--divider);
+  margin: 6px 0 2px;
+  flex-shrink: 0;
+}
+
+// ── 團隊圖示：獨立可捲動區塊，避免團隊一多把下方常駐按鈕擠出畫面 ──
+.rail-teams {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 8px;
+  @include no-scroll-bar();
+}
+
+.rail-team-btn {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+
+  &:hover,
+  &.is-open { transform: scale(1.06); }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.rail-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 16px;
+  flex-shrink: 0;
+}
+
+.rail-user-btn {
+  position: relative;
+  cursor: pointer;
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    transition: all $menutransition;
-    > img {
-      height: 80%;
-      margin: 0;
-    }
+    font-weight: 700;
+    font-size: 13px;
+    background-color: var(--primary);
+    color: var(--primary-fg);
+    user-select: none;
   }
 
-  .one-btn-item {
-    display: flex;
-    align-items: center;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-bottom: 0px;
-    user-select: none;
-    a {
-      text-decoration: none;
-      font-size: 14px;
+  &:hover .user-avatar,
+  &.active .user-avatar {
+    box-shadow: 0 0 0 2px var(--sidebar-active);
+  }
+}
+
+// ── 彈出面板共用外觀：一律貼著觸發按鈕右側展開的卡片 ──
+.rail-popover {
+  position: absolute;
+  left: calc(100% + 10px);
+  z-index: 20;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px -8px rgba(var(--shadow), 0.24);
+}
+
+.search-popover {
+  top: 0;
+  width: 260px;
+  padding: 10px;
+
+  .universal-search-box {
+    position: relative;
+    background: var(--sidebar-hover);
+    border-radius: 8px;
+
+    i {
+      position: absolute;
+      left: 11px;
+      top: 8px;
+      font-size: 21px;
       color: var(--sidebar-muted);
-      display: flex;
-      align-items: center;
-      padding: 9px 12px;
-      border-radius: 8px;
-      width: 100%;
-      gap: 12px;
-      &:hover {
-        background: var(--sidebar-hover);
-      }
-      &:focus {
-        outline: 1px solid transparent;
-      }
-      &.router-link-active,
-      &.active {
-        background: var(--sidebar-active);
-        box-shadow: none;
-        border-radius: 8px;
-        color: var(--sidebar-fg);
-        font-weight: 500;
-      }
-      i {
-        margin: 0;
-        font-size: 18px;
-        color: var(--sidebar-muted);
-      }
-      &.router-link-active i,
-      &.active i {
-        color: var(--sidebar-fg);
-      }
+      &.clear-btn { left: auto; right: 11px; cursor: pointer; }
+    }
+
+    input {
+      padding-left: 40px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      &::placeholder { color: var(--sidebar-muted); }
     }
   }
 }
 
-// 處理瀏覽器小於平板但大於手機時，主選單寬度變小
-@media (max-width: $breakpoint-tablet) and (min-width: $breakpoint-mobile) {
-  .AppMenuTree {
-    width: $menuSmallWidth;
-    .menu-footer {
-      width: $menuSmallWidth;
+// Teleport 到 body，用 JS 算好的 fixed 座標定位（見 AppMenuTree.vue 的
+// positionFlyout，top/left 由 inline style 帶入），不要沿用
+// .rail-popover 的 position:absolute 預設
+.team-flyout {
+  position: fixed;
+  width: 216px;
+  padding: 8px;
+
+  .team-flyout-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text);
+    padding: 4px 8px 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--divider);
+  }
+}
+
+.flyout-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+
+  i { font-size: 18px; color: var(--sidebar-muted); flex-shrink: 0; }
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active,
+  &.router-link-active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-fg);
+    font-weight: 500;
+    i { color: var(--sidebar-fg); }
+  }
+}
+
+.user-flyout {
+  bottom: 0;
+  width: 200px;
+
+  .user-flyout-title {
+    padding: 4px 8px 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--divider);
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 6px;
     }
   }
 }
@@ -272,9 +254,12 @@
   display: none;
 }
 
-// 處理手機時，主選單變成漢堡模式
+// ============================================================
+// 手機：漢堡選單改回清單式抽屜（hover 選單在觸控裝置上不適用）
+// ============================================================
 @media (max-width: $breakpoint-mobile) {
-  // 漢堡按鈕（fixed 浮動在左上角）
+  .AppMenuTree { display: none; }
+
   .hamburger-btn {
     display: flex;
     position: fixed;
@@ -294,27 +279,100 @@
     i { font-size: 22px; }
   }
 
-  // 選單預設隱藏
-  .AppMenuTree {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100svh;
-    width: $menuWidth;
-    transform: translateX(-#{$menuWidth});
-    transition: transform $menutransition;
-    z-index: 300;
-
-    &.is-mobile-open {
-      transform: translateX(0);
-    }
-  }
-
-  // 半透明 overlay
   .mobile-overlay {
     position: fixed;
     inset: 0;
     z-index: 200;
     background: rgba(#09151A, 0.45);
+  }
+
+  .AppMenuTreeMobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(84vw, 300px);
+    background: var(--sidebar-bg);
+    z-index: 300;
+    overflow-y: auto;
+    padding: 16px 12px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px 14px;
+
+      .user-avatar {
+        width: 32px; height: 32px; border-radius: 999px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 13px;
+        background-color: var(--primary); color: var(--primary-fg);
+      }
+      .user-name { font-size: 14px; font-weight: 600; margin: 0; }
+    }
+
+    .mobile-search {
+      position: relative;
+      background: var(--sidebar-hover);
+      border-radius: 8px;
+      margin-bottom: 12px;
+
+      i {
+        position: absolute; left: 11px; top: 8px;
+        font-size: 21px; color: var(--sidebar-muted);
+      }
+      input {
+        padding-left: 40px; background: transparent; border: none; color: var(--text);
+        &::placeholder { color: var(--sidebar-muted); }
+      }
+    }
+
+    .mobile-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--sidebar-muted);
+      text-decoration: none;
+
+      i { font-size: 19px; }
+
+      &:hover { background: var(--sidebar-hover); }
+      &.router-link-active {
+        background: var(--sidebar-active);
+        color: var(--sidebar-fg);
+        font-weight: 500;
+      }
+
+      &.mobile-sub { padding-left: 44px; font-size: 13px; }
+    }
+
+    .mobile-team-block { margin-top: 6px; }
+
+    .mobile-team-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+
+      &:hover { background: var(--sidebar-hover); }
+
+      .mobile-team-arrow { margin-left: auto; font-size: 18px; color: var(--text-muted); }
+    }
+
+    .mobile-team-dot {
+      width: 24px; height: 24px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 800; flex-shrink: 0;
+    }
   }
 }
