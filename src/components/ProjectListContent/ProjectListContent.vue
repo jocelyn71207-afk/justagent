@@ -62,25 +62,9 @@
           <!-- 狀態色條 -->
           <div :class="['card-status-strip', `strip-${item.status}`]"></div>
 
-          <!-- 圖片區（預設顯示） -->
+          <!-- 圖片區（預設顯示）：純視覺，不再疊加頭像/收藏等 UI 元件 -->
           <div class="card-img" v-show="!item.isHovered">
             <img :src="item.imgSrc" alt="">
-            <div class="card-img-overlay"></div>
-            <i :class="['material-symbols-outlined card-star', {
-              'material-fill': i === 0,
-              'active': i === 0
-            }]" @click.stop>star</i>
-            <div class="card-avatars">
-              <div
-                :class="['avatar-chip', { 'avatar-owner': ci === 0 }]"
-                v-for="(c, ci) in item.collaborators.slice(0, 3)"
-                :key="ci"
-                :style="{ backgroundColor: avatarColor(ci) }"
-              >
-                {{ c.name.slice(0, 1) }}
-              </div>
-              <span class="collab-count">{{ item.collaborators.length }} 人</span>
-            </div>
           </div>
 
           <!-- 長條圖區（hover 時顯示） -->
@@ -98,19 +82,40 @@
             </div>
           </div>
 
-          <!-- 卡片 footer -->
-          <div class="card-footer">
-            <div class="card-team" v-if="mode === 'recent'">{{ item.team.name }}</div>
+          <!-- 卡片內容：團隊/收藏 → 標題（主角）→ 狀態/時間 → 協作者/更多，四層各自一行 -->
+          <div class="card-body">
+            <div class="card-row-top">
+              <span class="card-team" v-if="mode === 'recent'">{{ item.team.name }}</span>
+              <i :class="['material-symbols-outlined card-star', {
+                'material-fill': i === 0,
+                'active': i === 0
+              }]" @click.stop>star</i>
+            </div>
+
             <div class="card-name" v-show="!item.isHovered">{{ item.name }}</div>
-            <div class="card-meta">
-              <div class="card-meta-left">
-                <span :class="['status-badge', `status-${item.status}`]">
-                  {{ statusLabel(item.status) }}
-                </span>
-                <span class="card-time">{{ formatTimeToDisplay(item.lastModify) }}</span>
+
+            <div class="card-row-status">
+              <span :class="['card-status', `status-${item.status}`]">
+                <i class="status-dot"></i>{{ statusLabel(item.status) }}
+              </span>
+              <span class="card-time">{{ formatTimeToDisplay(item.lastModify) }}</span>
+            </div>
+
+            <div class="card-row-foot">
+              <div class="card-avatars">
+                <div
+                  :class="['avatar-chip', { 'avatar-owner': ci === 0 }]"
+                  v-for="(c, ci) in item.collaborators.slice(0, 3)"
+                  :key="ci"
+                  :style="{ backgroundColor: avatarColor(ci) }"
+                >
+                  {{ c.name.slice(0, 1) }}
+                </div>
+                <span class="collab-count">{{ item.collaborators.length }} 人</span>
               </div>
               <i class="material-symbols-outlined more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
             </div>
+
             <!-- 更多選項小介面 -->
             <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
               <div class="option-item" @click.stop="deleteProject(item)">刪除</div>

@@ -152,8 +152,8 @@
       // card-chart 是 hover 時取代 card-img 的面板（v-show 切換），兩者高度需一致，
       // 否則 hover spotlight 卡片時，stretch 對齊的整列格線會跟著收縮 44px 造成跳動
       .card-img, .card-chart { height: 220px; }
-      .card-footer .card-name {
-        font-size: 15px;
+      .card-body .card-name {
+        font-size: 17px;
         -webkit-line-clamp: 1;
       }
     }
@@ -169,7 +169,7 @@
       &.strip-pending { background: var(--text-muted); }
     }
 
-    // ── 圖片區 ──────────────────────────────────────
+    // ── 圖片區：純視覺，不再疊 UI 元件 ────────────────
     .card-img {
       position: relative;
       overflow: hidden;
@@ -183,64 +183,6 @@
         object-fit: cover;
         display: block;
       }
-
-      .card-img-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 55%);
-      }
-
-      .card-star {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 18px;
-        color: rgba(255,255,255,0.65);
-        cursor: pointer;
-        z-index: 3;
-
-        &.active { color: var(--primary); }
-      }
-
-      .card-avatars {
-        position: absolute;
-        bottom: 10px;
-        left: 12px;
-        display: flex;
-        align-items: center;
-        z-index: 3;
-
-        .avatar-chip {
-          width: 24px;
-          height: 24px;
-          border-radius: 999px;
-          border: 2px solid $white;
-          background: var(--primary);
-          color: var(--primary-fg);
-          font-weight: 700;
-          font-size: 11px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-left: -6px;
-          position: relative;
-
-          &:first-child { margin-left: 0; }
-
-          // 擁有者：用一圈強調色的 ring 取代原本的皇冠 emoji 做區分
-          &.avatar-owner {
-            z-index: 1;
-            box-shadow: 0 0 0 2px var(--accent);
-          }
-        }
-
-        .collab-count {
-          font-size: 11px;
-          color: rgba(255,255,255,0.9);
-          margin-left: 7px;
-        }
-      }
-
     }
 
     // ── 長條圖區（hover）────────────────────────────
@@ -299,47 +241,119 @@
       }
     }
 
-    // ── 卡片 footer ─────────────────────────────────
-    .card-footer {
-      padding: 11px 13px 13px;
+    // ── 卡片內容：團隊/收藏 → 標題 → 狀態/時間 → 協作者/更多 ──
+    // 四行各司其職，不再把 badge/時間/按鈕塞進同一行搶版面；
+    // 標題是唯一的視覺主角，其餘都是安靜的次要文字。
+    .card-body {
+      padding: 12px 14px 13px;
       position: relative;
 
-      // 團隊名稱：改放圖片下方的說明文字，不再疊在照片上
-      .card-team {
-        font-size: 11px;
-        color: var(--text-faint);
-        margin-bottom: 4px;
+      .card-row-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 18px;
+        margin-bottom: 6px;
+
+        .card-team {
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+
+        .card-star {
+          margin-left: auto;
+          font-size: 17px;
+          color: var(--text-faint);
+          cursor: pointer;
+
+          &.active { color: var(--primary); }
+        }
       }
 
       .card-name {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
         color: var(--text);
         line-height: 1.35;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
 
-      .card-meta {
+      .card-row-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+
+        .card-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-muted);
+
+          .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+          }
+
+          &.status-active  { color: var(--primary); }
+          &.status-review  { color: var(--warning); }
+          &.status-done    { color: var(--text-faint); }
+          &.status-pending { color: var(--text-muted); }
+        }
+
+        .card-time {
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+      }
+
+      .card-row-foot {
         display: flex;
         align-items: center;
         justify-content: space-between;
 
-        .card-meta-left {
+        .card-avatars {
           display: flex;
           align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-          min-width: 0;
-        }
 
-        .card-time {
-          font-size: 10px;
-          color: var(--text-faint);
-          font-family: 'JetBrains Mono', monospace;
+          .avatar-chip {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            border: 2px solid var(--surface);
+            background: var(--primary);
+            color: var(--primary-fg);
+            font-weight: 700;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: -6px;
+            position: relative;
+
+            &:first-child { margin-left: 0; }
+
+            // 擁有者：用一圈強調色的 ring 取代原本的皇冠 emoji 做區分
+            &.avatar-owner {
+              z-index: 1;
+              box-shadow: 0 0 0 2px var(--accent);
+            }
+          }
+
+          .collab-count {
+            font-size: 11px;
+            color: var(--text-faint);
+            margin-left: 7px;
+          }
         }
       }
 
@@ -371,22 +385,6 @@
 
         &.show { visibility: visible; }
       }
-    }
-
-    // ── 狀態 badge ──────────────────────────────────
-    .status-badge {
-      letter-spacing: 0.02em;
-      border-radius: 999px;
-      font-size: 11px;
-      background: var(--surface);
-      border: 1px solid var(--divider);
-      color: var(--text-muted);
-      padding: 4px 10px;
-
-      &.status-active  { background: var(--accent-soft); color: var(--primary-hover); }
-      &.status-review  { background: rgba(207,138,31,0.12); color: var(--warning); }
-      &.status-done    { background: var(--page-bg); color: var(--text-muted); }
-      &.status-pending { background: var(--sidebar-hover); color: var(--text-muted); }
     }
   }
 
