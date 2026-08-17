@@ -92,132 +92,6 @@
       <template #footer></template>
     </VirtualList>
 
-    <!-- [journey tab removed — execution status lives inside the HTML iframes] -->
-    <div v-if="false" class="rbox-journey-area" style="display:none">
-      <div class="rbox-jcd-body">
-        <template v-if="jcdStats.marketing.total > 0">
-          <div class="rbox-jcd-section" @click="openJourneyFullscreen('marketing')">
-            <div class="jcd-type-hdr">
-              <span class="jcd-type-dot jcd-type-dot--marketing"></span>
-              <span class="jcd-type-name">行銷自動化旅程</span>
-              <span class="rbox-view-chip">↗ 查看</span>
-            </div>
-            <div class="jcd-stat-row">
-              <div class="jcd-stat"><div class="jcd-stat-val blue">{{ jcdStats.marketing.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
-              <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">完成</div></div>
-              <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.marketing.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
-              <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.marketing.total - jcdStats.marketing.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
-            </div>
-            <div v-for="nc in jcdStats.marketing.nodeCounts" :key="nc.key" class="jcd-node-dist">
-              <div class="jcd-node-dist-hdr">
-                <span class="jcd-node-dist-key">{{ nc.key }}</span>
-                <span class="jcd-node-dist-label">{{ nc.label }}</span>
-                <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
-                  {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
-                </span>
-              </div>
-              <div class="jcd-dist-bar" v-if="jcdStats.marketing.total > 0">
-                <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.marketing.total * 100) + '%' }"></div>
-                <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.marketing.total * 100) + '%' }"></div>
-              </div>
-            </div>
-            <div class="jcd-rows-title">個別旅程</div>
-            <div v-for="journey in jcdStats.marketing.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
-              <span class="jcd-row-name">{{ journey.userName }}</span>
-              <div class="jcd-row-dots">
-                <span v-for="node in journey.nodes" :key="node.key"
-                  :class="['jcd-rdot', node.status]"
-                  :title="node.key + ' ' + node.label"></span>
-              </div>
-              <span :class="['jcd-row-badge', journey.status]">
-                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
-              </span>
-            </div>
-            <div v-if="jcdStats.marketing.total > 8" class="jcd-rows-more">+{{ jcdStats.marketing.total - 8 }} 人</div>
-          </div>
-        </template>
-
-        <div class="jcd-divider" v-if="jcdStats.marketing.total > 0 && jcdStats.birthday.total > 0"></div>
-
-        <template v-if="jcdStats.birthday.total > 0">
-          <div class="rbox-jcd-section" @click="openJourneyFullscreen('birthday')">
-            <div class="jcd-type-hdr">
-              <span class="jcd-type-dot jcd-type-dot--birthday"></span>
-              <span class="jcd-type-name">5月壽星專屬旅程</span>
-              <span class="rbox-view-chip" style="background:#f5f3ff;color:#7c3aed;">↗ 查看</span>
-            </div>
-            <div class="jcd-stat-row">
-              <div class="jcd-stat"><div class="jcd-stat-val violet">{{ jcdStats.birthday.total }}</div><div class="jcd-stat-lbl">觸發</div></div>
-              <div class="jcd-stat"><div class="jcd-stat-val green">{{ jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">完成</div></div>
-              <div class="jcd-stat"><div class="jcd-stat-val">{{ jcdStats.birthday.completion }}%</div><div class="jcd-stat-lbl">完成率</div></div>
-              <div class="jcd-stat"><div class="jcd-stat-val amber">{{ jcdStats.birthday.total - jcdStats.birthday.done }}</div><div class="jcd-stat-lbl">執行中</div></div>
-            </div>
-            <div v-for="nc in jcdStats.birthday.nodeCounts" :key="nc.key" class="jcd-node-dist">
-              <div class="jcd-node-dist-hdr">
-                <span class="jcd-node-dist-key">{{ nc.key }}</span>
-                <span class="jcd-node-dist-label">{{ nc.label }}</span>
-                <span :class="['jcd-node-dist-count', { running: nc.running > 0 }]">
-                  {{ nc.running > 0 ? nc.running + '人' : nc.done + '人' }}
-                </span>
-              </div>
-              <div class="jcd-dist-bar" v-if="jcdStats.birthday.total > 0">
-                <div class="jcd-dist-done" :style="{ width: (nc.done / jcdStats.birthday.total * 100) + '%' }"></div>
-                <div class="jcd-dist-running" :style="{ width: (nc.running / jcdStats.birthday.total * 100) + '%' }"></div>
-              </div>
-            </div>
-            <div class="jcd-rows-title">個別旅程</div>
-            <div v-for="journey in jcdStats.birthday.journeys.slice(0, 8)" :key="journey.id" class="jcd-row">
-              <span class="jcd-row-name">{{ journey.userName }}</span>
-              <div class="jcd-row-dots">
-                <span v-for="node in journey.nodes" :key="node.key"
-                  :class="['jcd-rdot', node.status]"
-                  :title="node.key + ' ' + node.label"></span>
-              </div>
-              <span :class="['jcd-row-badge', journey.status]">
-                {{ journey.status === 'done' ? '✓' : journey.nodes.filter(n => n.status === 'done').length + '/' + journey.nodes.length }}
-              </span>
-            </div>
-            <div v-if="jcdStats.birthday.total > 8" class="jcd-rows-more">+{{ jcdStats.birthday.total - 8 }} 人</div>
-          </div>
-        </template>
-      </div><!-- /rbox-jcd-body -->
-
-      <!-- 成效報告 (analytics) -->
-      <div class="rbox-analytics">
-        <!-- 大數字 stats 卡 -->
-        <div class="rbox-analytics-hero-card">
-          <div class="rbox-analytics-hero-stat">
-            <div class="rbox-hero-val">{{ jcdStats.total.toLocaleString() }}</div>
-            <div class="rbox-hero-lbl">總觸發人數</div>
-          </div>
-          <div class="rbox-analytics-hero-divider"></div>
-          <div class="rbox-analytics-hero-stat">
-            <div class="rbox-hero-val">{{ (jcdStats.done * 5 + Math.floor(jcdStats.total * 0.7)).toLocaleString() }}</div>
-            <div class="rbox-hero-lbl">總送訊息數</div>
-          </div>
-          <div class="rbox-analytics-hero-divider"></div>
-          <div class="rbox-analytics-hero-stat">
-            <div class="rbox-hero-val">{{ jcdStats.total > 0 ? (jcdStats.done / jcdStats.total * 100).toFixed(1) : '0.0' }}%</div>
-            <div class="rbox-hero-lbl">旅程完成率</div>
-          </div>
-        </div>
-
-        <!-- 旅程分析圖表 -->
-        <div class="rbox-analytics-chart-card">
-          <div class="rbox-analytics-chart-hdr">
-            <span class="rbox-analytics-chart-title">旅程分析</span>
-            <span class="rbox-analytics-date-chip">
-              <i class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;">calendar_month</i>
-              2025/01/01 – 2025/12/31
-            </span>
-          </div>
-          <div class="rbox-analytics-chart-wrap">
-            <canvas ref="analyticsChartRef"></canvas>
-          </div>
-        </div>
-      </div>
-    </div><!-- /rbox-journey-area -->
-
     </div><!-- /rbox-main-wrapper -->
 
     <!-- user 輸入大區域  TODO... 思考是否要拔出去成為組件 -->
@@ -471,6 +345,85 @@
         </div>
       </div>
 
+      <!-- Conv3 上傳原廠文件懸浮面板 -->
+      <div v-show="conv3UploadFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">上傳原廠文件</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3UploadFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-info-note">✦ 點擊下方區域附加這批 TEVA 原廠型錄與文件</div>
+          <div v-if="conv3UploadedFiles.length === 0"
+            class="conv2-up-img-box conv2-up-img-box--empty"
+            style="width:100%;height:64px"
+            @click.stop="conv3LoadDemoFiles()">
+            <div class="conv2-up-img-placeholder">
+              <i class="material-symbols-outlined">upload_file</i>
+              <span>點擊附加原廠文件</span>
+            </div>
+          </div>
+          <div v-else>
+            <div class="oneFileItem" v-for="(f, i) in conv3UploadedFiles" :key="'conv3-file-' + i" style="margin-bottom:6px">
+              <img class="file-icon" :src="useIconFileTypes[f.type]" v-if="useIconFileTypes[f.type]" />
+              <span class="noFile-icon" v-else><i class="material-symbols-outlined">draft</i></span>
+              <div class="file-info-box">
+                <div class="file-name">{{ f.name }}</div>
+                <div class="file-size">{{ f.type }}．{{ formatFileSize(f.size) }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="conv2-fp-btn-row">
+            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conv3 貼標維度確認懸浮面板 -->
+      <div v-show="conv3DimFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">貼標維度確認</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3DimFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-pdesc">多選（至少 1 項）</div>
+          <div v-for="d in conv3Dims" :key="d.key"
+            :class="['conv2-feat-item', {sel: d.sel}]"
+            @click.stop="conv3TogDim(d)">
+            <div class="conv2-fcb">
+              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="conv2-ft">{{ d.title }}</div>
+          </div>
+          <div class="conv2-err">{{ conv3DimErr }}</div>
+          <div class="conv2-fp-btn-row">
+            <span class="conv2-cbadge">已選 {{ conv3Dims.filter(d => d.sel).length }} / {{ conv3Dims.length }}</span>
+            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conv3 貼標結果疑慮回饋懸浮面板 -->
+      <div v-show="conv3TaggingConcernFpVisible && currentConversationId === 'conv3'" class="conv2-fp" @click.stop>
+        <div class="conv2-fp-top">
+          <span class="conv2-fp-title">回報貼標疑慮</span>
+          <button class="conv2-fp-close-btn" @click.stop="conv3TaggingConcernFpVisible = false">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <div class="conv2-fp-body">
+          <div class="conv2-info-note">✦ 描述您發現的問題</div>
+          <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv3TaggingConcernInput" rows="3" @click.stop
+            placeholder="例如：某個 SKU 的材質標籤好像貼錯了..."></textarea>
+          <div class="conv2-fp-btn-row">
+            <button class="conv2-fp-submit-btn" @click.stop="submitConv3TaggingConcern()">確認送出 →</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 要上傳的附件 -->
       <div v-if="!inputAreaHidden" :class="['accessory-box', { hidden: isShowCannedTaskListBox }]"
         :style="{ maxWidth: props.rightWidth - 65 + 'px' }">
@@ -535,6 +488,27 @@
           <!-- conv2 流程進行中：固定顯示「離開快速任務」 -->
           <div v-if="conv2InputLocked" class="conv2-leave-row">
             <button class="conv2-leave-btn" @click.stop="conv2LeaveFastTask()">
+              <i class="material-symbols-outlined">close</i>離開快速任務
+            </button>
+          </div>
+        </template>
+        <template v-if="currentConversationId === 'conv3'">
+          <div class="conv2-pill-row" v-show="conv3ShowUploadPill || conv3ShowDimPill">
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv3UploadFpVisible}"
+              v-show="conv3ShowUploadPill"
+              @click.stop="conv3UploadFpVisible = !conv3UploadFpVisible">
+              <span class="conv2-pill-dot"></span>上傳原廠文件
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv3UploadFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+            <div class="conv2-pill" :class="{'conv2-pill--collapsed': !conv3DimFpVisible}"
+              v-show="conv3ShowDimPill"
+              @click.stop="conv3DimFpVisible = !conv3DimFpVisible">
+              <span class="conv2-pill-dot"></span>貼標維度確認
+              <i class="material-symbols-outlined" style="font-size:14px">{{ conv3DimFpVisible ? 'expand_more' : 'expand_less' }}</i>
+            </div>
+          </div>
+          <div v-if="conv3InputLocked" class="conv2-leave-row">
+            <button class="conv2-leave-btn" @click.stop="conv3LeaveFastTask()">
               <i class="material-symbols-outlined">close</i>離開快速任務
             </button>
           </div>
@@ -624,7 +598,7 @@
           </div>
         </div>
         <!-- Conv1 旅程修改需求懸浮面板 -->
-        <div v-if="showJourneyModifyPill && currentConversationId !== 'conv2'" class="conv2-fp" @click.stop>
+        <div v-if="showJourneyModifyPill && currentConversationId === 'conv1'" class="conv2-fp" @click.stop>
           <div class="conv2-fp-top">
             <span class="conv2-fp-title">旅程修改需求</span>
             <button class="conv2-fp-close-btn" @click.stop="showJourneyModifyPill = false">
@@ -637,6 +611,23 @@
               placeholder="例如：旅程過於單一，我需要更豐富的旅程設計..."></textarea>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出 →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Conv5 促銷方案疑慮回饋懸浮面板 -->
+        <div v-if="conv5ConcernFpVisible && currentConversationId === 'conv5'" class="conv2-fp" @click.stop>
+          <div class="conv2-fp-top">
+            <span class="conv2-fp-title">回報方案疑慮</span>
+            <button class="conv2-fp-close-btn" @click.stop="conv5ConcernFpVisible = false">
+              <i class="material-symbols-outlined">close</i>
+            </button>
+          </div>
+          <div class="conv2-fp-body">
+            <div class="conv2-info-note">✦ 描述您發現的問題</div>
+            <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv5ConcernInput" rows="3" @click.stop
+              placeholder="例如：主打商品的庫存足夠支撐大量曝光嗎？"></textarea>
+            <div class="conv2-fp-btn-row">
+              <button class="conv2-fp-submit-btn" @click.stop="submitConv5Concern()">確認送出 →</button>
             </div>
           </div>
         </div>
@@ -678,6 +669,11 @@
             @click="isOpenAccessoryFileFnBox = true">
             <i class="material-symbols-outlined">add</i>
           </button>
+          <!-- 展開引用知識庫下拉清單按鈕 -->
+          <button class="custom-btn" v-tooltip.top="'引用知識庫'"
+            @click="isOpenKnowledgeRefFnBox = true">
+            <i class="material-symbols-outlined">menu_book</i>
+          </button>
         </div>
         <!-- 附件功能選項清單 -->
         <div :class="['accessory-file-fn-box next-option-box', {'show': isOpenAccessoryFileFnBox}]"
@@ -693,6 +689,13 @@
           </div>
           <div class="option-item">從專案檔案清單新增</div>
           <div class="option-item">從共享資源庫新增</div>
+        </div>
+        <!-- 引用知識庫下拉清單 -->
+        <div :class="['accessory-file-fn-box next-option-box', {'show': isOpenKnowledgeRefFnBox}]"
+          ref="knowledgeRefFnBox">
+          <div v-if="knowledgeList.length === 0" class="option-item">尚無知識庫項目</div>
+          <div v-else class="option-item" v-for="item in knowledgeList" :key="item.id"
+            @click="insertKnowledgeRef(item)">{{ item.title }}</div>
         </div>
         <!-- 發送按鈕 -->
         <button class="custom-btn" v-if="!inputAreaHidden" v-tooltip="'發送訊息'"
@@ -738,25 +741,35 @@
     <!-- 專案檔案清單 list -->
     <fileListArea/>
 
+    <KnowledgeSourceDrawer />
+
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { useJourneyStore } from '@/stores/journeyStore'
+import { useKnowledgeStore } from '@/stores/knowledgeStore'
+import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
+import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
 import commentListArea from '@/components/AiViewer/commentListArea.vue';
 import fileListArea from '@/components/AiViewer/fileListArea.vue';
 import blockListArea from '@/components/AiViewer/blockListArea.vue';
 import popDialog from '@/services/popDialog';
 import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions } from '@/utils/file';
 import htmlIcon from '@/assets/fileTypeIcon/html.png';
-import { Chart } from 'chart.js/auto';
+
+interface KnowledgeSource {
+  knowledgeId: string
+  title: string
+  chunkIndexes: number[]
+}
 
 const props = defineProps<{
   rightWidth: number;
@@ -770,156 +783,12 @@ const { aiViewerBlocks, panToTarget } = storeToRefs(aiviewerStore);
 const { sendUserInput, addReportBlock, addChartBlock } = aiviewerStore;
 const journeyStore = useJourneyStore()
 const { journeyStarted } = storeToRefs(journeyStore)
+const knowledgeStore = useKnowledgeStore();
+const { knowledgeList } = storeToRefs(knowledgeStore);
+const router = useRouter();
 const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
 const showJourneyModifyPill = ref(false)
-const activeRightTab = ref<'chat' | 'journey'>('chat')
-
-// ── jcd stats (mirrored from AiViewer.vue) ──────────────────────────────────
-const JOURNEY_TYPE_NODES = {
-  marketing: [
-    { key: 'D0',  label: '觸發加入旅程' },
-    { key: 'D1',  label: '歡迎序列啟動' },
-    { key: 'D3',  label: '行為條件分流' },
-    { key: 'D7',  label: '產品深度培育' },
-    { key: 'D14', label: '購買轉換衝刺' },
-    { key: 'D30', label: '購後回購培育' },
-  ],
-  birthday: [
-    { key: 'PRE7', label: '壽星名單篩選' },
-    { key: 'D0',   label: '生日驚喜觸發' },
-    { key: 'D1',   label: '生日禮追蹤' },
-    { key: 'D7',   label: '壽星回購培育' },
-    { key: 'D30',  label: '旅程成效報告' },
-  ],
-} as const;
-
-function getTypeStats(type: 'marketing' | 'birthday') {
-  const list = journeyStore.journeys.filter(j => j.journeyType === type);
-  const total = list.length;
-  const done = list.filter(j => j.status === 'done').length;
-  const completion = total > 0 ? Math.round(done / total * 100) : 0;
-  const nodeCounts = JOURNEY_TYPE_NODES[type].map(({ key, label }) => {
-    let doneCount = 0, runningCount = 0;
-    for (const j of list) {
-      const node = j.nodes.find(n => n.key === key);
-      if (!node) continue;
-      if (node.status === 'done') doneCount++;
-      else if (node.status === 'running') runningCount++;
-    }
-    return { key, label, done: doneCount, running: runningCount };
-  });
-  return { total, done, completion, journeys: list, nodeCounts };
-}
-
-const jcdStats = computed(() => {
-  const total = journeyStore.journeys.length;
-  const done = journeyStore.journeys.filter(j => j.status === 'done').length;
-  return {
-    total,
-    done,
-    running: total - done,
-    marketing: getTypeStats('marketing'),
-    birthday: getTypeStats('birthday'),
-  };
-});
-
-function openJourneyFullscreen(type: 'marketing' | 'birthday') {
-  const keyword = type === 'marketing' ? 'journey_dashboard' : 'birthday_journey';
-  const block = (aiViewerBlocks.value as any[]).find(
-    (b: any) => b.data?.data?.fileUrl?.includes(keyword)
-  );
-  if (block) fullAiViewerBlockId.value = block.id;
-}
-
-// ── Analytics chart ──────────────────────────────────────────────────────────
-const analyticsChartRef = ref<HTMLCanvasElement | null>(null);
-let analyticsChart: Chart | null = null;
-
-const ANALYTICS_MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-const ANALYTICS_TRIGGER_DATA = [920, 770, 1000, 890, 1100, 650, 710, 930, 510, 950, 670, 730];
-const ANALYTICS_MSG_DATA     = [490, 600, 600,  640, 580,  850, 830, 670, 830, 650, 570, 920];
-
-function initAnalyticsChart() {
-  if (!analyticsChartRef.value) return;
-  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
-  analyticsChart = new Chart(analyticsChartRef.value, {
-    type: 'line',
-    data: {
-      labels: ANALYTICS_MONTHS,
-      datasets: [
-        {
-          label: '觸發次數',
-          data: ANALYTICS_TRIGGER_DATA,
-          borderColor: '#3b72f6',
-          backgroundColor: 'transparent',
-          fill: false,
-          tension: 0,
-          pointRadius: 4,
-          pointBackgroundColor: '#3b72f6',
-          borderWidth: 2,
-        },
-        {
-          label: '發送訊息數',
-          data: ANALYTICS_MSG_DATA,
-          borderColor: '#f97316',
-          backgroundColor: 'transparent',
-          fill: false,
-          tension: 0,
-          pointRadius: 4,
-          pointBackgroundColor: '#f97316',
-          borderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          align: 'start',
-          labels: { font: { size: 11 }, boxWidth: 10, padding: 12, color: '#374151' },
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: '#111827',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          padding: 10,
-          callbacks: {
-            title: (items) => items[0]?.label ?? '',
-            label: (item) => `${item.dataset.label}：${item.parsed.y.toLocaleString()}`,
-          },
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { size: 11 }, color: '#6b7280' },
-          title: { display: true, text: '月份', font: { size: 11 }, color: '#6b7280' },
-        },
-        y: {
-          grid: { color: '#f3f4f6' },
-          ticks: { font: { size: 11 }, color: '#6b7280' },
-          title: { display: true, text: '觸發次數', font: { size: 11 }, color: '#6b7280' },
-          beginAtZero: true,
-        },
-      },
-    },
-  });
-}
-
-function switchToJourneyTab() {
-  activeRightTab.value = 'journey';
-  nextTick(initAnalyticsChart);
-}
-
-watch(activeRightTab, (tab) => {
-  if (tab === 'journey') nextTick(initAnalyticsChart);
-});
 
 const { isOpenConversationListModal, currentConversationId, conv1IsEmpty } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
@@ -927,6 +796,10 @@ const conv2Title = ref('');
 const conv1Title = ref('未命名對話');
 const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv2') return conv2Title.value || '未命名對話';
+  if (currentConversationId.value === 'conv3') return conv3Title.value || 'TEVA新品特徵貼標';
+  if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
+  if (currentConversationId.value === 'conv5') return conv5Title.value || 'Teva 換季促銷方案規劃';
+  if (currentConversationId.value === 'conv6') return conv6Title.value || 'TEVA涼鞋銷售分析';
   return conv1Title.value;
 });
 
@@ -935,6 +808,14 @@ watch(currentConversationId, (id) => {
     aiViewerBlocks.value = [];
   } else if (id === 'conv2') {
     aiViewerBlocks.value = [...aiviewerStore.INITIAL_BLOCKS];
+  } else if (id === 'conv3') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv4') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv5') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv6') {
+    aiViewerBlocks.value = [];
   }
 }, { immediate: true });
 
@@ -980,6 +861,15 @@ const cannedTaskItems = computed(() => {
   if (currentConversationId.value === 'conv2') {
     return [{ id: 'competitorAnalysis', text: '商品競品分析' }];
   }
+  if (currentConversationId.value === 'conv3') {
+    return [{ id: 'tevaFeatureTagging', text: 'TEVA新品特徵貼標' }];
+  }
+  if (currentConversationId.value === 'conv4') {
+    return [{ id: 'salesReport', text: '整理上月產品銷售報告' }];
+  }
+  if (currentConversationId.value === 'conv5') {
+    return [{ id: 'tevaPromotion', text: '提供 Teva 換季促銷方案' }];
+  }
   return [
     { id: 'cannedTask1', text: '快速罐頭任務範例文字1' },
     { id: 'cannedTask2', text: '快速罐頭任務範例文字2' },
@@ -995,6 +885,21 @@ function sendCannedTask(item: any) {
   if (currentConversationId.value === 'conv2' && item.id === 'competitorAnalysis') {
     resetConversation();
     nextTick(() => conv2InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv3' && item.id === 'tevaFeatureTagging') {
+    resetConversation();
+    nextTick(() => conv3InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv4' && item.id === 'salesReport') {
+    resetConversation();
+    nextTick(() => conv4InitFlow());
+    return;
+  }
+  if (currentConversationId.value === 'conv5' && item.id === 'tevaPromotion') {
+    resetConversation();
+    nextTick(() => conv5InitFlow());
     return;
   }
   send();
@@ -1035,6 +940,26 @@ onMounted(() => {
     isOpenAccessoryFileFnBox.value = false;
   });
 });
+
+// 引用知識庫下拉清單
+const knowledgeRefFnBox = ref<HTMLElement|null>(null);
+const isOpenKnowledgeRefFnBox = ref(false);
+onMounted(() => {
+  initClickOutsideListener(knowledgeRefFnBox.value!, () => {
+    isOpenKnowledgeRefFnBox.value = false;
+  });
+});
+// 選擇知識庫項目後，將 @標題 插入輸入框內容
+function insertKnowledgeRef(item: { title: string }) {
+  isOpenKnowledgeRefFnBox.value = false;
+  const current = userInputModal.value.msg;
+  const needsSpace = current.length > 0 && !/\s$/.test(current);
+  userInputModal.value.msg = `${current}${needsSpace ? ' ' : ''}@${item.title} `;
+  nextTick(() => {
+    adjustTextareaHeight();
+    userInputRef.value?.focus();
+  });
+}
 
 // 能支援本地端上傳的檔案類型
 const supportedFileTypes = aiviewerStore.supportedFileTypes;
@@ -1123,6 +1048,19 @@ watch(() => userInputModal.value.msg, () => {
   adjustTextareaHeight();
 });
 
+// ── Drawer state (知識來源側邊抽屜) ────────────────────────────────
+const drawerOpen = ref(false)
+const drawerSources = ref<KnowledgeSource[]>([])
+
+function openDrawer(sources: KnowledgeSource[]) {
+  drawerSources.value = sources
+  drawerOpen.value = true
+}
+
+provide('drawerOpen', drawerOpen)
+provide('drawerSources', drawerSources)
+provide('openDrawer', openDrawer)
+
 // 發送使用者輸入訊息
 function send() {
   if (currentConversationId.value === 'conv1') {
@@ -1132,6 +1070,15 @@ function send() {
     userInputModal.value.msg = '';
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     processConv1Msg(msg);
+    return;
+  }
+  if (currentConversationId.value === 'conv6') {
+    const msg = userInputModal.value.msg.trim();
+    if (!msg) return;
+    conv6Msgs.value.push({ id: 'user-' + Date.now(), forUser: true, msg });
+    userInputModal.value.msg = '';
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    processConv6Msg(msg);
     return;
   }
   sendUserInput();
@@ -1215,6 +1162,16 @@ const tempDebugMsg = computed(() => {
     </p>
   `;
 });
+// Mock thinking data — injected into AI messages so ThinkingChainCard can display them
+const MOCK_THINKING_STEPS = [
+  { type: 'think' as const, label: '分析問題意圖' },
+  { type: 'search' as const, label: '查詢知識庫', detail: '找到 2 篇相關段落' },
+  { type: 'synthesize' as const, label: '整合資訊，組織回答' },
+]
+const MOCK_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k5', title: '商品目錄 Q2', chunkIndexes: [0, 1] },
+]
+
 const conv1Msgs = ref<any[]>([]);
 // conv1IsEmpty 由實際訊息狀態推導，避免 HMR 殘留舊狀態
 watch(
@@ -1278,7 +1235,12 @@ function c1PushThinkingThenReply(
   doneKey: string,
 ) {
   const thinkingId = 'thinking-' + Date.now();
-  conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+  conv1Msgs.value.push({
+    id: thinkingId,
+    isThinking: true,
+    thinkingSteps: MOCK_THINKING_STEPS,
+    sources: MOCK_SOURCES,
+  });
   nextTick(() => AiAgentChatListScrollTo('ASC'));
   setTimeout(() => {
     const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1289,6 +1251,8 @@ function c1PushThinkingThenReply(
       cardType: 'translationComplete',
       msg: replyMsg,
       files,
+      thinkingSteps: MOCK_THINKING_STEPS,
+      sources: MOCK_SOURCES,
     });
     try { addReportBlock(reportUrl, reportName); } catch (e) { /* ignore */ }
     nextTick(() => AiAgentChatListScrollTo('ASC'));
@@ -1300,7 +1264,7 @@ function processConv1Msg(msg: string) {
   // 初始翻譯請求：對話尚未開始（id_3 尚未出現）
   if (!conv1Msgs.value.some((m: any) => m.cardType === 'translationConfirm')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
@@ -1326,7 +1290,7 @@ function processConv1Msg(msg: string) {
   }
   if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1385,13 +1349,15 @@ function processConv1Msg(msg: string) {
           { name: '年成長率趨勢.json', type: 'JSON', size: 248 },
           { name: '各鞋款銷售量.json', type: 'JSON', size: 420 },
         ],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
       pushConv1NextStepPrompt('圖表');
-    }, 2200);
+    }, 5000);
   } else if (msg.includes('行銷策略')) {
     c1PushThinkingThenReply(
-      1800,
+      5000,
       '已根據 2022–2025 銷售數據分析完成，以下是 Hurricane Trailsetter 系列的 AW26 行銷策略報告，請查閱。',
       [{ name: 'hurricane_trailsetter_marketing_strategy.html', type: 'HTML', size: 13208 }],
       '/justagent/hurricane_trailsetter_marketing_strategy.html',
@@ -1400,7 +1366,7 @@ function processConv1Msg(msg: string) {
     );
   } else if (msg.includes('用戶畫像')) {
     c1PushThinkingThenReply(
-      2000,
+      5000,
       '已完成目標客群分析，以下是 Hurricane Trailsetter 系列的用戶畫像報告，請查閱。',
       [{ name: 'hurricane_trailsetter_user_persona.html', type: 'HTML', size: 30725 }],
       '/justagent/hurricane_trailsetter_user_persona.html',
@@ -1409,7 +1375,7 @@ function processConv1Msg(msg: string) {
     );
   } else if (msg.includes('行銷自動化旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
@@ -1420,6 +1386,8 @@ function processConv1Msg(msg: string) {
         cardType: 'translationComplete',
         msg: '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
         files: [{ name: 'hurricane_trailsetter_journey_dashboard.html', type: 'HTML', size: 11986 }],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       })
       if (!journeyDashboardAdded.value) {
         addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard.html', '旅程總覽')
@@ -1427,10 +1395,10 @@ function processConv1Msg(msg: string) {
       }
       nextTick(() => AiAgentChatListScrollTo('ASC'))
       pushConv1NextStepPrompt('行銷自動化旅程')
-    }, 2000)
+    }, 5000)
   } else if (msg.includes('旅程過於單一') || msg.includes('更豐富的旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
@@ -1441,13 +1409,15 @@ function processConv1Msg(msg: string) {
         cardType: 'translationComplete',
         msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
         files: [{ name: 'hurricane_trailsetter_journey_dashboard-1.html', type: 'HTML', size: 13065 }],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       })
       addReportBlock('/justagent/hurricane_trailsetter_journey_dashboard-1.html', '旅程總覽-1')
       nextTick(() => AiAgentChatListScrollTo('ASC'))
-    }, 2500)
+    }, 5000)
   } else if (msg.includes('壽星') || msg.includes('生日旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
@@ -1458,13 +1428,15 @@ function processConv1Msg(msg: string) {
         cardType: 'translationComplete',
         msg: '已從 CDP 篩選出台北地區 <strong>1,284 位 5 月壽星</strong>，完成專屬行銷自動化旅程設計。旅程從生日前 7 天預熱啟動，整合 Email、LINE、SMS 三大渠道，並在 D+1 依兌換行為進行分流，預估轉換提升 38%，請在畫布中查閱。',
         files: [{ name: 'hurricane_trailsetter_birthday_journey.html', type: 'HTML', size: 13530 }],
+        thinkingSteps: MOCK_THINKING_STEPS,
+        sources: MOCK_SOURCES,
       })
       addReportBlock('/justagent/hurricane_trailsetter_birthday_journey.html', '5月壽星專屬旅程')
       nextTick(() => AiAgentChatListScrollTo('ASC'))
-    }, 2800)
+    }, 5000)
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1475,10 +1447,10 @@ function processConv1Msg(msg: string) {
         msg: '以下是 3 條 Hurricane Trailsetter AW26 品牌曝光廣告文案：<br><br>① <strong>「山路之王，秋冬出擊」</strong><br>Hurricane Trailsetter — 專為台灣山林設計，防滑耐磨，陪你征服每一條步道。<br><br>② <strong>「戶外不將就，腳感決定一切」</strong><br>全新 AW26 系列登場，Vibram 大底 × 防水鞋面，由內而外的戶外自信。<br><br>③ <strong>「你的下一段旅程，從這裡開始」</strong><br>Hurricane Trailsetter AW26，限時優惠倒數中。',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1500);
+    }, 5000);
   } else if (msg.includes('歡迎 Email 模板')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1489,10 +1461,10 @@ function processConv1Msg(msg: string) {
         msg: '📧 <strong>歡迎 Email 模板</strong><br><br><strong>主旨：</strong>歡迎加入 Hurricane Trailsetter 探險家族 🏔️<br><br><strong>內文：</strong><br>Hi [姓名]，<br><br>感謝你關注 Hurricane Trailsetter！我們為 AW26 秋冬系列注入了全新工藝——<br>・Vibram® 大底，抓地力提升 30%<br>・Gore-Tex® 防水膜，惡劣天氣也不妥協<br>・符合台灣山林地形設計的鞋楦<br><br>身為我們的新朋友，這裡有一份 <strong>專屬 9 折優惠碼：WELCOME26</strong>，有效期 7 天。<br><br>[立即選購] 按鈕<br><br>期待在每條步道上看見你的足跡。<br>Hurricane Trailsetter 團隊',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1800);
+    }, 5000);
   } else if (msg.includes('LINE 腳本')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1503,10 +1475,10 @@ function processConv1Msg(msg: string) {
         msg: '💬 <strong>LINE 歡迎訊息腳本</strong><br><br><strong>主訊息：</strong><br>嗨！感謝加入 Hurricane Trailsetter 官方帳號 🏔️<br>AW26 秋冬新品現正上市，加好友限定 85 折！<br><br><strong>快速回覆按鈕（建議設定 3 個）：</strong><br>・🛒 立即選購<br>・📦 查看新品<br>・🎁 領取優惠碼<br><br><strong>備注：</strong>按鈕點擊後導向官網商品頁，搭配 UTM 參數追蹤轉換。',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1500);
+    }, 5000);
   } else if (msg.includes('再行銷受眾')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1517,10 +1489,10 @@ function processConv1Msg(msg: string) {
         msg: '🎯 <strong>再行銷受眾設定建議</strong><br><br><strong>受眾條件（Meta Ads Manager）：</strong><br>・行為事件：<code>ViewContent</code>（商品頁停留 &gt; 15 秒）<br>・時間窗口：過去 <strong>7 天</strong>內瀏覽但未購買<br>・排除條件：過去 30 天內已購買者<br><br><strong>廣告素材建議：</strong><br>・動態商品廣告（DPA）自動帶入瀏覽商品<br>・文案：「還在考慮嗎？限時優惠只剩 2 天 ⏳」<br>・預算：日預算 NT$500，CPM 目標 ≤ NT$180',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1600);
+    }, 5000);
   } else if (msg.includes('穿搭指南')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1531,10 +1503,10 @@ function processConv1Msg(msg: string) {
         msg: '📝 <strong>戶外穿搭指南 Email 內容草稿</strong><br><br><strong>主旨：</strong>這個秋冬，跟著 Hurricane 這樣穿出門 🍂<br><br><strong>Section 1 — 日系機能風</strong><br>Hurricane Trailsetter Mid + 寬版工作褲 + 薄羽絨背心，輕量機能感十足。<br><br><strong>Section 2 — 城市健走風</strong><br>Hurricane Trailsetter Sandal + 修身長褲 + 連帽外套，從捷運到步道無縫接軌。<br><br><strong>Section 3 — 週末山林風</strong><br>Hurricane Trailsetter Mid + 快乾長褲 + 防風外層，應對台灣 2000m 以下山徑全制霸。<br><br>每段附產品連結與 UTM 追蹤參數。',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1800);
+    }, 5000);
   } else if (msg.includes('棄單 SMS')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1545,10 +1517,10 @@ function processConv1Msg(msg: string) {
         msg: '📱 <strong>棄單 SMS 提醒文案（2 條）</strong><br><br><strong>版本 A（優惠導向，70 字以內）：</strong><br>「Hurricane Trailsetter 購物車提醒：你的 AW26 鞋款還在等你！現在結帳享 85 折，限今日。點此完成購買：[短網址]」<br><br><strong>版本 B（稀缺感導向，70 字以內）：</strong><br>「你選的 Hurricane Trailsetter 剩最後幾雙，明天可能就沒了！點此立即結帳：[短網址]  回覆 TD 退訂」<br><br><strong>建議發送時間：</strong>棄單後 1 小時，若未購買再於 24 小時後發版本 B。',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1500);
+    }, 5000);
   } else if (msg.includes('忠誠計畫')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true });
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1559,10 +1531,10 @@ function processConv1Msg(msg: string) {
         msg: '⭐ <strong>購後忠誠計畫建議</strong><br><br><strong>積分規則：</strong><br>・每消費 NT$1 = 1 點<br>・開箱影片投稿 = 500 點<br>・成功推薦好友 = 300 點（雙方各得）<br><br><strong>會員等級（3 級）：</strong><br>・🥾 <strong>Trail Starter</strong>（0–2,999 點）：生日禮 + 新品早鳥 5% off<br>・🏔️ <strong>Trail Explorer</strong>（3,000–9,999 點）：免運 + 季末特賣 10% off<br>・🦅 <strong>Trail Master</strong>（10,000 點以上）：專屬客服 + 限定商品優先購 + 15% off<br><br><strong>升級通知：</strong>LINE 推播 + Email 雙管道，搭配升級限定優惠碼刺激下一單。',
       });
       nextTick(() => AiAgentChatListScrollTo('ASC'));
-    }, 1800);
+    }, 5000);
   } else if (msg.includes('日文')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
@@ -1600,7 +1572,7 @@ function processConv1Msg(msg: string) {
     }, 3200)
   } else if (msg.includes('Hurricane') || msg.includes('鞋款') || msg.includes('銷售數據')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
@@ -1759,7 +1731,6 @@ onUnmounted(() => {
   window.removeEventListener('message', handleJourneyStartRequest)
   window.removeEventListener('message', handleJourneyModifyRequest)
   window.removeEventListener('message', handleBirthdayStateRequest)
-  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
 })
 
 // -------- Conversation 2 流程 --------
@@ -1813,7 +1784,7 @@ const conv2FpActive = computed(() =>
   currentConversationId.value === 'conv2' && (conv2ShowUploadPill.value || conv2ShowStepPill.value || conv2ShowDirectPill.value || conv2InputLocked.value)
 );
 // 輸入框整體隱藏：conv2 浮層啟用 OR 旅程修改需求浮層啟用
-const inputAreaHidden = computed(() => conv2FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value);
+const inputAreaHidden = computed(() => conv2FpActive.value || conv3FpActive.value || showJourneyModifyPill.value || conv1TranslPanelVisible.value || (conv5ConcernFpVisible.value && currentConversationId.value === 'conv5'));
 const conv1TranslConfirmed = computed(() => {
   const record = conv1Msgs.value.find((m: any) => m.id === 'id_3');
   return !!(record?.confirmed && !record?.translationStarted);
@@ -2115,6 +2086,55 @@ function handleChatAreaClick(e: MouseEvent) {
     return
   }
 
+  // conv4 是否建立 Skill 快速按鈕
+  if (action === 'conv4-build-skill') {
+    conv4BuildSkill();
+    return;
+  }
+  if (action === 'conv4-skip-skill') {
+    conv4SkipSkill();
+    return;
+  }
+  if (action === 'conv4-confirm-save-skill') {
+    conv4ConfirmSaveSkill();
+    return;
+  }
+  if (action === 'goto-skill-management') {
+    router.push({ name: 'SkillManagement' });
+    return;
+  }
+  if (action === 'conv6-report-channel') { conv6ChooseReport('channel'); return; }
+  if (action === 'conv6-report-member') { conv6ChooseReport('member'); return; }
+  if (action === 'conv6-report-strategy') { conv6ChooseReport('strategy'); return; }
+
+  // conv5 促銷方案確認／回報疑慮快速按鈕
+  if (action === 'conv5-approve') {
+    conv5Approve();
+    return;
+  }
+  if (action === 'conv5-raise-concern') {
+    if (!conv5FollowUpDone.value) conv5ConcernFpVisible.value = true;
+    return;
+  }
+
+  // conv3 貼標結果確認／回報疑慮、是否建立知識庫快速按鈕
+  if (action === 'conv3-approve-tagging') {
+    conv3ApproveTagging();
+    return;
+  }
+  if (action === 'conv3-raise-tagging-concern') {
+    if (!conv3TaggingFollowUpDone.value) conv3TaggingConcernFpVisible.value = true;
+    return;
+  }
+  if (action === 'conv3-build-kb') {
+    conv3BuildKnowledgeBase();
+    return;
+  }
+  if (action === 'conv3-skip-kb') {
+    conv3SkipKnowledgeBase();
+    return;
+  }
+
   if (currentConversationId.value !== 'conv2') return;
 
   // more-button 開關：直接操作 DOM，不走 reactive 流程
@@ -2304,7 +2324,7 @@ function conv2DirectSelectMethod(method: string) {
 
 function conv2DirectSubmitSku() {
   conv2DirectFpStep.value = 3;
-  c2Push({ forUser: true, msg: `UG1166915BLK <span class="conv2-kb-ref">@2025產品總表-Q3</span>` });
+  c2Push({ forUser: true, msg: `UG1166915BLK @2025產品總表-Q3` });
   c2Push({ msg: `收到！正在讀取知識庫並查詢商品資料⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">KnowledgeReader 讀取知識庫：2025產品總表-Q3</div>
   <div class="conv2-ss conv2-ss--active">ProductLookup 查詢貨號：UG1166915BLK</div>
@@ -2385,8 +2405,728 @@ function conv2ShowReport() {
 }
 // -------- end Conversation 2 流程 --------
 
+// -------- Conversation 3 流程 --------
+const conv3InputLocked = ref(false); // 快速任務觸發後鎖定輸入框
+const conv3Msgs = ref<any[]>([]);
+let conv3IdCounter = 2;
+const conv3Title = ref('');
+
+function c3Push(msg: any) {
+  conv3Msgs.value.push({ id: `c3_${conv3IdCounter++}`, ...msg });
+}
+function c3Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+// Step 1：上傳原廠文件（面板本體於後續任務建立）
+const conv3UploadFpVisible = ref(false);
+const conv3ShowUploadPill = ref(false);
+const conv3UploadedFiles = ref<{ name: string; type: string; size: number }[]>([]);
+const CONV3_DEMO_FILES: { name: string; type: string; size: number }[] = [
+  { name: 'TEVA_AW26_目錄_final_v3(1).pdf', type: 'PDF', size: 8_412_000 },
+  { name: '原廠規格表_更新版.xlsx', type: 'EXCEL', size: 1_204_500 },
+  { name: 'TEVA官網介紹_複製.docx', type: 'WORD', size: 340_200 },
+  { name: '特徵資料_舊版_勿用.txt', type: 'TXT', size: 18_600 },
+];
+
+// Step 2：貼標維度確認（面板本體於後續任務建立）
+const conv3DimFpVisible = ref(false);
+const conv3ShowDimPill = ref(false);
+const conv3Dims = ref([
+  { key: 'color', title: '顏色', sel: true },
+  { key: 'style', title: '款式', sel: true },
+  { key: 'material', title: '材質', sel: true },
+  { key: 'size', title: '尺碼', sel: true },
+  { key: 'theme', title: '風格', sel: true },
+]);
+const conv3DimErr = ref('');
+
+// Step 3：貼標結果確認／回報疑慮
+const conv3TaggingFollowUpDone = ref(false);
+const conv3TaggingConcernFpVisible = ref(false);
+const conv3TaggingConcernInput = ref('');
+// Step 4：是否建立知識庫
+const conv3KbChoiceMade = ref(false);
+
+// fp 互動模式中：完全隱藏原始輸入列（比照 conv2FpActive）
+const conv3FpActive = computed(() =>
+  currentConversationId.value === 'conv3' && (conv3ShowUploadPill.value || conv3ShowDimPill.value || conv3InputLocked.value || conv3TaggingConcernFpVisible.value)
+);
+
+function conv3InitFlow() {
+  if (conv3Msgs.value.length > 0) return;
+  conv3InputLocked.value = true;
+  conv3Title.value = 'TEVA新品特徵貼標';
+  c3Push({ forUser: true, msg: '請整理這批 TEVA 新品原廠文件，依顏色、款式、材質、尺碼、風格完成特徵貼標' });
+  setTimeout(() => {
+    c3Push({ msg: '收到，請先在下方面板附加要整理的原廠文件。' });
+    c3Scroll();
+    conv3UploadFpVisible.value = true;
+    conv3ShowUploadPill.value = true;
+  }, 300);
+}
+
+function conv3LeaveFastTask() {
+  conv3InputLocked.value = false;
+  conv3ShowUploadPill.value = false;
+  conv3UploadFpVisible.value = false;
+  conv3ShowDimPill.value = false;
+  conv3DimFpVisible.value = false;
+  conv3TaggingConcernFpVisible.value = false;
+}
+
+// 尋找最後一則含 'conv2-search-card' 的處理進度訊息，把指定 class 依序替換（比照 conv2DirectSubmitSku 的做法）
+function conv3FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv3Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv3Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+// -------- Conversation 4 流程 --------
+const conv4Msgs = ref<any[]>([]);
+let conv4IdCounter = 2;
+const conv4Title = ref('');
+const conv4SkillChoiceMade = ref(false);
+const conv4SkillSaveConfirmed = ref(false);
+
+function c4Push(msg: any) {
+  conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
+}
+function c4Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+const CONV4_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k7', title: '2026Q1產品銷售', chunkIndexes: [0, 1] },
+  { knowledgeId: 'k8', title: '三諾產品部輸出報告規範', chunkIndexes: [0, 1] },
+];
+
+function conv4InitFlow() {
+  if (conv4Msgs.value.length > 0) return;
+  conv4Title.value = '產品銷售報告整理';
+  c4Push({ forUser: true, msg: '請幫我整理上個月的產品銷售報告，相關資料請幫我查詢 @2026Q1產品銷售，輸出格式請參考 @三諾產品部輸出報告規範' });
+  setTimeout(() => {
+    c4Push({ msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">SalesDataQuery 查詢 2026Q1 產品銷售數據</div>
+  <div class="conv2-ss conv2-ss--wait">ReportFormatter 套用三諾產品部輸出報告規範</div>
+</div>` });
+    c4Scroll();
+    setTimeout(() => {
+      conv4FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '2026年6月產品銷售報告.html');
+      } catch { /* 畫布可能尚未初始化 */ }
+      c4Push({
+        finishResponse: true,
+        msg: `✅ 已完成上個月（6月）產品銷售報告，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">2026年6月產品銷售報告.html</div>
+    <div class="file-size">HTML · 5.8 KB · 已加到畫布</div>
+  </div>
+</div>`,
+        sources: CONV4_SOURCES,
+      });
+      c4Scroll();
+      setTimeout(() => conv4AskBuildSkill(), 600);
+    }, 1800);
+  }, 300);
+}
+
+// 尋找最後一則含 'conv2-search-card' 的訊息，把指定 class 依序替換（比照 conv2 系列訊息的做法）
+function conv4FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv4Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv4Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+function conv3LoadDemoFiles() {
+  if (conv3UploadedFiles.value.length) return;
+  conv3UploadedFiles.value = [...CONV3_DEMO_FILES];
+}
+
+function conv3ConfirmUpload() {
+  if (!conv3UploadedFiles.value.length) return;
+  conv3UploadFpVisible.value = false;
+  conv3ShowUploadPill.value = false;
+  const fileListHtml = conv3UploadedFiles.value.map((f, i) => `${i + 1}. ${f.name}`).join('<br>');
+  c3Push({ forUser: true, msg: `已附加 ${conv3UploadedFiles.value.length} 份文件：<br>${fileListHtml}` });
+  c3Push({ msg: `收到，這批原廠文件看起來版本蠻雜亂的，我先掃描並整併這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">DocumentParser 解析原廠型錄與規格表</div>
+  <div class="conv2-ss conv2-ss--wait">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
+</div>` });
+  c3Scroll();
+  setTimeout(() => {
+    conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+    c3Push({ msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
+    c3Scroll();
+    conv3DimFpVisible.value = true;
+    conv3ShowDimPill.value = true;
+  }, 1800);
+}
+
+function conv3TogDim(d: any) {
+  const selCount = conv3Dims.value.filter(x => x.sel).length;
+  if (d.sel && selCount <= 1) { conv3DimErr.value = '至少選 1 個維度'; return; }
+  d.sel = !d.sel;
+  conv3DimErr.value = '';
+}
+
+function conv3ConfirmDims() {
+  if (!conv3Dims.value.some(d => d.sel)) { conv3DimErr.value = '至少選 1 個維度'; return; }
+  conv3DimFpVisible.value = false;
+  conv3ShowDimPill.value = false;
+  const dimNames = conv3Dims.value.filter(d => d.sel).map(d => d.title).join('、');
+  c3Push({ forUser: true, msg: `確認以 ${dimNames} 進行貼標，開始執行。` });
+  c3Push({ msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--done">DocumentParser 解析原廠型錄與規格表</div>
+  <div class="conv2-ss conv2-ss--done">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
+  <div class="conv2-ss conv2-ss--active">FeatureTagger 依 ${dimNames} 進行特徵貼標中</div>
+  <div class="conv2-ss conv2-ss--wait">QualityReview 交叉比對命名與規格一致性</div>
+</div>` });
+  c3Scroll();
+  setTimeout(() => conv3ShowResult(dimNames), 2200);
+}
+
+function conv3ShowResult(dimNames: string) {
+  conv3InputLocked.value = false;
+  conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
+  try {
+    addReportBlock('/justagent/teva_feature_tagging_report.html', 'TEVA_特徵貼標報告.html');
+  } catch (e) { /* 畫布可能尚未初始化 */ }
+  c3Push({ msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
+  c3Push({
+    finishResponse: true,
+    msg: `<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">TEVA_特徵貼標報告.html</div>
+    <div class="file-size">HTML · 7.9 KB · 已加到畫布</div>
+  </div>
+</div>
+麻煩確認一下貼標結果有沒有問題？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv3-approve-tagging">✅ 沒問題，繼續</span>
+  <span class="conv1-quick-btn" data-action="conv3-raise-tagging-concern">⚠️ 我有疑慮</span>
+</div>`,
+  });
+  c3Scroll();
+}
+
+function conv3ApproveTagging() {
+  if (conv3TaggingFollowUpDone.value) return;
+  conv3TaggingFollowUpDone.value = true;
+  c3Push({ forUser: true, msg: '沒問題，繼續' });
+  c3Scroll();
+  setTimeout(() => conv3AskBuildKnowledgeBase(), 500);
+}
+
+function submitConv3TaggingConcern() {
+  if (conv3TaggingFollowUpDone.value) return;
+  const msg = conv3TaggingConcernInput.value.trim();
+  if (!msg) return;
+  conv3TaggingFollowUpDone.value = true;
+  c3Push({ forUser: true, msg });
+  conv3TaggingConcernInput.value = '';
+  conv3TaggingConcernFpVisible.value = false;
+  c3Scroll();
+  conv3ReviseTagging();
+}
+
+function conv3ReviseTagging() {
+  setTimeout(() => {
+    c3Push({ msg: `您說得對，我重新比對一次原廠規格表⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">QualityReview 重新交叉比對命名與規格一致性</div>
+</div>` });
+    c3Scroll();
+
+    setTimeout(() => {
+      conv3FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/teva_feature_tagging_report-1.html', 'TEVA_特徵貼標報告（修正版）.html');
+      } catch { /* 畫布可能尚未初始化 */ }
+      c3Push({
+        finishResponse: true,
+        msg: `已修正：TEV-AW26-011（Original Universal Premier）因命名與 TEV-AW26-002（Original Universal）相近，先前合併時誤套用了 002 的材質規格，已重新比對原廠規格表更正為頭層牛皮材質，材質維度分佈也同步由 10 種組合修正為 11 種組合。修正版報告已加入畫布。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">TEVA_特徵貼標報告（修正版）.html</div>
+    <div class="file-size">HTML · 9.1 KB · 已加到畫布</div>
+  </div>
+</div>`,
+      });
+      c3Scroll();
+      setTimeout(() => conv3AskBuildKnowledgeBase(), 600);
+    }, 1800);
+  }, 300);
+}
+
+function conv3AskBuildKnowledgeBase() {
+  c3Push({
+    msg: `這批商品已完成特徵貼標，要不要把整理好的商品資料建成知識庫，方便之後快速查詢與再利用？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv3-build-kb">是，建立知識庫</span>
+  <span class="conv1-quick-btn" data-action="conv3-skip-kb">不用了</span>
+</div>`,
+  });
+  c3Scroll();
+}
+
+function conv3BuildKnowledgeBase() {
+  if (conv3KbChoiceMade.value) return;
+  conv3KbChoiceMade.value = true;
+  c3Push({ forUser: true, msg: '是，建立知識庫' });
+  c3Scroll();
+  setTimeout(() => {
+    c3Push({
+      finishResponse: true,
+      msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+  <span style="font-size:20px;line-height:1">📚</span>
+  <div>
+    <div style="font-weight:700">TEVA AW26 新品特徵資料</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:2px">12 個 SKU 的顏色／款式／材質／尺碼／風格貼標結果</div>
+  </div>
+</div>✅ 已建立知識庫「TEVA AW26 新品特徵資料」，之後可直接查詢這批商品的特徵資訊。`,
+    });
+    c3Scroll();
+  }, 500);
+}
+
+function conv3SkipKnowledgeBase() {
+  if (conv3KbChoiceMade.value) return;
+  conv3KbChoiceMade.value = true;
+  c3Push({ forUser: true, msg: '不用了' });
+  c3Scroll();
+  setTimeout(() => {
+    c3Push({ msg: '好的，這批貼標結果已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c3Scroll();
+  }, 500);
+}
+// -------- end Conversation 3 流程 --------
+
+function conv4AskBuildSkill() {
+  c4Push({
+    msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存起來，之後產品部同仁都能快速套用？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv4-build-skill">是，幫我建立 Skill</span>
+  <span class="conv1-quick-btn" data-action="conv4-skip-skill">不用了</span>
+</div>`,
+  });
+  c4Scroll();
+}
+
+function conv4BuildSkill() {
+  if (conv4SkillChoiceMade.value) return;
+  conv4SkillChoiceMade.value = true;
+  c4Push({ forUser: true, msg: '是，幫我建立 Skill' });
+  c4Scroll();
+  setTimeout(() => {
+    c4Push({
+      msg: `好的，我先整理這個流程的設定，請確認以下內容是否正確：
+<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+  <span style="font-size:20px;line-height:1">🧩</span>
+  <div>
+    <div style="font-weight:700">產品銷售報告整理</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:6px"><strong>觸發條件：</strong>偵測到「查詢銷售資料＋套用部門報告規範」類型的整理需求</div>
+    <div style="font-size:12px;color:#5c6370;margin-top:4px"><strong>執行步驟：</strong>1. 查詢指定月份產品銷售數據　2. 套用三諾產品部輸出報告規範自動產出報告</div>
+  </div>
+</div>
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv4-confirm-save-skill">✅ 確認無誤，儲存</span>
+</div>`,
+    });
+    c4Scroll();
+  }, 500);
+}
+
+function conv4ConfirmSaveSkill() {
+  if (conv4SkillSaveConfirmed.value) return;
+  conv4SkillSaveConfirmed.value = true;
+  c4Push({ forUser: true, msg: '✅ 確認無誤，儲存' });
+  c4Scroll();
+  setTimeout(() => {
+    c4Push({
+      finishResponse: true,
+      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到<span data-action="goto-skill-management" style="color:var(--primary);text-decoration:underline;cursor:pointer;font-weight:600">Skill 管理</span>頁面查看或調整這個 Skill 的細節設定。`,
+    });
+    c4Scroll();
+  }, 500);
+}
+
+function conv4SkipSkill() {
+  if (conv4SkillChoiceMade.value) return;
+  conv4SkillChoiceMade.value = true;
+  c4Push({ forUser: true, msg: '不用了' });
+  c4Scroll();
+  setTimeout(() => {
+    c4Push({ msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c4Scroll();
+  }, 500);
+}
+// -------- end Conversation 4 流程 --------
+
+// -------- Conversation 5 流程 --------
+const conv5Msgs = ref<any[]>([]);
+let conv5IdCounter = 2;
+const conv5Title = ref('');
+const conv5FollowUpDone = ref(false);
+const conv5ConcernFpVisible = ref(false);
+const conv5ConcernInput = ref('');
+
+function c5Push(msg: any) {
+  conv5Msgs.value.push({ id: `c5_${conv5IdCounter++}`, ...msg });
+}
+function c5Scroll() {
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+const CONV5_INVENTORY_SOURCE: KnowledgeSource[] = [
+  { knowledgeId: 'k9', title: 'Teva 商品庫存即時資料', chunkIndexes: [0] },
+];
+const CONV5_TREND_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k10', title: '2026換季社群輿情彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k11', title: '時尚雜誌趨勢報導彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k12', title: '戶外機能鞋產業趨勢報告', chunkIndexes: [0] },
+];
+const CONV5_STRATEGY_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k7', title: '2026Q1產品銷售數據彙總', chunkIndexes: [1] },
+  ...CONV5_INVENTORY_SOURCE,
+  ...CONV5_TREND_SOURCES,
+];
+const CONV5_REVISED_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k9', title: 'Teva 商品庫存即時資料', chunkIndexes: [0, 1] },
+  { knowledgeId: 'k7', title: '2026Q1產品銷售數據彙總', chunkIndexes: [1] },
+];
+
+function conv5InitFlow() {
+  if (conv5Msgs.value.length > 0) return;
+  conv5Title.value = 'Teva 換季促銷方案規劃';
+  c5Push({ forUser: true, msg: '換季檔期快到了，幫我提供一份 Teva 的促銷方案，記得先看一下目前庫存，也了解一下現在社群、時尚雜誌跟趨勢報告在流行什麼，最後整理成行銷策略和風險評估。' });
+
+  setTimeout(() => {
+    c5Push({ msg: `收到，我先查詢目前的商品庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">InventoryQuery 查詢 Teva 商品線即時庫存</div>
+</div>` });
+    c5Scroll();
+
+    setTimeout(() => {
+      conv5FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/teva_inventory_snapshot.html', 'Teva 商品庫存即時資料.html');
+      } catch { /* 畫布可能尚未初始化 */ }
+      c5Push({
+        finishResponse: true,
+        msg: `📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。庫存資料已加入畫布，可直接查看。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">Teva 商品庫存即時資料.html</div>
+    <div class="file-size">HTML · 4.1 KB · 已加到畫布</div>
+  </div>
+</div>接著我來看看目前社群、時尚雜誌與趨勢報告在流行什麼⋯`,
+        sources: CONV5_INVENTORY_SOURCE,
+      });
+      c5Scroll();
+
+      setTimeout(() => {
+        c5Push({ msg: `<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
+  <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
+  <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
+</div>` });
+        c5Scroll();
+
+        setTimeout(() => {
+          conv5FlipSearchCard(
+            ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait'],
+            ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
+          );
+          try {
+            addReportBlock('/justagent/teva_seasonal_promotion_strategy.html', 'Teva 2026 換季促銷方案.html', false);
+          } catch { /* 畫布可能尚未初始化 */ }
+          c5Push({
+            finishResponse: true,
+            msg: `✅ 已完成 Teva 換季促銷方案，主打商品鎖定 6 月銷售亮眼的 Original Universal，並依 Gorpcore／機能穿搭趨勢規劃社群與雜誌曝光。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">Teva 2026 換季促銷方案.html</div>
+    <div class="file-size">HTML · 9.9 KB · 已加到畫布</div>
+  </div>
+</div>
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv5-approve">✅ 沒問題，可以啟動</span>
+  <span class="conv1-quick-btn" data-action="conv5-raise-concern">⚠️ 我有疑慮</span>
+</div>`,
+            sources: CONV5_STRATEGY_SOURCES,
+          });
+          c5Scroll();
+        }, 1800);
+      }, 500);
+    }, 1600);
+  }, 300);
+}
+
+// 尋找最後一則含 'conv2-search-card' 的訊息，把指定 class 依序替換（比照 conv4FlipSearchCard）
+function conv5FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv5Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv5Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+function conv5Approve() {
+  if (conv5FollowUpDone.value) return;
+  conv5FollowUpDone.value = true;
+  c5Push({ forUser: true, msg: '沒問題，可以啟動' });
+  c5Scroll();
+  setTimeout(() => {
+    c5Push({ msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
+    c5Scroll();
+  }, 500);
+}
+
+function submitConv5Concern() {
+  if (conv5FollowUpDone.value) return;
+  const msg = conv5ConcernInput.value.trim();
+  if (!msg) return;
+  conv5FollowUpDone.value = true;
+  c5Push({ forUser: true, msg });
+  conv5ConcernInput.value = '';
+  conv5ConcernFpVisible.value = false;
+  c5Scroll();
+  conv5ReviseStrategy();
+}
+
+function conv5ReviseStrategy() {
+  setTimeout(() => {
+    c5Push({ msg: `您說得對，我重新核對一次庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">InventoryQuery 重新核對 Teva 商品線即時庫存</div>
+</div>` });
+    c5Scroll();
+
+    setTimeout(() => {
+      conv5FlipSearchCard(['conv2-ss--active'], ['conv2-ss--done']);
+      try {
+        addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html', false);
+      } catch { /* 畫布可能尚未初始化 */ }
+      c5Push({
+        finishResponse: true,
+        msg: `已修正：Original Universal 現貨僅剩 18 件，不適合作為大量曝光的主打商品，已改由庫存充足（320 件）、同樣熱銷的 Hurricane XLT2 接手主打，60% 廣告預算同步轉移；Original Universal 改包裝為「限量珍藏款」，用低庫存做稀缺感話題操作，風險評估表也已同步更新。修正版報告已加入畫布。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">Teva 2026 換季促銷方案（修正版）.html</div>
+    <div class="file-size">HTML · 13.3 KB · 已加到畫布</div>
+  </div>
+</div>`,
+        sources: CONV5_REVISED_SOURCES,
+      });
+      c5Scroll();
+    }, 1800);
+  }, 300);
+}
+// -------- end Conversation 5 流程 --------
+
+// -------- start Conversation 6 流程 --------
+const conv6Msgs = ref<any[]>([]);
+let conv6IdCounter = 2;
+const conv6Title = ref('');
+const conv6ReportChoiceMade = ref(false);
+const conv6FlowStarted = ref(false);
+function c6Push(msg: any) { conv6Msgs.value.push({ id: `c6_${conv6IdCounter++}`, ...msg }); }
+function c6Scroll() { nextTick(() => AiAgentChatListScrollTo('ASC')); }
+
+const CONV6_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k13', title: 'TEVA涼鞋2026Q2通路銷售數據彙總', chunkIndexes: [0, 1] },
+  { knowledgeId: 'k14', title: 'TEVA會員CRM分群與回購定義', chunkIndexes: [0, 1] },
+];
+const CONV6_TREND_SOURCES: KnowledgeSource[] = [
+  { knowledgeId: 'k10', title: '2026換季社群輿情彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k11', title: '時尚雜誌趨勢報導彙整', chunkIndexes: [0] },
+  { knowledgeId: 'k12', title: '戶外機能鞋產業趨勢報告', chunkIndexes: [0] },
+];
+const CONV6_STRATEGY_SOURCES: KnowledgeSource[] = [...CONV6_SOURCES, ...CONV6_TREND_SOURCES];
+
+function processConv6Msg(msg: string) {
+  if (conv6FlowStarted.value) {
+    setTimeout(() => { c6Push({ msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
+    return;
+  }
+  const hasTeva = msg.includes('TEVA');
+  const hasTopic = ['銷售', '會員', '通路', '業績', '輪廓'].some(k => msg.includes(k));
+  if (hasTeva && hasTopic) {
+    conv6FlowStarted.value = true;
+    conv6Title.value = 'TEVA涼鞋銷售分析';
+    conv6RunAnalysis();
+    return;
+  }
+  setTimeout(() => { c6Push({ msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
+}
+
+function conv6RunAnalysis() {
+  setTimeout(() => {
+    c6Push({ msg: `收到，我先透過 MCP 串接 Adobe Commerce 查詢並比對會員資料⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">AdobeCommerceConnector（MCP）建立連線</div>
+  <div class="conv2-ss conv2-ss--wait">MagentoSalesAPI 查詢 TEVA 涼鞋各通路銷售數據</div>
+  <div class="conv2-ss conv2-ss--wait">MemberSegmentAnalyzer 交叉比對會員輪廓</div>
+  <div class="conv2-ss conv2-ss--wait">ChannelPerformanceAggregator 彙整分析結果</div>
+</div>` });
+    c6Scroll();
+    setTimeout(() => {
+      conv6FlipSearchCard(
+        ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait'],
+        ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done']
+      );
+      try {
+        addChartBlock({
+          chart: 'bar',
+          title: 'TEVA涼鞋 2026Q2 各通路銷售額（萬元）',
+          y_axis: { title: '銷售額（萬元）' },
+          data: {
+            labels: ['官網直營', '天貓旗艦店', '蝦皮商城', '實體門市', '經銷通路'],
+            values: [{ '銷售額（萬元）': [1240, 980, 760, 1530, 610] }],
+          },
+        }, '各通路銷售表現.json');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      try {
+        addChartBlock({
+          chart: 'doughnut',
+          title: 'TEVA涼鞋會員回購結構',
+          data: {
+            labels: ['新會員', '回購會員'],
+            values: [{ '會員占比（%）': [32, 68] }],
+          },
+        }, '會員輪廓分布.json');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      c6Push({
+        finishResponse: true,
+        msg: `✅ 已完成 TEVA 涼鞋 2026Q2 各通路銷售與會員輪廓分析，圖表已加入畫布。<br><br>重點洞察：實體門市貢獻最高但年減 4%，天貓旗艦店成長最快（+32%）；會員回購占比達 68%，顯示既有會員貢獻穩定。`,
+        sources: CONV6_SOURCES,
+      });
+      c6Scroll();
+      setTimeout(() => conv6AskReportChoice(), 600);
+    }, 1800);
+  }, 300);
+}
+
+// 尋找最後一則含 'conv2-search-card' 的訊息，把指定 class 依序替換（比照 conv4FlipSearchCard）
+function conv6FlipSearchCard(from: string[], to: string[]) {
+  const msgs = conv6Msgs.value;
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].msg?.includes('conv2-search-card')) {
+      let msg = msgs[i].msg as string;
+      from.forEach((f, idx) => { msg = msg.replace(f, to[idx]); });
+      conv6Msgs.value[i] = { ...msgs[i], msg };
+      return;
+    }
+  }
+}
+
+function conv6AskReportChoice() {
+  c6Push({
+    msg: `要不要我把這次的分析整理成一份洞察報告？你想要哪一種？
+<div class="conv1-quick-btns" style="margin-top:8px">
+  <span class="conv1-quick-btn" data-action="conv6-report-channel">通路銷售深度分析報告</span>
+  <span class="conv1-quick-btn" data-action="conv6-report-member">會員輪廓與行為洞察報告</span>
+  <span class="conv1-quick-btn" data-action="conv6-report-strategy">行銷策略與風險評估報告</span>
+</div>`,
+  });
+  c6Scroll();
+}
+
+const CONV6_REPORT_LABELS: Record<string, string> = {
+  channel: '通路銷售深度分析報告',
+  member: '會員輪廓與行為洞察報告',
+  strategy: '行銷策略與風險評估報告',
+};
+
+function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
+  if (conv6ReportChoiceMade.value) return;
+  conv6ReportChoiceMade.value = true;
+  c6Push({ forUser: true, msg: `好，請幫我產出「${CONV6_REPORT_LABELS[kind]}」` });
+  c6Scroll();
+  setTimeout(() => {
+    if (kind === 'channel') {
+      try {
+        addReportBlock('/justagent/teva_channel_sales_report.html', '通路銷售深度分析報告.html');
+      } catch (e) { /* 畫布可能尚未初始化 */ }
+      c6Push({
+        finishResponse: true,
+        msg: `✅ 已完成「通路銷售深度分析報告」，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">通路銷售深度分析報告.html</div>
+    <div class="file-size">HTML · 已加到畫布</div>
+  </div>
+</div>`,
+        sources: CONV6_SOURCES,
+      });
+      c6Scroll();
+    } else if (kind === 'strategy') {
+      conv6RunStrategyDeepResearch();
+    } else {
+      c6Push({ msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
+      c6Scroll();
+    }
+  }, 500);
+}
+
+function conv6RunStrategyDeepResearch() {
+  c6Push({ msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，存入外部市場趨勢庫後再結合通路與會員數據，運用 RAG 產出策略與風險評估⋯<div class="conv2-search-card" style="margin-top:8px">
+  <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
+  <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
+  <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
+  <div class="conv2-ss conv2-ss--wait">TrendDataStoreWriter 存入 Data Store 外部市場趨勢庫</div>
+  <div class="conv2-ss conv2-ss--wait">KeywordOptimizer 生成優化關鍵字</div>
+  <div class="conv2-ss conv2-ss--wait">RAGSynthesizer 運用 RAG 綜合內外部資料生成報告</div>
+</div>` });
+  c6Scroll();
+  setTimeout(() => {
+    conv6FlipSearchCard(
+      ['conv2-ss--active', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait', 'conv2-ss--wait'],
+      ['conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done', 'conv2-ss--done'],
+    );
+    try {
+      addReportBlock('/justagent/teva_channel_marketing_strategy_report.html', '行銷策略與風險評估報告.html');
+    } catch { /* 畫布可能尚未初始化 */ }
+    c6Push({
+      finishResponse: true,
+      msg: `✅ 已完成「行銷策略與風險評估報告」：Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢已存入外部市場趨勢庫，並生成優化關鍵字；再透過 RAG 綜合這些外部資料與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，產出對應的行銷策略建議與風險評估。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
+  <img class="file-icon" src="${htmlIcon}" />
+  <div class="file-info-box">
+    <div class="file-name">行銷策略與風險評估報告.html</div>
+    <div class="file-size">HTML · 已加到畫布</div>
+  </div>
+</div>`,
+      sources: CONV6_STRATEGY_SOURCES,
+    });
+    c6Scroll();
+  }, 2200);
+}
+// -------- end Conversation 6 流程 --------
+
 const testMsgs = computed(() => {
-  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value : conv1Msgs.value;
+  const msgs = currentConversationId.value === 'conv2' ? conv2Msgs.value
+    : currentConversationId.value === 'conv3' ? conv3Msgs.value
+    : currentConversationId.value === 'conv4' ? conv4Msgs.value
+    : currentConversationId.value === 'conv5' ? conv5Msgs.value
+    : currentConversationId.value === 'conv6' ? conv6Msgs.value
+    : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
 });
@@ -2428,6 +3168,45 @@ function resetConversation() {
     conv2DirectMethod.value = '';
     conv2DirectSkuInput.value = '';
     conv2DirectUrlInput.value = '';
+  }
+  if (currentConversationId.value === 'conv3') {
+    conv3IdCounter = 2;
+    conv3Title.value = '';
+    conv3Msgs.value = [];
+    conv3InputLocked.value = false;
+    conv3UploadFpVisible.value = false;
+    conv3ShowUploadPill.value = false;
+    conv3UploadedFiles.value = [];
+    conv3DimFpVisible.value = false;
+    conv3ShowDimPill.value = false;
+    conv3Dims.value.forEach(d => { d.sel = true; });
+    conv3DimErr.value = '';
+    conv3TaggingFollowUpDone.value = false;
+    conv3TaggingConcernFpVisible.value = false;
+    conv3TaggingConcernInput.value = '';
+    conv3KbChoiceMade.value = false;
+  }
+  if (currentConversationId.value === 'conv4') {
+    conv4IdCounter = 2;
+    conv4Title.value = '';
+    conv4Msgs.value = [];
+    conv4SkillChoiceMade.value = false;
+    conv4SkillSaveConfirmed.value = false;
+  }
+  if (currentConversationId.value === 'conv5') {
+    conv5IdCounter = 2;
+    conv5Title.value = '';
+    conv5Msgs.value = [];
+    conv5FollowUpDone.value = false;
+    conv5ConcernFpVisible.value = false;
+    conv5ConcernInput.value = '';
+  }
+  if (currentConversationId.value === 'conv6') {
+    conv6IdCounter = 2;
+    conv6Title.value = '';
+    conv6Msgs.value = [];
+    conv6ReportChoiceMade.value = false;
+    conv6FlowStarted.value = false;
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }

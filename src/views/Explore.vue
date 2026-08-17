@@ -42,11 +42,11 @@
         <h3>使用熱度榜</h3>
         <span class="see-all" @click="showToast('查看全部熱度')">查看全部</span>
       </div>
-      <div class="agent-grid agent-grid--4 mb-4">
+      <div class="ranking-podium lively-stagger mb-3">
         <div
-          v-for="(agent, i) in rankingAgents"
+          v-for="(agent, i) in podiumAgents"
           :key="agent.name"
-          class="agent-card"
+          :class="['podium-card', 'lively-card', `podium-card--rank-${i + 1}`]"
           @click="openModal(agent)"
         >
           <div class="rank-badge">{{ i + 1 }}</div>
@@ -57,17 +57,29 @@
           <p>{{ agent.desc }}</p>
         </div>
       </div>
+      <div
+        v-if="fourthRankedAgent"
+        class="ranking-more lively-card mb-4"
+        @click="openModal(fourthRankedAgent)"
+      >
+        <span class="rank-badge">4</span>
+        <div class="agent-icon" :style="{ background: fourthRankedAgent.bgColor }">
+          <i class="material-symbols-outlined" :style="{ color: fourthRankedAgent.accentColor }">{{ fourthRankedAgent.icon }}</i>
+        </div>
+        <span class="ranking-more-name">{{ fourthRankedAgent.name }}</span>
+        <span class="ranking-more-desc">{{ fourthRankedAgent.desc }}</span>
+      </div>
 
       <!-- 大家都在用 -->
       <div class="section-header">
         <h3>大家都在用</h3>
         <span class="see-all" @click="showToast('查看全部熱門')">查看全部</span>
       </div>
-      <div class="agent-grid agent-grid--4 mb-5">
+      <div class="agent-grid agent-grid--4 lively-stagger mb-5">
         <div
           v-for="agent in popularAgents"
           :key="agent.name"
-          class="agent-card"
+          class="agent-card lively-card"
           @click="openModal(agent)"
         >
           <span v-if="agent.badge" :class="['agent-badge', `agent-badge--${agent.badge.type}`]">
@@ -95,11 +107,11 @@
             @click="activeChip = chip"
           >{{ chip }}</span>
         </div>
-        <div class="recs-grid">
+        <div class="recs-grid lively-stagger">
           <div
             v-for="agent in filteredRecsAgents"
             :key="agent.name"
-            class="rec-card"
+            class="rec-card lively-card"
             @click="openModal(agent)"
           >
             <div class="rec-icon">
@@ -296,6 +308,10 @@ const allAgents: Agent[] = [
 const rankingAgents = computed(() =>
   allAgents.filter(a => ['內容創作者', '社群管理', '專案管理', '顧客服務管理'].includes(a.name))
 )
+
+// 熱度榜頒獎台：前 3 名進頒獎台，第 4 名移到下方次要列
+const podiumAgents = computed(() => rankingAgents.value.slice(0, 3))
+const fourthRankedAgent = computed(() => rankingAgents.value[3])
 
 // 大家都在用（有 badge 的 + 熱門）
 const popularAgents = computed(() =>

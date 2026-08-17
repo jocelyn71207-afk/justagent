@@ -63,14 +63,17 @@
             <!-- 卡片 header: 檔案名稱 + more button -->
             <div class="card-header-box">
               <div class="file-name">
-                <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
+                <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
+                  {{ item.fileName }}
+                  <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+                </template>
                 <input class="custom-input mofidyInput w-100" v-else-if="nowModifyItem.id === item.id"
                   :id="'mofidyInput'+item.id"
                   v-model="nowModifyItem.fileName"
                   @blur="saveModifyFileName()" />
               </div>
               <div class="more-menu-wrap" @click.stop>
-                <i class="material-symbols-outlined more-btn" @click="item.showMoreOption = !item.showMoreOption">more_horiz</i>
+                <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click="item.showMoreOption = !item.showMoreOption"><i class="material-symbols-outlined">more_horiz</i></button>
                 <div :class="['next-option-box', { show: item.showMoreOption }]">
                   <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
                   <div class="option-item">下載檔案</div>
@@ -88,9 +91,8 @@
               <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
             </div>
 
-            <!-- 卡片 footer: 狀態 + 時間 -->
+            <!-- 卡片 footer: 時間 -->
             <div class="card-footer-box">
-              <span :class="['status-badge', `status-badge--${item.status}`]">{{ statusLabel[item.status] }}</span>
               <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
             </div>
 
@@ -105,7 +107,6 @@
                 <th>檔案名稱</th>
                 <th width="90">檔案格式</th>
                 <th width="130">處理方式</th>
-                <th width="110">狀態</th>
                 <th>最後更新時間</th>
                 <th width="60"></th>
               </tr>
@@ -120,7 +121,10 @@
                       class="material-symbols-outlined other-file-icon">question_mark</i>
                     <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
                   </div>
-                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">{{ item.fileName }}</template>
+                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
+                    {{ item.fileName }}
+                    <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+                  </template>
                   <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
                     :id="'mofidyInput'+item.id"
                     v-model="nowModifyItem.fileName"
@@ -133,15 +137,10 @@
                     {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
                   </span>
                 </td>
-                <td>
-                  <span :class="['status-badge', `status-badge--${item.status}`]">
-                    {{ statusLabel[item.status] }}
-                  </span>
-                </td>
                 <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
                 <td>
                   <div class="d-flex">
-                    <i class="material-symbols-outlined material-fill more-btn" @click.stop="item.showMoreOption = true">more_horiz</i>
+                    <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click.stop="item.showMoreOption = true"><i class="material-symbols-outlined material-fill">more_horiz</i></button>
                   </div>
                   <!-- 更多選項小介面 -->
                   <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
@@ -171,8 +170,8 @@
 
   <CreateKnowledgeWizardModal
     v-model="isWizardOpen"
-    :file="wizardFile"
-    @confirm="handleWizardConfirm"
+    :prefill-file="wizardFile"
+    @done="({ fileId, knowledgeId }) => resourceStore.markAsKnowledge(fileId, knowledgeId)"
   />
 
   <SourceUpdateModal
@@ -185,7 +184,6 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 import type { Ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
 import { storeToRefs } from 'pinia';
 import compTabs from '@/components/compTabs/compTabs.vue';
@@ -194,7 +192,6 @@ import compDropDown from '@/components/compDropDown/compDropDown.vue';
 import compPagination from '@/components/compPagination/compPagination.vue';
 import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
 import popDialog from '@/services/popDialog';
-import { useKnowledgeStore } from '@/stores/knowledgeStore';
 import { useResourceStore } from '@/stores/resourceStore';
 import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWizardModal.vue';
 import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
@@ -202,8 +199,6 @@ import AppSkeleton from '@/components/AppSkeleton.vue';
 import AppErrorState from '@/components/AppErrorState.vue';
 import { useApiCall } from '@/composables/useApiCall';
 
-const router = useRouter();
-const knowledgeStore = useKnowledgeStore();
 const resourceStore = useResourceStore();
 
 const {
@@ -216,7 +211,8 @@ const {
 
 // 知識建立精靈
 const isWizardOpen = ref(false);
-const wizardFile = ref<{ id: string; fileName: string; fileType: string } | null>(null);
+const wizardFile = ref<{ fileId: string; fileName: string } | undefined>(undefined);
+watch(isWizardOpen, (open) => { if (!open) wizardFile.value = undefined; });
 
 // 來源更新 Modal
 const isSourceUpdateModalOpen = ref(false);
@@ -236,22 +232,14 @@ const rootStore = useRootStore();
 const { isEnterAppSearchPage, projectListMode: viewMode } = storeToRefs(rootStore);
 const openBatchUploadFn = rootStore.openBatchUploadFn;
 
-// 過濾條件: 全部 / 資料入庫型 / 原檔保存型
+// 過濾條件: 全部 / 用戶上傳 / Agent 上傳
 const filterValue = ref('ALL');
 const filterTabs = [
-  { label: '全部檔案', value: 'ALL' },
-  { label: '資料入庫型', value: 'AI_PARSED' },
-  { label: '原檔保存型', value: 'RAW' },
+  { label: '全部', value: 'ALL' },
+  { label: '用戶上傳', value: 'USER' },
+  { label: 'Agent 上傳', value: 'AI' },
 ];
 
-// 狀態標籤對照
-const statusLabel: Record<string, string> = {
-  uploading: '上傳中',
-  parsing:   '解析中',
-  stored:    '已入庫',
-  saved:     '已儲存',
-  failed:    '失敗',
-};
 
 // 過濾條件
 const filterTypeValue = ref('') as Ref<string | number>;
@@ -267,7 +255,7 @@ const numberOfRowsPerPage = ref(10);
 const filteredList = computed(() => {
   let list = resourceList.value as any[];
   if (filterValue.value !== 'ALL') {
-    list = list.filter(item => item.processType === filterValue.value);
+    list = list.filter(item => item.creatorType === filterValue.value);
   }
   if (filterTypeValue.value) {
     list = list.filter(item => item.fileType === filterTypeValue.value);
@@ -334,23 +322,11 @@ function saveModifyFileName() {
   nowModifyItem.value = null;
 }
 
-// 建立為知識內容：開啟精靈
+// 建立為知識內容：預填檔案並開啟精靈
 function createKnowledge(item: any) {
   item.showMoreOption = false;
-  wizardFile.value = { id: item.id, fileName: item.fileName, fileType: item.fileType };
+  wizardFile.value = { fileId: item.id, fileName: item.fileName };
   isWizardOpen.value = true;
-}
-
-function handleWizardConfirm(data: { template: string; content: string; category: string }) {
-  if (!wizardFile.value) return;
-  const { knowledgeId, versionId } = knowledgeStore.createFromFile({
-    fileId: wizardFile.value.id,
-    fileName: wizardFile.value.fileName,
-    template: data.template,
-    content: data.content,
-    category: data.category,
-  });
-  router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } });
 }
 
 // 刪除資源

@@ -1,0 +1,559 @@
+@use "sass:color";
+
+.SkillManagement {
+
+  .page-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  // ── Stats row ─────────────────────────────────
+
+  .skill-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+
+    @media (max-width: 500px) { grid-template-columns: 1fr 1fr; }
+  }
+
+  .skill-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .skill-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 22px; }
+
+    &.icon--enabled {
+      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
+      color: $color_main_2;
+    }
+    &.icon--ext {
+      background: $color-badge-hot-bg;
+      color: $color-badge-hot-text;
+    }
+    &.icon--team {
+      background: rgba(#7c5fba, 0.1);
+      color: #7c5fba;
+    }
+    &.icon--usage {
+      background: $color-badge-ai-bg;
+      color: $color-badge-ai-text;
+    }
+  }
+
+  .skill-stat-body { flex: 1; min-width: 0; }
+
+  .skill-stat-num {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .skill-stat-lbl {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 5px;
+  }
+
+  // ── Search ────────────────────────────────────
+
+  .skill-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 9px;
+    padding: 6px 10px;
+    background: var(--surface);
+    min-width: 200px;
+    max-width: 280px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus-within {
+      border-color: $color_main_1;
+      box-shadow: 0 0 0 3px $color_main_5;
+    }
+
+    > .material-symbols-outlined {
+      font-size: 16px;
+      color: var(--text-faint);
+      flex-shrink: 0;
+    }
+
+    .skill-search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+      color: var(--text);
+
+      &::placeholder { color: var(--text-faint); }
+    }
+  }
+
+  // ── Upstream banner ───────────────────────────
+
+  .upstream-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba($color-warning-amber, 0.08);
+    border: 1px solid rgba($color-warning-amber, 0.25);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 13.5px;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; }
+    }
+
+    .upstream-banner-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+  }
+
+  // ── Tabs ──────────────────────────────────────
+
+  .skill-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .skill-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--divider-a50);
+  }
+
+  .skill-tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 6px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-faint);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+
+    .material-symbols-outlined { font-size: 18px; }
+
+    & + .skill-tab { margin-left: 18px; }
+
+    &:hover { color: var(--text); }
+
+    &.is-active {
+      color: $color_main_1;
+      border-bottom-color: $color_main_1;
+
+      .skill-tab-count {
+        background: $color_main_4;
+        border-color: $color_main_3;
+        color: $color_main_1;
+      }
+    }
+
+    &--review.has-pending {
+      color: $color-warning-amber;
+
+      .skill-tab-count {
+        background: $color-warning-bg;
+        border-color: $color-warning-border;
+        color: $color-warning-amber;
+      }
+
+      &.is-active {
+        color: $color-warning-amber;
+        border-bottom-color: $color-warning-amber;
+      }
+    }
+  }
+
+  .skill-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    border-radius: 10px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    color: var(--text-faint);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 6px;
+  }
+
+  .skill-tab-panel-desc {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    margin: 0 0 12px;
+  }
+
+  .src-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    align-items: start;
+
+    @media (max-width: 860px) { grid-template-columns: 1fr; }
+  }
+
+  .skill-review-block {
+    margin-bottom: 28px;
+  }
+
+  // ── Library 現有技能管理 ───────────────────────
+
+  .skill-manage-block {
+    border-top: 1px solid var(--divider-a50);
+    padding-top: 24px;
+  }
+
+  .skill-manage-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .skill-manage-block-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+
+    .material-symbols-outlined { font-size: 18px; color: $color_main_1; }
+  }
+
+  .skill-section-empty {
+    padding: 20px 16px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  // ── 我的技能 list ──────────────────────────────
+
+  .my-skills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .my-skills-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 0 4px;
+  }
+
+  .pag-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .material-symbols-outlined { font-size: 20px; }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+  }
+
+  .pag-info {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .my-skills-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 20px;
+    color: var(--text-faint);
+    font-size: 13px;
+    background: var(--page-bg);
+    border: 1px dashed var(--divider-a50);
+    border-radius: 12px;
+
+    .material-symbols-outlined { font-size: 22px; opacity: 0.6; flex-shrink: 0; }
+  }
+
+}
+
+// ── Submit confirm dialog (Teleport → body) ───────────
+.draft-submit-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(2px);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draft-submit-dialog {
+  background: var(--surface);
+  border-radius: 18px;
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+
+  .dsd-header {
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dsd-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .dsd-options {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dsd-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--divider-a50);
+    border-radius: 12px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left;
+    width: 100%;
+
+    > .material-symbols-outlined:first-child {
+      font-size: 22px;
+      color: var(--text-faint);
+      flex-shrink: 0;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: $color_main_3;
+      background: $color_main_5;
+    }
+
+    &.is-selected {
+      border-color: $color_main_1;
+      background: $color_main_5;
+      > .material-symbols-outlined:first-child { color: $color_main_1; }
+    }
+
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+
+  .dsd-option-body { flex: 1; }
+
+  .dsd-option-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .dsd-option-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .dsd-check {
+    font-size: 20px;
+    color: $color_main_1;
+    flex-shrink: 0;
+  }
+
+  .dsd-info {
+    margin: 12px 20px 0;
+    padding: 12px 14px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dsd-info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .dsd-info-label {
+    color: var(--text-faint);
+    font-size: 12px;
+    min-width: 56px;
+    flex-shrink: 0;
+  }
+
+  .dsd-info-val {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .dsd-scope {
+    padding: 12px 20px 0;
+  }
+
+  .dsd-scope-options {
+    display: flex;
+    gap: 8px;
+  }
+
+  .dsd-scope-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1.5px solid var(--divider-a50);
+    border-radius: 10px;
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 16px; }
+
+    &:hover { border-color: $color_main_3; background: $color_main_5; }
+
+    &.is-selected {
+      border-color: $color_main_1;
+      background: $color_main_5;
+      color: $color_main_1;
+      font-weight: 600;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+      &:hover { border-color: var(--divider-a50); background: var(--surface); }
+    }
+  }
+
+  .dsd-scope-hint {
+    margin: 6px 0 0;
+    font-size: 11.5px;
+    color: $color-warning-amber;
+  }
+
+  .dsd-team {
+    margin-top: 10px;
+  }
+
+  .dsd-team-select {
+    width: 100%;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      border-color: $color_main_1;
+      box-shadow: 0 0 0 3px $color_main_5;
+    }
+  }
+
+  .dsd-note {
+    padding: 12px 20px 0;
+  }
+
+  .dsd-note-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+
+  .dsd-note-input {
+    width: 100%;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+
+    &::placeholder { color: var(--text-faint); }
+    &:focus {
+      border-color: $color_main_1;
+      box-shadow: 0 0 0 3px $color_main_5;
+    }
+  }
+
+  .dsd-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px 20px 20px;
+    border-top: 1px solid var(--divider-a50);
+    margin-top: 16px;
+  }
+}
+

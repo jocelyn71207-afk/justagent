@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teva 商品庫存即時資料</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f7;
+    --border: #e4e7ed;
+    --text: #1a1d23;
+    --text-2: #5c6370;
+    --text-3: #9ca3af;
+    --blue: #3b72f6;
+    --blue-light: rgba(59,114,246,0.08);
+    --green: #16a34a;
+    --green-light: rgba(22,163,74,0.08);
+    --orange: #ea580c;
+    --orange-light: rgba(234,88,12,0.08);
+  }
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    color: var(--text);
+    padding: 28px 24px 48px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+  .report-brand { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+  .report-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+  .report-meta { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .report-tag { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--blue-light); color: var(--blue); border: 1px solid rgba(59,114,246,.2); white-space: nowrap; align-self: flex-start; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  thead th { text-align: left; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); background: var(--surface2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  .sku-cell { font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: var(--text-2); }
+  .name-cell { font-weight: 700; }
+  .status-chip { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; display: inline-block; }
+  .status-ok { background: var(--green-light); color: var(--green); }
+  .status-low { background: var(--orange-light); color: var(--orange); }
+  tr.row-low { background: var(--orange-light); }
+  .note { font-size: 11px; color: var(--text-2); margin-top: 14px; padding: 10px 12px; background: var(--orange-light); border: 1px solid rgba(234,88,12,.2); border-radius: 8px; }
+  .bar-track { display: inline-block; width: 90px; height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; vertical-align: middle; margin-left: 8px; }
+  .bar-fill { display: block; height: 100%; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <div class="report-header">
+    <div>
+      <div class="report-brand">JustAgent · 庫存查詢</div>
+      <div class="report-title">Teva 商品庫存即時資料</div>
+      <div class="report-meta">資料來源：Teva 商品庫存 API｜同步時間：2026-07-30 08:00</div>
+    </div>
+    <span class="report-tag">查詢完成</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>商品編號</th><th>品名</th><th>現有庫存</th><th>狀態</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="sku-cell">TEVA-XLT2-2026</td><td class="name-cell">TEVA Hurricane XLT2 涼鞋</td><td>320 件<span class="bar-track"><span class="bar-fill" style="width:100%;background:var(--green)"></span></span></td><td><span class="status-chip status-ok">🟢 正常</span></td></tr>
+      <tr><td class="sku-cell">TEVA-VERGE-2026</td><td class="name-cell">TEVA Hurricane Verge 水陸機能鞋</td><td>210 件<span class="bar-track"><span class="bar-fill" style="width:66%;background:var(--green)"></span></span></td><td><span class="status-chip status-ok">🟢 正常</span></td></tr>
+      <tr><td class="sku-cell">TEVA-RIDGE-2026</td><td class="name-cell">TEVA Ridgeview 秋冬機能涼鞋（新品）</td><td>260 件<span class="bar-track"><span class="bar-fill" style="width:81%;background:var(--green)"></span></span></td><td><span class="status-chip status-ok">🟢 正常，新品剛到貨</span></td></tr>
+      <tr class="row-low"><td class="sku-cell">TEVA-OU-2026</td><td class="name-cell">TEVA Original Universal</td><td>18 件<span class="bar-track"><span class="bar-fill" style="width:6%;background:var(--orange)"></span></span></td><td><span class="status-chip status-low">🟡 低庫存</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">⚠️ TEVA Original Universal 現貨僅剩 18 件：因 6 月銷售暢旺（單月銷售額 NT$1,988,000，當月熱銷第 4 名）去化快，預計 8/20 補貨到位。</div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEVA 新品特徵貼標報告（修正版）</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f7;
+    --border: #e4e7ed;
+    --text: #1a1d23;
+    --text-2: #5c6370;
+    --text-3: #9ca3af;
+    --blue: #3b72f6;
+    --blue-light: rgba(59,114,246,0.08);
+    --green: #16a34a;
+    --green-light: rgba(22,163,74,0.08);
+    --orange: #ea580c;
+    --purple: #7c3aed;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
+  }
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    color: var(--text);
+    padding: 28px 24px 48px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+  .report-brand { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+  .report-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+  .report-meta { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .report-tag { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--green-light); color: var(--green); border: 1px solid rgba(22,163,74,.2); white-space: nowrap; align-self: flex-start; margin-top: 4px; }
+  .revision-note { background: var(--green-light); border: 1px solid rgba(22,163,74,.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; }
+  .revision-note-title { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 6px; }
+  .revision-note ul { margin: 0; padding-left: 18px; }
+  .revision-note li { font-size: 12px; color: var(--text-2); margin-bottom: 2px; }
+  .stat-row { display: flex; gap: 10px; margin-bottom: 22px; }
+  .stat-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .stat-val { font-size: 20px; font-weight: 800; }
+  .stat-lbl { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+  .stat-card { border-left: 3px solid var(--blue); box-shadow: var(--shadow); }
+  .stat-card.accent-purple { border-left-color: var(--purple); }
+  .stat-card.accent-green { border-left-color: var(--green); }
+  .stat-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .stat-icon { width: 13px; height: 13px; flex-shrink: 0; }
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .bar-row .bar-name { width: 92px; flex-shrink: 0; color: var(--text-2); }
+  .bar-row .bar-track { flex: 1; height: 8px; border-radius: 4px; background: var(--surface2); overflow: hidden; }
+  .bar-row .bar-fill { height: 100%; border-radius: 4px; background: var(--blue); }
+  .bar-row .bar-val { width: 48px; text-align: right; font-weight: 700; flex-shrink: 0; }
+  .bar-row.is-top .bar-fill { background: var(--purple); }
+  .bar-row.is-top .bar-name { color: var(--purple); font-weight: 700; }
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin: 22px 0 10px; }
+  .tag-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+  .tag-chip { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-2); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  thead th { text-align: left; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); background: var(--surface2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--blue-light); }
+  tbody tr.row-fixed { background: var(--green-light); }
+  .sku-cell { font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: var(--text-2); }
+  .name-cell { font-weight: 700; }
+  .dim-color { color: var(--purple); }
+  .dim-style { color: var(--blue); }
+  .dim-material { color: var(--orange); }
+  .dim-theme { color: var(--green); }
+  .fixed-badge { font-size: 9px; font-weight: 700; color: var(--green); background: var(--green-light); border: 1px solid rgba(22,163,74,.25); border-radius: 6px; padding: 1px 5px; margin-left: 6px; }
+</style>
+</head>
+<body>
+  <div class="report-header">
+    <div>
+      <div class="report-brand">JustAgent · AI 貼標</div>
+      <div class="report-title">TEVA 新品特徵貼標報告</div>
+      <div class="report-meta">來源文件 4 份 · AW26 新品原廠型錄與規格表 · 貼標維度：顏色／款式／材質／尺碼／風格</div>
+    </div>
+    <span class="report-tag">修正版</span>
+  </div>
+
+  <div class="revision-note">
+    <div class="revision-note-title">✓ 本版修正說明</div>
+    <ul>
+      <li>TEV-AW26-011（Original Universal Premier）因命名與 TEV-AW26-002（Original Universal）相近，SkuNormalizer 合併時誤套用了 002 的材質規格；已重新比對原廠規格表，修正為正確的頭層牛皮材質。</li>
+      <li>「材質」維度分佈同步由 10 種組合修正為 11 種組合。</li>
+    </ul>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-top" style="color:var(--blue)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><div class="stat-lbl">來源文件</div></div>
+      <div class="stat-val">4</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top" style="color:var(--blue)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg><div class="stat-lbl">識別 SKU</div></div>
+      <div class="stat-val">12</div>
+    </div>
+    <div class="stat-card accent-purple">
+      <div class="stat-top" style="color:var(--purple)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L11 3.83A2 2 0 0 0 9.58 3.24H4a2 2 0 0 0-2 2v5.58a2 2 0 0 0 .59 1.42l9.58 9.58a2 2 0 0 0 2.82 0l6.18-6.18a2 2 0 0 0 0-2.82z"/><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg><div class="stat-lbl">貼標維度</div></div>
+      <div class="stat-val">5</div>
+    </div>
+    <div class="stat-card accent-green">
+      <div class="stat-top" style="color:var(--green)"><svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><div class="stat-lbl">完成率</div></div>
+      <div class="stat-val">100%</div>
+    </div>
+  </div>
+
+  <div class="section-title">維度分佈</div>
+  <div class="tag-summary">
+    <span class="tag-chip">顏色：12 種</span>
+    <span class="tag-chip">款式：11 種</span>
+    <span class="tag-chip">材質：11 種組合</span>
+    <span class="tag-chip">尺碼區間：8 種</span>
+    <span class="tag-chip">風格：7 種</span>
+  </div>
+  <div class="bar-chart">
+    <div class="bar-row is-top"><span class="bar-name">顏色</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">12 種</span></div>
+    <div class="bar-row"><span class="bar-name">款式</span><div class="bar-track"><div class="bar-fill" style="width:92%"></div></div><span class="bar-val">11 種</span></div>
+    <div class="bar-row"><span class="bar-name">材質</span><div class="bar-track"><div class="bar-fill" style="width:92%"></div></div><span class="bar-val">11 種</span></div>
+    <div class="bar-row"><span class="bar-name">尺碼區間</span><div class="bar-track"><div class="bar-fill" style="width:67%"></div></div><span class="bar-val">8 種</span></div>
+    <div class="bar-row"><span class="bar-name">風格</span><div class="bar-track"><div class="bar-fill" style="width:58%"></div></div><span class="bar-val">7 種</span></div>
+  </div>
+
+  <div class="section-title">特徵貼標結果</div>
+  <table>
+    <thead>
+      <tr><th>SKU</th><th>品名</th><th>顏色</th><th>款式</th><th>材質</th><th>尺碼</th><th>風格</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="sku-cell">TEV-AW26-001</td><td class="name-cell">Hurricane XLT2</td><td class="dim-color">曜石黑</td><td class="dim-style">運動涼鞋</td><td class="dim-material">再生聚酯纖維織帶／EVA 中底</td><td>US 7–12</td><td class="dim-theme">機能戶外</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-002</td><td class="name-cell">Original Universal</td><td class="dim-color">珊瑚橘</td><td class="dim-style">經典一字帶涼鞋</td><td class="dim-material">尼龍織帶／橡膠大底</td><td>US 5–10</td><td class="dim-theme">復古休閒</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-003</td><td class="name-cell">Midform Universal</td><td class="dim-color">卡其棕</td><td class="dim-style">厚底涼鞋</td><td class="dim-material">再生聚酯纖維／厚底發泡橡膠</td><td>US 5–9</td><td class="dim-theme">街頭時尚</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-004</td><td class="name-cell">Hurricane Verge</td><td class="dim-color">深海藍</td><td class="dim-style">水陸機能鞋</td><td class="dim-material">透氣網布／防滑橡膠底</td><td>US 6–11</td><td class="dim-theme">機能戶外</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-005</td><td class="name-cell">ReEmber</td><td class="dim-color">燕麥米</td><td class="dim-style">保暖厚底涼鞋</td><td class="dim-material">人造絨毛內裡／EVA 中底</td><td>US 5–9</td><td class="dim-theme">冬季暖感</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-006</td><td class="name-cell">Flatform Universal</td><td class="dim-color">奶油白</td><td class="dim-style">厚底涼鞋</td><td class="dim-material">織帶尼龍／厚底橡膠</td><td>US 5–9.5</td><td class="dim-theme">街頭時尚</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-007</td><td class="name-cell">Terra Fi 5</td><td class="dim-color">石墨灰</td><td class="dim-style">全地形機能涼鞋</td><td class="dim-material">皮革織帶／Spider 橡膠大底</td><td>US 7–13</td><td class="dim-theme">機能戶外</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-008</td><td class="name-cell">Original Universal Kids</td><td class="dim-color">檸檬黃</td><td class="dim-style">童款經典涼鞋</td><td class="dim-material">尼龍織帶／橡膠大底</td><td>US 11C–3Y</td><td class="dim-theme">繽紛童趣</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-009</td><td class="name-cell">Hurricane Drift</td><td class="dim-color">螢光綠</td><td class="dim-style">輕量運動涼鞋</td><td class="dim-material">再生聚酯纖維／輕量 EVA</td><td>US 6–12</td><td class="dim-theme">機能戶外</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-010</td><td class="name-cell">Voya Infinity</td><td class="dim-color">霧粉色</td><td class="dim-style">織帶涼鞋</td><td class="dim-material">彈性織帶／橡膠大底</td><td>US 5–10</td><td class="dim-theme">復古休閒</td></tr>
+      <tr class="row-fixed"><td class="sku-cell">TEV-AW26-011</td><td class="name-cell">Original Universal Premier</td><td class="dim-color">焦糖棕</td><td class="dim-style">皮革一字帶涼鞋</td><td class="dim-material">頭層牛皮／橡膠大底<span class="fixed-badge">已修正</span></td><td>US 5–10</td><td class="dim-theme">質感簡約</td></tr>
+      <tr><td class="sku-cell">TEV-AW26-012</td><td class="name-cell">ReRoam</td><td class="dim-color">炭燒黑</td><td class="dim-style">居家／露營拖鞋</td><td class="dim-material">再生聚酯纖維絨毛／防滑底</td><td>US 6–12</td><td class="dim-theme">露營悠閒</td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

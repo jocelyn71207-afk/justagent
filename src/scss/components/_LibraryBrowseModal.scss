@@ -1,0 +1,140 @@
+.LibraryBrowseModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 700;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+
+  .lbm-panel {
+    width: min(640px, 90vw);
+    height: 100vh;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 32px rgba(0, 0, 0, 0.14);
+  }
+
+  .lbm-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+  }
+
+  .lbm-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    .material-symbols-outlined { font-size: 20px; color: $color_main_1; }
+  }
+
+  .lbm-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 20px;
+    padding: 8px 12px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: border-color 0.15s;
+    &:focus-within { border-color: $color_main_1; }
+    .material-symbols-outlined { font-size: 18px; color: var(--text-faint); }
+  }
+
+  .lbm-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    &::placeholder { color: var(--text-faint); }
+  }
+
+  .lbm-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+  }
+
+  .lbm-section {}
+
+  .lbm-section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    .material-symbols-outlined { font-size: 15px; }
+
+    // 配色沿用「Library 現有技能管理」（_LibrarySkillRow.scss 的 lsr-section-block）
+    // 區隔企業／團隊的顏色，系統技能另外選用藍色系以三者互相區隔。
+    &--system {
+      background: rgba(#1565c0, 0.08);
+      color: #1565c0;
+      .material-symbols-outlined { color: #1565c0; }
+      .lbm-count { background: rgba(#1565c0, 0.14); color: #1565c0; border-color: transparent; }
+    }
+    &--enterprise {
+      background: $color_main_5;
+      color: $color_main_1;
+      .material-symbols-outlined { color: $color_main_1; }
+      .lbm-count { background: rgba($color_main_1, 0.12); color: $color_main_1; border-color: transparent; }
+    }
+    &--team {
+      background: rgba(#7c5fba, 0.06);
+      color: #7c5fba;
+      .material-symbols-outlined { color: #7c5fba; }
+      .lbm-count { background: rgba(#7c5fba, 0.12); color: #7c5fba; border-color: transparent; }
+    }
+  }
+
+  .lbm-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: var(--page-bg);
+    border: 1px solid var(--divider-a50);
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 0 5px;
+  }
+
+  .lbm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .lbm-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 60px 0;
+    color: var(--text-faint);
+    font-size: 13px;
+    .material-symbols-outlined { font-size: 32px; opacity: 0.5; }
+  }
+}

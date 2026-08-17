@@ -1,0 +1,285 @@
+@use "sass:color";
+
+.SkillCard {
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-color: $color_main_3;
+  }
+
+  &.is-extension {
+    // standalone outside group-box
+    margin-left: 28px;
+    border-left: 2px solid $color_main_1;
+    border-radius: 0 14px 14px 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -2px;
+      top: 50%;
+      width: 16px;
+      height: 2px;
+      background: $color_main_1;
+    }
+  }
+
+  &.is-standalone {
+    margin-left: 0;
+    border-left: 3px solid $color-warning-amber;
+    border-radius: 14px;
+    &::before { display: none; }
+  }
+
+  &.is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    .skill-card-right { pointer-events: auto; }
+  }
+
+  .skill-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: box-shadow 0.2s;
+
+    .material-symbols-outlined { font-size: 24px; }
+
+    // 配色跟 Library 技能庫的分類標籤（.lbm-section-label--*）一致，
+    // 依技能的 scope（系統／企業／團隊）決定顏色，不再只依 isExtension 分兩色。
+    &.icon--system {
+      background: rgba(#1565c0, 0.12);
+      color: #1565c0;
+    }
+    &.icon--enterprise {
+      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
+      color: $color_main_2;
+    }
+    &.icon--team {
+      background: rgba(#7c5fba, 0.12);
+      color: #7c5fba;
+    }
+  }
+
+  .skill-card-body {
+    flex: 1;
+    min-width: 0;
+
+    .skill-card-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .skill-card-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 520px;
+      margin-bottom: 8px;
+    }
+
+    .skill-card-stats {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+
+      .sk-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--page-bg);
+        border: 1px solid var(--divider-a50);
+        padding: 2px 8px 2px 6px;
+        border-radius: 20px;
+        white-space: nowrap;
+
+        .material-symbols-outlined { font-size: 12px; }
+
+        &--good {
+          color: $color_main_1;
+          border-color: rgba($color_main_1, 0.2);
+          background: $color_main_5;
+        }
+        &--warn {
+          color: $color-warning-amber;
+          border-color: rgba($color-warning-amber, 0.2);
+          background: rgba($color-warning-amber, 0.06);
+        }
+        &--bad {
+          color: $color-danger;
+          border-color: rgba($color-danger, 0.2);
+          background: rgba($color-danger, 0.05);
+        }
+      }
+    }
+  }
+
+  // ── Compact mode ─────────────────────────────
+  &.is-compact {
+    padding: 7px 16px;
+    border-radius: 10px;
+    gap: 10px;
+
+    .skill-card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      .material-symbols-outlined { font-size: 16px; }
+    }
+
+    .skill-card-body {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .skill-card-name {
+        font-size: 13.5px;
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+
+      .skill-card-stats {
+        margin: 0;
+        .sk-stat { font-size: 10px; padding: 1px 6px 1px 5px; }
+      }
+    }
+
+    .skill-card-right {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .skill-card-actions {
+      opacity: 0;
+      transition: opacity 0.15s;
+
+      .skill-action-btn {
+        font-size: 10px;
+        padding: 1px 7px;
+        &--icon { padding: 1px 5px; }
+      }
+    }
+
+    &:hover .skill-card-actions { opacity: 1; }
+  }
+
+  // Right column: status stacked above actions
+  .skill-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .skill-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      &.dot--on  { background: $color_main_1; box-shadow: 0 0 0 2px rgba($color_main_1, 0.2); }
+      &.dot--off { background: var(--text-faint); }
+    }
+
+    .status-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+  }
+
+  .skill-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+}
+
+// ── Tag chips ─────────────────────────────────────────
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+
+  &.tag--sys     { background: $color_main_4; color: $color_main_2; }
+  &.tag--ext     { background: $color-badge-hot-bg; color: $color-badge-hot-text; }
+  &.tag--version { background: var(--page-bg); color: var(--text-muted); border: 1px solid var(--divider-a50); }
+  &.tag--update    { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+  &.tag--reviewing { background: $color-warning-bg; color: $color-warning-text; border: 1px solid $color-warning-border; }
+  &.tag--draft     { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
+  &.tag--available   { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  &.tag--has-library { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  &.tag--personal { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+  &.tag--enterprise {
+    background: $color_main_5;
+    color: $color_main_1;
+    border: 1px solid $color_main_4;
+  }
+  &.tag--team {
+    background: rgba($color-warning-amber, 0.1);
+    color: $color-warning-amber;
+    border: 1px solid rgba($color-warning-amber, 0.3);
+  }
+  &.tag--upstream  {
+    background: rgba($color-warning-amber, 0.12);
+    color: $color-warning-amber;
+    gap: 3px;
+    .material-symbols-outlined { font-size: 12px; }
+  }
+}
+
+// ── Skill action button overrides ─────────────────────
+.skill-action-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+
+  &--icon {
+    padding: 2px 6px;
+    color: var(--text-faint);
+    border-color: var(--divider-a50);
+    &:hover { color: $color_main_1; border-color: $color_main_3; }
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
+  &.btn--danger-ghost {
+    color: $color-danger;
+    border-color: rgba($color-danger, 0.28);
+    &:hover { background: rgba($color-danger, 0.06); }
+  }
+}

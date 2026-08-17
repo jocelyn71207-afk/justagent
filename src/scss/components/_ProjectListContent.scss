@@ -185,6 +185,19 @@
       box-shadow: 0 0 0 3px rgba(0,160,120,0.13);
     }
 
+    // ── Spotlight 卡片（清單第一張，通常是最近更新的專案）──
+    &.is-spotlight {
+      grid-column: span 2;
+
+      // card-chart 是 hover 時取代 card-img 的面板（v-show 切換），兩者高度需一致，
+      // 否則 hover spotlight 卡片時，stretch 對齊的整列格線會跟著收縮 44px 造成跳動
+      .card-img, .card-chart { height: 220px; }
+      .card-footer .card-name {
+        font-size: 15px;
+        -webkit-line-clamp: 1;
+      }
+    }
+
     // ── 狀態色條（卡片頂部 4px）─────────────────────
     .card-status-strip {
       height: 4px;

@@ -1,0 +1,100 @@
+<h2>分段預覽 Tab — 佈局方案</h2>
+<p class="subtitle">知識詳情頁第三個 Tab，讓 KM 審查 AI 生成的 chunk 品質</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>左右分割：文件 + Chunk 列表</h3>
+      <p>左側顯示原始文件內容（標示 chunk 區塊），右側顯示選中 chunk 的 AI 摘要與 Q&A</p>
+      <div class="mockup" style="margin-top:12px;">
+        <div class="mockup-header">分段預覽</div>
+        <div class="mockup-body" style="display:flex;gap:0;height:220px;overflow:hidden;">
+          <!-- 左側文件 -->
+          <div style="flex:0 0 52%;border-right:1px solid #e0e0e0;padding:12px;overflow:auto;font-size:12px;line-height:1.6;">
+            <div style="color:#888;font-size:11px;margin-bottom:8px;">📄 原始文件內容</div>
+            <div style="background:#e8faa0;border-left:3px solid #c8f135;padding:4px 6px;margin-bottom:6px;border-radius:2px;">
+              <span style="font-size:10px;color:#666;display:block;">#01 ·  第二章 &gt; 2.1 節</span>
+              第二章 業務流程說明：客戶申請外幣時，需先填寫申報書，並檢附有效身分證件...
+            </div>
+            <div style="background:#f3f3f0;border-left:3px solid #c3c8bb;padding:4px 6px;margin-bottom:6px;border-radius:2px;opacity:0.6;">
+              <span style="font-size:10px;color:#888;display:block;">#02 · 第二章 &gt; 2.2 節</span>
+              超過申報限額之外幣交易，須另行填寫大額交易申報書，並於...
+            </div>
+            <div style="background:#f3f3f0;border-left:3px solid #c3c8bb;padding:4px 6px;border-radius:2px;opacity:0.6;">
+              <span style="font-size:10px;color:#888;display:block;">#03 · 第三章 &gt; 3.1 節</span>
+              即期外匯交易之交割，通常於交易後 2 個工作日完成...
+            </div>
+          </div>
+          <!-- 右側 chunk 詳情 -->
+          <div style="flex:1;padding:12px;overflow:auto;font-size:12px;">
+            <div style="color:#888;font-size:11px;margin-bottom:8px;">Chunk #01 詳情</div>
+            <div style="font-size:11px;color:#43483e;margin-bottom:6px;font-weight:600;">AI 摘要</div>
+            <div style="background:#f8f8f6;border-radius:6px;padding:6px;color:#666;font-size:11px;margin-bottom:10px;">
+              本段說明外幣申報書的申請流程，需要提供有效身分證件及外幣金額...
+            </div>
+            <div style="font-size:11px;color:#43483e;margin-bottom:6px;font-weight:600;">建議問答（索引用）</div>
+            <div style="font-size:11px;color:#666;line-height:1.8;">
+              Q1 外幣申請需要哪些文件？<br>
+              Q2 申報限額是多少？<br>
+              Q3 超過限額要如何處理？
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros"><ul><li>可直接對照原文位置</li><li>審核品質直觀</li></ul></div>
+        <div class="cons"><ul><li>螢幕空間需求大</li><li>無原始文件時降級困難</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>純列表：逐 Chunk 展開卡片</h3>
+      <p>全版寬，每個 chunk 為一張可展開的卡片，顯示原文 + AI 摘要 + Q&A，不依賴原始文件</p>
+      <div class="mockup" style="margin-top:12px;">
+        <div class="mockup-header">分段預覽 &nbsp; 共 24 個知識單元</div>
+        <div class="mockup-body" style="padding:12px;font-size:12px;overflow:hidden;height:220px;">
+          <!-- Chunk Card 1 (expanded) -->
+          <div style="border:1px solid #c8f135;border-radius:8px;margin-bottom:8px;overflow:hidden;">
+            <div style="background:#e8faa0;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:11px;font-weight:600;">單元 #01</span>
+              <span style="font-size:10px;color:#666;">第二章 &gt; 2.1 節 申請流程</span>
+              <span style="margin-left:auto;font-size:10px;color:#888;">538 tokens · ▲</span>
+            </div>
+            <div style="padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-size:10px;color:#888;margin-bottom:4px;">原文摘錄</div>
+                <div style="font-size:11px;color:#43483e;line-height:1.5;">客戶申請外幣時，需先填寫申報書，並檢附有效身分證件...</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#888;margin-bottom:4px;">AI 摘要 + 建議問答</div>
+                <div style="font-size:11px;color:#666;line-height:1.6;">
+                  外幣申請流程說明...<br>
+                  <span style="color:#5b6342;">Q1</span> 外幣申請需要哪些文件？<br>
+                  <span style="color:#5b6342;">Q2</span> 申報限額是多少？
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Chunk Card 2 (collapsed) -->
+          <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+            <div style="background:#f8f8f6;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.7;">
+              <span style="font-size:11px;font-weight:600;">單元 #02</span>
+              <span style="font-size:10px;color:#666;">第二章 &gt; 2.2 節 大額申報</span>
+              <span style="margin-left:auto;font-size:10px;color:#888;">492 tokens · ▼</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros"><ul><li>不依賴原始文件渲染</li><li>適合 MANUAL 類型</li><li>手機也好用</li></ul></div>
+        <div class="cons"><ul><li>無法對照原文位置</li><li>長文件需大量捲動</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>

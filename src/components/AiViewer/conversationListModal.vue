@@ -16,9 +16,23 @@
           <span>未命名對話</span>
           <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
         </li>
+        <li :class="{ active: currentConversationId === 'conv3' }" @click="switchConversation('conv3')">
+          <span>TEVA新品特徵貼標</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
+        <li :class="{ active: currentConversationId === 'conv4' }" @click="switchConversation('conv4')">
+          <span>產品銷售報告整理</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
+        <li :class="{ active: currentConversationId === 'conv5' }" @click="switchConversation('conv5')">
+          <span>Teva 換季促銷方案規劃</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
+        <li :class="{ active: currentConversationId === 'conv6' }" @click="switchConversation('conv6')">
+          <span>TEVA涼鞋銷售分析</span>
+          <i class="material-symbols-outlined" @click="deleteFn($event)">delete</i>
+        </li>
       </ul>
-
-      <div class="remark">一個專案最多兩個對話，如要開啟新對話請刪除其中一個。</div>
     </div>
     <template #footer>
       <button class="custom-btn"
@@ -101,12 +115,6 @@ function deleteFn(event: MouseEvent) {
         margin-bottom: 0;
       }
     }
-  }
-
-  .remark {
-    color: var(--color-text-alpha50);
-    font-size: 14px;
-    margin-top: 10px;
   }
 }
 </style>

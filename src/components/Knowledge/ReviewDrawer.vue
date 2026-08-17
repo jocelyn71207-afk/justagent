@@ -66,7 +66,7 @@
             </div>
             <div class="review-summary-item">
               <span class="review-summary-label">分類</span>
-              <span class="review-summary-value">{{ version.category || '（未設定）' }}</span>
+              <span class="review-summary-value">{{ knowledge?.category || '（未設定）' }}</span>
             </div>
             <div class="review-summary-item">
               <span class="review-summary-label">標籤</span>

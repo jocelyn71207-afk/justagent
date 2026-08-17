@@ -34,6 +34,20 @@
     }
   }
 
+  // ── 已轉為知識 badge ──────────────────────────────────────────
+  .knowledge-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--primary-a12);
+    color: var(--success);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
   // ── 處理方式 badge（Wise 配色覆蓋）──────────────────────────────
   .process-type-badge {
     border-radius: 9999px;
@@ -47,7 +61,7 @@
     &.badge--raw {
       background: var(--page-bg);
       color: var(--text-muted);
-      border: 1px solid rgba(14, 15, 12, 0.10);
+      border: 1px solid var(--divider);
     }
   }
 }

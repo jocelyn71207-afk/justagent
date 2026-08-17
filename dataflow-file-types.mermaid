@@ -1,0 +1,212 @@
+flowchart TD
+
+    %% ═══════════════════════════════════
+    %% 入口：四種來源
+    %% ═══════════════════════════════════
+    subgraph SOURCE["📥 資料來源"]
+        direction TB
+        SRC_FILE["📄 上傳檔案\nFILE"]
+        SRC_API["🔗 外部 API\nAPI"]
+        SRC_MANUAL["✏️ 手動撰寫\nMANUAL"]
+        SRC_JUSTKA["🤖 JustKa 題庫\nJUSTKA"]
+        SRC_SP["☁️ SharePoint\nSHAREPOINT"]
+    end
+
+    %% ═══════════════════════════════════
+    %% 共用資源庫：processType 分流
+    %% ═══════════════════════════════════
+    SRC_FILE --> RES_CHECK{"檔案類型判斷\n（resourceStore）"}
+
+    subgraph RESOURCE_LIBRARY["🗄️ 共用資源庫 ResourceLibrary"]
+        direction LR
+        RAW_STORE["原檔保存型\nprocessType: RAW\n\nPDF / PPT / Word\nImage / HTML\nTXT / Chart / Other"]
+        AI_STORE["AI 解析入庫型\nprocessType: AI_PARSED\n\nExcel (.xlsx .xls)\nMarkdown (.md)"]
+    end
+
+    RES_CHECK -- "Excel / MD" --> AI_STORE
+    RES_CHECK -- "其他格式" --> RAW_STORE
+
+    %% ═══════════════════════════════════
+    %% 建立知識條目：AI 解析路徑判斷
+    %% ═══════════════════════════════════
+    RAW_STORE --> KNOWLEDGE_ENTRY["建立知識條目\nCreateKnowledgeWizardModal"]
+    AI_STORE  --> KNOWLEDGE_ENTRY
+    SRC_API    --> API_FETCH["API Fetch\n定時/手動同步\nschedule: DAILY / WEEKLY / MANUAL"]
+    SRC_MANUAL --> MANUAL_DRAFT["直接進入草稿\n跳過 AI Pipeline"]
+    SRC_JUSTKA --> JUSTKA_IMPORT["匯入題卡\nQ&A 結構整理"]
+    SRC_SP     --> SP_IMPORT["SharePoint 同步\n批次匯入"]
+
+    API_FETCH  --> KNOWLEDGE_ENTRY
+    JUSTKA_IMPORT --> KNOWLEDGE_ENTRY
+    SP_IMPORT  --> KNOWLEDGE_ENTRY
+
+    %% ═══════════════════════════════════
+    %% AI 解析路徑三分支
+    %% ═══════════════════════════════════
+    KNOWLEDGE_ENTRY --> AI_ROUTE{"AI 解析策略\n依副檔名判斷"}
+
+    subgraph AI_PATHS["🧠 AI 解析策略"]
+        direction TB
+
+        subgraph PATH_TABLE["📊 可向量化格式"]
+            P1_IN["xlsx / xls / csv\nmd / txt / html / htm"]
+            P1_PROC["結構化萃取\n表格 → 逐列解析\nMarkdown → 段落解析\n純文字 → 分段摘要"]
+            P1_CHUNK["Chunk type: text\n帶分類/標籤 context prefix"]
+            P1_IN --> P1_PROC --> P1_CHUNK
+        end
+
+        subgraph PATH_IMAGE["🖼️ 圖片格式"]
+            P2_IN["png / jpg / jpeg\ngif / webp"]
+            P2_OCR{"OCR 擷取\n文字 ≥ 100 字？"}
+            P2_TEXT["文字路徑\nmethod: ocr"]
+            P2_VISION["視覺模型\nmethod: vision\n依分類給 Vision Prompt"]
+            P2_CHUNK["Chunk type: image\n含視覺描述"]
+            P2_IN --> P2_OCR
+            P2_OCR -- "是" --> P2_TEXT --> P2_CHUNK
+            P2_OCR -- "否" --> P2_VISION --> P2_CHUNK
+        end
+
+        subgraph PATH_DOC["📋 文件格式"]
+            P3_IN["PDF / Word / PPT"]
+            P3_PROC["語意理解\nQ&A 格式生成\n每份文件 3 組 Q&A"]
+            P3_CHUNK["Chunk type: text\nQ1: ... A: ...\n格式化輸出"]
+            P3_IN --> P3_PROC --> P3_CHUNK
+        end
+    end
+
+    AI_ROUTE -- "可向量化\nvectorizable" --> PATH_TABLE
+    AI_ROUTE -- "圖片" --> PATH_IMAGE
+    AI_ROUTE -- "PDF/Word/PPT" --> PATH_DOC
+    AI_ROUTE -- "MANUAL\n手動" --> MANUAL_DRAFT
+
+    %% ═══════════════════════════════════
+    %% 分類決定 Chunking 設定
+    %% ═══════════════════════════════════
+    P1_CHUNK --> CHUNK_CFG
+    P2_CHUNK --> CHUNK_CFG
+    P3_CHUNK --> CHUNK_CFG
+
+    subgraph CHUNKING_CONFIG["⚙️ 分類 Chunking 設定"]
+        direction LR
+        CHUNK_CFG{"知識分類\ncategory"}
+        CFG_PROD["商品文件\nchunkSize: 200\noverlap: 20\nprefix: [商品]"]
+        CFG_CS["客服知識\nchunkSize: 300\noverlap: 50\nprefix: [客服]"]
+        CFG_RULE["規則說明\nchunkSize: 500\noverlap: 100\nprefix: [規則]"]
+        CFG_SYS["系統文件\nchunkSize: 400\noverlap: 80\nprefix: [系統]"]
+        CFG_DEFAULT["其他分類\nchunkSize: 300\noverlap: 50\nprefix: (空)"]
+        CHUNK_CFG --> CFG_PROD & CFG_CS & CFG_RULE & CFG_SYS & CFG_DEFAULT
+    end
+
+    %% ═══════════════════════════════════
+    %% Pipeline 三階段
+    %% ═══════════════════════════════════
+    CFG_PROD & CFG_CS & CFG_RULE & CFG_SYS & CFG_DEFAULT --> PIPELINE_START
+
+    subgraph PIPELINE["🔄 AI Pipeline"]
+        direction TB
+        PIPELINE_START["建立知識條目\nstatus: pending\npipelineProgress: 0%"]
+        STAGE1["① Chunking\npipelineProgress: 0%\nstage: chunking\n\n文件切段\nSection-aware 策略"]
+        STAGE2["② Embedding\npipelineProgress: 33%\nstage: embedding\n\nModel: BAAI/bge-m3\ndimension: 1024\ndense + sparse 雙向量"]
+        STAGE3["③ Indexing\npipelineProgress: 67%\nstage: indexing\n\ncollection: knowledge_chunks\nindexType: HNSW\npointCount: N"]
+        DONE["Pipeline 完成\npipelineProgress: 100%\nstatus: reviewing"]
+        FAILED["Pipeline 失敗\nstatus: failed\npipelineError: message"]
+
+        PIPELINE_START --> STAGE1 --> STAGE2
+        STAGE2 -- "成功" --> STAGE3 --> DONE
+        STAGE2 -- "失敗\ne.g. CUDA OOM" --> FAILED
+    end
+
+    MANUAL_DRAFT --> REVIEW
+
+    %% ═══════════════════════════════════
+    %% 審核流程
+    %% ═══════════════════════════════════
+    DONE --> REVIEW
+
+    subgraph REVIEW_FLOW["📋 審核與版本管理"]
+        direction TB
+        REVIEW["草稿 draft\n可編輯 / 送審"]
+        SUBMIT["送審 reviewing\nsubmitForReview()"]
+        APPROVED["核准 active\napproveVersion()\n寫入 Embedding Index"]
+        REJECTED["退回 rejected\nrejectVersion()\n可修改後重送"]
+        WITHDRAWN["撤回 draft\nwithdrawReview()"]
+
+        REVIEW --> SUBMIT
+        SUBMIT --> APPROVED
+        SUBMIT --> REJECTED
+        SUBMIT --> WITHDRAWN
+        REJECTED --> REVIEW
+        WITHDRAWN --> REVIEW
+    end
+
+    FAILED --> RETRY["重新執行 Pipeline\nretriggerPipeline()"]
+    RETRY --> STAGE1
+
+    %% ═══════════════════════════════════
+    %% 版本生命週期
+    %% ═══════════════════════════════════
+    subgraph LIFECYCLE["🔁 版本生命週期"]
+        direction LR
+        ACTIVE["active\n對外服務\n向量已索引"]
+        NEEDS_UPD["needs_update\n來源檔案已更新\nsourceStale: true"]
+        STALE_ACT["建立新草稿\ncreateDraftFromSourceUpdate()\n版本號 +1 (MINOR)"]
+        ARCHIVED["archived\nbatchArchive()"]
+        HISTORY["history\n舊版本保留"]
+
+        ACTIVE --> NEEDS_UPD
+        NEEDS_UPD --> STALE_ACT
+        ACTIVE --> ARCHIVED
+        ACTIVE --> HISTORY
+    end
+
+    APPROVED --> ACTIVE
+
+    %% ═══════════════════════════════════
+    %% API 來源同步特殊路徑
+    %% ═══════════════════════════════════
+    subgraph API_SYNC["🔗 API 來源同步"]
+        direction LR
+        API_SCHED{"同步排程"}
+        SYNC_DAILY["DAILY\n每日自動"]
+        SYNC_WEEKLY["WEEKLY\n每週自動"]
+        SYNC_MANUAL["MANUAL\n手動觸發"]
+        SYNC_RESULT{"同步結果"}
+        SYNC_OK["SUCCESS\nlastSyncCount: N\n建立新版本草稿"]
+        SYNC_FAIL["FAILED\nlastSyncError: msg"]
+    end
+
+    SRC_API --> API_SCHED
+    API_SCHED --> SYNC_DAILY & SYNC_WEEKLY & SYNC_MANUAL
+    SYNC_DAILY & SYNC_WEEKLY & SYNC_MANUAL --> SYNC_RESULT
+    SYNC_RESULT -- "成功" --> SYNC_OK --> STAGE1
+    SYNC_RESULT -- "失敗" --> SYNC_FAIL
+
+    STALE_ACT --> STAGE1
+
+    %% ═══════════════════════════════════
+    %% 向量搜尋輸出
+    %% ═══════════════════════════════════
+    ACTIVE --> VECTOR_SEARCH["🔍 向量搜尋\nvectorSearch(query, options)\n依 category / tags 過濾\n回傳 ChunkMetadata[]"]
+    VECTOR_SEARCH --> AI_AGENT["AI Agent\n引用知識回答問題"]
+
+    %% ═══════════════════════════════════
+    %% 樣式
+    %% ═══════════════════════════════════
+    classDef source fill:#e8f4f8,stroke:#3eb5cc,color:#1a4a55
+    classDef store fill:#f0f4ff,stroke:#6b7bcc,color:#2d3566
+    classDef aipath fill:#e6f9f0,stroke:#2db87c,color:#0d4a2d
+    classDef pipeline fill:#fff8e1,stroke:#e6a817,color:#7a4f00
+    classDef review fill:#f5f0ff,stroke:#9b6bcc,color:#4a206a
+    classDef active fill:#e6f9f0,stroke:#2db87c,color:#0d4a2d,font-weight:bold
+    classDef danger fill:#fff0f0,stroke:#cc4444,color:#7a1111
+    classDef api fill:#e8f0fe,stroke:#4466cc,color:#1a2a7a
+
+    class SRC_FILE,SRC_API,SRC_MANUAL,SRC_JUSTKA,SRC_SP source
+    class RAW_STORE,AI_STORE store
+    class P1_IN,P1_PROC,P1_CHUNK,P2_IN,P2_TEXT,P2_VISION,P2_CHUNK,P3_IN,P3_PROC,P3_CHUNK aipath
+    class PIPELINE_START,STAGE1,STAGE2,STAGE3,DONE pipeline
+    class REVIEW,SUBMIT review
+    class APPROVED,ACTIVE,VECTOR_SEARCH,AI_AGENT active
+    class FAILED,SYNC_FAIL,REJECTED danger
+    class API_SCHED,SYNC_DAILY,SYNC_WEEKLY,SYNC_MANUAL,SYNC_OK api
+    class CFG_PROD,CFG_CS,CFG_RULE,CFG_SYS,CFG_DEFAULT pipeline

@@ -1,0 +1,102 @@
+.SkillFileUpload {
+  .sfu-dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px dashed var(--divider);
+    border-radius: 10px;
+    padding: 24px 16px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover,
+    &.is-dragover {
+      background-color: var(--page-bg);
+      border-color: $color_main_3;
+    }
+
+    > .material-symbols-outlined {
+      font-size: 28px;
+      color: var(--text-faint);
+    }
+  }
+
+  .sfu-dropzone-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 8px 0 2px;
+  }
+
+  .sfu-dropzone-hint {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin: 0;
+  }
+
+  .sfu-file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .sfu-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .sfu-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .sfu-file-icon {
+    font-size: 16px;
+    color: $color_main_1;
+    flex-shrink: 0;
+  }
+
+  .sfu-file-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 12.5px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sfu-file-size {
+    font-size: 11px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+  }
+
+  .sfu-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 50%;
+
+    &:hover { background: var(--page-bg); color: var(--text); }
+    .material-symbols-outlined { font-size: 15px; }
+  }
+}

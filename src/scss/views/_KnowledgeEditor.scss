@@ -1,0 +1,350 @@
+// ══════════════════════════════════════════════════
+//  KnowledgeEditor 編輯頁專屬樣式
+// ══════════════════════════════════════════════════
+
+.KnowledgeEditor {
+  // ── 草稿編輯頁 Banner ──
+  .editor-banner {
+    background: var(--tag-blue-bg);
+    border-left: 4px solid var(--tag-blue-text);
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    border-radius: 4px 12px 12px 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--tag-blue-text);
+    font-weight: 500;
+
+    i { font-size: 24px; }
+  }
+
+  // ── 編輯器主體卡片 ──
+  .editor-card {
+    background: var(--page-bg);
+    border-radius: 16px;
+    border: 1px solid var(--divider-a50);
+    padding: 28px;
+    margin-bottom: 20px;
+
+    h6 {
+      font-size: 16px;
+      color: var(--text);
+    }
+  }
+
+  .field-group {
+    margin-bottom: 22px;
+    &:last-child { margin-bottom: 0; }
+
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-a90);
+      margin-bottom: 8px;
+
+      .required { color: var(--danger); }
+    }
+  }
+
+  .editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--surface);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--divider-a50);
+    border-bottom: none;
+
+    .toolbar-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba($color-wise-green, 0.12);
+      color: var(--primary-hover);
+    }
+  }
+
+  .editor-textarea {
+    border-radius: 0 0 8px 8px !important;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    resize: vertical;
+  }
+
+  // ── 來源檔案清單 ──
+  .source-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .source-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--divider-a30);
+    font-size: 13px;
+  }
+
+  // ── 右側 meta 資訊欄 ──
+  .meta-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .meta-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+
+    .meta-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  }
+
+  // ── 編輯器標籤輸入 ──
+  .tags-input-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    min-height: 42px;
+    background: var(--surface);
+    cursor: text;
+    transition: border-color 0.2s;
+
+    &:focus-within {
+      border-color: var(--primary-hover);
+      background: var(--page-bg);
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px 2px 10px;
+      border-radius: 20px;
+      background: rgba($color-wise-green, 0.10);
+      color: var(--primary-hover);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba($color-wise-green, 0.15);
+
+      i {
+        font-size: 14px;
+        cursor: pointer;
+        opacity: 0.7;
+        &:hover { opacity: 1; }
+      }
+    }
+
+    input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 13px;
+      min-width: 80px;
+      flex: 1;
+      color: var(--text);
+
+      &::placeholder { color: var(--text-faint); }
+    }
+  }
+
+  .ke-stepper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 36px;
+    max-width: 560px;
+  }
+
+  .ke-step {
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: inherit;
+    padding: 0;
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    &:disabled { cursor: default; }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    cursor: default;
+
+    &.is-done { cursor: pointer; }
+  }
+
+  .ke-step-bubble {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--divider-a50);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+    i { font-size: 16px; }
+
+    .is-active & {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+    .is-done & {
+      border-color: var(--primary);
+      background: var(--accent-soft);
+      color: var(--primary);
+    }
+  }
+
+  .ke-step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+
+    .is-active & { color: var(--primary); font-weight: 600; }
+    .is-done  & { color: var(--primary-hover); }
+  }
+
+  .ke-step-track {
+    position: absolute;
+    top: 15px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: var(--divider-a50);
+    z-index: 0;
+
+    .ke-step-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+  }
+
+  .ke-body {
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+
+  .ke-footer {
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-a50);
+  }
+
+  .ke-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  // 確認頁：標題 + 分組卡片（比照 SkillEditor 的 se-confirm-* 語言）
+  .ke-confirm-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+
+  .ke-confirm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
+  }
+
+  .ke-confirm-group {
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .ke-confirm-group-hd {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+
+    i { font-size: 17px; color: var(--primary); }
+  }
+
+  .ke-confirm-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--divider-a50);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  .ke-confirm-key {
+    flex-shrink: 0;
+    width: 80px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .ke-confirm-val {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .ke-empty { color: var(--text-faint); font-style: italic; }
+}
+
+@mixin knowledge-editor-dark {
+  .editor-card {
+    box-shadow: none;
+  }
+}
+
+[data-theme="dark"] { @include knowledge-editor-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include knowledge-editor-dark; }
+}

@@ -1,0 +1,200 @@
+.SkillReviewCard {
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+    border-color: $color_main_3;
+  }
+
+  // ── Header ──────────────────────────────────────
+
+  .src-header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--divider-a50);
+  }
+
+  .src-title-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+
+  .src-person-icon {
+    font-size: 16px;
+    color: $color_main_1;
+    flex-shrink: 0;
+  }
+
+  .src-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .src-mode-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+
+    .material-symbols-outlined { font-size: 12px; }
+
+    &--update {
+      color: $color_main_1;
+      background: $color_main_5;
+      border-color: $color_main_3;
+    }
+
+    &--new {
+      color: #1a8a4a;
+      background: rgba(26, 138, 74, 0.08);
+      border-color: rgba(26, 138, 74, 0.3);
+    }
+  }
+
+  .src-scope-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    .material-symbols-outlined { font-size: 12px; }
+  }
+
+  .src-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .src-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-faint);
+    .material-symbols-outlined { font-size: 13px; }
+  }
+
+  // ── Section (指令 / AI) ──────────────────────────
+
+  .src-section {
+    border-bottom: 1px solid var(--divider-a50);
+
+    &--ai { background: rgba($color_main_1, 0.025); }
+  }
+
+  .src-section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+
+    > .material-symbols-outlined { font-size: 15px; color: var(--text-faint); }
+
+    .src-chevron {
+      margin-left: auto;
+      font-size: 16px;
+      transition: transform 0.2s;
+      &.is-open { transform: rotate(180deg); }
+    }
+
+    .src-section--ai & { cursor: default; color: $color_main_1; > .material-symbols-outlined { color: $color_main_1; } }
+  }
+
+  .src-instructions {
+    padding: 0 16px 12px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    white-space: pre-wrap;
+    max-height: 140px;
+    overflow-y: auto;
+    @include use-scroll-bar(var(--scrollbar-a50));
+  }
+
+  .src-ai-list {
+    margin: 0;
+    padding: 0 16px 12px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    li {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+  }
+
+  // ── Actions ─────────────────────────────────────
+
+  .src-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .src-actions-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .src-btn {
+    padding: 4px 12px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    .material-symbols-outlined { font-size: 14px; }
+
+    &--reject {
+      color: $color-danger;
+      border-color: rgba($color-danger, 0.3);
+      &:hover { background: rgba($color-danger, 0.06); }
+    }
+  }
+}
+
+// ── 退回原因 dialog（Teleport 到 body，不在 .SkillReviewCard 底下）──
+.src-reject-dialog .src-reject-textarea {
+  width: 100%;
+  border: 1px solid var(--divider-a50);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &::placeholder { color: var(--text-faint); }
+  &:focus {
+    border-color: $color_main_1;
+    box-shadow: 0 0 0 3px $color_main_5;
+  }
+}

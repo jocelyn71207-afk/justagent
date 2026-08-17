@@ -32,9 +32,9 @@ describe('knowledgeStore — datasource 功能', () => {
       expect(item!.apiSourceName).toBe('測試 API')
       expect(item!.title).toBe('測試知識條目')
       expect(item!.category).toBe('商品文件')
-      expect(item!.status).toBe('DRAFT')
+      expect(item!.status).toBe('pending')
       expect(item!.versions.length).toBe(1)
-      expect(item!.versions[0].status).toBe('DRAFT')
+      expect(item!.versions[0].status).toBe('draft')
       expect(item!.versions[0].versionNumber).toBe('v1.0')
     })
   })
@@ -74,7 +74,7 @@ describe('knowledgeStore — datasource 功能', () => {
       expect(store.knowledgeList.length).toBe(beforeCount) // 沒有新增條目
       const item = store.knowledgeList.find(k => k.id === knowledgeId)!
       expect(item.versions.length).toBeGreaterThan(1) // 多了一個新版本
-      expect(item.status).toBe('DRAFT')
+      expect(item.status).toBe('pending')
     })
 
     it('成功同步後：ApiSource 的 lastSyncStatus 為 SUCCESS，lastSyncAt 有值', async () => {

@@ -1,0 +1,97 @@
+<h2>圖片拆解策略</h2>
+<p class="subtitle">三種圖片類型 → 兩條處理路徑 → 同一套 category-aware chunk 框架</p>
+
+<div class="section">
+  <h3>決策流程</h3>
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:600px;margin:0 auto">
+
+    <div style="background:#e5e7eb;border-radius:8px;padding:10px;text-align:center">
+      <strong>圖片上傳</strong><br>
+      <span style="font-size:12px;color:#6b7280">png / jpg / gif / webp</span>
+    </div>
+
+    <div style="text-align:center;font-size:18px;color:#9ca3af">↓</div>
+
+    <div style="background:#fef3c7;border-radius:8px;padding:10px;text-align:center;border:2px solid #f59e0b">
+      <strong>① OCR 嘗試</strong><br>
+      <span style="font-size:12px;color:#6b7280">偵測圖片中是否有文字</span>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:4px">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <div style="text-align:center;font-size:12px;color:#10b981;font-weight:600">文字夠多（>100字）↓</div>
+        <div style="background:#d1fae5;border-radius:8px;padding:10px;border:2px solid #10b981">
+          <strong style="color:#065f46">路徑 A：文字路徑</strong><br>
+          <span style="font-size:12px">OCR 文字 → 套分類 chunk 策略<br>（chunk size / overlap 同文字檔）</span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:#6b7280">
+          適用：截圖、文件掃描圖
+        </div>
+      </div>
+
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <div style="text-align:center;font-size:12px;color:#8b5cf6;font-weight:600">文字稀少 ↓</div>
+        <div style="background:#ede9fe;border-radius:8px;padding:10px;border:2px solid #8b5cf6">
+          <strong style="color:#5b21b6">路徑 B：視覺描述路徑</strong><br>
+          <span style="font-size:12px">Vision Model 生成描述<br>→ 描述文字作為 chunk</span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:#6b7280">
+          適用：商品圖、實物照片
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:18px;color:#9ca3af">↓（兩條路徑合流）</div>
+
+    <div style="background:#dbeafe;border-radius:8px;padding:10px;text-align:center;border:2px solid #3b82f6">
+      <strong style="color:#1e40af">② Metadata Prefix 注入（同文字 chunk）</strong><br>
+      <span style="font-family:monospace;font-size:12px">[分類:商品文件][標籤:...][來源:image] 描述或 OCR 文字...</span>
+    </div>
+
+    <div style="text-align:center;font-size:18px;color:#9ca3af">↓</div>
+
+    <div style="background:#e5e7eb;border-radius:8px;padding:10px;text-align:center">
+      <strong>Embedding → Indexing</strong><br>
+      <span style="font-size:12px;color:#6b7280">同文字流程，metadata 帶 source_type: 'image'</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Vision Model Prompt 依分類客製化</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead>
+      <tr style="background:#f3f4f6">
+        <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb">分類</th>
+        <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb">Vision Prompt 重點</th>
+        <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb">描述範例</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #f3f4f6">
+        <td style="padding:8px"><strong>商品文件</strong></td>
+        <td style="padding:8px">外觀、顏色、材質、尺寸、特徵</td>
+        <td style="padding:8px;color:#6b7280">「黑色無線耳機，頭戴式設計，右側有音量轉盤...」</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f3f4f6;background:#fafafa">
+        <td style="padding:8px"><strong>系統文件</strong></td>
+        <td style="padding:8px">UI 元件、操作步驟、按鈕文字</td>
+        <td style="padding:8px;color:#6b7280">「設定頁面截圖，左側選單有五個項目，紅色框標示...」</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f3f4f6">
+        <td style="padding:8px"><strong>規則說明</strong></td>
+        <td style="padding:8px">條款文字、章節標題、重點標記</td>
+        <td style="padding:8px;color:#6b7280">透過 OCR 取得（通常文字夠多，走路徑 A）</td>
+      </tr>
+      <tr style="background:#fafafa">
+        <td style="padding:8px"><strong>客服知識</strong></td>
+        <td style="padding:8px">圖示意義、流程說明、狀態圖</td>
+        <td style="padding:8px;color:#6b7280">「退款流程圖，箭頭指向三個狀態：申請中、審核中、完成」</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p style="font-size:13px;color:#888;text-align:center">
+  兩條路徑最終都產出 chunk 文字，後續流程與文字檔完全相同
+</p>

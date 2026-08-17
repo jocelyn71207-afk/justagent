@@ -1,0 +1,105 @@
+flowchart TD
+    USER([使用者]) --> ENTRANCE[AppEntrance\n登入入口]
+    ENTRANCE --> AUTH{已登入？}
+    AUTH -- 未登入 --> LOGIN([重導至登入])
+    AUTH -- 已登入 --> FULL[Full.vue 主框架]
+
+    FULL --> MENU[AppMenuTree 側邊導覽]
+
+    MENU --> DASHBOARD[ProjectDashboard\n最近使用專案]
+    MENU --> TEAM[TeamProject\n團隊專案列表]
+    MENU --> RESOURCE[ResourceLibrary\n共享資源庫]
+    MENU --> ACCESS[TeamAccessManagement\n權限管理]
+    MENU --> TRASH[ProjectTrashCans\n專案垃圾桶]
+    MENU --> SETTINGS[CompanyTeamSettings\n企業設定]
+    MENU --> TEAM_SETTINGS[TeamSettings\n團隊設定]
+    MENU --> SEARCH[AppSearchPage\n全域搜尋]
+
+    %% Dashboard actions
+    DASHBOARD --> DASH_OPEN[點擊專案卡片]
+    DASHBOARD --> DASH_CREATE[建立新專案 Modal]
+    DASHBOARD --> DASH_FILTER[Agent 類型篩選 / 時間排序]
+    DASHBOARD --> DASH_DELETE[刪除專案]
+    DASH_OPEN --> AIVIEWER
+    DASH_CREATE --> PROJ_MODAL[ProjectSettingModal\n填寫名稱/Agent]
+    PROJ_MODAL --> AIVIEWER
+
+    %% Team Project actions
+    TEAM --> TEAM_OPEN[點擊專案]
+    TEAM --> TEAM_CREATE[建立新專案]
+    TEAM_OPEN --> AIVIEWER
+    TEAM_CREATE --> PROJ_MODAL
+
+    %% AiViewer
+    AIVIEWER[AiViewer\nAI 畫布編輯器]
+    AIVIEWER --> AV_INPUT[輸入文字 / 上傳檔案]
+    AV_INPUT --> AV_BLOCK[建立 Block\nPDF / Excel / PPT / Image\nChart / TXT / HTML / MD / Word]
+    AV_BLOCK --> AV_DRAG[拖移 / 縮放]
+    AV_BLOCK --> AV_RENAME[重新命名]
+    AV_BLOCK --> AV_DELETE[刪除]
+    AV_BLOCK --> AV_COPY[Cmd+C 複製]
+    AV_COPY --> AV_PASTE[Cmd+V 貼上\n碰撞偵測自動定位]
+    AV_BLOCK --> AV_MEMO[便條紙 Memo\n區塊評論標記]
+    AV_BLOCK --> AV_MULTI[多選模式\nMulti-select]
+
+    AIVIEWER --> PANEL_BLOCK[側邊面板：區塊列表]
+    AIVIEWER --> PANEL_COMMENT[側邊面板：評論列表]
+    AIVIEWER --> PANEL_FILE[側邊面板：檔案列表]
+    AIVIEWER --> PANEL_CHAT[側邊面板：對話紀錄]
+
+    %% Resource Library — 兩個子單元
+    RESOURCE --> RES_FILES[共用檔案管理]
+    RESOURCE --> RES_KNOWLEDGE[知識庫]
+
+    RES_FILES --> RES_UPLOAD[上傳 / 刪除]
+    RES_FILES --> RES_RENAME[重新命名]
+    RES_FILES --> RES_FILTER[篩選：上傳者類型 / 檔案類型]
+    RES_FILES --> RES_DOWNLOAD[下載]
+
+    RES_KNOWLEDGE --> KN_CREATE[建立知識條目]
+    RES_KNOWLEDGE --> KN_EDIT[編輯 / 審核版本]
+    RES_KNOWLEDGE --> KN_SEARCH[分類 / 標籤搜尋]
+
+    %% Access Management
+    ACCESS --> ACC_ADD[新增成員]
+    ACCESS --> ACC_EDIT[編輯角色]
+    ACCESS --> ACC_DELETE[刪除成員]
+    ACCESS --> ACC_SEARCH[搜尋 / 分頁]
+
+    %% Trash
+    TRASH --> TRASH_RESTORE[還原專案]
+    TRASH --> TRASH_DELETE[永久刪除]
+    TRASH_RESTORE --> TEAM
+
+    %% 企業設定
+    SETTINGS --> SET_INFO[企業資訊]
+    SETTINGS --> SET_PLAN[方案資訊]
+    SET_PLAN --> SET_AGENT[可用 Agent 列表]
+    SETTINGS --> SET_ADMIN[平台管理員管理]
+
+    %% 團隊設定
+    TEAM_SETTINGS --> TS_TYPE[團隊類型\n實體門市 / 電子商務]
+    TEAM_SETTINGS --> TS_INFO[團隊基本資訊]
+
+    %% Styling
+    classDef terminal fill:#1e1e2e,stroke:#1e1e2e,color:#fff
+    classDef page fill:#e8f4f8,stroke:#3eb5cc,color:#1a4a55
+    classDef action fill:#f0f4ff,stroke:#6b7bcc,color:#2d3566
+    classDef viewer fill:#e6f9f0,stroke:#2db87c,color:#0d4a2d
+    classDef modal fill:#f5f0ff,stroke:#9b6bcc,color:#4a206a,stroke-dasharray:4 2
+
+    class USER,LOGIN terminal
+    class FULL,MENU,DASHBOARD,TEAM,RESOURCE,ACCESS,TRASH,SETTINGS,TEAM_SETTINGS page
+    class RES_FILES,RES_KNOWLEDGE page
+    class AIVIEWER viewer
+    class PROJ_MODAL,SEARCH modal
+    class DASH_OPEN,DASH_CREATE,DASH_FILTER,DASH_DELETE action
+    class TEAM_OPEN,TEAM_CREATE action
+    class AV_INPUT,AV_BLOCK,AV_DRAG,AV_RENAME,AV_DELETE,AV_COPY,AV_PASTE,AV_MEMO,AV_MULTI action
+    class PANEL_BLOCK,PANEL_COMMENT,PANEL_FILE,PANEL_CHAT action
+    class RES_UPLOAD,RES_RENAME,RES_FILTER,RES_DOWNLOAD action
+    class KN_CREATE,KN_EDIT,KN_SEARCH action
+    class ACC_ADD,ACC_EDIT,ACC_DELETE,ACC_SEARCH action
+    class TRASH_RESTORE,TRASH_DELETE action
+    class SET_INFO,SET_PLAN,SET_AGENT,SET_ADMIN action
+    class TS_TYPE,TS_INFO action

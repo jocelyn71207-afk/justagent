@@ -1,0 +1,202 @@
+// src/scss/components/_SharePointWizardModal.scss
+
+.sp-wizard-modal {
+  width: 560px;
+  max-width: 90vw;
+}
+
+.sp-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 24px 8px;
+  border-bottom: 1px solid var(--color-outline, #C3C8BB);
+}
+
+.sp-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+
+  &:not(:last-child)::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-outline, #C3C8BB);
+    margin: 0 8px;
+  }
+
+  &.is-done .sp-step-dot {
+    background: var(--color-primary, #C8F135);
+    color: #2A3500;
+    border-color: var(--color-primary, #C8F135);
+
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
+  &.is-active .sp-step-dot {
+    background: var(--color-primary, #C8F135);
+    color: #2A3500;
+    border-color: var(--color-primary, #C8F135);
+  }
+}
+
+.sp-step-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--color-outline, #C3C8BB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: var(--color-on-surface-variant, #43483E);
+}
+
+.sp-step-label {
+  font-size: 11px;
+  color: var(--color-on-surface-variant, #43483E);
+}
+
+.sp-step-body {
+  padding: 32px 28px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+
+  &.sp-step-connecting { gap: 12px; }
+}
+
+.sp-spinner {
+  animation: sp-spin 1s linear infinite;
+  font-size: 40px;
+  color: var(--color-primary, #C8F135);
+}
+
+@keyframes sp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.sp-step-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-on-surface, #1A1C18);
+  margin: 0;
+}
+
+.sp-step-sub {
+  font-size: 12px;
+  color: var(--color-on-surface-variant, #43483E);
+  opacity: 0.7;
+  margin: 0;
+}
+
+.sp-progress-bar {
+  width: 100%;
+  max-width: 320px;
+  height: 6px;
+  background: var(--color-surface-container-high, #EAEAE6);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sp-progress-fill {
+  height: 100%;
+  background: var(--color-primary, #C8F135);
+  border-radius: 4px;
+  transition: width 0.1s linear;
+}
+
+.sp-diff-list {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.sp-diff-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+
+  &.sp-diff--add { background: var(--color-primary-container, #E8FAA0); }
+  &.sp-diff--update { background: #FFF8E6; }
+  &.sp-diff--delete { background: #FFE4E4; }
+}
+
+.sp-diff-badge {
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  .sp-diff--add & { color: #2A5A00; }
+  .sp-diff--update & { color: #7A4500; }
+  .sp-diff--delete & { color: var(--color-error, #BA1A1A); }
+}
+
+.sp-footer-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 400px;
+}
+
+.sp-import-list {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.sp-import-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.sp-file-icon {
+  font-size: 20px;
+  color: var(--color-secondary, #5B6342);
+  flex-shrink: 0;
+}
+
+.sp-import-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-on-surface, #1A1C18);
+}
+
+.sp-import-pct {
+  font-size: 11px;
+  color: var(--color-on-surface-variant, #43483E);
+  flex-shrink: 0;
+}
+
+.app-card--sharepoint {
+  cursor: pointer;
+  &:hover {
+    border-color: #0078D4;
+    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.15);
+  }
+}

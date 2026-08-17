@@ -115,14 +115,14 @@
 
     &:hover {
       border-color: var(--accent-a30);
-      background: rgba(232,238,240,0.1);
+      background: var(--divider-a20);
     }
 
     .file-icon-box {
       width: 44px;
       height: 44px;
       border-radius: 10px;
-      background: #fff;
+      background: var(--surface);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -187,8 +187,8 @@
       i { font-size: 34px; color: var(--accent); }
 
       &--generating {
-        background: rgba(124, 58, 237, 0.08);
-        i { color: #7c3aed; }
+        background: var(--tag-violet-bg);
+        i { color: var(--tag-violet-text); }
         animation-name: ai-pulse-purple;
       }
     }
@@ -222,15 +222,15 @@
     }
 
     &--success {
-      background: #ecfdf5;
+      background: var(--accent-soft);
       color: var(--primary);
-      border: 1px solid rgba(0, 160, 120, 0.2);
+      border: 1px solid var(--primary-a20);
     }
 
     &--warning {
-      background: #FFF8E1;
-      color: #856404;
-      border: 1px solid rgba(255, 193, 7, 0.2);
+      background: var(--tag-amber-bg);
+      color: var(--tag-amber-text);
+      border: 1px solid var(--tag-amber-text);
     }
   }
 
@@ -249,7 +249,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--divider-a30);
     border-radius: 12px;
     transition: all 0.2s ease;
@@ -380,18 +380,18 @@
 
     .ai-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent), #7c3aed);
+      background: linear-gradient(90deg, var(--accent), var(--tag-violet-text));
       transition: width 0.3s ease;
       min-width: 0;
     }
 
-    .progress-text { font-size: 13px; font-weight: 800; color: #7c3aed; }
+    .progress-text { font-size: 13px; font-weight: 800; color: var(--tag-violet-text); }
   }
 
   .ai-preview-container {
     border: 1px solid var(--divider-a40);
     border-radius: 16px;
-    background: #fff;
+    background: var(--surface);
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 
@@ -410,8 +410,8 @@
         .title-icon { color: var(--accent); font-size: 20px; }
         .header-title { font-size: 14px; font-weight: 700; color: var(--text); }
         .template-badge {
-          background: rgba(124, 58, 237, 0.1);
-          color: #7c3aed;
+          background: var(--tag-violet-bg);
+          color: var(--tag-violet-text);
           font-size: 11px;
           padding: 2px 8px;
           border-radius: 6px;
@@ -472,7 +472,7 @@
       height: 18px;
       border-radius: 50%;
       background: var(--accent);
-      color: #fff;
+      color: var(--primary-fg);
       font-size: 10px;
       font-weight: 700;
       display: flex;
@@ -561,8 +561,8 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: rgba(251, 140, 0, 0.12);
-    color: #e65100;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -581,8 +581,8 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(251, 140, 0, 0.06);
-    border: 1px solid rgba(251, 140, 0, 0.20);
+    background: var(--tag-amber-bg);
+    border: 1px solid var(--tag-amber-text);
     border-radius: 12px;
     padding: 14px 18px;
     margin-bottom: 20px;
@@ -628,9 +628,9 @@
     }
 
     &--new {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a12);
       color: var(--primary);
-      border: 1px solid rgba(0, 160, 120, 0.20);
+      border: 1px solid var(--primary-a20);
     }
   }
 
@@ -826,25 +826,9 @@
     }
   }
 
-  // ── 通用頁面區塊 ──
-  .search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-    > i {
-      position: absolute;
-      left: 8px;
-      color: var(--text-muted);
-      pointer-events: none;
-    }
-    .custom-input {
-      padding-left: 34px;
-    }
-  }
-
   // 統計卡片列
   .stats-row {
-    display: flex;
+    display: grid;
     gap: 12px;
     margin-bottom: 24px;
   }
@@ -876,16 +860,20 @@
         i { color: var(--primary-hover); }
       }
       &--green {
-        background: rgba(0, 160, 120, 0.12);
-        i { color: #34d399; }
+        background: var(--primary-a12);
+        i { color: var(--success); }
       }
       &--yellow {
-        background: rgba(251, 192, 0, 0.15);
-        i { color: #e0a800; }
+        background: var(--tag-amber-bg);
+        i { color: var(--tag-amber-text); }
       }
       &--orange {
-        background: rgba(255, 140, 0, 0.12);
-        i { color: #ff8c00; }
+        background: var(--tag-amber-bg);
+        i { color: var(--tag-amber-text); }
+      }
+      &--needs-update {
+        background: var(--tag-amber-bg);
+        i { color: var(--tag-amber-text); }
       }
     }
 
@@ -899,6 +887,22 @@
       font-size: 13px;
       color: var(--text-muted);
       margin-top: 2px;
+    }
+
+    // 修飾類別（&--xxx）必須巢狀在 .stat-card 內部才能沿用同一層 specificity，
+    // 否則獨立宣告的頂層規則（0,1,0）會輸給 .KnowledgeBase .stat-card 這條基礎規則（0,2,0），
+    // background/border 永遠不會生效（Finding 1 / 5）。
+    &--needs-update {
+      background: var(--tag-amber-bg);
+      border-color: var(--tag-amber-text);
+    }
+
+    // hover 交給 .lively-card 統一處理（Finding 6），此處不覆寫 &:hover
+    &--kpi {
+      position: relative;
+      border-color: var(--primary);
+      background: var(--accent-soft);
+      cursor: default;
     }
   }
 
@@ -918,6 +922,38 @@
     }
   }
 
+  // 分類快篩 Tab
+  .category-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .category-tab-btn {
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    &.is-active {
+      background: rgba($color-wise-green, 0.10);
+      color: var(--primary-hover);
+      border-color: rgba($color-wise-green, 0.20);
+      font-weight: 600;
+    }
+  }
+
   // ── 狀態標籤 (依照資源庫配色邏輯) ──
   .status-badge {
     display: inline-flex;
@@ -932,23 +968,23 @@
     i { font-size: 14px; }
 
     &--PUBLISHED {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a12);
       color: var(--primary);
     }
     &--REVIEWING {
-      background: rgba(251, 192, 0, 0.15);
-      color: #b07d00;
+      background: var(--tag-amber-bg);
+      color: var(--tag-amber-text);
     }
     &--DRAFT {
-      background: rgba(30, 136, 229, 0.10);
-      color: #1565c0;
+      background: var(--tag-blue-bg);
+      color: var(--tag-blue-text);
     }
     &--REJECTED {
-      background: rgba(209, 68, 55, 0.10);
-      color: #c62828;
+      background: var(--danger-soft);
+      color: var(--danger);
     }
     &--HISTORY {
-      background: rgba(232,238,240,0.1);
+      background: var(--divider-a20);
       color: var(--text-muted);
     }
   }
@@ -962,17 +998,17 @@
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 20px;
-    background: rgba(251, 140, 0, 0.12);
-    color: #e65100;
-    border: 1px solid rgba(251, 140, 0, 0.25);
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+    border: 1px solid var(--tag-amber-text);
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.15s;
+    transition: background 0.15s, filter 0.15s;
 
     i { font-size: 13px; }
 
     &:hover {
-      background: rgba(251, 140, 0, 0.22);
+      filter: brightness(0.93);
     }
   }
 
@@ -988,10 +1024,25 @@
     text-transform: uppercase;
 
     &.major {
-      background: rgba(138, 63, 252, 0.08);
-      color: #7c3aed;
-      border-color: rgba(138, 63, 252, 0.20);
+      background: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
+      border-color: var(--tag-violet-text);
     }
+  }
+
+  // ── Category tag (作用在頁面層級) ──
+  .category-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--tag-violet-bg);
+    border: 1px solid var(--tag-violet-text);
+    color: var(--tag-violet-text);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
   }
 
   // ── 表格內的顯示 ──
@@ -1007,11 +1058,16 @@
       margin-top: 2px;
     }
     .category-tag {
-      font-size: 12px;
-      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
       border-radius: 6px;
-      background: var(--surface);
-      border: 1px solid var(--divider-a50);
+      background: var(--tag-violet-bg);
+      border: 1px solid var(--tag-violet-text);
+      color: var(--tag-violet-text);
+      white-space: nowrap;
     }
     .tag-chip {
       font-size: 11px;
@@ -1047,73 +1103,76 @@
     td {
       position: relative;
     }
-    
-    .next-option-box {
-      position: absolute;
-      top: 80%;
-      right: 12px;
-      display: none;
-      min-width: 140px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      
-      &.show {
-        display: block;
-      }
+
+    // ops-menu-wrap: 相對定位容器，讓 dropdown 可以 absolute 定位
+    .ops-menu-wrap {
+      position: relative;
+      display: inline-flex;
+      justify-content: center;
     }
-  }
 
-  // ── 詳情頁元件 ──
-  .detail-header-card {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 28px;
-    margin-bottom: 24px;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    // ⋮ 按鈕
+    .ops-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-faint);
+      transition: background 0.15s, color 0.15s;
 
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 24px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--divider-a30);
-      
-      .info-label {
-        font-size: 12px;
-        color: var(--text-faint);
-        margin-bottom: 6px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .info-value {
-        font-size: 15px;
-        font-weight: 500;
+      &:hover {
+        background: var(--sidebar-hover-a20);
         color: var(--text);
       }
+
+      i { font-size: 20px; }
+    }
+
+    .next-option-box {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      min-width: 160px;
+      z-index: 99;
+
+      // v-if 控制顯示，不需要 display:none / .show
+      &.show { display: block; }
+
+      .option-item--danger {
+        color: var(--danger);
+        &:hover { background: var(--danger-soft); }
+      }
     }
   }
 
-  // ── 草稿編輯頁 Banner ──
-  .editor-banner {
-    background: rgba(30, 136, 229, 0.08);
-    border-left: 4px solid #1565c0;
-    padding: 14px 20px;
-    margin-bottom: 24px;
-    border-radius: 4px 12px 12px 4px;
-    display: flex;
+  // ── tag-chip (standalone, outside .custom-table) ──
+  .tag-chip {
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    font-size: 14px;
-    color: #1565c0;
-    font-weight: 500;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba($color-wise-green, 0.08);
+    color: var(--primary-hover);
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba($color-wise-green, 0.12);
 
-    i { font-size: 24px; }
+    &--system {
+      background: var(--primary-a12);
+      color: var(--primary);
+      border-color: var(--primary-a20);
+    }
   }
 
   // ── 差異比較 版本選擇器 ──
+  // 跨頁共用：VersionCompareModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
+  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
   .compare-selectors {
     display: flex;
     align-items: center;
@@ -1146,6 +1205,7 @@
   }
 
   // ── 差異圖例 ──
+  // 跨頁共用：VersionCompareModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
   .diff-legends {
     display: flex;
     align-items: center;
@@ -1163,28 +1223,29 @@
     white-space: nowrap;
 
     &--added {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a12);
       color: var(--primary);
     }
     &--removed {
-      background: rgba(209, 68, 55, 0.10);
-      color: #c62828;
+      background: var(--danger-soft);
+      color: var(--danger);
       text-decoration: line-through;
     }
   }
 
   // ── 差異比較檢視 (Side-by-side) ──
+  // 跨頁共用：VersionCompareModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
   .diff-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     height: 100%;
-    
+
     .diff-column {
       display: flex;
       flex-direction: column;
       gap: 20px;
-      
+
       h6 {
         margin: 0;
         padding-bottom: 12px;
@@ -1209,7 +1270,7 @@
     .diff-item {
       margin-bottom: 20px;
       &:last-child { margin-bottom: 0; }
-      
+
       .diff-label {
         font-size: 12px;
         color: var(--text-faint);
@@ -1226,189 +1287,32 @@
         min-height: 44px;
         white-space: pre-wrap;
         word-break: break-word;
-        
+
         &.is-added {
-          background-color: rgba(0, 160, 120, 0.08);
-          border: 1px solid rgba(0, 160, 120, 0.2);
+          background-color: var(--primary-a08);
+          border: 1px solid var(--primary-a20);
           color: var(--primary);
         }
         &.is-removed {
-          background-color: rgba(209, 68, 55, 0.08);
-          border: 1px solid rgba(209, 68, 55, 0.2);
+          background-color: var(--danger-soft);
+          border: 1px solid var(--danger);
           text-decoration: line-through;
-          color: #c62828;
+          color: var(--danger);
         }
         &.is-changed {
-          background-color: rgba(251, 192, 0, 0.08);
-          border: 1px solid rgba(251, 192, 0, 0.2);
+          background-color: var(--tag-amber-bg);
+          border: 1px solid var(--tag-amber-text);
         }
       }
     }
   }
 
-  // ── 版本紀錄清單 ──
-  .history-item {
-    padding: 18px;
-    border-radius: 14px;
-    border: 1px solid var(--divider-a50);
-    margin-bottom: 16px;
-    background: var(--page-bg);
-    transition: all 0.2s ease;
-    
-    &:hover {
-      border-color: var(--primary-hover);
-      transform: translateX(4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    }
-
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-
-      .more-menu-wrap {
-        position: relative;
-      }
-
-      .more-btn {
-        color: var(--text-faint);
-        cursor: pointer;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: var(--sidebar-hover-a20);
-          color: var(--text);
-        }
-      }
-    }
-
-    .history-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .history-note {
-      font-size: 13px;
-      color: var(--text-a80);
-      background: var(--surface);
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin-top: 10px;
-      line-height: 1.5;
-      border: 1px solid var(--divider-a30);
-    }
-    
-    &.is-published {
-      border-left: 5px solid var(--primary);
-    }
-  }
-
-  // ── 編輯器主體卡片 ──
-  .editor-card {
-    background: var(--page-bg);
-    border-radius: 16px;
-    border: 1px solid var(--divider-a50);
-    padding: 28px;
-    margin-bottom: 20px;
-
-    h6 {
-      font-size: 16px;
-      color: var(--text);
-    }
-  }
-
-  .field-group {
-    margin-bottom: 22px;
-    &:last-child { margin-bottom: 0; }
-
-    .field-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-a90);
-      margin-bottom: 8px;
-
-      .required { color: #e53935; }
-    }
-  }
-
-  .editor-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: var(--surface);
-    border-radius: 8px 8px 0 0;
-    border: 1px solid var(--divider-a50);
-    border-bottom: none;
-
-    .toolbar-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba($color-wise-green, 0.12);
-      color: var(--primary-hover);
-    }
-  }
-
-  .editor-textarea {
-    border-radius: 0 0 8px 8px !important;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    resize: vertical;
-  }
-
-  // ── 來源檔案清單 ──
-  .source-files-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-
-  .source-file-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--divider-a30);
-    font-size: 13px;
-  }
-
-  // ── 右側 meta 資訊欄 ──
-  .meta-info-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .meta-info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-
-    .meta-label {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-  }
-
-  // ── 版本紀錄 Drawer ──
+  // ── Drawer 基礎版型（審核抽屜 ReviewDrawer 使用）──
+  // ReviewDrawer.vue 套用 class="KnowledgeBase drawer-panel review-drawer-panel"，
+  // 這裡提供共用的固定定位/寬度/開合位移等基礎版型，尺寸由後面的 .review-drawer-panel 覆寫。
+  // SkillDetailDrawer.vue / UpstreamUpdateDrawer.vue 雖然也有 .drawer-panel class，
+  // 但各自在 _SkillDetailDrawer.scss / _UpstreamUpdateDrawer.scss 內有獨立定義，
+  // 且渲染時不在 .KnowledgeBase 範圍內，不會用到這裡的規則（已用 grep 確認）。
   .drawer-panel {
     position: fixed;
     top: 0;
@@ -1433,7 +1337,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 28px !important; // 增加水平間距
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px 0 0 0;
 
     .drawer-title {
@@ -1457,6 +1361,8 @@
   }
 
   // ── 建立版本 Modal 版本類型選擇 ──
+  // 跨頁共用：CreateVersionModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
+  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
   .version-type-btn {
     border: 1.5px solid var(--divider-a50);
     border-radius: 12px;
@@ -1490,91 +1396,9 @@
     }
   }
 
-  // ── 編輯器標籤輸入 ──
-  .tags-input-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 10px;
-    border: 1px solid var(--divider-a50);
-    border-radius: 8px;
-    min-height: 42px;
-    background: var(--surface);
-    cursor: text;
-    transition: border-color 0.2s;
-
-    &:focus-within {
-      border-color: var(--primary-hover);
-      background: var(--page-bg);
-    }
-
-    .tag-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px 2px 10px;
-      border-radius: 20px;
-      background: rgba($color-wise-green, 0.10);
-      color: var(--primary-hover);
-      font-size: 12px;
-      font-weight: 600;
-      border: 1px solid rgba($color-wise-green, 0.15);
-
-      i {
-        font-size: 14px;
-        cursor: pointer;
-        opacity: 0.7;
-        &:hover { opacity: 1; }
-      }
-    }
-
-    input {
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 13px;
-      min-width: 80px;
-      flex: 1;
-      color: var(--text);
-
-      &::placeholder { color: var(--text-faint); }
-    }
-  }
-
-  // ── 內容預覽區 ──
-  .content-preview {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 32px;
-    min-height: 400px;
-    
-    .article-title {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 24px;
-      color: var(--text);
-    }
-    
-    .article-meta {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 32px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--divider-a20);
-    }
-
-    .article-body {
-      font-size: 16px;
-      line-height: 1.8;
-      color: var(--text-a90);
-
-      p { margin-bottom: 1.5em; }
-      h3 { margin: 1.5em 0 0.8em; }
-    }
-  }
-
   // ── ReviewDrawer 審核抽屜 ──
+  // 跨頁共用：ReviewDrawer 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
+  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
   .review-drawer-panel {
     width: 520px;
     right: -520px;
@@ -1681,88 +1505,289 @@
       flex: 1;
     }
   }
+}
 
-  // ── 版本紀錄內的稽核時間軸 ──
-  .review-timeline {
-    margin-top: 10px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--divider-a20);
+// ── 新狀態 badge（小寫，對齊 store ItemStatus） ──
+.status-badge--active {
+  background: var(--accent-soft);
+  color: var(--success);
+}
+.status-badge--processing {
+  background: var(--tag-violet-bg);
+  color: var(--tag-violet-text);
+}
+.status-badge--reviewing {
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+}
+.status-badge--needs_update {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+}
+.status-badge--pending {
+  background: var(--surface);
+  color: var(--text-muted);
+}
+.status-badge--failed {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.status-badge--archived {
+  background: var(--page-bg);
+  color: var(--text-faint);
+  border: 1px solid var(--divider);
+}
+// ── Version status badge（小寫） ──
+.status-badge--draft {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+}
+.status-badge--history {
+  background: var(--surface);
+  color: var(--text-muted);
+}
+.status-badge--rejected {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+// ── Pipeline 進度條（列表列內用）──
+// 跨頁共用：KnowledgeBase 列表列與 KnowledgeDetail 概覽 Tab 都使用同一組 class
+.pipeline-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.pipeline-progress-bar {
+  width: 80px;
+  height: 4px;
+  background: var(--tag-violet-bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pipeline-progress-fill {
+  height: 100%;
+  background: var(--tag-violet-text);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.pipeline-stage-label {
+  font-size: 11px;
+  color: var(--tag-violet-text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// ── 批次操作工具列 ──
+.batch-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--tag-blue-text);
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+
+  .batch-count {
+    font-weight: 600;
+  }
+
+  .batch-actions {
     display: flex;
-    flex-direction: column;
     gap: 8px;
+    margin-left: auto;
   }
 
-  .review-timeline-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .review-timeline-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-
-    &--submitted  { background: #1565c0; }
-    &--approved   { background: var(--primary); }
-    &--rejected   { background: #c62828; }
-    &--withdrawn  { background: var(--text-faint); }
-  }
-
-  .review-timeline-content {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .review-timeline-action {
-    font-weight: 700;
-    color: var(--text-a80);
-  }
-
-  .review-timeline-by {
-    color: var(--text-muted);
-    &::before { content: '·'; margin-right: 6px; }
-  }
-
-  .review-timeline-time {
-    color: var(--text-faint);
-    font-size: 11px;
-  }
-
-  .review-timeline-note {
-    width: 100%;
-    font-size: 12px;
-    color: var(--text-a60);
-    margin-top: 2px;
-    padding: 4px 8px;
-    background: var(--page-bg);
+  .batch-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 3px 10px;
     border-radius: 4px;
-    border-left: 2px solid var(--divider-a50);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(255, 255, 255, 0.25); }
+    &.is-danger { background: var(--danger); border-color: transparent; }
+    &.is-danger:hover { background: var(--danger); filter: brightness(0.9); }
+  }
+
+  .batch-cancel {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 12px;
   }
 }
 
-// ── 新增知識條目下拉選單 ──
-.add-knowledge-dropdown {
-  position: relative;
+// Needs-update 列高亮
+.table-row--needs-update {
+  background: var(--tag-amber-bg);
+}
 
-  .add-dropdown-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    min-width: 160px;
-    z-index: 20;
+// ── CreateKnowledgeWizardModal ──
+.CreateKnowledgeWizardModal {
+  .wizard-modal-body {
+    padding: 4px 0;
   }
 
-  .rotate-180 {
-    transform: rotate(180deg);
-    transition: transform 0.2s ease;
+  .source-type-row {
+    display: flex;
+    gap: 10px;
   }
+
+  .source-type-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    border: 2px solid var(--divider-a50);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:hover {
+      border-color: var(--primary);
+    }
+
+    &.is-active {
+      border-color: var(--primary);
+      background: var(--primary-a08);
+    }
+  }
+
+  .upload-dropzone {
+    border: 2px dashed var(--divider-a50);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:hover,
+    &.has-file {
+      border-color: var(--primary);
+      background: var(--primary-a08);
+    }
+  }
+
+  .tags-input-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-height: 38px;
+    cursor: text;
+  }
+
+  .tags-input-field {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 100px;
+    flex: 1;
+  }
+}
+
+// ── KPI 轉換率卡片 ──────────────────────────────────────
+// .stat-card--kpi 本體已移入 .KnowledgeBase .stat-card 內以 &--kpi 巢狀宣告（見上方 Finding 1/5/6 修正）
+.kpi-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.stat-icon--kpi {
+  background: var(--accent-soft);
+  color: var(--text-muted);
+}
+
+.stat-number--kpi {
+  color: var(--primary-hover);
+}
+
+.kpi-target {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.kpi-progress-bar {
+  height: 3px;
+  background: var(--divider);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.kpi-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+// .stat-card--needs-update 本體已移入 .KnowledgeBase .stat-card 內以 &--needs-update 巢狀宣告（見上方 Finding 1/5 修正）
+.stat-number--needs-update {
+  color: var(--tag-amber-text);
+}
+
+// ── ErrorLogModal 樣式 ─────────────────────────────────
+.error-log-modal {
+  width: 560px;
+  max-width: 90vw;
+}
+
+.error-log-body {
+  padding: 16px 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.error-log-pre {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
+
+@mixin knowledge-base-dark {
+  .stat-card {
+    box-shadow: none;
+  }
+}
+
+[data-theme="dark"] { @include knowledge-base-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include knowledge-base-dark; }
 }

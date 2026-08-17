@@ -59,21 +59,6 @@
   </VueDragResizeRotate>
 
   <!-- 左右區塊顯示控制按鈕 -->
-  <div :class="['AiViewr-ctrl-box left-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]" v-if="false"
-    @wheel="stopWhellZoomEvent($event)"
-    @touchmove="stopTouchpadZoomEvent($event)"
-    @click="() => {
-      isShowLeftFrame = !isShowLeftFrame;
-      // nextTick(() => {
-      //   checkRightSize(handleLREndResize);
-      // });
-    }">
-    <i :class="['uil fs-24', {
-        'uil-toggle-on': isShowLeftFrame,
-        'uil-toggle-off': !isShowLeftFrame,
-      }]">
-    </i>
-  </div>
   <div :class="['AiViewr-ctrl-box right-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
     v-show="!conv1IsEmpty"
     :style="{
@@ -1524,6 +1509,7 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
   const isCtrl = event.ctrlKey; // 是否按下 ctrl 鍵
   const isCmd = event.metaKey; // 是否按下 command 鍵
   const isShift = event.shiftKey; // 是否按下 Shift 鍵
+  const isAlt = event.altKey; // 是否按下 Option/Alt 鍵
   isAspectRatioMode.value = isTouchDevice.value ? false : isShift; // 是否等比例縮放模式 (觸控類的裝置強制為false)
 
  console.log("onKeybordDownEvent >>> ", key);
@@ -1549,8 +1535,8 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
     nowMultiChoiceAiViewerIds.value = []; // 取消多選清單
   }
 
-  // 按下 Command + Shift 鍵 進入多選模式
-  if (isCmd && isShift) {
+  // 按下 Command + Option 鍵 進入多選模式
+  if (isCmd && isAlt) {
     isMultiChoiceAiViewerMode.value = true;
     (document.activeElement as HTMLElement | null)?.blur(); // 強制滑鼠 blur
   } else {
@@ -1678,20 +1664,34 @@ async function onKeybordDownEvent(event: KeyboardEvent): Promise<void> {
   }
 }
 // 全域層級的鍵盤事件
+// 離開多選模式（放開 Command/Option 鍵，或視窗失焦時呼叫）
+function exitMultiChoiceMode(): void {
+  isMultiChoiceAiViewerMode.value = false;
+  if (!mainStage.value) return;
+  mainStage.value.draggable(true);
+  const selectionRect = mainStage.value.findOne(".selectionRect") as Konva.Rect | undefined;
+  selectionRect?.visible(false);
+}
+
 function onKeybordUpEvent(event: KeyboardEvent): void {
   const isCtrlOrCmd = event.ctrlKey || event.metaKey; // 是否按下 ctrl 鍵或 command 鍵
   const isCtrl = event.ctrlKey; // 是否按下 ctrl 鍵
   const isCmd = event.metaKey; // 是否按下 command 鍵
   const isShift = event.shiftKey; // 是否按下 Shift 鍵
+  const isAlt = event.altKey; // 是否按下 Option/Alt 鍵
   isAspectRatioMode.value = isTouchDevice.value ? false : isShift; // 是否等比例縮放模式 (觸控類的裝置強制為false)
 
-  // 放開 Command or Shift 鍵 離開多選模式
-  if (!isCmd || !isShift) {
-    // 停止多選模式
-    isMultiChoiceAiViewerMode.value = false;
-    mainStage.value.draggable(true);
-    const selectionRect = mainStage.value.findOne(".selectionRect") as Konva.Rect;
-    selectionRect.visible(false);
+  // 放開 Command or Option 鍵 離開多選模式
+  if (!isCmd || !isAlt) {
+    exitMultiChoiceMode();
+  }
+}
+
+// 視窗失焦時（例如觸發 macOS 截圖快捷鍵 Cmd+Shift+3/4/5，畫面焦點被系統截圖工具搶走，
+// 導致放開 Cmd/Shift 的 keyup 事件永遠不會送達頁面）強制離開多選模式，避免卡在多選狀態
+function onWindowBlurExitMultiChoice(): void {
+  if (isMultiChoiceAiViewerMode.value) {
+    exitMultiChoiceMode();
   }
 }
 
@@ -1743,6 +1743,7 @@ onMounted(async() => {
   window.addEventListener("resize", resizeStage);
   window.addEventListener("keydown", onKeybordDownEvent);
   window.addEventListener("keyup", onKeybordUpEvent);
+  window.addEventListener("blur", onWindowBlurExitMultiChoice);
 });
 
 onUnmounted(() => {
@@ -1760,7 +1761,8 @@ onUnmounted(() => {
 
   window.removeEventListener("resize", resizeStage);
   window.removeEventListener("keydown", onKeybordDownEvent);
-  window.removeEventListener("keydown", onKeybordUpEvent);
+  window.removeEventListener("keyup", onKeybordUpEvent);
+  window.removeEventListener("blur", onWindowBlurExitMultiChoice);
 
   resetAiViewerState();
 });

@@ -1,0 +1,397 @@
+.name-conflict-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba($color-warning-amber, 0.08);
+  border: 1px solid rgba($color-warning-amber, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+
+  .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; flex-shrink: 0; }
+}
+
+.SkillEditor {
+  // 步驟指示器
+  .se-stepper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 36px;
+    max-width: 560px;
+  }
+
+  .se-step {
+    // Phase 0：從 <div> 改為 <button>，重置原生按鈕樣式
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: inherit;
+    padding: 0;
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    &:disabled { cursor: default; }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    cursor: default;
+
+    &.is-done { cursor: pointer; }
+  }
+
+  .se-step-bubble {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--divider-a50);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+    i { font-size: 16px; }
+
+    .is-active & {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+    .is-done & {
+      border-color: var(--primary);
+      background: var(--accent-soft);
+      color: var(--primary);
+    }
+  }
+
+  .se-step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+
+    .is-active & { color: var(--primary); font-weight: 600; }
+    .is-done  & { color: var(--primary-hover); }
+  }
+
+  // 步驟連接線（絕對定位在氣泡中線）
+  .se-step-track {
+    position: absolute;
+    top: 15px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: var(--divider-a50);
+    z-index: 0;
+
+    .se-step-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+  }
+
+  // 表單內容區
+  .se-body {
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+
+  .se-section {
+    margin-bottom: 22px;
+  }
+
+  .se-primary-section {
+    border: 1.5px solid var(--tag-teal-text);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    background: var(--surface);
+  }
+
+  .se-secondary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+
+    @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
+  }
+
+  .se-secondary-section {
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+  }
+
+  .se-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .se-required { color: var(--danger); margin-left: 2px; }
+
+  .se-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+    line-height: 1.6;
+  }
+
+  .se-textarea-sm {
+    width: 100%;
+    resize: vertical;
+    min-height: 80px;
+    font-size: 13px;
+  }
+
+  .se-editor-wrap {
+    position: relative;
+  }
+
+  .se-textarea-lg {
+    width: 100%;
+    resize: vertical;
+    min-height: 280px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .se-mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+  .se-char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 11px;
+    color: var(--text-faint);
+    pointer-events: none;
+  }
+
+  // 確認頁：標題 + 分組卡片
+  .se-confirm-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: $font-family-heading;
+    margin: 0 0 16px;
+  }
+
+  .se-confirm-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: $breakpoint-tablet) { grid-template-columns: 1fr; }
+  }
+
+  .se-confirm-group {
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .se-confirm-group-hd {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+
+    i { font-size: 17px; color: var(--primary); }
+  }
+
+  .se-confirm-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--divider-a50);
+
+    &:last-child { border-bottom: none; }
+
+    &.se-confirm-row--toggle {
+      align-items: center;
+    }
+  }
+
+  .se-confirm-key {
+    flex-shrink: 0;
+    width: 100px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .se-confirm-val {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .se-empty { color: var(--text-faint); font-style: italic; }
+
+  .se-confirm-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    max-width: 560px;
+
+    i { font-size: 16px; color: var(--text-faint); }
+  }
+
+  // Toggle
+  .se-toggle {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+
+    input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .se-toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--divider-a50);
+      transition: background 0.2s;
+      flex-shrink: 0;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--primary-fg);
+        transition: transform 0.2s;
+      }
+    }
+
+    input:checked + .se-toggle-track {
+      background: var(--primary);
+      &::after { transform: translateX(16px); }
+    }
+  }
+
+  // AI 自動生成描述
+  .se-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    .se-label { margin-bottom: 0; }
+  }
+
+  .se-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--primary-hover);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    padding: 2px 8px;
+    border-radius: 5px;
+    .material-symbols-outlined { font-size: 13px; }
+  }
+
+  .se-ai-desc {
+    background: var(--page-bg);
+    border: 1px dashed var(--divider-a50);
+    border-radius: 9px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    min-height: 64px;
+    line-height: 1.6;
+  }
+
+  .se-ai-desc-hint {
+    color: var(--text-faint);
+    font-style: italic;
+    font-size: 12.5px;
+  }
+
+  // 底部導覽
+  .se-footer {
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-a50);
+  }
+
+  .se-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .custom-btn i.material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .se-agent-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .se-agent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover {
+      border-color: var(--primary);
+      color: var(--primary-hover);
+    }
+
+    &.is-selected {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--primary-hover);
+      font-weight: 500;
+
+      .se-chip-check { color: var(--primary); }
+    }
+  }
+}

@@ -1,0 +1,104 @@
+<h2>資源庫入口 — UI 設計</h2>
+<p class="subtitle">使用者在資源庫替換檔案版本後的流程</p>
+
+<div style="display:flex;flex-direction:column;gap:24px;margin-top:8px;">
+
+  <!-- Step 1: File card with replace option -->
+  <div>
+    <div class="label">Step 1 — 資源庫檔案卡片：觸發替換</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">共用資源庫</div>
+      <div class="mockup-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px;">
+
+        <!-- File card (active) -->
+        <div style="border:1.5px solid #dee2e6;border-radius:8px;padding:12px;background:white;position:relative;">
+          <div style="font-size:22px;text-align:center;margin-bottom:8px;">📄</div>
+          <div style="font-size:12px;font-weight:600;text-align:center;">product_catalog.pdf</div>
+          <div style="font-size:11px;color:#868e96;text-align:center;margin-top:4px;">v1 &nbsp;·&nbsp; 2.3 MB &nbsp;·&nbsp; 已關聯 1 筆知識</div>
+          <div style="position:absolute;top:8px;right:8px;background:#e9ecef;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;">⋯</div>
+          <!-- Dropdown shown -->
+          <div style="position:absolute;top:28px;right:8px;background:white;border:1px solid #dee2e6;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:10;font-size:12px;min-width:130px;">
+            <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#495057;">預覽</div>
+            <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#495057;">下載</div>
+            <div style="padding:8px 12px;color:#3b5bdb;font-weight:600;">替換新版本</div>
+            <div style="padding:8px 12px;color:#fa5252;">刪除</div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #dee2e6;border-radius:8px;padding:12px;background:#fafafa;">
+          <div style="font-size:22px;text-align:center;margin-bottom:8px;">📊</div>
+          <div style="font-size:12px;font-weight:600;text-align:center;">faq_list.xlsx</div>
+          <div style="font-size:11px;color:#868e96;text-align:center;margin-top:4px;">v2 &nbsp;·&nbsp; 0.8 MB</div>
+        </div>
+
+        <div style="border:1px solid #dee2e6;border-radius:8px;padding:12px;background:#fafafa;">
+          <div style="font-size:22px;text-align:center;margin-bottom:8px;">📝</div>
+          <div style="font-size:12px;font-weight:600;text-align:center;">policy_2026.docx</div>
+          <div style="font-size:11px;color:#868e96;text-align:center;margin-top:4px;">v1 &nbsp;·&nbsp; 1.1 MB</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Upload new version -->
+  <div>
+    <div class="label">Step 2 — 上傳新版本（重用 AppBatchUpload）</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">上傳新版本：product_catalog.pdf</div>
+      <div class="mockup-body" style="padding:14px;">
+        <div style="border:2px dashed #adb5bd;border-radius:8px;padding:24px;text-align:center;color:#868e96;font-size:13px;">
+          <div style="font-size:28px;margin-bottom:8px;">☁️</div>
+          拖曳檔案至此，或點此選取<br>
+          <small>將替換 product_catalog.pdf 的現有版本（v1）</small>
+        </div>
+        <div style="margin-top:12px;background:#fff8e1;border-radius:6px;padding:8px 12px;font-size:12px;color:#856404;">
+          ⚠ 此檔案已被 <strong>1 筆知識條目</strong> 引用。更新後，相關知識條目將顯示「來源已更新」提示。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: After upload success -->
+  <div>
+    <div class="label">Step 3 — 上傳成功後：Toast 提示 + badge 更新</div>
+    <div class="mockup" style="margin-top:8px;">
+      <div class="mockup-header">共用資源庫（上傳完成後）</div>
+      <div class="mockup-body" style="padding:14px;position:relative;">
+
+        <!-- Toast -->
+        <div style="position:absolute;top:12px;right:12px;background:#1a1a2e;color:white;border-radius:8px;padding:10px 14px;font-size:12px;max-width:260px;box-shadow:0 4px 12px rgba(0,0,0,.2);">
+          ✅ <strong>product_catalog.pdf</strong> 已更新至 v2<br>
+          <span style="color:#aaa;">1 筆知識條目來源已標記待更新</span>
+          <div style="margin-top:6px;">
+            <span style="color:#6b8cff;cursor:pointer;text-decoration:underline;font-size:11px;">前往知識內容管理 →</span>
+          </div>
+        </div>
+
+        <!-- Updated file card -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          <div style="border:1.5px solid #28a745;border-radius:8px;padding:12px;background:white;">
+            <div style="font-size:22px;text-align:center;margin-bottom:8px;">📄</div>
+            <div style="font-size:12px;font-weight:600;text-align:center;">product_catalog.pdf</div>
+            <div style="font-size:11px;color:#28a745;text-align:center;margin-top:4px;font-weight:600;">v2 &nbsp;·&nbsp; 剛剛更新</div>
+            <div style="font-size:10px;color:#868e96;text-align:center;">已關聯 1 筆知識（待更新）</div>
+          </div>
+          <div style="border:1px solid #dee2e6;border-radius:8px;padding:12px;background:#fafafa;">
+            <div style="font-size:22px;text-align:center;margin-bottom:8px;">📊</div>
+            <div style="font-size:12px;font-weight:600;text-align:center;">faq_list.xlsx</div>
+            <div style="font-size:11px;color:#868e96;text-align:center;margin-top:4px;">v2</div>
+          </div>
+          <div style="border:1px solid #dee2e6;border-radius:8px;padding:12px;background:#fafafa;">
+            <div style="font-size:22px;text-align:center;margin-bottom:8px;">📝</div>
+            <div style="font-size:12px;font-weight:600;text-align:center;">policy_2026.docx</div>
+            <div style="font-size:11px;color:#868e96;text-align:center;margin-top:4px;">v1</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:16px;font-size:13px;color:#666;">重點：Step 2 的警告提示讓使用者預先知道會影響哪些知識，Toast 則提供快速跳轉連結。這部分看起來合理嗎？</p>

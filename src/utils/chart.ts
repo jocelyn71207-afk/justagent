@@ -17,6 +17,7 @@ function buildDatasets(values: SourceChart['data']['values'] | undefined, chartT
   }
 
   let colorIndex = 0
+  const isArc = chartType === 'pie' || chartType === 'doughnut'
 
   return values.flatMap(group =>
     Object.entries(group).map(([label, data]) => {
@@ -25,11 +26,12 @@ function buildDatasets(values: SourceChart['data']['values'] | undefined, chartT
       return {
         label,
         data,
-        backgroundColor:
-          chartType === 'line'
+        backgroundColor: isArc
+          ? data.map((_, i) => COLORS[i % COLORS.length])
+          : chartType === 'line'
             ? `${color}33`
             : color,
-        borderColor: color,
+        borderColor: isArc ? '#ffffff' : color,
         borderWidth: 2,
         fill: chartType === 'line',
         tension: chartType === 'line' ? 0.3 : undefined

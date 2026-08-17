@@ -184,9 +184,9 @@ $menutransition: 0.2s;
 | H1 | `24px` | 區塊標題 |
 | H2 / Modal 標題 | `22px` / `1.375rem` | Modal title、頁面 h3 |
 | H3 | `20px` | 卡片標題（大） |
-| Body Large | `18px` | 按鈕文字、Modal 內容 |
+| Body Large | `18px` | Modal 內容 |
 | Body Base | `16px` / `1rem` | 主要內文 |
-| Body Small / Form | `14px` | 表單、卡片標題 |
+| Body Small / Form | `14px` | 表單、卡片標題、按鈕文字 |
 | Caption | `13px` | 小標籤 |
 | Micro | `12px` | 說明文字、Badge |
 | Tiny | `10px` – `11px` | 極小提示 |
@@ -349,15 +349,18 @@ inset 0 0 0 1px var(--color-border);
 ### 標準按鈕（`.custom-btn`）
 
 ```scss
-padding: 0.375rem 0.8rem;        /* ~6px 12.8px */
-border: 2px solid var(--color-border);
+padding: 0.3rem 0.7rem;          /* ~4.8px 11.2px */
+border: 1.5px solid var(--color-border);
 border-radius: 8px;
 background: var(--color-background);
 color: var(--color-text);
-font-size: 1rem;
-line-height: 1.5;
+font-size: 0.875rem;             /* 14px */
+line-height: 1.4;
 transition: 0.15s;
 ```
+
+- Icon（`> i`）：`font-size: 16px`
+- Icon 與文字間距（`gap`）：`5px`
 
 | 狀態 | 邊框色 | 文字色 |
 |------|--------|--------|
@@ -369,7 +372,7 @@ transition: 0.15s;
 ### 主色按鈕（`.custom-main-btn`）
 
 ```scss
-border: 2px solid $color_main_1;
+border: 1.5px solid $color_main_1;
 background: $color_main_1;
 color: #ffffff;
 ```
@@ -582,4 +585,4 @@ accent-color: $color_main_1;
 
 ---
 
-*最後更新：2026-04-07*
+*最後更新：2026-08-06*

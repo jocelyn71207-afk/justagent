@@ -2,495 +2,587 @@
   <compModal
     class="CreateKnowledgeWizardModal"
     v-model="isOpenModal"
-    :width="660"
-    :showClose="!isGenerating && !isChecking"
+    :width="560"
   >
-    <template #title>
-      <div class="wizard-header-box">
-        <h4 class="wizard-modal-title">建立知識條目</h4>
-        <div class="wizard-steps">
-          <template v-for="(label, i) in stepLabels" :key="i">
-            <div :class="['wizard-step-item', { 'is-active': currentStep >= i + 1 }]">
-              <div :class="['wizard-step-dot', { 'is-done': currentStep > i + 1, 'is-active': currentStep === i + 1 }]">
-                <i v-if="currentStep > i + 1" class="material-symbols-outlined">check</i>
-                <span v-else>{{ i + 1 }}</span>
-              </div>
-              <span class="wizard-step-label">{{ label }}</span>
-            </div>
-            <div v-if="i < stepLabels.length - 1" :class="['wizard-step-connector', { 'is-done': currentStep > i + 1 }]"></div>
-          </template>
-        </div>
-      </div>
-    </template>
+    <template #title>建立知識條目</template>
 
     <div class="wizard-modal-body">
-      <!-- 來源檔案資訊列 -->
-      <div class="wizard-file-info">
-        <div class="file-icon-box">
-          <i class="material-symbols-outlined">{{ fileTypeIcon }}</i>
-        </div>
-        <div class="file-text-content">
-          <span class="file-label">來源檔案</span>
-          <span class="file-name">{{ file?.fileName }}</span>
+      <!-- 來源類型選擇（prefillFile 時隱藏）-->
+      <div class="source-type-row mb-4" v-if="!prefillFile">
+        <div
+          v-for="t in sourceTypes"
+          :key="t.value"
+          :class="['source-type-card', { 'is-active': selectedSourceType === t.value }]"
+          @click="selectedSourceType = t.value"
+        >
+          <i class="material-symbols-outlined fs-24 mb-1">{{ t.icon }}</i>
+          <div class="fs-12 fw-600">{{ t.label }}</div>
+          <div class="fs-11 fc-grey-1">{{ t.desc }}</div>
         </div>
       </div>
 
-      <!-- ── Step 1：相似性檢查 ── -->
-      <div v-if="currentStep === 1" class="wizard-step-content">
-        <div v-if="isChecking" class="wizard-state-center">
-          <div class="ai-pulse-icon">
-            <i class="material-symbols-outlined">manage_search</i>
-          </div>
-          <div class="status-title">正在掃描相似知識條目...</div>
-          <div class="status-desc">系統正在比對知識庫中的現有條目，確保內容不重複</div>
+      <!-- FILE: 已預填來源檔案（從共用檔案管理建立）-->
+      <template v-if="selectedSourceType === 'FILE' && prefillFile">
+        <div class="upload-dropzone mb-3 has-file" style="cursor:default;">
+          <i class="material-symbols-outlined fs-28 mb-1" style="color:#16a34a;">task_alt</i>
+          <div class="fs-13 fw-600">{{ prefillFile.fileName }}</div>
+          <div class="fs-12 fc-grey-1 mt-1">來自共用檔案管理</div>
         </div>
+      </template>
 
-        <div v-else>
-          <!-- 有相似項目 -->
-          <template v-if="similarItems.length">
-            <div class="check-result-banner check-result-banner--warning">
-              <i class="material-symbols-outlined">warning</i>
-              <div class="banner-text">
-                <div class="banner-title">發現 {{ similarItems.length }} 個可能相關的現有條目</div>
-                <div class="banner-desc">建議先檢查現有內容，您仍可繼續建立新條目或選擇編輯舊有條目。</div>
-              </div>
-            </div>
-            <div class="similar-items-list">
-              <div class="similar-item-card" v-for="item in similarItems" :key="item.id">
-                <div class="item-main">
-                  <div class="item-icon">
-                    <i class="material-symbols-outlined">menu_book</i>
-                  </div>
-                  <div class="item-info">
-                    <div class="item-title">{{ item.title }}</div>
-                    <div class="item-meta">分類：{{ item.category || '未分類' }} · 版本：{{ item.currentVersion }}</div>
-                  </div>
-                </div>
-                <span :class="['status-badge', `status-badge--${item.status}`]">
-                  {{ statusLabelMap[item.status] }}
-                </span>
-              </div>
-            </div>
+      <!-- FILE: 已從共用庫選取 -->
+      <template v-else-if="selectedSourceType === 'FILE' && selectedLibraryFile">
+        <div class="upload-dropzone mb-2 has-file" style="cursor:default;">
+          <i class="material-symbols-outlined fs-28 mb-1" style="color:var(--success);">task_alt</i>
+          <div class="fs-13 fw-600">{{ selectedLibraryFile.fileName }}</div>
+          <div class="fs-12 fc-grey-1 mt-1">來自共用檔案管理</div>
+          <button
+            class="fs-11 fc-grey-1 mt-2"
+            style="background:none;border:none;cursor:pointer;text-decoration:underline;"
+            @click="selectedLibraryFile = null"
+          >更換</button>
+        </div>
+      </template>
+
+      <!-- FILE: 上傳區 -->
+      <template v-else-if="selectedSourceType === 'FILE'">
+        <div
+          class="upload-dropzone mb-2"
+          :class="{ 'has-file': uploadedFile }"
+          @dragover.prevent
+          @drop.prevent="handleDrop"
+          @click="fileInputRef?.click()"
+        >
+          <template v-if="!uploadedFile">
+            <i class="material-symbols-outlined fs-32 mb-2" style="color:#93c5fd;">cloud_upload</i>
+            <div class="fs-13 fw-500" style="color:#2563eb;">拖曳檔案至此或點擊選取</div>
+            <div class="fs-12 fc-grey-1 mt-1">支援 PDF、DOCX、XLSX，最大 50MB</div>
           </template>
-
-          <!-- 無相似項目 -->
-          <div v-else class="check-result-banner check-result-banner--success">
-            <i class="material-symbols-outlined">check_circle</i>
-            <div class="banner-text">
-              <div class="banner-title">未發現重複條目</div>
-              <div class="banner-desc">知識庫中目前沒有與此檔案內容相似的條目，您可以放心地開始建立。</div>
-            </div>
-          </div>
+          <template v-else>
+            <i class="material-symbols-outlined fs-28 mb-1" style="color:#16a34a;">task_alt</i>
+            <div class="fs-13 fw-600">{{ uploadedFile.name }}</div>
+            <div class="fs-12 fc-grey-1 mt-1">{{ (uploadedFile.size / 1024).toFixed(0) }} KB</div>
+            <button class="fs-11 fc-grey-1 mt-2" style="background:none;border:none;cursor:pointer;text-decoration:underline;" @click.stop="uploadedFile = null">更換檔案</button>
+          </template>
         </div>
-      </div>
+        <input ref="fileInputRef" type="file" accept=".pdf,.docx,.xlsx" style="display:none;" @change="handleFileSelect" />
 
-      <!-- ── Step 2：模板選擇 ── -->
-      <div v-if="currentStep === 2" class="wizard-step-content">
-        <div class="step-guide-text">
-          選擇最符合此知識條目用途的模板，AI 將據此產出對應格式的初稿。
+        <!-- 上傳提示 + 共用庫按鈕 -->
+        <div class="d-flex align-items-center justify-content-center gap-1 mb-2" style="font-size:11px;color:var(--text-faint);">
+          <i class="material-symbols-outlined" style="font-size:13px;">info</i>
+          上傳的檔案將同時儲存至共用檔案管理
         </div>
-        <div class="template-grid">
-          <div
-            v-for="tpl in templates"
-            :key="tpl.value"
-            :class="['template-card', { 'is-active': selectedTemplate === tpl.value }]"
-            @click="selectedTemplate = tpl.value"
+        <div class="text-center mb-3" style="font-size:11px;color:var(--text-faint);">— 或 —</div>
+        <div class="text-center mb-3">
+          <button
+            class="custom-btn"
+            style="font-size:12px;"
+            @click.stop="showResourcePicker = true"
           >
-            <div class="template-card-icon">
-              <i class="material-symbols-outlined">{{ tpl.icon }}</i>
-            </div>
-            <div class="template-card-content">
-              <div class="template-card-title">{{ tpl.label }}</div>
-              <div class="template-card-desc">{{ tpl.desc }}</div>
-            </div>
-            <div class="template-card-check" v-if="selectedTemplate === tpl.value">
-              <i class="material-symbols-outlined">check_circle</i>
-            </div>
-          </div>
+            <i class="material-symbols-outlined fs-14">folder_open</i>
+            從共用檔案管理選取
+          </button>
         </div>
+      </template>
 
-        <div class="category-select-row">
-          <label class="category-label">分類</label>
-          <select class="category-select" v-model="selectedCategory">
-            <option value="">未分類</option>
-            <option v-for="cat in CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+      <!-- API: 選來源 -->
+      <template v-else-if="selectedSourceType === 'API'">
+        <div class="mb-3">
+          <label class="form-label">API 來源 <span style="color:#dc2626;">*</span></label>
+          <select v-model="selectedApiSourceId" class="custom-input w-100">
+            <option value="">選擇已設定的 API 來源...</option>
+            <option v-for="s in apiSources" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
+      </template>
+
+      <!-- JUSTKA: 選機器人 -->
+      <template v-else-if="selectedSourceType === 'JUSTKA'">
+        <div class="mb-3">
+          <label class="form-label">JustKa 機器人 <span style="color:#dc2626;">*</span></label>
+          <select v-model="selectedJustkaBot" class="custom-input w-100">
+            <option value="">選擇機器人...</option>
+            <option v-for="b in JUSTKA_BOTS" :key="b.id" :value="b.id">
+              {{ b.name }}（{{ b.cardCount }} 題卡）
+            </option>
+          </select>
+        </div>
+      </template>
+
+      <!-- MANUAL: 標題輸入 -->
+      <template v-else-if="selectedSourceType === 'MANUAL'">
+        <div class="mb-3">
+          <label class="form-label">標題 <span style="color:#dc2626;">*</span></label>
+          <input v-model="manualTitle" class="custom-input w-100" placeholder="輸入知識條目標題" />
+        </div>
+      </template>
+
+      <!-- 共用：分類 + 標籤 -->
+      <div class="mb-3">
+        <label class="form-label">分類 <span style="color:#dc2626;">*</span></label>
+        <select v-model="selectedCategory" class="custom-input w-100">
+          <option value="">選擇分類...</option>
+          <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
+        </select>
       </div>
 
-      <!-- ── Step 3：AI 初稿生成 ── -->
-      <div v-if="currentStep === 3" class="wizard-step-content">
-        <!-- 生成中 -->
-        <div v-if="isGenerating" class="wizard-state-center">
-          <div class="ai-pulse-icon ai-pulse-icon--generating">
-            <i class="material-symbols-outlined">auto_awesome</i>
-          </div>
-          <div class="status-title">AI 正在根據檔案內容產出初稿...</div>
-          <div class="status-desc">選用模板：{{ selectedTemplateLabel }}</div>
-          <div class="ai-progress-container mt-4">
-            <div class="ai-progress-track">
-              <div class="ai-progress-fill" :style="{ width: generateProgress + '%' }"></div>
-            </div>
-            <div class="progress-text">{{ generateProgress }}%</div>
-          </div>
+      <div class="mb-4">
+        <label class="form-label">標籤（選填）</label>
+        <div class="tags-input-wrap">
+          <span
+            v-for="tag in selectedTags"
+            :key="tag"
+            class="tag-chip"
+          >
+            {{ tag }}
+            <i class="material-symbols-outlined fs-13 cursor-pointer ml-1" @click="removeTag(tag)">close</i>
+          </span>
+          <input
+            v-model="tagInput"
+            class="tags-input-field"
+            placeholder="輸入後按 Enter 新增"
+            @keydown.enter.prevent="addTag"
+          />
         </div>
+      </div>
 
-        <!-- 生成完成 -->
-        <div v-else class="ai-preview-container">
-          <div class="ai-preview-header">
-            <div class="header-left">
-              <i class="material-symbols-outlined title-icon">auto_awesome</i>
-              <span class="header-title">AI 初稿預覽</span>
-              <span class="template-badge">{{ selectedTemplateLabel }}</span>
-            </div>
-            <span class="header-hint">進入編輯器後可進行細部修改</span>
-          </div>
-          <div class="ai-preview-body" v-if="generatedContent">
-            <KnowledgeTablePreview
-              v-if="isTablePreview"
-              :data="(generatedContent as any)"
-            />
-            <KnowledgeFlashcardPreview
-              v-else
-              :cards="(generatedContent as any)"
-            />
-          </div>
-        </div>
+      <!-- Footer Actions -->
+      <div class="d-flex justify-content-end gap-2">
+        <button class="custom-btn" @click="isOpenModal = false">取消</button>
+        <button
+          class="custom-btn custom-main-btn"
+          :disabled="!canSubmit"
+          @click="handleSubmit"
+        >
+          <i class="material-symbols-outlined">{{ selectedSourceType === 'MANUAL' ? 'edit' : selectedSourceType === 'FILE' ? 'auto_awesome' : selectedSourceType === 'JUSTKA' ? 'auto_awesome' : 'upload' }}</i>
+          {{ selectedSourceType === 'MANUAL' ? '建立草稿並編輯' : selectedSourceType === 'FILE' ? '建立並 AI 生成內容' : selectedSourceType === 'JUSTKA' ? '匯入並 AI 整理題庫' : '上傳並開始處理' }}
+        </button>
       </div>
     </div>
-
-    <template #footer>
-      <div class="wizard-footer-actions">
-        <button class="custom-btn" @click="handleClose">取消</button>
-
-        <div class="action-right">
-          <!-- Step 1 -->
-          <button
-            v-if="currentStep === 1"
-            class="custom-btn custom-main-btn"
-            :disabled="isChecking"
-            @click="goToStep2"
-          >
-            繼續建立知識 <i class="material-symbols-outlined fs-18 ml-1">arrow_forward</i>
-          </button>
-
-          <!-- Step 2 -->
-          <template v-if="currentStep === 2">
-            <button class="custom-btn mr-2" @click="currentStep = 1">上一步</button>
-            <button
-              class="custom-btn custom-main-btn"
-              :disabled="!selectedTemplate"
-              @click="goToStep3"
-            >
-              確定
-            </button>
-          </template>
-
-          <!-- Step 3 -->
-          <template v-if="currentStep === 3 && !isGenerating">
-            <button class="custom-btn mr-2" @click="currentStep = 2">重新選擇模板</button>
-            <button
-              class="custom-btn custom-main-btn"
-              @click="handleConfirm"
-            >
-              進入編輯器 <i class="material-symbols-outlined fs-18 ml-1">edit_square</i>
-            </button>
-          </template>
-        </div>
-      </div>
-    </template>
+    <ResourceFilePicker v-model="showResourcePicker" @select="onPickerSelect" />
   </compModal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useKnowledgeStore } from '@/stores/knowledgeStore';
-import compModal from '@/components/compModal/compModal.vue';
-import KnowledgeFlashcardPreview from '@/components/Knowledge/KnowledgeFlashcardPreview.vue'
-import KnowledgeTablePreview from '@/components/Knowledge/KnowledgeTablePreview.vue'
-
-interface FileItem {
-  id: string;
-  fileName: string;
-  fileType: string;
-}
-
-const props = defineProps<{
-  modelValue: boolean;
-  file: FileItem | null;
-}>();
+import { ref, computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+import compModal from '@/components/compModal/compModal.vue'
+import { useKnowledgeStore, getChunkingConfig, buildChunkContent, processImage } from '@/stores/knowledgeStore'
+import type { SourceType, ChunkPreview } from '@/stores/knowledgeStore'
+import popDialog from '@/services/popDialog'
+import ResourceFilePicker from '@/components/Knowledge/ResourceFilePicker.vue'
+import { useResourceStore } from '@/stores/resourceStore'
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'confirm', data: { template: string; content: string; category: string }): void;
-}>();
+  (e: 'update:modelValue', val: boolean): void
+  (e: 'created', knowledgeId: string): void
+  (e: 'done', payload: { fileId: string; knowledgeId: string }): void
+}>()
+const props = defineProps<{
+  modelValue: boolean
+  prefillFile?: { fileId: string; fileName: string }
+}>()
 
 const isOpenModal = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-});
+  set: (v) => emit('update:modelValue', v),
+})
 
-// ── 知識預覽資料型別 ──
-interface FlashcardItem {
-  q: string
-  a: string
+const router = useRouter()
+const knowledgeStore = useKnowledgeStore()
+const resourceStore = useResourceStore()
+const { knowledgeList, apiSources } = storeToRefs(knowledgeStore)
+
+// ── 來源類型 ──
+const sourceTypes = [
+  { value: 'FILE' as SourceType,   label: '上傳檔案', icon: 'upload_file', desc: 'PDF、Word、Excel' },
+  { value: 'API' as SourceType,    label: 'API 來源',  icon: 'api',         desc: '連接外部系統' },
+  { value: 'MANUAL' as SourceType, label: '直接編輯', icon: 'edit_note',   desc: '手動撰寫內容' },
+  { value: 'JUSTKA' as SourceType, label: 'JustKa',   icon: 'smart_toy',   desc: '匯入機器人題庫' },
+]
+const selectedSourceType = ref<SourceType>('FILE')
+
+// ── FILE ──
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const uploadedFile = ref<File | null>(null)
+const selectedLibraryFile = ref<{ fileId: string; fileName: string } | null>(null)
+const showResourcePicker = ref(false)
+
+function onPickerSelect(file: { fileId: string; fileName: string }) {
+  selectedLibraryFile.value = file
+  uploadedFile.value = null
+  showResourcePicker.value = false
 }
 
-interface TableData {
-  headers: string[]
-  rows: string[][]
+function handleDrop(e: DragEvent) {
+  const file = e.dataTransfer?.files?.[0]
+  if (file) uploadedFile.value = file
 }
 
-type GeneratedContent = FlashcardItem[] | TableData | null
+function handleFileSelect(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) uploadedFile.value = file
+}
 
-const knowledgeStore = useKnowledgeStore();
+// ── API ──
+const selectedApiSourceId = ref('')
 
-// ── 狀態 ──
-const currentStep = ref(1);
-const isChecking = ref(false);
-const similarItems = ref<any[]>([]);
-const selectedTemplate = ref('');
-const selectedCategory = ref('');
-const isGenerating = ref(false);
-const generateProgress = ref(0);
-const generatedContent = ref<GeneratedContent>(null)
+// ── JUSTKA ──
+const JUSTKA_BOTS = [
+  { id: 'bot-1', name: '客服機器人',       cardCount: 48 },
+  { id: 'bot-2', name: '銷售諮詢機器人',   cardCount: 32 },
+  { id: 'bot-3', name: '退換貨處理機器人', cardCount: 24 },
+] as const
+const selectedJustkaBot = ref('')
 
-const stepLabels = ['相似性檢查', '選擇模板', 'AI 生成初稿'];
+// ── MANUAL ──
+const manualTitle = ref('')
 
-const statusLabelMap: Record<string, string> = {
-  PUBLISHED: '已發布',
-  REVIEWING: '審核中',
-  DRAFT: '草稿',
-  REJECTED: '已退回',
-};
+// ── 共用 ──
+const selectedCategory = ref('')
+const categoryOptions = computed(() => [...new Set(knowledgeList.value.map(k => k.category))])
 
-const templates = [
-  {
-    value: 'PRODUCT',
-    label: '商品 / 銷售資料',
-    icon: 'storefront',
-    desc: '商品規格與銷售數據整理，適合庫存管理、銷售報告',
-  },
-  {
-    value: 'SOP',
-    label: 'SOP 標準流程',
-    icon: 'account_tree',
-    desc: '標準作業程序，適合業務流程、操作規範',
-  },
-  {
-    value: 'GUIDE',
-    label: '操作說明',
-    icon: 'menu_book',
-    desc: '系統功能使用指引，適合軟體操作、功能介紹',
-  },
-  {
-    value: 'RULE',
-    label: '規則說明',
-    icon: 'gavel',
-    desc: '規則與政策說明，適合商業規則、合規文件',
-  },
-];
+const selectedTags = ref<string[]>([])
+const tagInput = ref('')
 
-const CATEGORIES = ['商品文件', '系統文件', '客服知識']
+function addTag() {
+  const t = tagInput.value.trim()
+  if (t && !selectedTags.value.includes(t)) selectedTags.value.push(t)
+  tagInput.value = ''
+}
 
-const TABLE_TYPES = ['EXCEL', 'MD']
+function removeTag(tag: string) {
+  selectedTags.value = selectedTags.value.filter(t => t !== tag)
+}
 
-const isTablePreview = computed(() =>
-  TABLE_TYPES.includes(props.file?.fileType?.toUpperCase() ?? '')
-)
+const canSubmit = computed(() => {
+  if (!selectedCategory.value) return false
+  if (props.prefillFile) return true
+  if (selectedSourceType.value === 'FILE') return !!(uploadedFile.value || selectedLibraryFile.value)
+  if (selectedSourceType.value === 'API') return !!selectedApiSourceId.value
+  if (selectedSourceType.value === 'MANUAL') return !!manualTitle.value.trim()
+  if (selectedSourceType.value === 'JUSTKA') return !!selectedJustkaBot.value
+  return false
+})
 
-const selectedTemplateLabel = computed(
-  () => templates.find(t => t.value === selectedTemplate.value)?.label ?? ''
-);
-
-
-const fileTypeIcon = computed(() => {
-  const type = props.file?.fileType?.toUpperCase() ?? '';
-  const map: Record<string, string> = {
-    EXCEL: 'table_view',
-    PDF: 'picture_as_pdf',
-    WORD: 'description',
-    PPT: 'slideshow',
-    IMAGE: 'image',
-    TXT: 'article',
-    MD: 'article',
-    HTML: 'html',
-    CHART: 'bar_chart',
-  };
-  return map[type] ?? 'insert_drive_file';
-});
-
-// ── 監聽開啟，自動觸發相似性檢查 ──
-watch(() => props.modelValue, (val) => {
-  if (val) {
-    currentStep.value = 1;
-    selectedTemplate.value = '';
-    selectedCategory.value = '';
-    similarItems.value = [];
-    generatedContent.value = null;
-    runSimilarityCheck();
+// ── 表單重置 ──
+watch(isOpenModal, (open) => {
+  if (!open) {
+    selectedSourceType.value = 'FILE'
+    uploadedFile.value = null
+    selectedLibraryFile.value = null
+    showResourcePicker.value = false
+    selectedApiSourceId.value = ''
+    selectedJustkaBot.value = ''
+    manualTitle.value = ''
+    selectedCategory.value = ''
+    selectedTags.value = []
+    tagInput.value = ''
   }
-});
+})
 
-function runSimilarityCheck() {
-  isChecking.value = true;
+// ── 送出 ──
+function handleSubmit() {
+  if (!canSubmit.value) return
+
+  if (props.prefillFile) {
+    const { knowledgeId } = knowledgeStore.createFromFile({
+      fileId: props.prefillFile.fileId,
+      fileName: props.prefillFile.fileName,
+      category: selectedCategory.value,
+      template: '',
+      content: '',
+    })
+    emit('done', { fileId: props.prefillFile.fileId, knowledgeId })
+    isOpenModal.value = false
+    popDialog.toast('AI 正在解析檔案並生成知識內容…', 3000)
+    simulateFileAiGeneration(knowledgeId, props.prefillFile.fileName)
+    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
+    return
+  }
+
+  if (selectedSourceType.value === 'MANUAL') {
+    const { knowledgeId, versionId } = knowledgeStore.createManualDraft({
+      title: manualTitle.value.trim(),
+      category: selectedCategory.value,
+      tags: selectedTags.value,
+    })
+    isOpenModal.value = false
+    router.push({ name: 'KnowledgeEditor', params: { knowledgeId, versionId } })
+    return
+  }
+
+  if (selectedSourceType.value === 'FILE') {
+    const isFromLibrary = !!selectedLibraryFile.value
+    const fileRef = isFromLibrary
+      ? { fileId: selectedLibraryFile.value!.fileId, fileName: selectedLibraryFile.value!.fileName }
+      : (() => {
+          const saved = resourceStore.addFileFromUpload(uploadedFile.value!)
+          return { fileId: saved.id, fileName: saved.fileName }
+        })()
+
+    const { knowledgeId } = knowledgeStore.createFromFile({
+      fileId: fileRef.fileId,
+      fileName: fileRef.fileName,
+      category: selectedCategory.value,
+      template: '',
+      content: '',
+    })
+
+    const toastMsg = isFromLibrary
+      ? 'AI 正在解析檔案並生成知識內容…'
+      : '檔案已儲存至共用檔案管理，AI 正在解析並生成知識內容…'
+
+    emit('done', { fileId: fileRef.fileId, knowledgeId })
+    isOpenModal.value = false
+    popDialog.toast(toastMsg, 3000)
+    simulateFileAiGeneration(knowledgeId, fileRef.fileName)
+    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
+    return
+  }
+
+  if (selectedSourceType.value === 'API') {
+    const source = apiSources.value.find(s => s.id === selectedApiSourceId.value)
+    if (!source) return
+    const id = knowledgeStore.createKnowledgeFromApiSource({
+      apiSourceId: source.id,
+      apiSourceName: source.name,
+      name: source.name,
+      category: selectedCategory.value,
+    })
+    isOpenModal.value = false
+    emit('created', id)
+    popDialog.toast('API 來源已建立，Pipeline 處理中…', 3000)
+    simulatePipeline(id)
+    return
+  }
+
+  if (selectedSourceType.value === 'JUSTKA') {
+    const bot = JUSTKA_BOTS.find(b => b.id === selectedJustkaBot.value)
+    if (!bot) return
+    const { knowledgeId } = knowledgeStore.createFromJustka({
+      botId: bot.id,
+      botName: bot.name,
+      cardCount: bot.cardCount,
+      category: selectedCategory.value,
+    })
+    isOpenModal.value = false
+    popDialog.toast('AI 正在整理題庫內容…', 3000)
+    simulateJustkaGeneration(knowledgeId, bot)
+    emit('created', knowledgeId)
+    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
+    return
+  }
+}
+
+// 向量化：可結構化萃取（表格/純文字/markdown）
+const VECTORIZABLE_EXTS = new Set(['xlsx', 'xls', 'csv', 'md', 'txt', 'html', 'htm'])
+// 圖片：走 processImage（OCR 或 Vision Model）
+const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
+
+function getFileExt(fileName: string): string {
+  return fileName.split('.').pop()?.toLowerCase() ?? ''
+}
+function isVectorizable(fileName: string): boolean {
+  return VECTORIZABLE_EXTS.has(getFileExt(fileName))
+}
+
+function generateStructuredContent(baseName: string, ext: string, category: string, tags: string[]): { content: string; chunks: ChunkPreview[] } {
+  const config = getChunkingConfig(category)
+
+  if (['xlsx', 'xls', 'csv'].includes(ext)) {
+    const rawTexts = [
+      `${baseName} — 表頭列：欄位定義與說明`,
+      `${baseName} — 資料列 1–10：主要資料內容`,
+      `${baseName} — 資料列 11–20：補充資料`,
+    ]
+    const chunks: ChunkPreview[] = rawTexts.map((t, i) => ({
+      index: i + 1,
+      content: buildChunkContent(t, { category, tags, sourceType: 'text' }),
+      tokenCount: config.chunkSize,
+      sourceType: 'text',
+    }))
+    const content = [
+      `## ${baseName}`,
+      ``,
+      `> AI 已完成試算表解析，以下為結構化資料預覽。`,
+      ``,
+      `| 品號 | 品名 | 規格 | 庫存量 | 單價 |`,
+      `| --- | --- | --- | ---: | ---: |`,
+      `| A001 | 商品 A | M / 黑色 | 120 | $299 |`,
+      `| A002 | 商品 B | L / 白色 | 85 | $399 |`,
+      `| A003 | 商品 C | S / 藍色 | 204 | $199 |`,
+      `| A004 | 商品 D | XL / 米色 | 47 | $499 |`,
+      ``,
+      `**共解析 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens，${chunks.length} 段。**`,
+    ].join('\n')
+    return { content, chunks }
+  }
+
+  if (ext === 'md') {
+    const rawTexts = [
+      `${baseName} — 標題與簡介`,
+      `${baseName} — 主體段落`,
+      `${baseName} — 結尾與參考資料`,
+    ]
+    const chunks: ChunkPreview[] = rawTexts.map((t, i) => ({
+      index: i + 1,
+      content: buildChunkContent(t, { category, tags, sourceType: 'text' }),
+      tokenCount: config.chunkSize,
+      sourceType: 'text',
+    }))
+    const content = [
+      `## ${baseName}`,
+      ``,
+      `> AI 已解析 Markdown 文件，以下為原始格式內容。`,
+      ``,
+      `### 一、背景說明`,
+      ``,
+      `本文件由 AI 自動解析，呈現原始 Markdown 結構與重點段落。`,
+      ``,
+      `### 二、主要內容`,
+      ``,
+      `- **項目 A**：說明文字，涵蓋核心定義與適用範疇。`,
+      `- **項目 B**：補充細節，包含數值、條件或流程描述。`,
+      `- **項目 C**：注意事項與例外情況處理原則。`,
+      ``,
+      `### 三、參考資料`,
+      ``,
+      `相關文件連結與引用出處於此列出。`,
+    ].join('\n')
+    return { content, chunks }
+  }
+
+  // txt / html / other vectorizable
+  const rawTexts = [
+    `${baseName} — 第 1 段：開頭摘要`,
+    `${baseName} — 第 2 段：主要內容`,
+    `${baseName} — 第 3 段：結語與補充`,
+  ]
+  const chunks: ChunkPreview[] = rawTexts.map((t, i) => ({
+    index: i + 1,
+    content: buildChunkContent(t, { category, tags, sourceType: 'text' }),
+    tokenCount: config.chunkSize,
+    sourceType: 'text',
+  }))
+  const content = [
+    `## ${baseName}`,
+    ``,
+    `> AI 已完成純文字解析。`,
+    ``,
+    `### 段落摘要`,
+    ``,
+    `| 段落 | 主題 | 內容摘要 | Token 數 |`,
+    `| --- | --- | --- | ---: |`,
+    ...chunks.map(c => `| ${c.index} | 第 ${c.index} 段 | ${c.content.replace(/\|/g, '｜')} | ${c.tokenCount} |`),
+    ``,
+    `**共解析 ${chunks.reduce((s, c) => s + c.tokenCount, 0)} tokens。**`,
+  ].join('\n')
+  return { content, chunks }
+}
+
+async function simulateFileAiGeneration(id: string, fileName: string) {
+  const item = knowledgeStore.knowledgeList.find(k => k.id === id)
+  const category = item?.category ?? ''
+  const tags = item?.versions[0]?.tags ?? []
+  const baseName = fileName.replace(/\.[^.]+$/, '')
+  const ext = getFileExt(fileName)
+
+  knowledgeStore.updatePipelineProgress(id, 'chunking', 0)
+  await new Promise(r => setTimeout(r, 800))
+  knowledgeStore.updatePipelineProgress(id, 'embedding', 33)
+  await new Promise(r => setTimeout(r, 1500))
+  knowledgeStore.updatePipelineProgress(id, 'indexing', 67)
+  await new Promise(r => setTimeout(r, 1000))
+
+  let aiContent: string
+  let chunks: ChunkPreview[]
+
+  if (IMAGE_EXTS.has(ext)) {
+    // 圖片路徑：processImage stub（未來接 OCR/Vision API）
+    const imageResult = await processImage(new File([], fileName), category)
+    chunks = [{
+      index: 1,
+      content: buildChunkContent(imageResult.text, { category, tags, sourceType: 'image' }),
+      tokenCount: getChunkingConfig(category).chunkSize,
+      sourceType: 'image',
+    }]
+    aiContent = imageResult.text
+  } else if (isVectorizable(fileName)) {
+    const result = generateStructuredContent(baseName, ext, category, tags)
+    aiContent = result.content
+    chunks = result.chunks
+  } else {
+    // Q&A for pdf / word / ppt
+    chunks = [
+      { index: 1, content: buildChunkContent(`Q: 這份檔案的主要用途是什麼？\nA: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`, { category, tags, sourceType: 'text' }), tokenCount: 142, sourceType: 'text' },
+      { index: 2, content: buildChunkContent(`Q: 檔案中有哪些可識別的關鍵元素？\nA: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`, { category, tags, sourceType: 'text' }), tokenCount: 118, sourceType: 'text' },
+      { index: 3, content: buildChunkContent(`Q: 此檔案適合用在哪些場景？\nA: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`, { category, tags, sourceType: 'text' }), tokenCount: 107, sourceType: 'text' },
+    ]
+    aiContent = [
+      `## ${baseName} — AI 解析`,
+      ``,
+      `> 此格式由 AI 進行語意理解，以 Q&A 方式整理重點；原始檔案可透過「來源附件」查看原檔。`,
+      ``,
+      `**Q1: 這份檔案的主要用途是什麼？**`,
+      ``,
+      `A: 根據 AI 解析，此檔案主要用於視覺呈現與設計參考，內容包含品牌相關的圖像素材。`,
+      ``,
+      `**Q2: 檔案中有哪些可識別的關鍵元素？**`,
+      ``,
+      `A: AI 識別到畫面中包含主視覺圖像、配色方案與版面構圖等設計要素。`,
+      ``,
+      `**Q3: 此檔案適合用在哪些場景？**`,
+      ``,
+      `A: 適合用於行銷素材製作、簡報配圖、網站視覺或社群媒體等使用場景。`,
+    ].join('\n')
+  }
+
+  knowledgeStore.markPipelineDone(id, chunks, aiContent)
+  popDialog.toast('AI 內容生成完成，可前往審閱草稿', 3000)
+}
+
+function simulateJustkaGeneration(id: string, bot: { id: string; name: string; cardCount: number }) {
+  const stages: Array<{ stage: 'chunking' | 'embedding' | 'indexing'; startPct: number; delay: number }> = [
+    { stage: 'chunking',  startPct: 0,  delay: 0    },
+    { stage: 'embedding', startPct: 33, delay: 1500 },
+    { stage: 'indexing',  startPct: 67, delay: 3500 },
+  ]
+  stages.forEach(({ stage, startPct, delay }) => {
+    setTimeout(() => knowledgeStore.updatePipelineProgress(id, stage, startPct), delay)
+  })
   setTimeout(() => {
-    const fileName = props.file?.fileName?.toLowerCase() ?? '';
-    const stripped = fileName.replace(/[._\-\d]/g, ' ').trim();
-    const words = stripped.split(/\s+/).filter(w => w.length > 1);
-
-    similarItems.value = knowledgeStore.knowledgeList.filter(k => {
-      const title = k.title.toLowerCase();
-      return words.some(word => title.includes(word));
-    });
-
-    isChecking.value = false;
-  }, 1800);
+    const aiContent = [
+      `## ${bot.name} — 題庫知識`,
+      ``,
+      `> AI 已整理 ${bot.cardCount} 張題卡，以下為結構化 Q&A 內容。`,
+      ``,
+      `| # | 問題 | 參考答案 |`,
+      `| --- | --- | --- |`,
+      `| 1 | 如何查詢訂單狀態？ | 可至官網會員中心查詢，或提供訂單編號由客服協助確認。 |`,
+      `| 2 | 退貨流程為何？ | 請於購買後 7 天內聯繫客服，提供訂單編號與退貨原因，我們將於 3 個工作天內處理。 |`,
+      `| 3 | 商品保固期多久？ | 依商品類型不同，一般為購買日起 1 年內，詳情請參閱商品說明頁。 |`,
+      `| 4 | 如何修改訂單資訊？ | 訂單成立後 2 小時內可聯繫客服修改；超過時效請於收到商品後辦理換貨。 |`,
+      `| … | … | … |`,
+      ``,
+      `**共整理 ${bot.cardCount} 題，可於「分段預覽」查看完整題卡。**`,
+    ].join('\n')
+    const chunks = Array.from({ length: 4 }, (_, i) => ({
+      index: i + 1,
+      content: `${bot.name} — Q&A 第 ${i + 1} 批（共 ${Math.ceil(bot.cardCount / 4)} 題）`,
+      tokenCount: Math.floor(bot.cardCount * 8 / 4),
+      sourceType: 'text' as const,
+    }))
+    knowledgeStore.markPipelineDone(id, chunks, aiContent)
+    popDialog.toast('AI 整理完成，可前往審閱草稿', 3000)
+  }, 4500)
 }
 
-function goToStep2() {
-  currentStep.value = 2;
-}
-
-function goToStep3() {
-  if (!selectedTemplate.value) return;
-  currentStep.value = 3;
-  startGeneration();
-}
-
-function startGeneration() {
-  isGenerating.value = true;
-  generateProgress.value = 0;
-
-  const interval = setInterval(() => {
-    generateProgress.value += Math.floor(Math.random() * 12) + 5;
-    if (generateProgress.value >= 100) {
-      generateProgress.value = 100;
-      clearInterval(interval);
-      setTimeout(() => {
-        generatedContent.value = buildContent(selectedTemplate.value, props.file?.fileName ?? '');
-        isGenerating.value = false;
-      }, 300);
-    }
-  }, 200);
-}
-
-function buildFlashcardContent(template: string): FlashcardItem[] {
-  switch (template) {
-    case 'PRODUCT':
-      return [
-        { q: '此商品的適用對象為何？', a: '適用於零售業門市人員與電商營運人員，用於日常銷售管理與庫存查核。' },
-        { q: '商品定價調整的授權層級為何？', a: '門市主管可調整 ±5%，超過 5% 需區域督導核准，超過 15% 需總部審批。' },
-        { q: '庫存低於安全水位時應如何處理？', a: '庫存低於安全水位（< 50 件）時，系統自動發送補貨通知，需於 3 個工作天內完成採購請購單。' },
-        { q: '促銷活動的設定流程為何？', a: '由行銷部門建立活動方案 → 主管審核 → ERP 系統設定折扣 → 通知各通路門市執行。' },
-        { q: '退貨商品應如何進行庫存調整？', a: '退貨完成後，系統自動回補庫存數量，若商品損壞需另建調撥單移轉至報廢倉。' },
-      ]
-
-    case 'SOP':
-      return [
-        { q: '開店前盤點作業的標準步驟為何？', a: '①收銀機初始化 ②商品陳列確認 ③庫存抽查（至少 5 項）④填寫開店檢查表 ⑤回報完成。' },
-        { q: '顧客退換貨的標準流程為何？', a: '確認購買憑證 → 商品狀態檢查 → 填寫退換貨單 → 退款（原路返還）或換貨處理 → 庫存更新。' },
-        { q: '每日結帳作業應在何時完成？', a: '須於閉店後 30 分鐘內完成日報表核對，並上傳至系統，異常金額需附說明。' },
-        { q: '遇到系統故障時應如何處理？', a: '立即通知 IT 部門（分機 119），啟用備用紙本流程，記錄所有交易並在系統恢復後補登。' },
-        { q: '消費者投訴的處理時效要求為何？', a: '當場受理 → 24 小時內初步回覆 → 72 小時內提供最終處理結果，嚴重投訴需主管親自簽核。' },
-        { q: '新進員工獨立上崗前需完成哪些訓練？', a: '三天職前教育訓練 + POS 系統操作認證 + 消防安全演練，全部通過後主管簽核始可獨立作業。' },
-      ]
-
-    case 'GUIDE':
-      return [
-        { q: '如何進入此功能模組？', a: '登入系統後，從頂部主選單選擇對應功能，或使用側邊欄快捷入口進入。' },
-        { q: '查詢資料時如何設定篩選條件？', a: '在篩選列依序設定「日期區間」→「資料類別」→「人員或部門範圍」，點擊「套用」即可。' },
-        { q: '匯出報表支援哪些格式？', a: '支援 Excel（.xlsx）、CSV、PDF 三種格式，在結果頁右上角點選「匯出」後選擇格式下載。' },
-        { q: '操作時出現「權限不足」提示應如何處理？', a: '聯繫系統管理員確認角色設定，或請主管在後台為您授予對應功能的存取權限。' },
-        { q: '資料送出後可以修改嗎？', a: '送出後 2 小時內可由本人撤回修改，超過時限需由主管在審核介面退回後重新填送。' },
-      ]
-
-    case 'RULE':
-      return [
-        { q: '本規則的適用對象為何？', a: '適用於所有涉及相關業務的正職、約聘及外包人員，自入職日起生效。' },
-        { q: '標準作業的完成時效要求為何？', a: '常規流程須在規定時間內完成，逾期需填寫延遲說明並取得主管書面核准。' },
-        { q: '遇到無法遵循標準程序的特殊情況如何處理？', a: '說明原因並取得主管書面授權 → 記錄例外情況與實際處理過程 → 事後補充完整文件並歸檔。' },
-        { q: '違反本規則的處理方式為何？', a: '輕微違規予以書面警告並要求改善，情節重大者依公司人事規定處理，必要時依法追究責任。' },
-      ]
-
-    default:
-      return []
-  }
-}
-
-function buildTableContent(template: string, name: string): TableData {
-  switch (template) {
-    case 'PRODUCT':
-      return {
-        headers: ['商品名稱', '商品編號', '規格', '售價', '庫存量'],
-        rows: [
-          [name + ' A', 'SKU-001', '標準款', 'NT$1,200', '350'],
-          [name + ' B', 'SKU-002', '進階款', 'NT$2,500', '120'],
-          [name + ' C', 'SKU-003', '旗艦款', 'NT$4,800', '45'],
-        ],
-      }
-    case 'SOP':
-      return {
-        headers: ['步驟', '作業項目', '負責人', '完成時限', '備註'],
-        rows: [
-          ['1', '開店前盤點', '門市人員', '開店前 30 分鐘', '填寫開店檢查表'],
-          ['2', '收銀機初始化', '門市人員', '開店前 15 分鐘', '確認零用金金額'],
-          ['3', '日報表上傳', '門市主管', '閉店後 30 分鐘', '異常需附說明'],
-        ],
-      }
-    case 'GUIDE':
-      return {
-        headers: ['功能名稱', '操作路徑', '所需權限', '備註'],
-        rows: [
-          ['資料查詢', '主選單 → 查詢', '一般使用者', '可匯出 Excel / CSV / PDF'],
-          ['資料送審', '查詢結果 → 送審', '一般使用者', '2 小時內可撤回'],
-          ['審核作業', '主選單 → 審核', '主管以上', '可退回或核准'],
-        ],
-      }
-    case 'RULE':
-      return {
-        headers: ['規則項目', '適用對象', '標準', '違規處理'],
-        rows: [
-          ['完成時效', '全體人員', '依各作業規定', '逾期需主管核准說明'],
-          ['資料記錄', '全體人員', '完整留存紀錄', '缺漏者書面警告'],
-          ['例外申請', '全體人員', '書面授權', '事後歸檔存查'],
-        ],
-      }
-    default:
-      return { headers: ['項目', '說明'], rows: [['（無資料）', '']] }
-  }
-}
-
-function buildContent(template: string, _fileName: string): GeneratedContent {
-  const fileType = props.file?.fileType?.toUpperCase() ?? ''
-  const name = _fileName.replace(/\.[^.]+$/, '')
-  if (TABLE_TYPES.includes(fileType)) {
-    return buildTableContent(template, name)
-  }
-  return buildFlashcardContent(template)
-}
-
-function contentToString(content: GeneratedContent): string {
-  if (!content) return ''
-  if (Array.isArray(content)) {
-    return (content as FlashcardItem[])
-      .map((card, i) => `Q${i + 1}. ${card.q}\nA${i + 1}. ${card.a}`)
-      .join('\n\n')
-  }
-  const tableData = content as TableData
-  return `| ${tableData.headers.join(' | ')} |\n| ${tableData.headers.map(() => '---').join(' | ')} |\n${tableData.rows.map(row => `| ${row.join(' | ')} |`).join('\n')}`
-}
-
-function handleConfirm() {
-  emit('confirm', {
-    template: selectedTemplateLabel.value,
-    content: contentToString(generatedContent.value),
-    category: selectedCategory.value,
-  });
-  emit('update:modelValue', false);
-}
-
-function handleClose() {
-  emit('update:modelValue', false);
+function simulatePipeline(id: string) {
+  knowledgeStore.startPipelineSimulation(id)
+  setTimeout(() => {
+    popDialog.toast('Pipeline 處理完成！請前往「開始審核」確認 AI 生成的內容後批准發佈', 4000)
+  }, 4500)
 }
 </script>

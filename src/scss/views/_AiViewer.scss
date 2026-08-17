@@ -26,10 +26,6 @@
     clip-path: inset(0); // 讓 position:fixed 的子層也被裁切，防止畫布塊拖出邊界蓋住右側對話欄
     min-height: 100%;
     // border: 1px solid red; // 開發測試用
-    // 網格背景  TODO.. 先不給
-    // background:
-    //   linear-gradient(-90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 20px 20px,
-    //   linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 20px 20px;
     // 細十字格線背景（大格 96px / 小格 24px，js 會依縮放比例動態調整 background-size）
     background-image:
       repeating-linear-gradient(rgba($black, 0.055) 0px, transparent 1px),
@@ -38,15 +34,6 @@
       repeating-linear-gradient(90deg, rgba($black, 0.025) 0px, transparent 1px);
     background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px; // js 會覆蓋此值
     background-position: 0 0;
-
-    // 特別客製深色主題
-    @media (prefers-color-scheme: dark) {
-      background-image:
-        repeating-linear-gradient(rgba($white, 0.04) 0px, transparent 1px),
-        repeating-linear-gradient(90deg, rgba($white, 0.04) 0px, transparent 1px),
-        repeating-linear-gradient(rgba($white, 0.018) 0px, transparent 1px),
-        repeating-linear-gradient(90deg, rgba($white, 0.018) 0px, transparent 1px);
-    }
 
     // 包著每一個小區塊的容器
     .scaleBox {
@@ -119,7 +106,6 @@
       top: 0;
       left: 0;
       z-index: 0;
-      // background-color: blue; // 開發測試用
       box-sizing: border-box;
       @include user-select-none;
     }
@@ -817,7 +803,6 @@
         -webkit-user-select: none;
         user-select: none;
         pointer-events: auto; // 允許遮罩層接收事件以阻止下方元素的互動
-        // background-color: rgba(red, 0.2); // 開發測試用
       }
     }
   }
@@ -844,7 +829,7 @@
         content: "多選模式中";
         text-align: center;
         font-size: 12px;
-        color: #fff;
+        color: var(--primary-fg);
         background-color: rgba($color-wise-green, 0.7);
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(2px);
@@ -864,21 +849,17 @@
   position: absolute;
   top: calc($header-AiViewer-height + 11px);
   z-index: 8;
-  background: rgba(255, 255, 255, 0.80);
-  border: 1px solid rgba(0, 160, 120, 0.20);
+  background: var(--surface-a90);
+  border: 1px solid var(--primary-a20);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0 8px;
   border-radius: 28px;
   box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.07),
-    0 0 0 1px rgba(0, 160, 120, 0.08);
+    0 2px 12px rgba(var(--shadow), 0.07),
+    0 0 0 1px var(--primary-a08);
   color: var(--text);
   @include user-select-none;
-  @media (prefers-color-scheme: dark) {
-    background: rgba(30, 32, 36, 0.85);
-    border-color: rgba(0, 160, 120, 0.15);
-  }
 
   .ctrl-btn {
     height: 24px;
@@ -893,19 +874,18 @@
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: rgba(0, 160, 120, 0.10);
+      background: var(--primary-a08);
       color: var(--primary-hover);
     }
 
     &.active {
-      background: rgba(0, 160, 120, 0.15);
+      background: var(--primary-a12);
       color: var(--primary-hover);
     }
   }
 
   // 左右介面開合按鈕
-  &.right-ctrl-box,
-  &.left-ctrl-box {
+  &.right-ctrl-box {
     right: 60px; // js 給值
     padding: 10px 5px;
     cursor: pointer;
@@ -914,11 +894,6 @@
       align-items: center;
       justify-content: center;
     }
-  }
-  &.left-ctrl-box {
-    right: auto;
-    left: 10px;
-    display: none; // 左區塊目前沒規劃先隱藏起來
   }
 
   // 專案控制小介面
@@ -945,8 +920,8 @@
       justify-content: center;
       font-size: 12px;
       font-weight: 600;
-      color: #fff;
-      background-color: red; // TODO... 之後 js 改成動態給予顏色
+      color: var(--primary-fg);
+      background-color: var(--text-faint); // TODO... 之後 js 改成動態給予顏色
       cursor: pointer;
       user-select: none;
       margin: 0 6px;
@@ -1160,10 +1135,10 @@
       border-radius: 12px; // 與 AiViewerContentBox 同步
     }
     .AiViewerContentBox {
-      border-color: rgba(0, 160, 120, 0.60);
+      border-color: var(--primary-a40);
       box-shadow:
-        0 0 0 2px rgba(0, 160, 120, 0.20),
-        0 4px 20px rgba(5, 150, 105, 0.10);
+        0 0 0 2px var(--primary-a20),
+        0 4px 20px var(--primary-a12);
     }
     // 提升內容區塊避免拖曳時誤觸內容區塊為 iframe 時造成的卡頓問題
     .AiViewerContentBox .content-box {
@@ -1179,8 +1154,8 @@
   // 注意: 這是直接加在套件 AiViewerContentResize 上面的 class, 不要用套件有使用的樣式屬性, 如 border
   &.isMultiActive {
     box-shadow:
-      0 0 0 2px rgba(5, 150, 105, 0.50),
-      0 0 8px rgba(5, 150, 105, 0.25);
+      0 0 0 2px var(--primary-a40),
+      0 0 8px var(--primary-a20);
     border-radius: 12px;
     .AiViewerContentBox {
       border-color: transparent;
@@ -1231,20 +1206,16 @@
   width: 100%;
   height: 100%;
   padding: 0px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(0, 160, 120, 0.28);
+  background: var(--surface-a70);
+  border: 1px solid var(--primary-a20);
   border-radius: 12px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow:
-    0 4px 20px rgba(5, 150, 105, 0.09),
-    0 1px 4px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(0, 160, 120, 0.10);
+    0 4px 20px var(--primary-a08),
+    0 1px 4px rgba(var(--shadow), 0.06),
+    0 0 0 1px var(--primary-a08);
   // box-shadow: 0 2px 8px rgba(var(--shadow),0.2);
-  @media (prefers-color-scheme: dark) {
-    background: rgba(40, 42, 46, 0.82);
-    border-color: rgba(0, 160, 120, 0.22);
-  }
   display: flex;
   flex-direction: column;
 
@@ -1296,9 +1267,6 @@
     position: relative;
     border-bottom: 1px solid var(--divider-a50);
     padding: 7px 12px;
-    // background: linear-gradient(-45deg, rgba($black, 0.3) 1px, transparent 1px) 0% 0% / 4px 4px;
-    // linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 2px 2px;
-    // background-image: radial-gradient(circle, rgba($black, 0.1) 1px, transparent 2px);
     background-color: var(--surface-a90);
     background-size: 6px 6px; // 點點間距
     background-position: 0 0;
@@ -1382,7 +1350,6 @@
         height: 100%;
         border-radius: 0px;
         box-sizing: border-box;
-        // background-color: rgba(pink, 0.2); // 開發測試用
       }
     }
   }
@@ -1442,11 +1409,6 @@
     &.isMobile {
       right: 30px;
     }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    background: rgba(40, 42, 46, 0.82);
-    border-color: rgba(0, 160, 120, 0.22);
   }
 }
 
@@ -1686,8 +1648,8 @@
           justify-content: center;
           font-size: 13px;
           font-weight: 600;
-          color: #fff;
-          background-color: red; // TODO... 之後 js 改成動態給予顏色
+          color: var(--primary-fg);
+          background-color: var(--text-faint); // TODO... 之後 js 改成動態給予顏色
           user-select: none;
           margin-right: 5px;
         }
@@ -1809,7 +1771,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    // background: linear-gradient(-45deg, rgba($black, 0.3) 1px, transparent 1px) 0% 0% / 4px 4px;
     background-color: var(--surface-a90);
     color: var(--text-muted);
     height: 30px;
@@ -1936,9 +1897,15 @@
     margin-top: 2px;
   }
 
-  .content-box {
+  .message-wrap {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .content-box {
     padding: 10px 14px;
     background-color: var(--surface);
     border-radius: 12px;
@@ -1949,13 +1916,17 @@
   &.forUser {
     justify-content: flex-end;
     .ai-avatar { display: none; }
+    .message-wrap {
+      flex: 0 1 auto;
+      max-width: 80%;
+    }
     .content-box {
       background-color: var(--surface);
       border: 1px solid var(--divider);
       border-radius: 12px;
       border-top-right-radius: 2px;
       width: fit-content;
-      max-width: 80%;
+      max-width: 100%;
       flex: unset;
       font-size: 14px;
     }
@@ -2113,7 +2084,7 @@
 
     &--primary {
       background: var(--accent);
-      color: #fff;
+      color: var(--primary-fg);
       box-shadow: 0 3px 10px rgba($color-wise-green, 0.2);
       transition: all 0.2s ease;
 
@@ -2413,8 +2384,8 @@
     .hr-tag {
       font-size: 10px; font-weight: 600;
       padding: 1px 6px; border-radius: 4px;
-      &.tag-m { background: rgba(79,127,255,0.12); color: #4f7fff; }
-      &.tag-w { background: rgba(236,72,153,0.12); color: #ec4899; }
+      &.tag-m { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
+      &.tag-w { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
     }
   }
 
@@ -2442,15 +2413,15 @@
     tr:last-child td { border-bottom: none; }
     .yr { font-weight: 600; color: var(--text-muted); }
     .rev { font-size: 11px; color: var(--text-muted); }
-    .grow { font-size: 11px; font-weight: 600; color: #16a34a; }
+    .grow { font-size: 11px; font-weight: 600; color: var(--success); }
   }
 
   // 2026 預測卡
   .hr-forecast {
     margin-top: 6px;
     padding: 12px 14px;
-    background: linear-gradient(135deg, rgba(79,127,255,0.07) 0%, rgba(168,85,247,0.05) 100%);
-    border: 1px solid rgba(79,127,255,0.2);
+    background: linear-gradient(135deg, var(--tag-blue-bg) 0%, var(--tag-violet-bg) 100%);
+    border: 1px solid var(--tag-blue-text);
     border-radius: 10px;
 
     .hrf-header {
@@ -2458,10 +2429,10 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
-      .hrf-year { font-size: 18px; font-weight: 800; color: #4f7fff; }
+      .hrf-year { font-size: 18px; font-weight: 800; color: var(--tag-blue-text); }
       .hrf-badge {
         font-size: 10px; font-weight: 700;
-        background: rgba(79,127,255,0.12); color: #4f7fff;
+        background: var(--tag-blue-bg); color: var(--tag-blue-text);
         padding: 2px 8px; border-radius: 20px;
       }
     }
@@ -2483,14 +2454,14 @@
       margin-bottom: 10px;
       .hrf-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint); margin-bottom: 4px; }
       .hrf-bar-track { height: 3px; background: var(--divider); border-radius: 2px; overflow: hidden; }
-      .hrf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #4f7fff, #a855f7); width: 82%; }
+      .hrf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--tag-blue-text), var(--tag-violet-text)); width: 82%; }
     }
     .hrf-drivers {
       display: flex; flex-direction: column; gap: 4px;
       .hrf-driver {
         display: flex; align-items: flex-start; gap: 6px;
         font-size: 11px; color: var(--text-a60);
-        &::before { content: '·'; color: #4f7fff; font-weight: 700; flex-shrink: 0; margin-top: -1px; }
+        &::before { content: '·'; color: var(--tag-blue-text); font-weight: 700; flex-shrink: 0; margin-top: -1px; }
       }
     }
   }
@@ -2508,7 +2479,7 @@
       color: var(--text-a60);
       background: var(--page-bg);
       cursor: pointer;
-      &:hover { border-color: #4f7fff; color: #4f7fff; }
+      &:hover { border-color: var(--tag-blue-text); color: var(--tag-blue-text); }
     }
   }
 }
@@ -2540,8 +2511,8 @@
       justify-content: center;
       font-size: 9px;
     }
-    &.conv2-ss--done { color: #166534; &::before { content: '✓'; background: #f0fdf4; font-weight: 700; } }
-    &.conv2-ss--active { color: #1d4ed8; &::before { content: '⋯'; background: #eff6ff; font-size: 11px; } }
+    &.conv2-ss--done { color: var(--tag-teal-text); &::before { content: '✓'; background: var(--tag-teal-bg); font-weight: 700; } }
+    &.conv2-ss--active { color: var(--tag-blue-text); &::before { content: '⋯'; background: var(--tag-blue-bg); font-size: 11px; } }
     &.conv2-ss--wait { color: var(--text-faint); &::before { content: '○'; background: var(--surface); } }
   }
 }
@@ -2563,8 +2534,8 @@
   border-radius: 6px;
   font-size: 12px;
 
-  &--sel { background: #eff6ff; }
-  &--fn  { background: rgba(207,138,31,0.12); }
+  &--sel { background: var(--tag-blue-bg); }
+  &--fn  { background: var(--tag-amber-bg); }
   &--rank { background: var(--surface); }
 
   .conv2-comp-rank {
@@ -2580,7 +2551,7 @@
     justify-content: center;
     flex-shrink: 0;
     margin-top: 2px;
-    &--fn { background: rgba(207,138,31,0.12); color: var(--warning); border-color: rgba(207,138,31,0.28); }
+    &--fn { background: var(--tag-amber-bg); color: var(--warning); border-color: var(--tag-amber-text); }
   }
   // 新格式：body 包含 brand / title / feat
   .conv2-comp-body {
@@ -2689,9 +2660,9 @@
   border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+  border: 1px solid var(--tag-blue-text);
   white-space: nowrap;
 }
 
@@ -2738,13 +2709,13 @@
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      background: #f0fdf4;
-      border: 1px solid rgba(22,101,52,.28);
+      background: var(--tag-teal-bg);
+      border: 1px solid var(--tag-teal-text);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: #166534;
+      color: var(--tag-teal-text);
     }
     .conv2-report-title { font-size: 13px; font-weight: 500; }
     .conv2-report-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
@@ -2773,7 +2744,7 @@
   border-radius: 12px;
   overflow: hidden;
   z-index: 10;
-  box-shadow: 0 -2px 16px rgba(0,0,0,.1);
+  box-shadow: 0 -2px 16px rgba(var(--shadow),0.1);
 
   // override parent .AiViewrUserInputArea button styles
   button {
@@ -2864,7 +2835,7 @@
     background: var(--surface);
     line-height: 1.6;
     min-height: 64px;
-    &:focus { border-color: rgba(29,78,216,.4); }
+    &:focus { border-color: var(--tag-blue-text); }
   }
   .conv2-up-status {
     font-size: 11px;
@@ -2872,7 +2843,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    &--ready { color: #166534; }
+    &--ready { color: var(--success); }
   }
 
   // ── Step tracker ──
@@ -2887,8 +2858,8 @@
     color: var(--text-faint);
     background: var(--surface);
     flex-shrink: 0;
-    &--done { background: #f0fdf4; border-color: rgba(22,101,52,.28); color: #166534; }
-    &--active { background: #eff6ff; border-color: rgba(29,78,216,.28); color: #1d4ed8; }
+    &--done { background: var(--tag-teal-bg); border-color: var(--tag-teal-text); color: var(--tag-teal-text); }
+    &--active { background: var(--tag-blue-bg); border-color: var(--tag-blue-text); color: var(--tag-blue-text); }
   }
   .conv2-sl { width: 8px; height: 0.5px; background: var(--divider); flex-shrink: 0; }
   .conv2-step-title { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2896,8 +2867,8 @@
   // ── Step content ──
   .conv2-info-note {
     font-size: 11px;
-    background: #f0fdf4; color: #166534;
-    border: 0.5px solid rgba(22,101,52,.28);
+    background: var(--tag-teal-bg); color: var(--tag-teal-text);
+    border: 0.5px solid var(--tag-teal-text);
     border-radius: 6px; padding: 5px 9px; margin-bottom: 8px;
   }
   .conv2-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
@@ -2906,7 +2877,7 @@
     border: 0.5px solid var(--divider);
     font-size: 12px; cursor: pointer; user-select: none;
     color: var(--text-muted);
-    &.sel { border-color: rgba(29,78,216,.28); background: #eff6ff; color: #1d4ed8; }
+    &.sel { border-color: var(--tag-blue-text); background: var(--tag-blue-bg); color: var(--tag-blue-text); }
   }
   .conv2-fg { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 7px; }
   .conv2-fl { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
@@ -2918,7 +2889,7 @@
     outline: none; font-family: inherit;
     &--full { width: 100%; }
     &--ta { resize: none; line-height: 1.5; }
-    &:focus { border-color: rgba(29,78,216,.28); }
+    &:focus { border-color: var(--tag-blue-text); }
   }
   .conv2-ghost-btn {
     opacity: 0;
@@ -2964,9 +2935,9 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: #eff6ff;
-    color: #1d4ed8;
-    border: 0.5px solid rgba(29, 78, 216, 0.25);
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+    border: 0.5px solid var(--tag-blue-text);
     border-radius: 4px;
     padding: 0 5px;
     font-size: 11px;
@@ -2980,7 +2951,7 @@
     padding: 7px 9px; border-radius: 7px;
     border: 0.5px solid var(--divider);
     cursor: pointer; user-select: none; margin-bottom: 4px;
-    &.sel { border-color: rgba(29,78,216,.28); background: #eff6ff; .conv2-ft { color: #1d4ed8; } }
+    &.sel { border-color: var(--tag-blue-text); background: var(--tag-blue-bg); .conv2-ft { color: var(--tag-blue-text); } }
   }
   .conv2-fcb {
     width: 12px; height: 12px;
@@ -2990,8 +2961,8 @@
   }
   .conv2-ft { font-size: 12px; font-weight: 500; }
   .conv2-fd { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-  .conv2-err { font-size: 11px; color: #dc2626; margin-top: 4px; min-height: 13px; }
-  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: rgba(207,138,31,0.12); color: var(--warning); }
+  .conv2-err { font-size: 11px; color: var(--danger); margin-top: 4px; min-height: 13px; }
+  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: var(--tag-amber-bg); color: var(--warning); }
   .conv2-review-grid {
     background: var(--surface); border-radius: 7px; padding: 9px 11px;
     display: flex; flex-direction: column; gap: 0;
@@ -3020,7 +2991,7 @@
     border-bottom: 0.5px solid var(--divider);
     &:last-child { border: none; }
     &:hover { background: var(--surface); }
-    &.sel { background: #eff6ff; .conv2-ci-nm { color: #1d4ed8; } }
+    &.sel { background: var(--tag-blue-bg); .conv2-ci-nm { color: var(--tag-blue-text); } }
     &.blocked { opacity: .35; pointer-events: none; }
   }
   .conv2-ci-ic {
@@ -3033,7 +3004,7 @@
   .conv2-ci-info { flex: 1; min-width: 0; }
   .conv2-ci-nm { font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .conv2-ci-mt { font-size: 10px; color: var(--text-muted); }
-  .conv2-ci-chk { width: 12px; height: 12px; flex-shrink: 0; accent-color: #1d4ed8; }
+  .conv2-ci-chk { width: 12px; height: 12px; flex-shrink: 0; accent-color: var(--tag-blue-text); }
   .conv2-prev-col-fp {
     flex: 1; min-width: 0;
     display: flex; flex-direction: column;
@@ -3062,7 +3033,7 @@
     color: var(--page-bg);
     border: none; cursor: pointer;
     white-space: nowrap;
-    &--green { background: #166534; }
+    &--green { background: var(--success); }
     &:disabled { opacity: 0.45; cursor: default; }
     &:hover:not(:disabled) { opacity: 0.85; }
   }
@@ -3199,7 +3170,7 @@
         position: absolute;
         inset: 3px;
         border-radius: 50%;
-        background: #fff;
+        background: var(--primary-fg);
       }
     }
   }
@@ -3385,7 +3356,7 @@
 
     &--primary {
       background: var(--primary);
-      color: #fff;
+      color: var(--primary-fg);
       display: flex;
       align-items: center;
       gap: 3px;
@@ -3401,10 +3372,10 @@
   z-index: 999;
   background-color: var(--page-bg);
   background-image:
-    repeating-linear-gradient(rgba(0, 0, 0, 0.055) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.055) 0px, transparent 1px),
-    repeating-linear-gradient(rgba(0, 0, 0, 0.025) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.025) 0px, transparent 1px);
+    repeating-linear-gradient(rgba(var(--shadow), 0.055) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(var(--shadow), 0.055) 0px, transparent 1px),
+    repeating-linear-gradient(rgba(var(--shadow), 0.025) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(var(--shadow), 0.025) 0px, transparent 1px);
   background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
   display: flex;
   align-items: center;
@@ -3435,7 +3406,7 @@
   border-radius: 12px;
   padding: 12px;
   box-sizing: border-box;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(var(--shadow), 0.06);
 }
 
 .conv1-empty-textarea {
@@ -3528,14 +3499,9 @@
   white-space: nowrap;
   &:hover { background: var(--sidebar-hover); }
   &--collapsed { opacity: 0.6; }
-  .conv2-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+  .conv2-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
 }
 // ─────────────────────────────────────────────────────────────────────────────
-
-@keyframes journey-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
-}
 
 @keyframes aiThinking {
   0% {
@@ -3576,7 +3542,7 @@
     width: 100%;
     height: 100%;
     // overflow: hidden;
-    background-color: rgba($color_red_1, 0.9);
+    background-color: color-mix(in srgb, var(--danger) 90%, transparent);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     font-size: 13px;
@@ -3598,10 +3564,10 @@
   left: 20px;
   width: 240px;
   max-height: calc(100vh - 92px);
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--divider);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 8px 24px rgba(var(--shadow), 0.10);
   display: flex;
   flex-direction: column;
   z-index: 900;
@@ -3609,7 +3575,7 @@
   // ── Header ──
   .jcd-hdr {
     padding: 10px 14px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--divider);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3619,12 +3585,12 @@
   .jcd-hdr-title {
     font-size: 12px;
     font-weight: 700;
-    color: #3b72f6;
+    color: var(--tag-blue-text);
   }
   .jcd-collapse-btn {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: var(--text-faint);
     cursor: pointer;
     line-height: 1;
     padding: 2px;
@@ -3633,7 +3599,7 @@
     display: flex;
     align-items: center;
     i { font-size: 18px; }
-    &:hover { color: #3b72f6; background: #eff6ff; }
+    &:hover { color: var(--tag-blue-text); background: var(--tag-blue-bg); }
   }
 
   // ── Body ──
@@ -3654,12 +3620,12 @@
     transition: background 0.2s, border-color 0.2s;
     cursor: pointer;
     &--hover-marketing {
-      background: #eff6ff;
-      border-color: #3b72f6;
+      background: var(--tag-blue-bg);
+      border-color: var(--tag-blue-text);
     }
     &--hover-birthday {
-      background: #f5f3ff;
-      border-color: #7c3aed;
+      background: var(--tag-violet-bg);
+      border-color: var(--tag-violet-text);
     }
   }
 
@@ -3675,13 +3641,13 @@
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
-    &--marketing { background: #3b72f6; }
-    &--birthday  { background: #7c3aed; }
+    &--marketing { background: var(--tag-blue-text); }
+    &--birthday  { background: var(--tag-violet-text); }
   }
   .jcd-type-name {
     font-size: 11px;
     font-weight: 700;
-    color: #1a1d23;
+    color: var(--text);
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -3698,21 +3664,21 @@
     flex-shrink: 0;
     @at-root .jcd-section--hover-marketing & {
       opacity: 1;
-      background: #3b72f6;
-      color: #fff;
+      background: var(--tag-blue-text);
+      color: var(--tag-blue-bg);
     }
     @at-root .jcd-section--hover-birthday & {
       opacity: 1;
-      background: #7c3aed;
-      color: #fff;
+      background: var(--tag-violet-text);
+      color: var(--tag-violet-bg);
     }
   }
 
   // ── 4-stat row per section ──
   .jcd-stat-row {
     display: flex;
-    background: #f8faff;
-    border: 1px solid #e5e7eb;
+    background: var(--page-bg);
+    border: 1px solid var(--divider);
     border-radius: 8px;
     padding: 7px 6px;
     gap: 2px;
@@ -3723,21 +3689,21 @@
     flex-direction: column;
     align-items: center;
     gap: 1px;
-    & + & { border-left: 1px solid #e5e7eb; }
+    & + & { border-left: 1px solid var(--divider); }
   }
   .jcd-stat-val {
     font-size: 15px;
     font-weight: 800;
-    color: #1a1d23;
+    color: var(--text);
     line-height: 1;
-    &.blue   { color: #3b72f6; }
-    &.green  { color: #16a34a; }
-    &.amber  { color: #f59e0b; }
-    &.violet { color: #7c3aed; }
+    &.blue   { color: var(--tag-blue-text); }
+    &.green  { color: var(--success); }
+    &.amber  { color: var(--tag-amber-text); }
+    &.violet { color: var(--tag-violet-text); }
   }
   .jcd-stat-lbl {
     font-size: 9px;
-    color: #9ca3af;
+    color: var(--text-faint);
   }
 
   // ── Node distribution bars ──
@@ -3754,44 +3720,44 @@
   }
   .jcd-node-dist-key {
     font-weight: 700;
-    color: #6b7280;
+    color: var(--text-muted);
     flex-shrink: 0;
     width: 28px;
   }
   .jcd-node-dist-label {
     flex: 1;
-    color: #6b7280;
+    color: var(--text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .jcd-node-dist-count {
-    color: #9ca3af;
+    color: var(--text-faint);
     flex-shrink: 0;
-    &.running { color: #3b72f6; font-weight: 700; }
+    &.running { color: var(--tag-blue-text); font-weight: 700; }
   }
   .jcd-dist-bar {
     height: 3px;
-    background: #e5e7eb;
+    background: var(--divider);
     border-radius: 3px;
     display: flex;
     overflow: hidden;
   }
-  .jcd-dist-done    { background: #16a34a; height: 100%; transition: width .4s ease; }
-  .jcd-dist-running { background: #3b72f6; height: 100%; transition: width .4s ease; }
+  .jcd-dist-done    { background: var(--success); height: 100%; transition: width .4s ease; }
+  .jcd-dist-running { background: var(--tag-blue-text); height: 100%; transition: width .4s ease; }
 
   // ── Individual rows sub-title ──
   .jcd-rows-title {
     font-size: 9px;
     font-weight: 700;
-    color: #9ca3af;
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: .06em;
     padding-top: 2px;
   }
   .jcd-rows-more {
     font-size: 9px;
-    color: #9ca3af;
+    color: var(--text-faint);
     text-align: center;
     padding: 4px 0 2px;
   }
@@ -3799,7 +3765,7 @@
   // ── Divider ──
   .jcd-divider {
     border: none;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--divider);
     margin: 2px 0;
   }
 
@@ -3810,14 +3776,14 @@
     gap: 6px;
     padding: 5px 8px;
     border-radius: 7px;
-    background: #f8faff;
-    border: 1px solid #e5e7eb;
+    background: var(--page-bg);
+    border: 1px solid var(--divider);
     min-height: 28px;
   }
   .jcd-row-name {
     font-size: 10px;
     font-weight: 700;
-    color: #1a1d23;
+    color: var(--text);
     flex-shrink: 0;
     width: 52px;
     overflow: hidden;
@@ -3835,9 +3801,9 @@
     height: 9px;
     border-radius: 50%;
     flex-shrink: 0;
-    &.done    { background: #16a34a; }
-    &.running { background: #3b72f6; animation: jcd-pulse .9s ease-in-out infinite; }
-    &.pending { background: #e5e7eb; }
+    &.done    { background: var(--success); }
+    &.running { background: var(--tag-blue-text); animation: jcd-pulse .9s ease-in-out infinite; }
+    &.pending { background: var(--divider); }
   }
   @keyframes jcd-pulse {
     0%, 100% { opacity: 1; }
@@ -3849,8 +3815,8 @@
     padding: 1px 6px;
     border-radius: 6px;
     flex-shrink: 0;
-    &.running { background: rgba(59, 114, 246, .12); color: #3b72f6; }
-    &.done    { background: rgba(22, 163, 74, .12);  color: #16a34a; }
+    &.running { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
+    &.done    { background: var(--tag-teal-bg); color: var(--tag-teal-text); }
   }
 }
 
@@ -3873,8 +3839,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #3b72f6;
-  box-shadow: 0 4px 14px rgba(59, 114, 246, .35);
+  background: var(--tag-blue-text);
+  box-shadow: 0 4px 14px var(--tag-blue-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3883,9 +3849,9 @@
   transition: transform .2s ease, box-shadow .2s ease;
   &:hover {
     transform: scale(1.08);
-    box-shadow: 0 6px 20px rgba(59, 114, 246, .45);
+    box-shadow: 0 6px 20px var(--tag-blue-bg);
   }
-  .jcd-fab-icon { font-size: 22px; line-height: 1; color: #fff; }
+  .jcd-fab-icon { font-size: 22px; line-height: 1; color: var(--tag-blue-bg); }
   .jcd-fab-badge {
     position: absolute;
     top: -3px;
@@ -3893,15 +3859,15 @@
     min-width: 18px;
     height: 18px;
     border-radius: 9px;
-    background: #ef4444;
-    color: #fff;
+    background: var(--danger);
+    color: var(--primary-fg);
     font-size: 10px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 4px;
-    border: 2px solid #fff;
+    border: 2px solid var(--surface);
     font-family: 'Helvetica Neue', 'PingFang TC', sans-serif;
   }
 }
@@ -3917,13 +3883,13 @@
 
 // ── Journey block hover highlight（套用在 AiViewerContentBox 的根元素）──
 .jcd-highlight-marketing {
-  outline: 3px solid #3b72f6 !important;
-  box-shadow: 0 0 0 4px rgba(59, 114, 246, 0.2), 0 0 24px rgba(59, 114, 246, 0.12) !important;
+  outline: 3px solid var(--tag-blue-text) !important;
+  box-shadow: 0 0 0 4px var(--tag-blue-bg), 0 0 24px var(--tag-blue-bg) !important;
   transition: outline 0.2s, box-shadow 0.2s;
 }
 .jcd-highlight-birthday {
-  outline: 3px solid #7c3aed !important;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2), 0 0 24px rgba(124, 58, 237, 0.12) !important;
+  outline: 3px solid var(--tag-violet-text) !important;
+  box-shadow: 0 0 0 4px var(--tag-violet-bg), 0 0 24px var(--tag-violet-bg) !important;
   transition: outline 0.2s, box-shadow 0.2s;
 }
 .jcd-dimmed {
@@ -3931,274 +3897,29 @@
   transition: opacity 0.2s;
 }
 
-// ── 右側面板 tab bar ─────────────────────────────────────────────────────────
-.rbox-tab-bar {
-  display: flex;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--divider);
-  background-color: var(--surface);
-  padding: 0 16px;
-  gap: 4px;
-  flex-shrink: 0;
-  overflow: hidden;
+// ── 十字格線背景（.center-box / .conv1-empty-overlay 共用）：
+//    深色模式覆蓋需依實際套用的主題（手動切換的 [data-theme] 優先），而非僅依 OS 偏好判斷，
+//    否則手動主題與 OS 偏好不一致時，格線會消失或顯示錯誤顏色 ──
+@mixin aiviewer-crosshatch-grid-dark {
+  background-image:
+    repeating-linear-gradient(rgba($white, 0.04) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba($white, 0.04) 0px, transparent 1px),
+    repeating-linear-gradient(rgba($white, 0.018) 0px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba($white, 0.018) 0px, transparent 1px);
 }
 
-.rbox-tab {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  padding: 8px 10px 7px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  user-select: none;
-  transition: color .15s, border-color .15s;
-  line-height: 1;
-
-  &:hover { color: var(--text); }
-  &.active {
-    color: #3b72f6;
-    border-bottom-color: #3b72f6;
+[data-theme="dark"] {
+  .AiViewer .center-box,
+  .conv1-empty-overlay {
+    @include aiviewer-crosshatch-grid-dark;
   }
 }
 
-// ── 右側面板 旅程執行狀態 tab 內容 ─────────────────────────────────────────
-.rbox-journey-area {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  font-family: 'Helvetica Neue', 'PingFang TC', sans-serif;
-
-  @include no-scroll-bar();
-}
-
-.rbox-jcd-body {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-
-  .rbox-jcd-section {
-    border-radius: 8px;
-    border: 1.5px solid #e5e7eb;
-    padding: 8px;
-    cursor: pointer;
-    transition: border-color .18s, background .18s;
-
-    &:hover {
-      border-color: #3b72f6;
-      background: #f8faff;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    .AiViewer .center-box,
+    .conv1-empty-overlay {
+      @include aiviewer-crosshatch-grid-dark;
     }
-  }
-
-  .rbox-view-chip {
-    font-size: 9px;
-    font-weight: 700;
-    color: #3b72f6;
-    background: #eff6ff;
-    border-radius: 4px;
-    padding: 2px 5px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .jcd-type-hdr {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 0 4px;
-  }
-  .jcd-type-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    &--marketing { background: #3b72f6; }
-    &--birthday  { background: #7c3aed; }
-  }
-  .jcd-type-name {
-    font-size: 11px;
-    font-weight: 700;
-    color: #1a1d23;
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .jcd-stat-row {
-    display: flex;
-    background: #f8faff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 7px 6px;
-    gap: 2px;
-  }
-  .jcd-stat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-    & + & { border-left: 1px solid #e5e7eb; }
-  }
-  .jcd-stat-val {
-    font-size: 15px;
-    font-weight: 800;
-    color: #1a1d23;
-    line-height: 1;
-    &.blue   { color: #3b72f6; }
-    &.green  { color: #16a34a; }
-    &.amber  { color: #f59e0b; }
-    &.violet { color: #7c3aed; }
-  }
-  .jcd-stat-lbl { font-size: 9px; color: #9ca3af; }
-
-  .jcd-node-dist { display: flex; flex-direction: column; gap: 2px; }
-  .jcd-node-dist-hdr { display: flex; align-items: center; gap: 4px; font-size: 9px; }
-  .jcd-node-dist-key { font-weight: 700; color: #6b7280; flex-shrink: 0; width: 28px; }
-  .jcd-node-dist-label { flex: 1; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .jcd-node-dist-count { color: #9ca3af; flex-shrink: 0; &.running { color: #3b72f6; font-weight: 700; } }
-  .jcd-dist-bar { height: 3px; background: #e5e7eb; border-radius: 3px; display: flex; overflow: hidden; }
-  .jcd-dist-done    { background: #16a34a; height: 100%; transition: width .4s ease; }
-  .jcd-dist-running { background: #3b72f6; height: 100%; transition: width .4s ease; }
-
-  .jcd-rows-title {
-    font-size: 9px;
-    font-weight: 700;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    padding-top: 4px;
-  }
-  .jcd-rows-more { font-size: 9px; color: #9ca3af; text-align: center; padding: 4px 0 2px; }
-
-  .jcd-divider { border: none; border-top: 1px solid #e5e7eb; margin: 2px 0; }
-
-  .jcd-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 8px;
-    border-radius: 7px;
-    background: #f8faff;
-    border: 1px solid #e5e7eb;
-    min-height: 28px;
-  }
-  .jcd-row-name {
-    font-size: 10px;
-    font-weight: 700;
-    color: #1a1d23;
-    flex-shrink: 0;
-    width: 52px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .jcd-row-dots { display: flex; gap: 3px; flex: 1; align-items: center; }
-  .jcd-rdot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    &.done    { background: #16a34a; }
-    &.running { background: #3b72f6; animation: jcd-pulse .9s ease-in-out infinite; }
-    &.pending { background: #e5e7eb; }
-  }
-  .jcd-row-badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 6px;
-    flex-shrink: 0;
-    &.running { background: rgba(59, 114, 246, .12); color: #3b72f6; }
-    &.done    { background: rgba(22, 163, 74, .12);  color: #16a34a; }
-  }
-}
-
-// ── 成效報告 analytics section ───────────────────────────────────────────────
-.rbox-analytics {
-  padding: 10px 10px 16px;
-  border-top: 1px solid #e5e7eb;
-  flex-shrink: 0;
-  font-family: 'Helvetica Neue', 'PingFang TC', sans-serif;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  // ── 大數字 stats 卡 ──
-  .rbox-analytics-hero-card {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 16px 10px;
-  }
-
-  .rbox-analytics-hero-stat {
-    flex: 1;
-    text-align: center;
-  }
-
-  .rbox-analytics-hero-divider {
-    width: 1px;
-    height: 40px;
-    background: #e5e7eb;
-    flex-shrink: 0;
-  }
-
-  .rbox-hero-val {
-    font-size: 22px;
-    font-weight: 800;
-    color: #1a1d23;
-    letter-spacing: -.5px;
-    line-height: 1;
-  }
-
-  .rbox-hero-lbl {
-    font-size: 10px;
-    color: #9ca3af;
-    margin-top: 5px;
-  }
-
-  // ── 旅程分析圖表卡 ──
-  .rbox-analytics-chart-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 12px 12px 10px;
-  }
-
-  .rbox-analytics-chart-hdr {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .rbox-analytics-chart-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a1d23;
-  }
-
-  .rbox-analytics-date-chip {
-    font-size: 10px;
-    color: #374151;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 3px 7px;
-    white-space: nowrap;
-  }
-
-  .rbox-analytics-chart-wrap {
-    height: 180px;
-    position: relative;
   }
 }
