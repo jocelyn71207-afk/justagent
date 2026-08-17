@@ -90,9 +90,12 @@
       </div>
     </div>
 
-    <!-- 常駐選單面板：顯示「目前選中團隊」的導覽項目，不隨滑鼠移開而消失 -->
+    <!-- 常駐選單面板：顯示「目前選中團隊」的導覽項目，不隨滑鼠移開而消失；
+         切換團隊時內容淡入淡出，避免整塊文字瞬間跳掉 -->
     <div class="side-panel" v-if="selectedTeam">
-      <div class="side-panel-title">{{ selectedTeam.name }}</div>
+    <Transition name="panel-fade" mode="out-in">
+    <div :key="selectedTeamId ?? ''">
+      <div class="side-panel-title" v-tooltip.right="selectedTeam.name">{{ selectedTeam.name }}</div>
 
       <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
         class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam.id }">
@@ -101,8 +104,12 @@
 
       <!-- 技能管理：第二層，展開才看到子項目 -->
       <div class="side-panel-item side-panel-group"
+        role="button" tabindex="0"
+        :aria-expanded="selectedTeam.isSkillOpen"
         :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
-        @click="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen">
+        @click="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen"
+        @keydown.enter.prevent="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen"
+        @keydown.space.prevent="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen">
         <i class="material-symbols-outlined">psychology</i>技能管理
         <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
       </div>
@@ -119,8 +126,12 @@
 
       <!-- 共享資源庫：第二層，展開才看到子項目 -->
       <div class="side-panel-item side-panel-group"
+        role="button" tabindex="0"
+        :aria-expanded="selectedTeam.isResourceOpen"
         :class="{ active: route.path === '/view/ResourceLibrary' || route.path === '/view/KnowledgeBase' }"
-        @click="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen">
+        @click="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen"
+        @keydown.enter.prevent="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen"
+        @keydown.space.prevent="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen">
         <i class="material-symbols-outlined">cloud</i>共享資源庫
         <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
       </div>
@@ -143,6 +154,8 @@
         class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam.id }">
         <i class="material-symbols-outlined">auto_delete</i>專案垃圾桶
       </RouterLink>
+    </div>
+    </Transition>
     </div>
 
   </div>
@@ -232,6 +245,22 @@ watch(testGroups, (groups: any[]) => {
     selectedTeamId.value = groups[0]?.id ?? null;
   }
 });
+
+// 直接用網址進入某個團隊的頁面（例如帶了 ?teamId=xxx，或重新整理停在
+// /view/Skills）時，同步選中對應的團隊，並自動展開包含目前路徑的群組，
+// 否則使用中的項目可能被收合藏起來，使用者會以為選單「跳走了」
+const SKILL_PATHS = ['/view/Skills', '/view/SkillTest'];
+const RESOURCE_PATHS = ['/view/ResourceLibrary', '/view/KnowledgeBase'];
+watch(() => route.fullPath, () => {
+  const queryTeamId = route.query.teamId as string | undefined;
+  if (queryTeamId && testGroups.value.some((g: any) => g.id === queryTeamId)) {
+    selectedTeamId.value = queryTeamId;
+  }
+  const team = selectedTeam.value;
+  if (!team) return;
+  if (SKILL_PATHS.includes(route.path)) team.isSkillOpen = true;
+  if (RESOURCE_PATHS.includes(route.path)) team.isResourceOpen = true;
+}, { immediate: true });
 
 // 搜尋彈出框
 const isSearchOpen = ref(false);
