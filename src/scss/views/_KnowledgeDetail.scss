@@ -280,11 +280,16 @@
   }
 
   .pipeline-stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     padding: 1px 8px;
     border-radius: 4px;
     font-size: 11px;
     background: var(--surface);
     color: var(--text-muted);
+
+    i { font-size: 13px; }
 
     &.is-done {
       background: var(--accent-soft);

@@ -62,7 +62,7 @@
             <button class="batch-btn" @click="handleBatchArchive">批次封存</button>
             <button class="batch-btn is-danger" @click="handleBatchDelete">批次刪除</button>
           </div>
-          <button class="batch-cancel" @click="selectedIds = []">✕ 取消</button>
+          <button class="batch-cancel" @click="selectedIds = []"><i class="material-symbols-outlined">close</i>取消</button>
         </div>
         <div v-else class="filter-row">
           <div class="category-tabs">

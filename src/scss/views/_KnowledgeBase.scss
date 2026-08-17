@@ -1620,12 +1620,17 @@
   }
 
   .batch-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.7);
     padding: 3px 8px;
     cursor: pointer;
     font-size: 12px;
+
+    i { font-size: 15px; }
   }
 }
 
