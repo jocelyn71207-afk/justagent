@@ -51,9 +51,9 @@
     .material-symbols-outlined { font-size: 12px; }
 
     &--update {
-      color: $color_main_1;
-      background: $color_main_5;
-      border-color: $color_main_3;
+      color: var(--primary);
+      background: var(--accent-soft);
+      border-color: var(--accent);
     }
 
     &--new {

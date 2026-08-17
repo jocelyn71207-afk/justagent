@@ -98,6 +98,10 @@
     --tag-rose-text:          #F0A0BC;
 
     --danger-soft:            #3A1E1A;
+
+    // ── Diff 顏色（版本比較用）────────────────────────────────────────────
+    --diff-added-rgb:         0,200,150;
+    --diff-removed-rgb:       236,107,94;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -194,5 +198,9 @@
     --tag-rose-text:          #F0A0BC;
 
     --danger-soft:            #3A1E1A;
+
+    // ── Diff 顏色（版本比較用）────────────────────────────────────────────
+    --diff-added-rgb:         0,200,150;
+    --diff-removed-rgb:       236,107,94;
   }
 }

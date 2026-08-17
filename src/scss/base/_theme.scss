@@ -107,6 +107,11 @@
 
   --danger-soft:            #FBEAE7;
 
+  // ── Diff 顏色（版本比較用，bg/border 用 rgba(var(--diff-*-rgb), X) 組合，
+  // 文字直接沿用 --primary-hover / --danger）──────────────────────────────
+  --diff-added-rgb:         0,127,95;
+  --diff-removed-rgb:       209,68,55;
+
   // ── Phase 0：陰影層級（沿用既有 --shadow RGB 基底，light/dark 各自套用）──────
   --shadow-sm:              0 1px 2px rgba(var(--shadow), 0.06);
   --shadow-md:              0 8px 24px -8px rgba(var(--shadow), 0.18);
