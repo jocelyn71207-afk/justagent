@@ -13,18 +13,17 @@
     justify-content: flex-end;
   }
 
-  .info-card {
-    border: 1px solid var(--divider);
-    border-radius: 16px;
-    background-color: var(--surface);
-    overflow: hidden;
+  // 不用卡片框，直接用分隔線分組——這個區塊只是唯讀資訊，
+  // 不需要跟下面「平台管理者」那個可操作的表格搶一樣的視覺重量
+  .info-list {
+    border-top: 1px solid var(--divider);
   }
 
   .info-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 24px;
+    padding: 16px 0;
     border-bottom: 1px solid var(--divider);
     gap: 16px;
 
@@ -89,6 +88,7 @@
     color: var(--text-faint);
   }
 
+  // 團隊 tab 用：實體門市/電子商務是真正對等的兩欄內容，才值得用 grid 並排
   .settings-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -100,9 +100,9 @@
     }
   }
 
-  // 內容較寬（如含表格）的設定區塊，跨滿整個 grid 寬度，避免與另一欄互相擠壓
-  .settings-block--wide {
-    grid-column: 1 / -1;
+  // 現有 Agent：跟 info-list 一樣不用卡片框，只是標題 + 一行標籤
+  .agent-section {
+    .settings-block-header { margin-bottom: 12px; }
   }
 
   .settings-block {
@@ -190,17 +190,12 @@
     }
   }
 
-  // ── 管理者表格容器 ──
-  .admin-table-box {
-    border-radius: 12px;
-    border: 1px solid var(--divider);
-    background-color: var(--page-bg);
-    overflow: hidden;
+  // ── 管理者表格：外層 .settings-block 已經是唯一的卡片框，
+  // 這裡只負責小螢幕時的水平捲動，不再疊第二層框線 ──
+  .admin-table-scroll {
     overflow-x: auto;
 
     .custom-table {
-      border-radius: 0;
-
       th,
       td {
         border-color: var(--divider);
@@ -208,26 +203,6 @@
 
       .col-action {
         width: 40px;
-      }
-    }
-
-    .owner-icon {
-      font-size: 16px;
-      color: var(--text-faint);
-      vertical-align: middle;
-      margin-right: 4px;
-    }
-
-    .delete-btn {
-      font-size: 24px;
-      color: var(--text-faint);
-      cursor: pointer;
-      border-radius: 4px;
-      padding: 2px;
-
-      &:hover {
-        background-color: var(--accent-soft);
-        color: var(--text);
       }
     }
   }

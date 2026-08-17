@@ -13,9 +13,12 @@
       </div>
 
       <!-- 企業 tab -->
+      <!-- 版面刻意不做成三個一樣重量的卡片：企業資訊/現有 Agent 是安靜的
+           清單與標籤，只有真正可操作的「平台管理者」表格才用立體卡片，
+           讓畫面有主從之分，而不是每個區塊都同一種框線重複堆疊。 -->
       <div v-if="isCompanyTab" class="company-settings">
 
-        <div class="info-card">
+        <div class="info-list">
           <div class="info-row">
             <div class="info-row-left">
               <span class="material-symbols-outlined info-row-icon">domain</span>
@@ -51,63 +54,61 @@
           </div>
         </div>
 
-        <div class="settings-grid">
-          <div class="settings-block">
-            <div class="settings-block-header">
-              <span class="material-symbols-outlined settings-block-icon">smart_toy</span>
-              <span class="settings-block-title">現有 Agent</span>
-            </div>
-            <div class="agent-list">
-              <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
-                <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
-              </span>
-            </div>
+        <div class="agent-section">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">smart_toy</span>
+            <span class="settings-block-title">現有 Agent</span>
           </div>
+          <div class="agent-list">
+            <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
+              <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
+            </span>
+          </div>
+        </div>
 
-          <div class="settings-block settings-block--wide">
-            <div class="settings-block-header">
-              <span class="material-symbols-outlined settings-block-icon">admin_panel_settings</span>
-              <span class="settings-block-title">平台管理者</span>
-              <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
-                <i class="material-symbols-outlined">add</i>
-                新增平台管理者
-              </button>
-            </div>
-            <div class="setting-description">
-              <i class="material-symbols-outlined">info</i>
-              企業擁有者擁有最高權限並綁定付費帳戶；管理員享有完全相同權限但無法轉移擁有權，可自由管理團隊成員。
-            </div>
-            <div class="admin-table-box">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>名稱</th>
-                    <th>郵件</th>
-                    <th>最後活動時間</th>
-                    <th class="col-action"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="admin in adminList" :key="admin.id">
-                    <td>
-                      <div class="admin-name-cell">
-                        <div class="admin-avatar" :class="{ 'is-owner': admin.isOwner }">
-                          {{ admin.name.charAt(0) }}
-                        </div>
-                        <span>{{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}</span>
-                        <i v-if="admin.isOwner" class="material-symbols-outlined owner-icon">diamond</i>
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="material-symbols-outlined settings-block-icon">admin_panel_settings</span>
+            <span class="settings-block-title">平台管理者</span>
+            <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
+              <i class="material-symbols-outlined">add</i>
+              新增平台管理者
+            </button>
+          </div>
+          <div class="setting-description">
+            <i class="material-symbols-outlined">info</i>
+            企業擁有者擁有最高權限並綁定付費帳戶；管理員享有完全相同權限但無法轉移擁有權，可自由管理團隊成員。
+          </div>
+          <div class="admin-table-scroll">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>名稱</th>
+                  <th>郵件</th>
+                  <th>最後活動時間</th>
+                  <th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="admin in adminList" :key="admin.id">
+                  <td>
+                    <div class="admin-name-cell">
+                      <div class="admin-avatar" :class="{ 'is-owner': admin.isOwner }">
+                        {{ admin.name.charAt(0) }}
                       </div>
-                    </td>
-                    <td>{{ admin.email }}</td>
-                    <td class="fc-grey-1">{{ formatTimeToDisplay(admin.lastActive) }}</td>
-                    <td>
-                      <i v-if="!admin.isOwner" class="material-symbols-outlined delete-btn"
-                        @click="deleteAdmin(admin)">delete</i>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                      <span>{{ admin.name }}{{ admin.isOwner ? '（企業擁有者）' : '' }}</span>
+                      <i v-if="admin.isOwner" class="material-symbols-outlined owner-icon">diamond</i>
+                    </div>
+                  </td>
+                  <td>{{ admin.email }}</td>
+                  <td class="fc-grey-1">{{ formatTimeToDisplay(admin.lastActive) }}</td>
+                  <td>
+                    <i v-if="!admin.isOwner" class="material-symbols-outlined delete-btn"
+                      @click="deleteAdmin(admin)">delete</i>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

@@ -121,11 +121,11 @@
     }
   }
 
+  // 次要內容（活動紀錄），不再跟主表格用一樣重的邊框卡片，
+  // 只用左側 hairline 表示分組，讓表格是畫面裡唯一立體的區塊
   .access-activity-panel {
-    background: var(--sidebar-bg);
-    border: 1px solid var(--divider);
-    border-radius: 12px;
-    padding: 16px;
+    border-left: 1px solid var(--divider);
+    padding-left: 16px;
 
     h4 {
       margin: 0 0 10px;
