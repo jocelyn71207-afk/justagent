@@ -58,12 +58,9 @@
               <span class="settings-block-title">現有 Agent</span>
             </div>
             <div class="agent-list">
-              <div class="agent-card" v-for="agent in agentList" :key="agent.id">
-                <div class="agent-icon-bg">
-                  <i class="material-symbols-outlined">{{ agent.icon }}</i>
-                </div>
-                <span>{{ agent.name }}</span>
-              </div>
+              <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
+                <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
+              </span>
             </div>
           </div>
 

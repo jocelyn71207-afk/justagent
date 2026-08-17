@@ -142,8 +142,7 @@
     flex-wrap: wrap;
   }
 
-  // ── Agent / Team 卡片基底 ──
-  .agent-card,
+  // ── Team 卡片基底 ──
   .team-card {
     display: flex;
     align-items: center;
@@ -233,40 +232,23 @@
     }
   }
 
-  .agent-icon-bg {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background-color: var(--hint);
-    display: flex;
+  // 現有 Agent：跟「團隊類型」用同一套 pill 語彙，不再用三個一模一樣的
+  // 方形彩色圖示卡（那是最典型的「產生式 feature 區塊」樣式）
+  .agent-tag {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background-color: var(--page-bg);
+    border: 1px solid var(--divider);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
 
     i {
-      font-size: 26px;
-      color: var(--primary-hover);
-    }
-  }
-
-  // 新版 Agent 卡片（覆蓋舊版規則）
-  .company-settings .agent-card {
-    flex-direction: column;
-    min-width: 110px;
-    padding: 20px 24px;
-    background-color: var(--page-bg);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-
-    &:hover {
-      border-color: var(--text-faint);
-      transform: translateY(-2px);
-      box-shadow: rgba(var(--shadow), 0.08) 0px 8px 20px;
-    }
-
-    span {
-      min-width: unset;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-muted);
+      font-size: 16px;
+      color: var(--primary);
     }
   }
 
