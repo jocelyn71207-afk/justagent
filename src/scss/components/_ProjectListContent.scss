@@ -12,12 +12,12 @@
   min-height: 100%;
 
   // ── Banner ──────────────────────────────────────────
-  // 單一強調手法：只用下方 hairline 分隔，不疊加左側色條，
-  // 讓標題與留白說話，而不是靠多層邊框裝飾。
+  // banner 跟下面的 toolbar 合起來是同一個「頁首」區塊，只在整個區塊
+  // 底部收一條 hairline（見 .plc-toolbar），banner 自己不再疊一條，
+  // 否則標題跟 tabs 之間會夾出兩條線的「三明治」感。
   .plc-banner {
-    padding: 28px 46px 24px;
+    padding: 26px 46px 10px;
     background: var(--page-bg);
-    border-bottom: 1px solid var(--divider);
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -49,9 +49,11 @@
   }
 
   // ── Toolbar（含 Tabs）────────────────────────────────
+  // 跟上面的 .plc-banner 共用同一個頁首區塊，這條 hairline 是整個
+  // 區塊唯一的底線
   .plc-toolbar {
     background: var(--page-bg);
-    padding: 8px 46px;
+    padding: 6px 46px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
