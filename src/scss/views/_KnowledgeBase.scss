@@ -582,7 +582,7 @@
     align-items: center;
     gap: 14px;
     background: var(--tag-amber-bg);
-    border: 1px solid var(--tag-amber-bg);
+    border: 1px solid var(--tag-amber-text);
     border-radius: 12px;
     padding: 14px 18px;
     margin-bottom: 20px;
@@ -1000,15 +1000,15 @@
     border-radius: 20px;
     background: var(--tag-amber-bg);
     color: var(--tag-amber-text);
-    border: 1px solid var(--tag-amber-bg);
+    border: 1px solid var(--tag-amber-text);
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.15s;
+    transition: background 0.15s, filter 0.15s;
 
     i { font-size: 13px; }
 
     &:hover {
-      background: var(--tag-amber-bg);
+      filter: brightness(0.93);
     }
   }
 
@@ -1039,7 +1039,7 @@
     padding: 3px 10px;
     border-radius: 6px;
     background: var(--tag-violet-bg);
-    border: 1px solid var(--tag-violet-bg);
+    border: 1px solid var(--tag-violet-text);
     color: var(--tag-violet-text);
     letter-spacing: 0.2px;
     white-space: nowrap;
@@ -1065,7 +1065,7 @@
       padding: 3px 10px;
       border-radius: 6px;
       background: var(--tag-violet-bg);
-      border: 1px solid var(--tag-violet-bg);
+      border: 1px solid var(--tag-violet-text);
       color: var(--tag-violet-text);
       white-space: nowrap;
     }
@@ -1295,7 +1295,7 @@
         }
         &.is-removed {
           background-color: var(--danger-soft);
-          border: 1px solid var(--danger-soft);
+          border: 1px solid var(--danger);
           text-decoration: line-through;
           color: var(--danger);
         }
@@ -1663,7 +1663,7 @@
 
     &.is-active {
       border-color: var(--primary);
-      background: rgba(var(--primary-rgb, 37, 99, 235), 0.05);
+      background: var(--primary-a08);
     }
   }
 
@@ -1678,7 +1678,7 @@
     &:hover,
     &.has-file {
       border-color: var(--primary);
-      background: rgba(var(--primary-rgb, 37, 99, 235), 0.03);
+      background: var(--primary-a08);
     }
   }
 
