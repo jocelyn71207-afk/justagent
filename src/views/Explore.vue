@@ -50,8 +50,8 @@
           @click="openModal(agent)"
         >
           <div class="rank-badge">{{ i + 1 }}</div>
-          <div class="agent-icon" :style="{ background: agent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
+          <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
+            <i class="material-symbols-outlined">{{ agent.icon }}</i>
           </div>
           <h4>{{ agent.name }}</h4>
           <p>{{ agent.desc }}</p>
@@ -63,8 +63,8 @@
         @click="openModal(fourthRankedAgent)"
       >
         <span class="rank-badge">4</span>
-        <div class="agent-icon" :style="{ background: fourthRankedAgent.bgColor }">
-          <i class="material-symbols-outlined" :style="{ color: fourthRankedAgent.accentColor }">{{ fourthRankedAgent.icon }}</i>
+        <div :class="['agent-icon', `agent-icon--${fourthRankedAgent.colorKey}`]">
+          <i class="material-symbols-outlined">{{ fourthRankedAgent.icon }}</i>
         </div>
         <span class="ranking-more-name">{{ fourthRankedAgent.name }}</span>
         <span class="ranking-more-desc">{{ fourthRankedAgent.desc }}</span>
@@ -85,8 +85,8 @@
           <span v-if="agent.badge" :class="['agent-badge', `agent-badge--${agent.badge.type}`]">
             {{ agent.badge.label }}
           </span>
-          <div class="agent-icon" :style="{ background: agent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
+          <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
+            <i class="material-symbols-outlined">{{ agent.icon }}</i>
           </div>
           <h4>{{ agent.name }}</h4>
           <p>{{ agent.desc }}</p>
@@ -141,8 +141,8 @@
     <template v-if="selectedAgent">
       <div class="Explore explore-modal-box">
         <div class="explore-modal-content">
-          <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
+          <div :class="['explore-modal-icon', `agent-icon--${selectedAgent.colorKey}`]">
+            <i class="material-symbols-outlined">{{ selectedAgent.icon }}</i>
           </div>
           <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
           <div class="explore-modal-tags">
@@ -195,12 +195,15 @@ interface AgentBadge {
   label: string
 }
 
+// colorKey 對應 src/scss/base/_theme.scss 裡的 --tag-*-bg/text token（light/dark 都有定義），
+// 不再用每個 agent 各自寫死的 hex 顏色（那組顏色在深色模式下不會跟著換色）
+type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
+
 interface Agent {
   name: string
   desc: string
   icon: string
-  bgColor: string
-  accentColor: string
+  colorKey: ColorKey
   tags: string[]
   badge?: AgentBadge
   categories: string[]
@@ -211,8 +214,7 @@ const allAgents: Agent[] = [
     name: '內容創作者',
     desc: '撰寫高品質的文章與多媒體內容，精準策略角度，吸引目標受眾，增強社交媒體互動。',
     icon: 'edit_note',
-    bgColor: '#EEEDFE',
-    accentColor: '#534AB7',
+    colorKey: 'violet',
     tags: ['內容', '創作', '社群', '行銷'],
     categories: ['全部', '文件撰寫'],
   },
@@ -220,8 +222,7 @@ const allAgents: Agent[] = [
     name: '社群管理',
     desc: '管理各平台社群，增進用戶互動，制定策略以提升用戶忠誠度和品牌影響力。',
     icon: 'group',
-    bgColor: '#E1F5EE',
-    accentColor: '#0F6E56',
+    colorKey: 'teal',
     tags: ['社群', '行銷', '策略', '互動'],
     categories: ['全部'],
   },
@@ -229,8 +230,7 @@ const allAgents: Agent[] = [
     name: '專案管理',
     desc: '從規劃到執行，確保資源最佳配置和時程有效利用。',
     icon: 'task_alt',
-    bgColor: '#FAEEDA',
-    accentColor: '#854F0B',
+    colorKey: 'amber',
     tags: ['專案', '管理', '規劃', '執行'],
     categories: ['全部', '會議準備'],
   },
@@ -238,8 +238,7 @@ const allAgents: Agent[] = [
     name: '財務分析師',
     desc: '分析公司財務數據，制定預算與報告，提供可行建議以支持企業經營目標。',
     icon: 'bar_chart',
-    bgColor: '#E6F1FB',
-    accentColor: '#185FA5',
+    colorKey: 'blue',
     tags: ['財務', '分析', '預算', '報告'],
     badge: { type: 'new', label: '新上架' },
     categories: ['全部', '報表分析', '財務管理'],
@@ -248,8 +247,7 @@ const allAgents: Agent[] = [
     name: 'SEO 專家',
     desc: '優化網站內容與結構，提升搜尋引擎排名，幫助品牌獲得更多自然流量。',
     icon: 'travel_explore',
-    bgColor: '#EAF3DE',
-    accentColor: '#3B6D11',
+    colorKey: 'green',
     tags: ['SEO', '優化', '搜尋', '流量'],
     badge: { type: 'new', label: '新上架' },
     categories: ['全部'],
@@ -258,8 +256,7 @@ const allAgents: Agent[] = [
     name: '顧客服務管理',
     desc: '提升客戶整體滿意度，解決客戶問題並收集回饋，提升服務品質與客戶忠誠度。',
     icon: 'support_agent',
-    bgColor: '#FAECE7',
-    accentColor: '#993C1D',
+    colorKey: 'rust',
     tags: ['客服', '滿意度', '回饋', '忠誠'],
     badge: { type: 'sat', label: '高滿意度' },
     categories: ['全部', '客服分析'],
@@ -268,8 +265,7 @@ const allAgents: Agent[] = [
     name: '記帳助理',
     desc: '帳務整理、報帳核對與簡單財務報表製作，確保每筆費用都有跡可循。',
     icon: 'receipt_long',
-    bgColor: '#E1F5EE',
-    accentColor: '#0F6E56',
+    colorKey: 'teal',
     tags: ['帳務', '報表', '財務', '核對'],
     badge: { type: 'sat', label: '高滿意度' },
     categories: ['全部', '報表分析', '財務管理'],
@@ -278,8 +274,7 @@ const allAgents: Agent[] = [
     name: '人資行政助理',
     desc: '快速產出職位說明、履歷篩選建議與面試準備，將複雜 HR 行政工作自動化。',
     icon: 'badge',
-    bgColor: '#EAF3DE',
-    accentColor: '#3B6D11',
+    colorKey: 'green',
     tags: ['HR', '招募', '行政', '人才'],
     badge: { type: 'new', label: '新上架' },
     categories: ['全部', '人資行政'],
@@ -288,8 +283,7 @@ const allAgents: Agent[] = [
     name: '設計助理',
     desc: '協助創建視覺素材，提供設計建議與排版指引，提升品牌視覺一致性。',
     icon: 'palette',
-    bgColor: '#FBEAF0',
-    accentColor: '#993556',
+    colorKey: 'rose',
     tags: ['設計', '素材', '視覺', '排版'],
     categories: ['全部', '設計輔助'],
   },
@@ -297,8 +291,7 @@ const allAgents: Agent[] = [
     name: '會議記錄員',
     desc: '自動整理會議記錄，摘要關鍵決議與行動項目，確保團隊決策能落實執行。',
     icon: 'mic',
-    bgColor: '#EEEDFE',
-    accentColor: '#534AB7',
+    colorKey: 'violet',
     tags: ['會議', '記錄', '摘要', '行動'],
     categories: ['全部', '會議準備'],
   },
