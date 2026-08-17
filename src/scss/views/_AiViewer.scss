@@ -2393,8 +2393,8 @@
     .hr-tag {
       font-size: 10px; font-weight: 600;
       padding: 1px 6px; border-radius: 4px;
-      &.tag-m { background: rgba(79,127,255,0.12); color: #4f7fff; }
-      &.tag-w { background: rgba(236,72,153,0.12); color: #ec4899; }
+      &.tag-m { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
+      &.tag-w { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
     }
   }
 
@@ -2422,15 +2422,15 @@
     tr:last-child td { border-bottom: none; }
     .yr { font-weight: 600; color: var(--text-muted); }
     .rev { font-size: 11px; color: var(--text-muted); }
-    .grow { font-size: 11px; font-weight: 600; color: #16a34a; }
+    .grow { font-size: 11px; font-weight: 600; color: var(--success); }
   }
 
   // 2026 預測卡
   .hr-forecast {
     margin-top: 6px;
     padding: 12px 14px;
-    background: linear-gradient(135deg, rgba(79,127,255,0.07) 0%, rgba(168,85,247,0.05) 100%);
-    border: 1px solid rgba(79,127,255,0.2);
+    background: linear-gradient(135deg, var(--tag-blue-bg) 0%, var(--tag-violet-bg) 100%);
+    border: 1px solid var(--tag-blue-text);
     border-radius: 10px;
 
     .hrf-header {
@@ -2438,10 +2438,10 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
-      .hrf-year { font-size: 18px; font-weight: 800; color: #4f7fff; }
+      .hrf-year { font-size: 18px; font-weight: 800; color: var(--tag-blue-text); }
       .hrf-badge {
         font-size: 10px; font-weight: 700;
-        background: rgba(79,127,255,0.12); color: #4f7fff;
+        background: var(--tag-blue-bg); color: var(--tag-blue-text);
         padding: 2px 8px; border-radius: 20px;
       }
     }
@@ -2463,14 +2463,14 @@
       margin-bottom: 10px;
       .hrf-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint); margin-bottom: 4px; }
       .hrf-bar-track { height: 3px; background: var(--divider); border-radius: 2px; overflow: hidden; }
-      .hrf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #4f7fff, #a855f7); width: 82%; }
+      .hrf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--tag-blue-text), var(--tag-violet-text)); width: 82%; }
     }
     .hrf-drivers {
       display: flex; flex-direction: column; gap: 4px;
       .hrf-driver {
         display: flex; align-items: flex-start; gap: 6px;
         font-size: 11px; color: var(--text-a60);
-        &::before { content: '·'; color: #4f7fff; font-weight: 700; flex-shrink: 0; margin-top: -1px; }
+        &::before { content: '·'; color: var(--tag-blue-text); font-weight: 700; flex-shrink: 0; margin-top: -1px; }
       }
     }
   }
@@ -2488,7 +2488,7 @@
       color: var(--text-a60);
       background: var(--page-bg);
       cursor: pointer;
-      &:hover { border-color: #4f7fff; color: #4f7fff; }
+      &:hover { border-color: var(--tag-blue-text); color: var(--tag-blue-text); }
     }
   }
 }
@@ -2520,8 +2520,8 @@
       justify-content: center;
       font-size: 9px;
     }
-    &.conv2-ss--done { color: #166534; &::before { content: '✓'; background: #f0fdf4; font-weight: 700; } }
-    &.conv2-ss--active { color: #1d4ed8; &::before { content: '⋯'; background: #eff6ff; font-size: 11px; } }
+    &.conv2-ss--done { color: var(--success); &::before { content: '✓'; background: var(--tag-teal-bg); font-weight: 700; } }
+    &.conv2-ss--active { color: var(--tag-blue-text); &::before { content: '⋯'; background: var(--tag-blue-bg); font-size: 11px; } }
     &.conv2-ss--wait { color: var(--text-faint); &::before { content: '○'; background: var(--surface); } }
   }
 }
@@ -2543,8 +2543,8 @@
   border-radius: 6px;
   font-size: 12px;
 
-  &--sel { background: #eff6ff; }
-  &--fn  { background: rgba(207,138,31,0.12); }
+  &--sel { background: var(--tag-blue-bg); }
+  &--fn  { background: var(--tag-amber-bg); }
   &--rank { background: var(--surface); }
 
   .conv2-comp-rank {
@@ -2560,7 +2560,7 @@
     justify-content: center;
     flex-shrink: 0;
     margin-top: 2px;
-    &--fn { background: rgba(207,138,31,0.12); color: var(--warning); border-color: rgba(207,138,31,0.28); }
+    &--fn { background: var(--tag-amber-bg); color: var(--warning); border-color: var(--tag-amber-text); }
   }
   // 新格式：body 包含 brand / title / feat
   .conv2-comp-body {
@@ -2669,9 +2669,9 @@
   border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+  border: 1px solid var(--tag-blue-text);
   white-space: nowrap;
 }
 
@@ -2718,13 +2718,13 @@
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      background: #f0fdf4;
-      border: 1px solid rgba(22,101,52,.28);
+      background: var(--tag-teal-bg);
+      border: 1px solid var(--success);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: #166534;
+      color: var(--success);
     }
     .conv2-report-title { font-size: 13px; font-weight: 500; }
     .conv2-report-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
@@ -2753,7 +2753,7 @@
   border-radius: 12px;
   overflow: hidden;
   z-index: 10;
-  box-shadow: 0 -2px 16px rgba(0,0,0,.1);
+  box-shadow: 0 -2px 16px rgba(var(--shadow),0.1);
 
   // override parent .AiViewrUserInputArea button styles
   button {
@@ -2844,7 +2844,7 @@
     background: var(--surface);
     line-height: 1.6;
     min-height: 64px;
-    &:focus { border-color: rgba(29,78,216,.4); }
+    &:focus { border-color: var(--tag-blue-text); }
   }
   .conv2-up-status {
     font-size: 11px;
@@ -2852,7 +2852,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    &--ready { color: #166534; }
+    &--ready { color: var(--success); }
   }
 
   // ── Step tracker ──
@@ -2867,8 +2867,8 @@
     color: var(--text-faint);
     background: var(--surface);
     flex-shrink: 0;
-    &--done { background: #f0fdf4; border-color: rgba(22,101,52,.28); color: #166534; }
-    &--active { background: #eff6ff; border-color: rgba(29,78,216,.28); color: #1d4ed8; }
+    &--done { background: var(--tag-teal-bg); border-color: var(--success); color: var(--success); }
+    &--active { background: var(--tag-blue-bg); border-color: var(--tag-blue-text); color: var(--tag-blue-text); }
   }
   .conv2-sl { width: 8px; height: 0.5px; background: var(--divider); flex-shrink: 0; }
   .conv2-step-title { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2876,8 +2876,8 @@
   // ── Step content ──
   .conv2-info-note {
     font-size: 11px;
-    background: #f0fdf4; color: #166534;
-    border: 0.5px solid rgba(22,101,52,.28);
+    background: var(--tag-teal-bg); color: var(--success);
+    border: 0.5px solid var(--success);
     border-radius: 6px; padding: 5px 9px; margin-bottom: 8px;
   }
   .conv2-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
@@ -2886,7 +2886,7 @@
     border: 0.5px solid var(--divider);
     font-size: 12px; cursor: pointer; user-select: none;
     color: var(--text-muted);
-    &.sel { border-color: rgba(29,78,216,.28); background: #eff6ff; color: #1d4ed8; }
+    &.sel { border-color: var(--tag-blue-text); background: var(--tag-blue-bg); color: var(--tag-blue-text); }
   }
   .conv2-fg { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 7px; }
   .conv2-fl { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
@@ -2898,7 +2898,7 @@
     outline: none; font-family: inherit;
     &--full { width: 100%; }
     &--ta { resize: none; line-height: 1.5; }
-    &:focus { border-color: rgba(29,78,216,.28); }
+    &:focus { border-color: var(--tag-blue-text); }
   }
   .conv2-ghost-btn {
     opacity: 0;
@@ -2944,9 +2944,9 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: #eff6ff;
-    color: #1d4ed8;
-    border: 0.5px solid rgba(29, 78, 216, 0.25);
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+    border: 0.5px solid var(--tag-blue-text);
     border-radius: 4px;
     padding: 0 5px;
     font-size: 11px;
@@ -2960,7 +2960,7 @@
     padding: 7px 9px; border-radius: 7px;
     border: 0.5px solid var(--divider);
     cursor: pointer; user-select: none; margin-bottom: 4px;
-    &.sel { border-color: rgba(29,78,216,.28); background: #eff6ff; .conv2-ft { color: #1d4ed8; } }
+    &.sel { border-color: var(--tag-blue-text); background: var(--tag-blue-bg); .conv2-ft { color: var(--tag-blue-text); } }
   }
   .conv2-fcb {
     width: 12px; height: 12px;
@@ -2970,8 +2970,8 @@
   }
   .conv2-ft { font-size: 12px; font-weight: 500; }
   .conv2-fd { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-  .conv2-err { font-size: 11px; color: #dc2626; margin-top: 4px; min-height: 13px; }
-  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: rgba(207,138,31,0.12); color: var(--warning); }
+  .conv2-err { font-size: 11px; color: var(--danger); margin-top: 4px; min-height: 13px; }
+  .conv2-cbadge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: var(--tag-amber-bg); color: var(--warning); }
   .conv2-review-grid {
     background: var(--surface); border-radius: 7px; padding: 9px 11px;
     display: flex; flex-direction: column; gap: 0;
@@ -3000,7 +3000,7 @@
     border-bottom: 0.5px solid var(--divider);
     &:last-child { border: none; }
     &:hover { background: var(--surface); }
-    &.sel { background: #eff6ff; .conv2-ci-nm { color: #1d4ed8; } }
+    &.sel { background: var(--tag-blue-bg); .conv2-ci-nm { color: var(--tag-blue-text); } }
     &.blocked { opacity: .35; pointer-events: none; }
   }
   .conv2-ci-ic {
@@ -3013,7 +3013,7 @@
   .conv2-ci-info { flex: 1; min-width: 0; }
   .conv2-ci-nm { font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .conv2-ci-mt { font-size: 10px; color: var(--text-muted); }
-  .conv2-ci-chk { width: 12px; height: 12px; flex-shrink: 0; accent-color: #1d4ed8; }
+  .conv2-ci-chk { width: 12px; height: 12px; flex-shrink: 0; accent-color: var(--tag-blue-text); }
   .conv2-prev-col-fp {
     flex: 1; min-width: 0;
     display: flex; flex-direction: column;
@@ -3042,7 +3042,7 @@
     color: var(--page-bg);
     border: none; cursor: pointer;
     white-space: nowrap;
-    &--green { background: #166534; }
+    &--green { background: var(--success); }
     &:disabled { opacity: 0.45; cursor: default; }
     &:hover:not(:disabled) { opacity: 0.85; }
   }
