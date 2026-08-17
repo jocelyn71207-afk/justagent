@@ -1,5 +1,8 @@
 @use "sass:color";
 
+// Underline tabs：拿掉原本「active = 實心黑色 pill」的樣式（跟品牌色無關，
+// 也是很常見的預設 segmented-control 樣式），改成貼近品牌色的底線標示，
+// 分頁本身只是篩選用途，不需要用高對比的實心色塊搶視覺。
 .compTabs {
   display: flex;
   flex-wrap: wrap;
@@ -7,41 +10,48 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  border-bottom: none;
+  border-bottom: 1px solid var(--divider);
 
   .compTabs-item {
     cursor: pointer;
-    border-radius: 999px;
-    background-color: transparent;
-    transition: background-color 0.35s;
+    position: relative;
     user-select: none;
-  }
 
-  .compTabs-item.is-active {
-    border-bottom: none;
-    border-radius: 999px;
-    background-color: var(--text);
-    .compTabs-label-btn {
-      background-color: transparent;
-      color: var(--surface);
-      font-weight: 500;
+    &::after {
+      content: '';
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+      background: transparent;
+      transition: background 0.2s;
+    }
+
+    &.is-active {
+      .compTabs-label-btn {
+        color: var(--primary);
+        font-weight: 600;
+      }
+      &::after {
+        background: var(--primary);
+      }
     }
   }
 
   .compTabs-label-btn {
     border: 0;
     background: transparent;
-    padding: 6px 14px;
+    padding: 8px 14px;
     font-size: 14px;
-    border-radius: 999px;
     color: var(--text-muted);
-    transition: background 0.2s, color 0.2s;
+    transition: color 0.2s;
     > * {
       font-size: 14px;
       line-height: normal;
     }
     &:hover {
-      background: var(--sidebar-hover);
       color: var(--text);
     }
     &:disabled {
