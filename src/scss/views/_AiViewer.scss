@@ -812,7 +812,6 @@
         -webkit-user-select: none;
         user-select: none;
         pointer-events: auto; // 允許遮罩層接收事件以阻止下方元素的互動
-        // background-color: rgba(red, 0.2); // 開發測試用
       }
     }
   }
@@ -1277,9 +1276,6 @@
     position: relative;
     border-bottom: 1px solid var(--divider-a50);
     padding: 7px 12px;
-    // background: linear-gradient(-45deg, rgba($black, 0.3) 1px, transparent 1px) 0% 0% / 4px 4px;
-    // linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px) 0% 0% / 2px 2px;
-    // background-image: radial-gradient(circle, rgba($black, 0.1) 1px, transparent 2px);
     background-color: var(--surface-a90);
     background-size: 6px 6px; // 點點間距
     background-position: 0 0;
@@ -1363,7 +1359,6 @@
         height: 100%;
         border-radius: 0px;
         box-sizing: border-box;
-        // background-color: rgba(pink, 0.2); // 開發測試用
       }
     }
   }
@@ -1662,8 +1657,8 @@
           justify-content: center;
           font-size: 13px;
           font-weight: 600;
-          color: #fff;
-          background-color: red; // TODO... 之後 js 改成動態給予顏色
+          color: var(--primary-fg);
+          background-color: var(--text-faint); // TODO... 之後 js 改成動態給予顏色
           user-select: none;
           margin-right: 5px;
         }
@@ -1785,7 +1780,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    // background: linear-gradient(-45deg, rgba($black, 0.3) 1px, transparent 1px) 0% 0% / 4px 4px;
     background-color: var(--surface-a90);
     color: var(--text-muted);
     height: 30px;
@@ -2099,7 +2093,7 @@
 
     &--primary {
       background: var(--accent);
-      color: #fff;
+      color: var(--primary-fg);
       box-shadow: 0 3px 10px rgba($color-wise-green, 0.2);
       transition: all 0.2s ease;
 
