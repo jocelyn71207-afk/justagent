@@ -54,7 +54,7 @@
 
       <!-- 卡片樣式列表 -->
       <div class="card-list-box" v-if="projectListMode === 'card' && projectList.length">
-        <div :class="['project-card', { 'is-spotlight': i === 0 }]" v-for="(item, i) in displayProjectList" :key="'card' + i"
+        <div class="project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
           @click="gotoAiViewer(item)"
           @mouseenter="item.isHovered = true"
           @mouseleave="item.isHovered = false; item.showMoreOption = false">
