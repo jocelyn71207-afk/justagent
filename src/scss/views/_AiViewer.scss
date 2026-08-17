@@ -3906,37 +3906,6 @@
   transition: opacity 0.2s;
 }
 
-// ── 右側面板 tab bar ─────────────────────────────────────────────────────────
-.rbox-tab-bar {
-  display: flex;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--divider);
-  background-color: var(--surface);
-  padding: 0 16px;
-  gap: 4px;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.rbox-tab {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  padding: 8px 10px 7px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  user-select: none;
-  transition: color .15s, border-color .15s;
-  line-height: 1;
-
-  &:hover { color: var(--text); }
-  &.active {
-    color: var(--tag-blue-text);
-    border-bottom-color: var(--tag-blue-text);
-  }
-}
-
 // ── 右側面板 旅程執行狀態 tab 內容 ─────────────────────────────────────────
 .rbox-journey-area {
   flex: 1;
@@ -4092,88 +4061,5 @@
     flex-shrink: 0;
     &.running { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
     &.done    { background: var(--tag-teal-bg); color: var(--tag-teal-text); }
-  }
-}
-
-// ── 成效報告 analytics section ───────────────────────────────────────────────
-.rbox-analytics {
-  padding: 10px 10px 16px;
-  border-top: 1px solid var(--divider);
-  flex-shrink: 0;
-  font-family: 'Helvetica Neue', 'PingFang TC', sans-serif;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  // ── 大數字 stats 卡 ──
-  .rbox-analytics-hero-card {
-    display: flex;
-    align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 10px;
-    padding: 16px 10px;
-  }
-
-  .rbox-analytics-hero-stat {
-    flex: 1;
-    text-align: center;
-  }
-
-  .rbox-analytics-hero-divider {
-    width: 1px;
-    height: 40px;
-    background: var(--divider);
-    flex-shrink: 0;
-  }
-
-  .rbox-hero-val {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: -.5px;
-    line-height: 1;
-  }
-
-  .rbox-hero-lbl {
-    font-size: 10px;
-    color: var(--text-faint);
-    margin-top: 5px;
-  }
-
-  // ── 旅程分析圖表卡 ──
-  .rbox-analytics-chart-card {
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 10px;
-    padding: 12px 12px 10px;
-  }
-
-  .rbox-analytics-chart-hdr {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .rbox-analytics-chart-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .rbox-analytics-date-chip {
-    font-size: 10px;
-    color: var(--text-muted);
-    background: var(--page-bg);
-    border: 1px solid var(--divider);
-    border-radius: 6px;
-    padding: 3px 7px;
-    white-space: nowrap;
-  }
-
-  .rbox-analytics-chart-wrap {
-    height: 180px;
-    position: relative;
   }
 }
