@@ -15,7 +15,23 @@
   <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen }]">
 
     <div class="rail-top">
-      <img class="rail-logo" src="@/assets/logo.svg" alt="JustAgent" />
+      <div :class="['rail-user-btn', { active: isOpenUserOptionsBox }]" @click="isOpenUserOptionsBox = true">
+        <div class="user-avatar">L</div>
+
+        <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
+          <div class="user-flyout-title">
+            <p class="user-name">Lucas.chien</p>
+            <select class="custom-select w-100 mt-1" v-model="rootStore.nowMenuTreeCompanyName" @click.stop>
+              <option value="UGG">UGG</option>
+              <option value="UGG">UGG</option>
+            </select>
+          </div>
+          <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
+          <div class="option-item" @click="handleLogout">登出</div>
+        </div>
+      </div>
+
+      <div class="rail-divider"></div>
 
       <RouterLink to="/view/ProjectDashboard" class="rail-btn" :class="{ active: route.path === '/view/ProjectDashboard' }" v-tooltip.right="'最近使用'">
         <i class="material-symbols-outlined">schedule</i>
@@ -112,21 +128,9 @@
         <i class="material-symbols-outlined">settings</i>
       </RouterLink>
 
-      <div :class="['rail-user-btn', { active: isOpenUserOptionsBox }]" @click="isOpenUserOptionsBox = true">
-        <div class="user-avatar">L</div>
+      <div class="rail-divider"></div>
 
-        <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
-          <div class="user-flyout-title">
-            <p class="user-name">Lucas.chien</p>
-            <select class="custom-select w-100 mt-1" v-model="rootStore.nowMenuTreeCompanyName" @click.stop>
-              <option value="UGG">UGG</option>
-              <option value="UGG">UGG</option>
-            </select>
-          </div>
-          <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
-          <div class="option-item" @click="handleLogout">登出</div>
-        </div>
-      </div>
+      <img class="rail-logo" src="@/assets/logo.svg" alt="JustAgent" />
     </div>
 
   </div>
