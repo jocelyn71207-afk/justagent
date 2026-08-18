@@ -638,7 +638,7 @@
     z-index: 1;
 
     &.vt-dot--active    { background: $color_main_1; box-shadow: 0 0 0 3px $color_main_4; }
-    &.vt-dot--reviewing { background: #d97706; box-shadow: 0 0 0 3px #fef3c7; }
+    &.vt-dot--reviewing { background: $color-warning-amber; box-shadow: 0 0 0 3px var(--tag-amber-bg); }
     &.vt-dot--history   { background: var(--text-faint); }
     &.vt-dot--draft     { background: var(--divider-a50); border: 2px solid var(--text-faint); }
     &.vt-dot--rejected  { background: $color-danger; }
