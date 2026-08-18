@@ -61,17 +61,18 @@
 
     // 配色跟 Library 技能庫的分類標籤（.lbm-section-label--*）一致，
     // 依技能的 scope（系統／企業／團隊）決定顏色，不再只依 isExtension 分兩色。
+    // 顏色統一改用既有的語意 tag token，不寫死 hex。
     &.icon--system {
-      background: rgba(#1565c0, 0.12);
-      color: #1565c0;
+      background: var(--tag-blue-bg);
+      color: var(--tag-blue-text);
     }
     &.icon--enterprise {
       background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
       color: $color_main_2;
     }
     &.icon--team {
-      background: rgba(#7c5fba, 0.12);
-      color: #7c5fba;
+      background: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
     }
   }
 
