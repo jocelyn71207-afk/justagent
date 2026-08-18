@@ -53,6 +53,25 @@
     flex-wrap: wrap;
   }
 
+  // 現有 Agent 收進企業卡片裡面呈現，跟企業類型/方案同一張卡，
+  // 但用小標籤跟上面的 meta 區分開，不會誤以為 Agent 也是企業屬性
+  .company-hero-agents {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--divider-a50);
+  }
+
+  .company-hero-agents-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-faint);
+    flex-shrink: 0;
+  }
+
   .company-hero-link {
     flex-shrink: 0;
   }
@@ -144,12 +163,6 @@
   }
 
   // ── 現有 Agent：安靜的 pill 標籤，跟平台管理者的人卡是不同語彙 ──
-  .agent-list {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
   .agent-tag {
     display: inline-flex;
     align-items: center;

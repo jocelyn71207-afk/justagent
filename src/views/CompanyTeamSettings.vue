@@ -9,9 +9,9 @@
         </div>
       </div>
 
-      <!-- 企業身分卡：取代原本的企業/團隊頁籤 + 唯讀清單，把企業識別、
-           類型、方案一次放進同一張卡，下面不再切頁，人員／團隊兩塊
-           對等看板一次看完組織全貌 -->
+      <!-- 企業身分卡：企業識別、類型、方案、現有 Agent 都收進同一張卡；
+           團隊類型（實體門市/電子商務）不重複放在這裡，下面「團隊」
+           看板本身就是依類型分 lane，這裡再列一次是重複資訊 -->
       <div class="company-hero">
         <div class="company-hero-icon">
           <i class="material-symbols-outlined">domain</i>
@@ -20,28 +20,19 @@
           <div class="company-hero-name">UGG電子商務</div>
           <div class="company-hero-meta">
             <span class="type-tag">零售</span>
-            <span class="type-tag">實體門市</span>
-            <span class="type-tag">電子商務</span>
             <span class="plan-badge">標準版<span class="plan-badge-expire">・到期 2026.08.09</span></span>
+          </div>
+          <div class="company-hero-agents">
+            <span class="company-hero-agents-label">現有 Agent</span>
+            <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
+              <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
+            </span>
           </div>
         </div>
         <a href="#" class="setting-link company-hero-link">
           更改請聯絡客服
           <i class="material-symbols-outlined">chevron_right</i>
         </a>
-      </div>
-
-      <!-- 現有 Agent：安靜的標籤列，跟平台管理者是不同性質的東西
-           （Agent 不是帳號、沒有帳號的增刪/權限操作），不套用同一種人卡 -->
-      <div class="board-section">
-        <div class="board-title-row">
-          <span class="board-title">現有 Agent</span>
-        </div>
-        <div class="agent-list">
-          <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
-            <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
-          </span>
-        </div>
       </div>
 
       <!-- 平台管理者：真正的帳號名冊，用人卡呈現才看得出誰是誰、能不能刪 -->
