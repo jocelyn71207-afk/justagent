@@ -385,41 +385,46 @@
         flex-shrink: 0;
       }
 
-      .file-process-icon {
-        font-size: 16px;
-        color: var(--text-faint);
-        cursor: default;
-      }
-
-      .file-owner {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 500;
-        color: var(--text);
-      }
-
-      .file-owner-avatar {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 10px;
-        font-weight: 700;
-        user-select: none;
-      }
-
       .file-date { flex-shrink: 0; }
     }
   }
+}
+
+// ── 上傳者頭像／處理方式圖示：卡片檢視跟列表檢視共用，拉到 .file-card
+// 外層當成共用樣式（先前誤放在 .file-card 巢狀底下，導致列表檢視完全
+// 沒吃到樣式、頭像變成一段沒有裁圓角/沒有固定尺寸的純文字，看起來
+// 像一條奇怪的色塊）──────────────────────────────────────────────
+.file-process-icon {
+  font-size: 16px;
+  color: var(--text-faint);
+  cursor: default;
+}
+
+.file-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+.file-owner-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  user-select: none;
 }
 
 // ── 列表檢視：跟 Skill 頁面同一套「橫向長條」語言，不是死板的原生表格
