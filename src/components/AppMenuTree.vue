@@ -67,17 +67,7 @@
         <div class="rail-divider"></div>
       </div>
 
-      <!-- 企業/團隊切換：每個團隊一顆圖示，點擊切換右側常駐面板顯示的內容
-           （不是 hover 才彈出的浮層——選單本身常駐展開，圖示只負責切換選誰） -->
-      <div class="rail-teams" @wheel.stop="handleContentWheel($event);">
-        <div class="rail-team-btn" v-for="(item, i) in testGroups" :key="'team' + item.id"
-          :class="{ 'is-selected': selectedTeamId === item.id }"
-          :style="{ background: teamColor(i) }"
-          v-tooltip.right="item.name"
-          @click="selectedTeamId = item.id">
-          {{ teamInitial(item.name) }}
-        </div>
-      </div>
+      <div class="rail-spacer"></div>
 
       <div class="rail-bottom">
         <RouterLink to="/view/CompanyTeamSettings" class="rail-btn" :class="{ active: route.path === '/view/CompanyTeamSettings' }" v-tooltip.right="'企業/團隊設定'">
@@ -93,10 +83,35 @@
     <!-- 常駐選單面板：顯示「目前選中團隊」的導覽項目，不隨滑鼠移開而消失；
          切換團隊時內容淡入淡出，避免整塊文字瞬間跳掉 -->
     <div class="side-panel" v-if="selectedTeam">
+      <!-- 團隊切換：放在常駐面板最上方，點擊展開團隊清單；不再長在側邊
+           圖示條上——圖示條留給真正「全域」的單元 -->
+      <div class="side-panel-switcher" ref="teamSwitcherBtn"
+        :class="{ 'is-open': isTeamSwitcherOpen }"
+        role="button" tabindex="0" :aria-expanded="isTeamSwitcherOpen"
+        @click="isTeamSwitcherOpen = !isTeamSwitcherOpen"
+        @keydown.enter.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
+        @keydown.space.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen">
+        <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam.name) }}</span>
+        <span class="side-panel-switcher-name">{{ selectedTeam.name }}</span>
+        <i class="material-symbols-outlined side-panel-switcher-caret">unfold_more</i>
+
+        <Transition name="rail-expand">
+          <div class="rail-popover team-switch-list" v-show="isTeamSwitcherOpen">
+            <div class="team-switch-item" v-for="(item, i) in testGroups" :key="'switch' + item.id"
+              :class="{ active: item.id === selectedTeamId }"
+              @click.stop="selectTeam(item.id)">
+              <span class="team-switch-dot" :style="{ background: teamColor(i) }">{{ teamInitial(item.name) }}</span>
+              <span class="team-switch-name">{{ item.name }}</span>
+              <i v-if="item.id === selectedTeamId" class="material-symbols-outlined team-switch-check">check</i>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
+      <div class="side-panel-divider"></div>
+
     <Transition name="panel-fade" mode="out-in">
     <div :key="selectedTeamId ?? ''">
-      <div class="side-panel-title" v-tooltip.right="selectedTeam.name">{{ selectedTeam.name }}</div>
-
       <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
         class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam.id }">
         <i class="material-symbols-outlined">folder</i>團隊專案
@@ -217,7 +232,7 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
-import { handleContentWheel, initClickOutsideListener } from '@/utils/utils';
+import { initClickOutsideListener } from '@/utils/utils';
 
 const route = useRoute();
 const router = useRouter();
@@ -240,11 +255,20 @@ function teamInitial(name: string): string {
 // 這樣面板一開始就有內容，不會是空的
 const selectedTeamId = ref<string | null>(testGroups.value[0]?.id ?? null);
 const selectedTeam = computed(() => testGroups.value.find((g: any) => g.id === selectedTeamId.value) ?? null);
+const selectedTeamIndex = computed(() => testGroups.value.findIndex((g: any) => g.id === selectedTeamId.value));
 watch(testGroups, (groups: any[]) => {
   if (!groups.some(g => g.id === selectedTeamId.value)) {
     selectedTeamId.value = groups[0]?.id ?? null;
   }
 });
+
+// 團隊切換：放在常駐面板最上方的下拉，不是側邊圖示條
+const isTeamSwitcherOpen = ref(false);
+const teamSwitcherBtn = ref<HTMLElement | null>(null);
+function selectTeam(id: string) {
+  selectedTeamId.value = id;
+  isTeamSwitcherOpen.value = false;
+}
 
 // 直接用網址進入某個團隊的頁面（例如帶了 ?teamId=xxx，或重新整理停在
 // /view/Skills）時，同步選中對應的團隊，並自動展開包含目前路徑的群組，
@@ -288,6 +312,9 @@ onMounted(() => {
   });
   initClickOutsideListener(searchPopoverEl.value!, () => {
     isSearchOpen.value = false;
+  });
+  initClickOutsideListener(teamSwitcherBtn.value!, () => {
+    isTeamSwitcherOpen.value = false;
   });
 });
 </script>

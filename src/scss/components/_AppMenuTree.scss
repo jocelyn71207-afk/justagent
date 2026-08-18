@@ -3,9 +3,10 @@
 //
 // 骨架邏輯：
 //   .rail        圖示條：使用者頭像（上）、通用單元（最近使用/探索/搜尋）、
-//                企業/團隊圖示（點擊切換右側面板內容）、企業設定、產品 logo（下）
-//   .side-panel  常駐展開的面板，顯示「目前選中團隊」的 7 個導覽項目，
-//                不是 hover 才彈出、滑鼠移開就消失的浮層
+//                企業設定、產品 logo（下）
+//   .side-panel  常駐展開的面板，最上方是「團隊切換器」（顯示目前選中團隊，
+//                點擊展開下拉清單切換），下方是該團隊的導覽項目——
+//                企業/團隊切換不再長在 rail 上，改坐在面板頂端
 // ============================================================
 
 .AppMenuTree {
@@ -85,47 +86,11 @@
   flex-shrink: 0;
 }
 
-// ── 企業/團隊圖示：獨立可捲動區塊，避免團隊一多把下方常駐按鈕擠出畫面 ──
-.rail-teams {
+// ── rail 中段留白：把 .rail-bottom 推到最底，企業/團隊切換已移到 side-panel 頂端 ──
+.rail-spacer {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 0 8px;
-  @include no-scroll-bar();
-}
-
-.rail-team-btn {
-  position: relative;
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  cursor: pointer;
-  user-select: none;
-  flex-shrink: 0;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-
-  &:hover { transform: scale(1.06); }
-
-  // 目前選中、內容顯示在右側常駐面板裡的團隊
-  &.is-selected {
-    box-shadow: 0 0 0 2px var(--sidebar-bg), 0 0 0 4px currentColor;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
 }
 
 .rail-bottom {
@@ -262,6 +227,141 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+// ── 團隊切換器：坐在面板最上方，取代原本長在 rail 上的企業圖示 ──
+.side-panel-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 8px 8px 6px;
+  margin-bottom: 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.is-open {
+    background: var(--sidebar-hover);
+
+    .side-panel-switcher-caret { transform: rotate(180deg); }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.side-panel-switcher-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  user-select: none;
+}
+
+.side-panel-switcher-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-panel-switcher-caret {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--text-faint);
+  transition: transform 0.14s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-panel-switcher-caret { transition: none; }
+}
+
+// 團隊切換下拉清單：從切換器「正下方」長出來，不是 .rail-popover 預設的貼右側展開
+.team-switch-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  padding: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.team-switch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active { font-weight: 700; }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+}
+
+.team-switch-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  user-select: none;
+}
+
+.team-switch-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-switch-check {
+  flex-shrink: 0;
+  font-size: 17px;
+  color: var(--primary);
+}
+
+.side-panel-divider {
+  height: 1px;
+  background: var(--divider-a50);
+  margin: 4px 6px 10px;
 }
 
 // 切換團隊時面板內容淡入淡出，避免整塊文字瞬間跳掉
