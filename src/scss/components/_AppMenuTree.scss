@@ -26,6 +26,9 @@
 }
 
 .rail {
+  position: relative; // rail 上彈出的浮層（搜尋／團隊／使用者選單）都靠這個當定位基準，
+                       // 不然浮層會相對整個 .AppMenuTree 定位——側邊面板有沒有顯示會讓
+                       // .AppMenuTree 寬度跳動，浮層就跟著跑位，離觸發的圖示很遠
   width: $railWidth;
   flex: none;
   height: 100%;
