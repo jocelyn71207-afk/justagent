@@ -5,7 +5,6 @@
       { 'is-extension': isExtension },
       { 'is-standalone': isExtension && !skill.forkSourceId },
       { 'is-disabled': !skill.isEnabled },
-      { 'is-compact': compact },
     ]"
     @click="emit('click', skill)"
   >
@@ -18,17 +17,21 @@
         {{ skill.name }}
         <span class="skill-tag tag--version">v{{ skill.version }}</span>
       </div>
-      <div v-if="!compact" class="skill-card-desc">{{ skill.description }}</div>
+      <div v-if="skill.description" class="skill-card-desc">{{ skill.description }}</div>
       <div class="skill-card-stats">
         <span class="sk-stat">
-          <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }}
+          <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
         </span>
-        <span :class="['sk-stat', rateClass]">
-          <i class="material-symbols-outlined">verified</i>{{ Math.round(skill.testPassRate * 100) }}%
-        </span>
-        <span class="sk-stat">
-          <i class="material-symbols-outlined">timer</i>{{ skill.avgLatencyMs }}ms
-        </span>
+        <!-- 從沒被觸發過就不顯示測試通過率/延遲——0% 會誤讀成「測試失敗」，
+             其實只是還沒有真實流量可以算 -->
+        <template v-if="skill.usageCount > 0">
+          <span :class="['sk-stat', rateClass]">
+            <i class="material-symbols-outlined">verified</i>{{ Math.round(skill.testPassRate * 100) }}%
+          </span>
+          <span class="sk-stat">
+            <i class="material-symbols-outlined">timer</i>{{ skill.avgLatencyMs }}ms
+          </span>
+        </template>
       </div>
     </div>
 
@@ -58,10 +61,8 @@ import type { Skill } from '@/stores/skillStore'
 const props = withDefaults(defineProps<{
   skill: Skill
   isExtension?: boolean
-  compact?: boolean
 }>(), {
   isExtension: false,
-  compact: false,
 })
 
 const emit = defineEmits<{

@@ -84,13 +84,14 @@
     border-radius: 7px;
     .material-symbols-outlined { font-size: 15px; }
 
-    // 配色沿用「Library 現有技能管理」（_LibrarySkillRow.scss 的 lsr-section-block）
-    // 區隔企業／團隊的顏色，系統技能另外選用藍色系以三者互相區隔。
+    // 配色沿用既有的語意 tag token，不寫死 hex；企業／團隊跟「Library 現有
+    // 技能管理」（_LibrarySkillRow.scss 的 lsr-section-block）用同一組顏色，
+    // 系統技能另外選用藍色系以三者互相區隔。
     &--system {
-      background: rgba(#1565c0, 0.08);
-      color: #1565c0;
-      .material-symbols-outlined { color: #1565c0; }
-      .lbm-count { background: rgba(#1565c0, 0.14); color: #1565c0; border-color: transparent; }
+      background: var(--tag-blue-bg);
+      color: var(--tag-blue-text);
+      .material-symbols-outlined { color: var(--tag-blue-text); }
+      .lbm-count { background: var(--tag-blue-bg); color: var(--tag-blue-text); border-color: transparent; }
     }
     &--enterprise {
       background: $color_main_5;
@@ -99,10 +100,10 @@
       .lbm-count { background: rgba($color_main_1, 0.12); color: $color_main_1; border-color: transparent; }
     }
     &--team {
-      background: rgba(#7c5fba, 0.06);
-      color: #7c5fba;
-      .material-symbols-outlined { color: #7c5fba; }
-      .lbm-count { background: rgba(#7c5fba, 0.12); color: #7c5fba; border-color: transparent; }
+      background: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
+      .material-symbols-outlined { color: var(--tag-violet-text); }
+      .lbm-count { background: var(--tag-violet-bg); color: var(--tag-violet-text); border-color: transparent; }
     }
   }
 
@@ -124,7 +125,7 @@
   .lbm-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .lbm-empty {

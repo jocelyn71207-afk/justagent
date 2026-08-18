@@ -141,57 +141,6 @@
     }
   }
 
-  // ── Compact mode ─────────────────────────────
-  &.is-compact {
-    padding: 7px 16px;
-    border-radius: 10px;
-    gap: 10px;
-
-    .skill-card-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      .material-symbols-outlined { font-size: 16px; }
-    }
-
-    .skill-card-body {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-
-      .skill-card-name {
-        font-size: 13.5px;
-        margin-bottom: 0;
-        flex-shrink: 0;
-      }
-
-      .skill-card-stats {
-        margin: 0;
-        .sk-stat { font-size: 10px; padding: 1px 6px 1px 5px; }
-      }
-    }
-
-    .skill-card-right {
-      flex-direction: row;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .skill-card-actions {
-      opacity: 0;
-      transition: opacity 0.15s;
-
-      .skill-action-btn {
-        font-size: 10px;
-        padding: 1px 7px;
-        &--icon { padding: 1px 5px; }
-      }
-    }
-
-    &:hover .skill-card-actions { opacity: 1; }
-  }
-
   // Right column: status stacked above actions
   .skill-card-right {
     display: flex;

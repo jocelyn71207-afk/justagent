@@ -23,11 +23,11 @@
 
   &--team {
     .lsr-section-header {
-      background: rgba(#7c5fba, 0.06);
-      border-bottom-color: rgba(#7c5fba, 0.18);
-      color: #7c5fba;
-      .material-symbols-outlined { color: #7c5fba; }
-      .lsr-section-count { background: rgba(#7c5fba, 0.12); color: #7c5fba; }
+      background: var(--tag-violet-bg);
+      border-bottom-color: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
+      .material-symbols-outlined { color: var(--tag-violet-text); }
+      .lsr-section-count { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
     }
   }
 }
@@ -88,11 +88,11 @@
   gap: 5px;
   font-size: 12px;
   font-weight: 600;
-  color: #7c5fba;
+  color: var(--tag-violet-text);
   padding: 0 0 8px;
 
   .material-symbols-outlined { font-size: 14px; }
-  .lsr-section-count { background: rgba(#7c5fba, 0.1); color: #7c5fba; }
+  .lsr-section-count { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
 }
 
 .lsr-section-list--in-card {
@@ -130,7 +130,7 @@
     .material-symbols-outlined { font-size: 17px; }
 
     &.icon--ext { background: $color_main_5; color: $color_main_1; }
-    &.icon--sys { background: rgba(#6b7280, 0.1); color: #6b7280; }
+    &.icon--sys { background: var(--page-bg); color: var(--text-muted); }
   }
 
   .lsr-name {
@@ -171,9 +171,9 @@
   .lsr-team-badge {
     font-size: 11px;
     font-weight: 600;
-    color: #7c5fba;
-    background: rgba(#7c5fba, 0.1);
-    border: 1px solid rgba(#7c5fba, 0.25);
+    color: var(--tag-violet-text);
+    background: var(--tag-violet-bg);
+    border: 1px solid var(--tag-violet-bg);
     border-radius: 5px;
     padding: 2px 7px;
     flex-shrink: 0;
