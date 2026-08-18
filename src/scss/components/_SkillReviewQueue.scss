@@ -13,7 +13,7 @@
   overflow-y: auto;
   // 固定高度（不是 max-height）：不同技能的詳情內容長短不一，如果只設
   // 上限，切換技能時面板會跟著內容縮放，把下面的 Library 區塊擠得跳動
-  height: 640px;
+  height: 400px;
   background: var(--surface);
   @include use-scroll-bar(var(--scrollbar-a50));
 }
@@ -90,7 +90,7 @@
   border: 1px solid var(--divider-a50);
   border-radius: 14px;
   overflow-y: auto;
-  height: 640px; // 固定高度，理由同 .rq-list
+  height: 400px; // 固定高度，理由同 .rq-list
   background: var(--surface);
   @include use-scroll-bar(var(--scrollbar-a50));
 }
