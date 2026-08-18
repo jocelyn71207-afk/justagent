@@ -23,10 +23,6 @@
             <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
               <div class="user-flyout-title">
                 <p class="user-name">Lucas.chien</p>
-                <select class="custom-select w-100 mt-1" v-model="rootStore.nowMenuTreeCompanyName" @click.stop>
-                  <option value="UGG">UGG</option>
-                  <option value="UGG">UGG</option>
-                </select>
               </div>
               <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
               <div class="option-item" @click="handleLogout">登出</div>
@@ -35,6 +31,25 @@
         </div>
 
         <div class="rail-divider"></div>
+
+        <!-- 企業入口：常駐圖示，跟「團隊」入口同一種手法——不用先點頭像
+             才找得到企業切換，點一下直接彈出企業清單 -->
+        <button type="button" class="rail-btn" :class="{ active: isCompanyRailOpen }" v-tooltip.right="'企業'"
+          @click="isCompanyRailOpen = true">
+          <i class="material-symbols-outlined">domain</i>
+        </button>
+
+        <Transition name="rail-expand">
+          <div class="rail-popover company-rail-list" v-show="isCompanyRailOpen" ref="companyRailPopoverEl">
+            <div class="team-switch-item" v-for="item in companyList" :key="'railcompany' + item.id"
+              :class="{ active: item.name === nowMenuTreeCompanyName }"
+              @click="selectCompany(item)">
+              <span class="team-switch-dot" style="background: var(--primary)">{{ item.name.charAt(0) }}</span>
+              <span class="team-switch-name">{{ item.name }}</span>
+              <i v-if="item.name === nowMenuTreeCompanyName" class="material-symbols-outlined team-switch-check">check</i>
+            </div>
+          </div>
+        </Transition>
 
         <RouterLink to="/view/ProjectDashboard" class="rail-btn" :class="{ active: route.path === '/view/ProjectDashboard' }" v-tooltip.right="'最近使用'">
           <i class="material-symbols-outlined">schedule</i>
@@ -257,7 +272,7 @@ const route = useRoute();
 const router = useRouter();
 
 const rootStore = useRootStore();
-const { isEnterAppSearchPage, appSearchKeyword, testGroups } = storeToRefs(rootStore);
+const { isEnterAppSearchPage, appSearchKeyword, testGroups, companyList, nowMenuTreeCompanyName } = storeToRefs(rootStore);
 
 // 團隊圖示色票：跟品牌色同一組調性（去飽和），不用跟主題無關的彩虹色
 const TEAM_COLORS = ['#00A078', '#5B7B8C', '#8A6D3B', '#6B5B95', '#B5654A'];
@@ -304,6 +319,15 @@ function goToTeam(id: string) {
   selectedTeamId.value = id;
   isTeamRailOpen.value = false;
   router.push({ path: '/view/TeamProject', query: { teamId: team.id, teamName: team.name } });
+}
+
+// Rail 上的企業入口：常駐圖示，不用先點頭像才找得到企業切換
+const isCompanyRailOpen = ref(false);
+const companyRailPopoverEl = ref<HTMLElement | null>(null);
+function selectCompany(item: { id: string; name: string }) {
+  rootStore.nowMenuTreeCompanyId = item.id;
+  nowMenuTreeCompanyName.value = item.name;
+  isCompanyRailOpen.value = false;
 }
 
 // 直接用網址進入某個團隊的頁面（例如帶了 ?teamId=xxx，或重新整理停在
@@ -354,6 +378,9 @@ onMounted(() => {
   });
   initClickOutsideListener(teamRailPopoverEl.value!, () => {
     isTeamRailOpen.value = false;
+  });
+  initClickOutsideListener(companyRailPopoverEl.value!, () => {
+    isCompanyRailOpen.value = false;
   });
 });
 </script>
