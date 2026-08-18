@@ -94,6 +94,30 @@
         </div>
       </div>
 
+      <!-- 右側：常駐技能資訊／AI 測試摘要，不用切分頁就看得到 -->
+      <div v-if="selectedSkill" class="test-context-panel">
+        <div v-if="selectedSkill.instructions" class="context-card">
+          <div class="context-card-title">技能指令</div>
+          <p class="context-instructions">{{ selectedSkill.instructions }}</p>
+        </div>
+
+        <div v-if="selectedSkill.triggerHint" class="context-card">
+          <div class="context-card-title">觸發時機</div>
+          <p class="context-instructions">{{ selectedSkill.triggerHint }}</p>
+        </div>
+
+        <div class="context-card">
+          <div class="context-card-title">AI 測試摘要</div>
+          <template v-if="store.aiTestReport">
+            <div class="context-rate">
+              <span class="context-rate-num">{{ aiRatePercent }}%</span>
+              <span class="context-rate-sub">{{ store.aiTestReport.passed }} / {{ store.aiTestReport.total }} 通過</span>
+            </div>
+          </template>
+          <p v-else class="context-empty-hint">尚未執行 AI 快速測試</p>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -123,6 +147,12 @@ const librarySubgroups = computed(() => [
   { key: 'enterprise', label: '企業擴充', skills: enabledLibrarySkills.value.filter(s => s.scope === 'enterprise') },
   { key: 'team', label: '團隊擴充', skills: enabledLibrarySkills.value.filter(s => s.scope === 'team') },
 ])
+
+const aiRatePercent = computed(() => {
+  const report = store.aiTestReport
+  if (!report || !report.total) return 0
+  return Math.round((report.passed / report.total) * 100)
+})
 
 function displayVersionTag(skill: Skill): string {
   if (store.selectedSkillId === skill.id && store.selectedVersionTag) {
