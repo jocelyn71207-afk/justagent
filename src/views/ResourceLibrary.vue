@@ -83,17 +83,39 @@
               </div>
             </div>
 
-            <!-- 卡片 body: 圖片預覽 or OTHER icon or 檔案圖示 -->
+            <!-- 卡片 body: 圖片預覽 or OTHER icon or 檔案圖示（非圖片檔案配一塊
+                 淺色底板襯托圖示，不要讓圖示孤零零浮在一大片空白正中間） -->
             <div class="card-body-box">
               <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="" class="preview-img">
-              <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                class="material-symbols-outlined other-file-icon">question_mark</i>
-              <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
+              <div v-else class="file-icon-tile">
+                <i v-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
+                  class="material-symbols-outlined other-file-icon">question_mark</i>
+                <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
+              </div>
             </div>
 
-            <!-- 卡片 footer: 時間 -->
+            <!-- 卡片 footer：處理方式／狀態徽章 + 上傳者/時間，原本只有
+                 一行時間，資料明明就有 processType/status/ownerName 卻完全
+                 沒顯示——尤其「解析中/失敗」這種需要立刻被看到的狀態,
+                 之前完全沒有出現在卡片檢視 -->
             <div class="card-footer-box">
-              <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
+              <div class="file-footer-badges">
+                <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
+                  <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
+                  {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
+                </span>
+                <span v-if="item.status !== 'saved' && item.status !== 'stored'"
+                  :class="['status-badge', `status-badge--${item.status}`]">
+                  {{ fileStatusLabel(item.status) }}
+                </span>
+              </div>
+              <div class="file-footer-meta">
+                <span class="file-owner">
+                  <span class="file-owner-avatar" :style="{ background: avatarColor(item.ownerId) }">{{ item.ownerName.charAt(0) }}</span>
+                  {{ item.ownerName }}
+                </span>
+                <span class="file-date">{{ formatDate(item.lastModify) }}</span>
+              </div>
             </div>
 
           </div>
@@ -291,6 +313,27 @@ function getFileTypeIcon(fileType: string) {
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+// 檔案處理狀態文字：只有「上傳中/解析中/失敗」這幾個需要立刻被看到的
+// 過渡/異常狀態才會顯示徽章（saved/stored 是穩定的完成狀態，不需要提醒）
+const FILE_STATUS_LABELS: Record<string, string> = {
+  uploading: '上傳中',
+  parsing: '解析中',
+  stored: '已入庫',
+  saved: '已儲存',
+  failed: '處理失敗',
+};
+function fileStatusLabel(status: string): string {
+  return FILE_STATUS_LABELS[status] ?? status;
+}
+
+// 上傳者頭像色：跟全站其他地方（協作者頭像/團隊圖示）同一組去飽和調性，
+// 用 ownerId 雜湊挑色，同一個人在同一次載入裡顏色一致
+const AVATAR_COLORS = ['#00A078', '#5B7B8C', '#8A6D3B', '#6B5B95', '#B5654A'];
+function avatarColor(ownerId: string): string {
+  const hash = ownerId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
 
 // 編輯檔案名稱
