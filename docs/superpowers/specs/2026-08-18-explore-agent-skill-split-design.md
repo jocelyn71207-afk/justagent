@@ -8,6 +8,8 @@
 
 專案裡另有一份 2026-08-14 的視覺改版 spec（`docs/superpowers/specs/2026-08-14-visual-redesign-phase4-workspace-explore-design.md`），範圍是「頒獎台版型 + 動畫系統」的純視覺調整，非目標明確排除「搜尋/篩選/hero banner/為你推薦邏輯」。本次是全新方向——把探索頁從單一 Agent 清單，重新設計成 Agent／Skill 雙分頁，屬於後續規劃，不與該份 spec 衝突，只是換了範圍。
 
+**2026-08-18 修訂說明：** Task 1 完成後才發現，實際實作所在的 `main`（`origin/main`）分支上，`Explore.vue` 的圖示配色仍是舊版的 `bgColor`/`accentColor`（inline style、寫死 hex）欄位，不是本文件原始版本以為的 `colorKey: ColorKey`（CSS class 設計 token）——那個 `colorKey` 版本只存在於另一個尚未合併回 main 的並行分支上，是探索/寫這份 spec 時誤把該分支的檔案內容當成 main 的現況。以下第 2-4 節已修正為使用實際的 `bgColor`/`accentColor` 欄位，不再假設 `colorKey` 存在。
+
 ## 目標
 
 - 探索頁分成兩個分頁籤：「Agent 探索」與「Skill 探索」。
@@ -61,7 +63,8 @@ interface Agent {
   desc: string       // 保留，Modal 詳情裡的完整說明
   painPoint: string  // 新增：卡片上主打的一句情境/痛點
   icon: string
-  colorKey: ColorKey
+  bgColor: string
+  accentColor: string
   tags: string[]
   badge?: AgentBadge
   categories: string[]
@@ -102,21 +105,24 @@ interface ExploreSkill {
   functionType: SkillFunctionType
   capability: string   // 一句話說明「能做什麼」，功能導向、非情境導向
   icon: string
-  colorKey: ColorKey
+  bgColor: string
+  accentColor: string
   badge?: AgentBadge    // 沿用同一個 badge 型別（new/hot/sat）
 }
 
 const allExploreSkills: ExploreSkill[] = [
-  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', colorKey: 'violet' },
-  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', colorKey: 'blue', badge: { type: 'hot', label: '熱門' } },
-  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', colorKey: 'teal' },
-  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', colorKey: 'amber', badge: { type: 'new', label: '新上架' } },
-  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', colorKey: 'rust' },
-  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', colorKey: 'green', badge: { type: 'hot', label: '熱門' } },
-  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', colorKey: 'rose' },
-  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', colorKey: 'blue' },
+  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', bgColor: '#EEEDFE', accentColor: '#534AB7' },
+  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', bgColor: '#E6F1FB', accentColor: '#185FA5', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', bgColor: '#E1F5EE', accentColor: '#0F6E56' },
+  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', bgColor: '#FAEEDA', accentColor: '#854F0B', badge: { type: 'new', label: '新上架' } },
+  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', bgColor: '#FAECE7', accentColor: '#993C1D' },
+  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', bgColor: '#EAF3DE', accentColor: '#3B6D11', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', bgColor: '#FBEAF0', accentColor: '#993556' },
+  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', bgColor: '#E6F1FB', accentColor: '#185FA5' },
 ]
 ```
+
+（顏色值直接沿用 `allAgents` 現有調色盤裡的既有 hex 組合，維持視覺一致性，不新增新的顏色值。）
 
 版面（比 Agent 分頁精簡，不做頒獎台）：
 
@@ -191,8 +197,8 @@ function useExploreSkill() {
   <template v-if="selectedExploreSkill">
     <div class="Explore explore-modal-box">
       <div class="explore-modal-content">
-        <div :class="['explore-modal-icon', `agent-icon--${selectedExploreSkill.colorKey}`]">
-          <i class="material-symbols-outlined">{{ selectedExploreSkill.icon }}</i>
+        <div class="explore-modal-icon" :style="{ background: selectedExploreSkill.bgColor }">
+          <i class="material-symbols-outlined" :style="{ color: selectedExploreSkill.accentColor }">{{ selectedExploreSkill.icon }}</i>
         </div>
         <span class="skill-function-badge">{{ selectedExploreSkill.functionType }}</span>
         <p class="explore-modal-desc">{{ selectedExploreSkill.capability }}</p>
