@@ -199,15 +199,6 @@
     margin: 0 0 12px;
   }
 
-  .src-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    align-items: start;
-
-    @media (max-width: 860px) { grid-template-columns: 1fr; }
-  }
-
   .skill-review-block {
     margin-bottom: 28px;
   }

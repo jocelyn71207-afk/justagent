@@ -1,0 +1,114 @@
+// ── 管理區待審核佇列：左側清單快速掃描、右側看選中那筆的完整詳情 ──
+.SkillReviewQueue {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.rq-list {
+  width: 300px;
+  flex-shrink: 0;
+  border: 1px solid var(--divider-a50);
+  border-radius: 14px;
+  overflow-y: auto;
+  max-height: 640px;
+  background: var(--surface);
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.rq-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--divider-a50);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+
+  &:hover { background: var(--page-bg); }
+
+  &.is-active {
+    // 用 CSS 變數而非 $color_main_5（那組是寫死給淺色模式用的常數，深色模式
+    // 底下會讓亮色文字疊在同樣偏亮的底色上，幾乎看不見）
+    background: var(--accent-soft);
+    border-left: 3px solid var(--primary);
+    padding-left: 11px; // 補償左邊框寬度，內容才不會跟著位移
+  }
+}
+
+.rq-row-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .material-symbols-outlined { font-size: 15px; }
+
+  &.icon--enterprise {
+    background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
+    color: $color_main_2;
+  }
+  &.icon--team {
+    background: var(--tag-violet-bg);
+    color: var(--tag-violet-text);
+  }
+}
+
+.rq-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.rq-row-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rq-row-sub {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rq-detail {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--divider-a50);
+  border-radius: 14px;
+  overflow-y: auto;
+  max-height: 640px;
+  background: var(--surface);
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.rq-empty {
+  height: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-faint);
+  font-size: 13px;
+
+  .material-symbols-outlined { font-size: 32px; }
+  p { margin: 0; }
+}
+
+@media (max-width: 860px) {
+  .SkillReviewQueue { flex-direction: column; }
+  .rq-list { width: 100%; max-height: 240px; }
+}

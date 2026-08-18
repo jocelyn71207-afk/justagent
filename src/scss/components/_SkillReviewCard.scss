@@ -1,14 +1,7 @@
+// 現在只嵌在 SkillReviewQueue 右側的詳情面板裡用（不再是格狀排列的
+// 獨立卡片），所以不需要自己的外框/hover 陰影——面板本身已經有邊界
 .SkillReviewCard {
   background: var(--surface);
-  border: 1px solid var(--divider-a50);
-  border-radius: 14px;
-  overflow: hidden;
-  transition: box-shadow 0.2s, border-color 0.2s;
-
-  &:hover {
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
-    border-color: $color_main_3;
-  }
 
   // ── Header ──────────────────────────────────────
 

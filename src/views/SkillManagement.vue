@@ -74,16 +74,13 @@
         <div v-if="isManager" v-show="activeTab === 'review'" class="skill-tab-panel">
           <div class="skill-review-block">
             <p class="skill-tab-panel-desc">等待審核的技能送審申請，通過後將發佈至 Library</p>
-            <div v-if="store.pendingReviewSkills.length" class="src-list lively-stagger">
-              <SkillReviewCard
-                v-for="skill in store.pendingReviewSkills"
-                :key="skill.id"
-                :skill="skill"
-                @view="detailSkillId = $event.id"
-                @approve="handleApprove"
-                @reject="handleReject"
-              />
-            </div>
+            <SkillReviewQueue
+              v-if="store.pendingReviewSkills.length"
+              :skills="store.pendingReviewSkills"
+              @view="detailSkillId = $event.id"
+              @approve="handleApprove"
+              @reject="handleReject"
+            />
             <div v-else class="skill-section-empty">目前沒有待審核的技能</div>
           </div>
 
@@ -431,7 +428,7 @@ import { useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTile from '@/components/Skill/SkillTile.vue'
 import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
-import SkillReviewCard from '@/components/Skill/SkillReviewCard.vue'
+import SkillReviewQueue from '@/components/Skill/SkillReviewQueue.vue'
 import LibraryBrowseModal from '@/components/Skill/LibraryBrowseModal.vue'
 import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
