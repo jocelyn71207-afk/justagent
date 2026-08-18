@@ -107,11 +107,13 @@
                   <span class="lsr-section-count">{{ filteredEnterpriseSkills.length }}</span>
                 </div>
                 <div class="lsr-section-list">
-                  <LibrarySkillRow
+                  <SkillTile
                     v-for="skill in filteredEnterpriseSkills"
                     :key="skill.id"
                     :skill="skill"
                     @click="detailSkillId = skill.id"
+                    @test="handleTest"
+                    @duplicate="handleDuplicate"
                   />
                 </div>
               </div>
@@ -133,11 +135,13 @@
                       <span class="lsr-section-count">{{ group.skills.length }}</span>
                     </div>
                     <div class="lsr-section-list lsr-section-list--in-card">
-                      <LibrarySkillRow
+                      <SkillTile
                         v-for="skill in group.skills"
                         :key="skill.id"
                         :skill="skill"
                         @click="detailSkillId = skill.id"
+                        @test="handleTest"
+                        @duplicate="handleDuplicate"
                       />
                     </div>
                   </div>
@@ -425,7 +429,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
-import LibrarySkillRow from '@/components/Skill/LibrarySkillRow.vue'
+import SkillTile from '@/components/Skill/SkillTile.vue'
 import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
 import SkillReviewCard from '@/components/Skill/SkillReviewCard.vue'
 import LibraryBrowseModal from '@/components/Skill/LibraryBrowseModal.vue'

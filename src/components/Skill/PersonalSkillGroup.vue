@@ -1,46 +1,36 @@
 <template>
-  <!-- 沿用 SkillCard 的視覺語言（圖示/內文/統計列/狀態），不再是只有一行文字的
-       陽春清單——「我的技能」是這頁最常用的分頁，卻是全頁面資訊量最少的地方，
-       skillStore 裡其實有 description/usageCount/testPassRate/avgLatencyMs
-       這些資料，原本完全沒有用上 -->
-  <!-- 注意：不套用 SkillCard 的 .is-disabled（opacity 0.45 + pointer-events:none）——
-       那是給 Library 技能「不可用/不可互動」用的。個人技能的「停用中」只是開關
-       關閉，使用者仍然要能點進來管理／重新啟用，用右側的狀態文字表達就夠了 -->
-  <div class="PersonalSkillGroup SkillCard" @click="emit('manage', skill)">
-    <div class="skill-card-icon icon--personal">
+  <!-- 跟 Library 瀏覽 Modal／管理區的 Library 現有技能管理同一套卡片式目錄
+       語言（掛 SkillTile class 直接沿用格狀磚塊樣式），整個技能管理頁
+       不管在哪個分頁都是一致的瀏覽體驗。個人技能的操作（編輯/測試/複製/
+       送審）都在點進去之後的詳情 drawer 裡，磚塊本身不需要重複放操作按鈕 -->
+  <div class="PersonalSkillGroup SkillTile" @click="emit('manage', skill)">
+    <div class="tile-icon icon--personal">
       <i class="material-symbols-outlined">person</i>
     </div>
 
-    <div class="skill-card-body">
-      <div class="skill-card-name">
-        {{ skill.name }}
-        <span class="skill-tag tag--version">v{{ skill.version }}</span>
-        <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
-      </div>
-      <div v-if="skill.description" class="skill-card-desc">{{ skill.description }}</div>
-      <div class="skill-card-stats">
-        <span class="sk-stat">
-          <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
-        </span>
-        <!-- 從沒被觸發過的草稿沒有真實的測試數據，顯示「0%」會誤讀成測試失敗，
-             不如不顯示 -->
-        <template v-if="skill.usageCount > 0">
-          <span :class="['sk-stat', rateClass]">
-            <i class="material-symbols-outlined">verified</i>{{ Math.round(skill.testPassRate * 100) }}%
-          </span>
-          <span class="sk-stat">
-            <i class="material-symbols-outlined">timer</i>{{ skill.avgLatencyMs }}ms
-          </span>
-        </template>
-      </div>
+    <div class="tile-name">
+      {{ skill.name }}
+      <span class="skill-tag tag--version">v{{ skill.version }}</span>
+      <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
+    </div>
+    <div v-if="skill.description" class="tile-desc">{{ skill.description }}</div>
+
+    <div class="tile-stats">
+      <span class="sk-stat">
+        <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
+      </span>
+      <!-- 從沒被觸發過的草稿沒有真實的測試數據，顯示「0%」會誤讀成測試失敗，
+           不如不顯示 -->
+      <span v-if="skill.usageCount > 0" :class="['sk-stat', rateClass]">
+        <i class="material-symbols-outlined">verified</i>{{ Math.round(skill.testPassRate * 100) }}%
+      </span>
     </div>
 
-    <div class="skill-card-right">
-      <div class="skill-card-meta">
+    <div class="tile-foot">
+      <div class="tile-meta">
         <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
         <span class="status-text">{{ skill.isEnabled ? '啟用中' : '停用中' }}</span>
       </div>
-      <i class="material-symbols-outlined psg-arrow">chevron_right</i>
     </div>
   </div>
 </template>
@@ -73,7 +63,8 @@ const statusTagClass = computed(() => {
   return ''
 })
 
-// 跟 SkillCard.vue 同一套判斷邏輯：測試通過率分級上色、觸發次數超過千次縮寫成 k
+// 跟 SkillCard.vue／SkillTile.vue 同一套判斷邏輯，維持一致：測試通過率
+// 分級上色、觸發次數超過千次縮寫成 k
 const rateClass = computed(() =>
   props.skill.testPassRate >= 0.9 ? 'sk-stat--good'
   : props.skill.testPassRate >= 0.75 ? 'sk-stat--warn'

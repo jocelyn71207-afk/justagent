@@ -1,16 +1,10 @@
-// PersonalSkillGroup 現在直接沿用 .SkillCard 的視覺語言（圖示/內文/統計列/
-// 狀態，見 _SkillCard.scss），這裡只補「個人技能」專屬的圖示色與收合箭頭
-// ——個人技能不像 Library 技能有 enterprise/team/system scope 可以決定
-// 圖示配色，所以獨立一個中性的 icon--personal。
+// PersonalSkillGroup 沿用 .SkillTile 的視覺語言（圖示/內文/統計列/狀態，
+// 見 _SkillTile.scss），這裡只補「個人技能」專屬的圖示色——個人技能不像
+// Library 技能有 enterprise/team/system scope 可以決定圖示配色，所以獨立
+// 一個中性的 icon--personal。
 .PersonalSkillGroup {
-  .skill-card-icon.icon--personal {
+  .tile-icon.icon--personal {
     background: var(--accent-soft);
     color: var(--primary);
-  }
-
-  .psg-arrow {
-    font-size: 18px;
-    color: var(--text-faint);
-    flex-shrink: 0;
   }
 }

@@ -248,11 +248,13 @@
   }
 
   // ── 我的技能 list ──────────────────────────────
+  // 跟 Library 瀏覽 Modal、管理區的 Library 現有技能管理同一套卡片式
+  // 目錄語言（格狀磚塊），整個技能管理頁不管在哪個分頁都是一致的瀏覽體驗
 
   .my-skills-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
   }
 
   .my-skills-pagination {

@@ -1,0 +1,103 @@
+// 「管理區」分頁裡的「Library 現有技能管理」——區塊容器＋分組標頭。
+// 技能本身改用 SkillTile（跟 Library 瀏覽 Modal、「我的技能」同一套卡片式
+// 目錄語言），這裡只保留分組結構的樣式（原本叫 _LibrarySkillRow.scss，
+// 該元件已經拿掉，改名成這個檔案比較符合現在的內容）。
+
+.lsr-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lsr-section-block {
+  border: 1px solid var(--divider-a50);
+  border-radius: 12px;
+  overflow: hidden;
+
+  &--enterprise {
+    .lsr-section-header {
+      background: $color_main_5;
+      border-bottom-color: $color_main_3;
+      color: $color_main_1;
+      .material-symbols-outlined { color: $color_main_1; }
+      .lsr-section-count { background: rgba($color_main_1, 0.12); color: $color_main_1; }
+    }
+  }
+
+  &--team {
+    .lsr-section-header {
+      background: var(--tag-violet-bg);
+      border-bottom-color: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
+      .material-symbols-outlined { color: var(--tag-violet-text); }
+      .lsr-section-count { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
+    }
+  }
+}
+
+.lsr-section-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--divider-a50);
+
+  .material-symbols-outlined { font-size: 16px; }
+}
+
+.lsr-section-title {
+  flex: 1;
+}
+
+.lsr-section-count {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--divider-a50);
+  color: var(--text-faint);
+  border-radius: 10px;
+  padding: 0 7px;
+  line-height: 19px;
+}
+
+// 卡片式目錄：格狀排列，跟 Library 瀏覽 Modal 同一套語言
+.lsr-section-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+// ── 團隊子群組 ───────────────────────────────────────
+
+.lsr-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+
+.lsr-team-card {
+  border: 1px solid var(--divider-a50);
+  background: var(--surface);
+  padding: 12px 14px 14px;
+}
+
+.lsr-team-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tag-violet-text);
+  padding: 0 0 8px;
+
+  .material-symbols-outlined { font-size: 14px; }
+  .lsr-section-count { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
+}
+
+.lsr-section-list--in-card {
+  padding: 0;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
