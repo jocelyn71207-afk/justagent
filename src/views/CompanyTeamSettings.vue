@@ -17,7 +17,7 @@
           <i class="material-symbols-outlined">domain</i>
         </div>
         <div class="company-hero-main">
-          <div class="company-hero-name">UGG電子商務</div>
+          <div class="company-hero-name">{{ nowMenuTreeCompanyName }}</div>
           <div class="company-hero-meta">
             <span class="type-tag">零售</span>
             <span class="plan-badge">標準版<span class="plan-badge-expire">・到期 2026.08.09</span></span>
@@ -125,7 +125,7 @@ import TeamSettingModal from '@/components/TeamSettingModal.vue';
 import AddPlatformAdminModal from '@/components/AddPlatformAdminModal.vue';
 
 const rootStore = useRootStore();
-const { isEnterAppSearchPage } = storeToRefs(rootStore);
+const { isEnterAppSearchPage, nowMenuTreeCompanyName } = storeToRefs(rootStore);
 
 const isTeamSettingModalOpen = ref(false);
 const isAddPlatformAdminModalOpen = ref(false);
