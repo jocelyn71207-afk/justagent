@@ -61,19 +61,13 @@
         <span class="see-all" @click="showToast('查看全部熱度')">查看全部</span>
       </div>
       <div class="ranking-podium lively-stagger mb-3">
-        <div
+        <AgentCard
           v-for="(agent, i) in podiumAgents"
           :key="agent.name"
-          :class="['podium-card', 'lively-card', `podium-card--rank-${i + 1}`]"
+          :agent="agent"
+          :rank="i + 1"
           @click="openModal(agent)"
-        >
-          <div class="rank-badge">{{ i + 1 }}</div>
-          <div class="agent-icon" :style="{ background: agent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
-          </div>
-          <h4>{{ agent.name }}</h4>
-          <p>{{ agent.painPoint }}</p>
-        </div>
+        />
       </div>
       <div
         v-if="fourthRankedAgent"
@@ -94,21 +88,12 @@
         <span class="see-all" @click="showToast('查看全部熱門')">查看全部</span>
       </div>
       <div class="agent-grid agent-grid--4 lively-stagger mb-5">
-        <div
+        <AgentCard
           v-for="agent in popularAgents"
           :key="agent.name"
-          class="agent-card lively-card"
+          :agent="agent"
           @click="openModal(agent)"
-        >
-          <span v-if="agent.badge" :class="['agent-badge', `agent-badge--${agent.badge.type}`]">
-            {{ agent.badge.label }}
-          </span>
-          <div class="agent-icon" :style="{ background: agent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
-          </div>
-          <h4>{{ agent.name }}</h4>
-          <p>{{ agent.painPoint }}</p>
-        </div>
+        />
       </div>
 
       <!-- 個人化推薦 -->
@@ -186,6 +171,7 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRootStore } from '@/stores/rootStore'
 import compModal from '@/components/compModal/compModal.vue'
+import AgentCard from '@/components/Explore/AgentCard.vue'
 import popDialog from '@/services/popDialog'
 
 const rootStore = useRootStore()
