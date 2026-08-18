@@ -18,43 +18,20 @@
         </div>
       </div>
 
-      <!-- Hero 統計列 -->
-      <div class="skill-stats-row lively-stagger">
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--enabled lively-icon">
-            <i class="material-symbols-outlined">check_circle</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.enabledCount }}</div>
-            <div class="skill-stat-lbl">啟用中技能</div>
-          </div>
+      <!-- 統計列：跟 TeamAccessManagement 的角色統計同一套「色點 + 文字」語彙，
+           不用四個顏色各異的邊框卡片堆砌成一整排，避免看起來太像後台儀表板 -->
+      <div class="skill-stats-row">
+        <div class="skill-stat skill-stat--enabled">
+          <i class="stat-dot"></i><b>{{ store.enabledCount }}</b>啟用中技能
         </div>
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--ext lively-icon">
-            <i class="material-symbols-outlined">corporate_fare</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.enterpriseExtensionCount }}</div>
-            <div class="skill-stat-lbl">企業擴充</div>
-          </div>
+        <div class="skill-stat skill-stat--ext">
+          <i class="stat-dot"></i><b>{{ store.enterpriseExtensionCount }}</b>企業擴充
         </div>
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--team lively-icon">
-            <i class="material-symbols-outlined">group</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.teamExtensionCount }}</div>
-            <div class="skill-stat-lbl">團隊擴充</div>
-          </div>
+        <div class="skill-stat skill-stat--team">
+          <i class="stat-dot"></i><b>{{ store.teamExtensionCount }}</b>團隊擴充
         </div>
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--usage lively-icon">
-            <i class="material-symbols-outlined">bolt</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.totalUsageCount.toLocaleString() }}</div>
-            <div class="skill-stat-lbl">本月自動觸發次數</div>
-          </div>
+        <div class="skill-stat skill-stat--usage">
+          <i class="stat-dot"></i><b>{{ store.totalUsageCount.toLocaleString() }}</b>本月自動觸發次數
         </div>
       </div>
 

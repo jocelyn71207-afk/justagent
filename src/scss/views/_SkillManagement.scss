@@ -10,69 +10,46 @@
   }
 
   // ── Stats row ─────────────────────────────────
+  // 跟 TeamAccessManagement 的 .role-stats-row 同一套「色點 + 文字」語彙：
+  // 一行安靜的文字，不用四個顏色各異、邊框卡片堆砌出來的統計磚塊。
+  // 這四個數字分屬不同範圍（我的技能／企業 Library／團隊 Library／
+  // 本月觸發量，非同一份清單的子集合），所以不做成可篩選的按鈕，
+  // 純資訊呈現即可。
 
   .skill-stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-bottom: 28px;
-
-    @media (max-width: 500px) { grid-template-columns: 1fr 1fr; }
-  }
-
-  .skill-stat-card {
-    background: var(--surface);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 20px 22px;
     display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+
+  .skill-stat {
+    display: inline-flex;
     align-items: center;
-    gap: 16px;
-  }
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
 
-  .skill-stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    .material-symbols-outlined { font-size: 22px; }
-
-    &.icon--enabled {
-      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
-      color: $color_main_2;
+    b {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      margin-right: 2px;
     }
-    &.icon--ext {
-      background: $color-badge-hot-bg;
-      color: $color-badge-hot-text;
-    }
-    &.icon--team {
-      background: rgba(#7c5fba, 0.1);
-      color: #7c5fba;
-    }
-    &.icon--usage {
-      background: $color-badge-ai-bg;
-      color: $color-badge-ai-text;
-    }
-  }
 
-  .skill-stat-body { flex: 1; min-width: 0; }
+    .stat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
 
-  .skill-stat-num {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--text);
-    line-height: 1;
-    letter-spacing: -0.5px;
-  }
-
-  .skill-stat-lbl {
-    font-size: 12px;
-    color: var(--text-faint);
-    margin-top: 5px;
+    &.skill-stat--enabled { color: var(--tag-teal-text); }
+    &.skill-stat--ext     { color: var(--tag-blue-text); }
+    &.skill-stat--team    { color: var(--tag-violet-text); }
+    &.skill-stat--usage   { color: var(--tag-amber-text); }
   }
 
   // ── Search ────────────────────────────────────
