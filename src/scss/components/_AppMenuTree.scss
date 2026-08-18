@@ -18,6 +18,11 @@
   flex: none;
   display: flex;
   width: $menuWidth;
+
+  // 「最近使用」「探索」不顯示團隊層的常駐選單面板，寬度只剩 rail
+  &.no-team-panel {
+    width: $railWidth;
+  }
 }
 
 .rail {

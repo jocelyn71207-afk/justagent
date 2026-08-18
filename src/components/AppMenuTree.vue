@@ -12,7 +12,7 @@
        圖示條負責切換（通用單元／企業/團隊），右側選單面板常駐展開，
        顯示「目前選中的團隊」專屬的導覽項目，不是 hover 才彈出的浮層。
        ============================================================ -->
-  <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen }]">
+  <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen, 'no-team-panel': !showTeamPanel }]">
 
     <div class="rail">
       <div class="rail-top">
@@ -82,7 +82,7 @@
 
     <!-- 常駐選單面板：顯示「目前選中團隊」的導覽項目，不隨滑鼠移開而消失；
          切換團隊時內容淡入淡出，避免整塊文字瞬間跳掉 -->
-    <div class="side-panel" v-if="selectedTeam">
+    <div class="side-panel" v-if="showTeamPanel">
       <!-- 團隊切換：放在常駐面板最上方，點擊展開團隊清單；不再長在側邊
            圖示條上——圖示條留給真正「全域」的單元 -->
       <div class="side-panel-switcher" ref="teamSwitcherBtn"
@@ -256,6 +256,11 @@ function teamInitial(name: string): string {
 const selectedTeamId = ref<string | null>(testGroups.value[0]?.id ?? null);
 const selectedTeam = computed(() => testGroups.value.find((g: any) => g.id === selectedTeamId.value) ?? null);
 const selectedTeamIndex = computed(() => testGroups.value.findIndex((g: any) => g.id === selectedTeamId.value));
+
+// 「最近使用」「探索」是跨團隊的全域單元，不屬於任何特定團隊，
+// 停在這兩個頁面時不顯示團隊層的常駐選單面板
+const GLOBAL_ROUTES = ['/view/ProjectDashboard', '/view/Explore'];
+const showTeamPanel = computed(() => !!selectedTeam.value && !GLOBAL_ROUTES.includes(route.path));
 watch(testGroups, (groups: any[]) => {
   if (!groups.some(g => g.id === selectedTeamId.value)) {
     selectedTeamId.value = groups[0]?.id ?? null;
