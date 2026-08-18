@@ -431,9 +431,22 @@
 }
 
 // 第二層可展開群組（技能管理／共享資源庫）：本身也是一個項目，
-// 但點擊是展開/收合子項目，不是導覽
+// 但點擊是展開/收合子項目，不是導覽。group 的 .active 只代表「目前路徑
+// 落在這個群組底下」，真正選中的子項目會在下面自己再亮一次——兩層都用
+// 同一種實心底色會疊成一大塊，看起來很擠，所以 group 這層改成輕量標示
+// （字重＋icon 上色），不填滿底色，把唯一的實心高亮留給子項目
 .side-panel-group {
   user-select: none;
+
+  &.active {
+    background: transparent;
+    color: var(--sidebar-fg);
+    font-weight: 600;
+
+    i:first-child { color: var(--primary); }
+
+    &:hover { background: var(--sidebar-hover); }
+  }
 
   .side-panel-caret {
     margin-left: auto;
@@ -443,8 +456,8 @@
 }
 
 .side-panel-sub {
-  padding-left: 14px;
-  margin: 0 0 2px 12px;
+  padding: 3px 4px 0 14px;
+  margin: 2px 0 2px 12px;
   border-left: 1px solid var(--divider-a50);
 
   .side-panel-item { font-size: 13px; }
