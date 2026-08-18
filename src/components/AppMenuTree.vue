@@ -64,6 +64,25 @@
           </div>
         </Transition>
 
+        <!-- 團隊入口：在「最近使用」「探索」這類跨團隊頁面沒有常駐團隊面板可以點，
+             用這顆圖示彈出團隊清單，選一個團隊直接進去該團隊的團隊專案頁 -->
+        <button type="button" class="rail-btn" :class="{ active: isTeamRailOpen }" v-tooltip.right="'團隊'"
+          @click="isTeamRailOpen = true">
+          <i class="material-symbols-outlined">groups</i>
+        </button>
+
+        <Transition name="rail-expand">
+          <div class="rail-popover team-rail-list" v-show="isTeamRailOpen" ref="teamRailPopoverEl">
+            <div class="team-switch-item" v-for="(item, i) in testGroups" :key="'railteam' + item.id"
+              :class="{ active: item.id === selectedTeamId }"
+              @click="goToTeam(item.id)">
+              <span class="team-switch-dot" :style="{ background: teamColor(i) }">{{ teamInitial(item.name) }}</span>
+              <span class="team-switch-name">{{ item.name }}</span>
+              <i v-if="item.id === selectedTeamId" class="material-symbols-outlined team-switch-check">check</i>
+            </div>
+          </div>
+        </Transition>
+
         <div class="rail-divider"></div>
       </div>
 
@@ -275,6 +294,18 @@ function selectTeam(id: string) {
   isTeamSwitcherOpen.value = false;
 }
 
+// Rail 上的團隊入口：跨團隊頁面（最近使用／探索）沒有常駐面板可以點團隊，
+// 用這個彈出清單選團隊，選了直接導到該團隊的團隊專案頁
+const isTeamRailOpen = ref(false);
+const teamRailPopoverEl = ref<HTMLElement | null>(null);
+function goToTeam(id: string) {
+  const team = testGroups.value.find((g: any) => g.id === id);
+  if (!team) return;
+  selectedTeamId.value = id;
+  isTeamRailOpen.value = false;
+  router.push({ path: '/view/TeamProject', query: { teamId: team.id, teamName: team.name } });
+}
+
 // 直接用網址進入某個團隊的頁面（例如帶了 ?teamId=xxx，或重新整理停在
 // /view/Skills）時，同步選中對應的團隊，並自動展開包含目前路徑的群組，
 // 否則使用中的項目可能被收合藏起來，使用者會以為選單「跳走了」
@@ -320,6 +351,9 @@ onMounted(() => {
   });
   initClickOutsideListener(teamSwitcherBtn.value!, () => {
     isTeamSwitcherOpen.value = false;
+  });
+  initClickOutsideListener(teamRailPopoverEl.value!, () => {
+    isTeamRailOpen.value = false;
   });
 });
 </script>

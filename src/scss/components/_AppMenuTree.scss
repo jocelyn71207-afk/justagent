@@ -194,6 +194,17 @@
   }
 }
 
+// 團隊入口彈出清單：貼著 rail 上「團隊」圖示右側展開（跟 .search-popover 同一種
+// 貼右側模式，不是 .team-switch-list 那種貼切換器正下方展開）
+.team-rail-list {
+  top: 96px;
+  width: 200px;
+  padding: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
 .user-flyout {
   top: -4px;
   width: 200px;
