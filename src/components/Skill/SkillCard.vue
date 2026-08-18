@@ -22,16 +22,6 @@
         <span class="sk-stat">
           <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
         </span>
-        <!-- 從沒被觸發過就不顯示測試通過率/延遲——0% 會誤讀成「測試失敗」，
-             其實只是還沒有真實流量可以算 -->
-        <template v-if="skill.usageCount > 0">
-          <span :class="['sk-stat', rateClass]">
-            <i class="material-symbols-outlined">verified</i>{{ Math.round(skill.testPassRate * 100) }}%
-          </span>
-          <span class="sk-stat">
-            <i class="material-symbols-outlined">timer</i>{{ skill.avgLatencyMs }}ms
-          </span>
-        </template>
       </div>
     </div>
 
@@ -70,12 +60,6 @@ const emit = defineEmits<{
   test: [skill: Skill]
   duplicate: [skill: Skill]
 }>()
-
-const rateClass = computed(() =>
-  props.skill.testPassRate >= 0.9 ? 'sk-stat--good'
-  : props.skill.testPassRate >= 0.75 ? 'sk-stat--warn'
-  : 'sk-stat--bad'
-)
 
 // 圖示配色改為跟著技能的分類（系統／企業／團隊）走，跟 Library 技能庫的分類標籤配色一致，
 // 不再只是依 isExtension 分兩色。

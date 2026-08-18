@@ -18,11 +18,6 @@
       <span class="sk-stat">
         <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
       </span>
-      <!-- 從沒被觸發過就不顯示測試通過率——0% 會誤讀成「測試失敗」，
-           其實只是還沒有真實流量 -->
-      <span v-if="skill.usageCount > 0" :class="['sk-stat', rateClass]">
-        <i class="material-symbols-outlined">verified</i>{{ Math.round(skill.testPassRate * 100) }}%
-      </span>
     </div>
 
     <div class="tile-foot">
@@ -55,13 +50,6 @@ const emit = defineEmits<{
   duplicate: [skill: Skill]
 }>()
 
-// 跟 SkillCard.vue 同一套判斷邏輯，維持三個地方（SkillCard／PersonalSkillGroup／
-// SkillTile）一致：測試通過率分級上色、觸發次數超過千次縮寫成 k
-const rateClass = computed(() =>
-  props.skill.testPassRate >= 0.9 ? 'sk-stat--good'
-  : props.skill.testPassRate >= 0.75 ? 'sk-stat--warn'
-  : 'sk-stat--bad'
-)
 function formatCount(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 }

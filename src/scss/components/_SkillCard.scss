@@ -121,22 +121,6 @@
         white-space: nowrap;
 
         .material-symbols-outlined { font-size: 12px; }
-
-        &--good {
-          color: $color_main_1;
-          border-color: rgba($color_main_1, 0.2);
-          background: $color_main_5;
-        }
-        &--warn {
-          color: $color-warning-amber;
-          border-color: rgba($color-warning-amber, 0.2);
-          background: rgba($color-warning-amber, 0.06);
-        }
-        &--bad {
-          color: $color-danger;
-          border-color: rgba($color-danger, 0.2);
-          background: rgba($color-danger, 0.05);
-        }
       }
     }
   }
