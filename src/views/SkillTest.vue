@@ -65,6 +65,9 @@
               {{ selectedSkill.name }}
               <span class="skill-tag tag--version">v{{ selectedSkill.version }}</span>
             </div>
+            <button class="custom-btn info-toggle-btn" @click="isContextOpen = true">
+              <i class="material-symbols-outlined">info</i>技能資訊
+            </button>
           </div>
 
           <div class="test-panel-tabs">
@@ -94,31 +97,46 @@
         </div>
       </div>
 
-      <!-- 右側：常駐技能資訊／AI 測試摘要，不用切分頁就看得到 -->
-      <div v-if="selectedSkill" class="test-context-panel">
-        <div v-if="selectedSkill.instructions" class="context-card">
-          <div class="context-card-title">技能指令</div>
-          <p class="context-instructions">{{ selectedSkill.instructions }}</p>
-        </div>
-
-        <div v-if="selectedSkill.triggerHint" class="context-card">
-          <div class="context-card-title">觸發時機</div>
-          <p class="context-instructions">{{ selectedSkill.triggerHint }}</p>
-        </div>
-
-        <div class="context-card">
-          <div class="context-card-title">AI 測試摘要</div>
-          <template v-if="store.aiTestReport">
-            <div class="context-rate">
-              <span class="context-rate-num">{{ aiRatePercent }}%</span>
-              <span class="context-rate-sub">{{ store.aiTestReport.passed }} / {{ store.aiTestReport.total }} 通過</span>
-            </div>
-          </template>
-          <p v-else class="context-empty-hint">尚未執行 AI 快速測試</p>
-        </div>
-      </div>
-
     </div>
+
+    <!-- 技能資訊抽屜：點「技能資訊」才彈出，平常不佔畫面欄位 -->
+    <Teleport to="body">
+      <Transition name="st-drawer-fade">
+        <div v-if="isContextOpen && selectedSkill" class="st-context-drawer">
+          <div class="st-drawer-mask" @click="isContextOpen = false" />
+          <div class="st-drawer-panel">
+            <div class="st-drawer-head">
+              <h3>{{ selectedSkill.name }} · 技能資訊</h3>
+              <button class="st-drawer-close-btn" @click="isContextOpen = false">
+                <i class="material-symbols-outlined">close</i>
+              </button>
+            </div>
+            <div class="st-drawer-body">
+              <div v-if="selectedSkill.instructions" class="context-card">
+                <div class="context-card-title">技能指令</div>
+                <p class="context-instructions">{{ selectedSkill.instructions }}</p>
+              </div>
+
+              <div v-if="selectedSkill.triggerHint" class="context-card">
+                <div class="context-card-title">觸發時機</div>
+                <p class="context-instructions">{{ selectedSkill.triggerHint }}</p>
+              </div>
+
+              <div class="context-card">
+                <div class="context-card-title">AI 測試摘要</div>
+                <template v-if="store.aiTestReport">
+                  <div class="context-rate">
+                    <span class="context-rate-num">{{ aiRatePercent }}%</span>
+                    <span class="context-rate-sub">{{ store.aiTestReport.passed }} / {{ store.aiTestReport.total }} 通過</span>
+                  </div>
+                </template>
+                <p v-else class="context-empty-hint">尚未執行 AI 快速測試</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -134,6 +152,7 @@ import type { Skill } from '@/stores/skillStore'
 const route = useRoute()
 const store = useSkillStore()
 const activeTab = ref<'chat' | 'ai'>('chat')
+const isContextOpen = ref(false)
 
 const selectedSkill = computed(() =>
   store.selectedSkillId ? store.findSkill(store.selectedSkillId) ?? null : null
