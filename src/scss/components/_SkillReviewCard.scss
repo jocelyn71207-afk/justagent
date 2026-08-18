@@ -17,24 +17,72 @@
     border-bottom: 1px solid var(--divider-a50);
   }
 
-  .src-title-row {
+  // icon 跟其他技能卡片（SkillCard／SkillTile）同一套配色慣例，依
+  // 預計發布範圍（企業/團隊）決定顏色，不再只是一個裝飾性的小 person icon
+  .src-icon-row {
     display: flex;
-    align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
   }
 
-  .src-person-icon {
-    font-size: 16px;
-    color: $color_main_1;
+  .src-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 18px; }
+
+    &.icon--enterprise {
+      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
+      color: $color_main_2;
+    }
+    &.icon--team {
+      background: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
+    }
+  }
+
+  .src-title-block { flex: 1; min-width: 0; }
+
+  // 名稱是唯一的視覺主角，狀態徽章推到最右——不再跟名稱、模式、範圍
+  // 四個東西擠在同一行搶版面
+  .src-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
   }
 
   .src-name {
     font-size: 14px;
     font-weight: 700;
     color: var(--text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .src-status-tag { margin-left: auto; flex-shrink: 0; }
+
+  // 「建立新技能/更新版本」跟「預計發布範圍」是同一件事的兩個面向
+  // （送審動作 → 結果），用箭頭連起來放在名稱下面安靜的一行，
+  // 不再各自頂著一個顯眼的色塊搶注意力
+  .src-tag-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .src-tag-arrow {
+    font-size: 13px;
+    color: var(--text-faint);
     flex-shrink: 0;
   }
 
@@ -56,10 +104,11 @@
       border-color: var(--accent);
     }
 
+    // 跟「更新版本」用同一套語意 tag token（blue）區隔，不寫死 hex
     &--new {
-      color: #1a8a4a;
-      background: rgba(26, 138, 74, 0.08);
-      border-color: rgba(26, 138, 74, 0.3);
+      color: var(--tag-blue-text);
+      background: var(--tag-blue-bg);
+      border-color: transparent;
     }
   }
 
@@ -75,6 +124,7 @@
     align-items: center;
     gap: 14px;
     flex-wrap: wrap;
+    padding-left: 48px;
   }
 
   .src-meta-item {

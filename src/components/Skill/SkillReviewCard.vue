@@ -1,20 +1,32 @@
 <template>
   <div class="SkillReviewCard">
 
-    <!-- ── Header ──────────────────────────────── -->
+    <!-- ── Header：icon 跟其他技能卡片一致，用 scope 決定配色；名稱是
+         唯一的視覺主角，狀態徽章靠右對齊；「建立新技能/更新版本」跟
+         「預計發布範圍」是同一件事的兩個面向，放在名稱下面同一行安靜
+         呈現，不再跟名稱、狀態擠在同一行搶版面 ──────────────────── -->
     <div class="src-header">
-      <div class="src-title-row">
-        <i class="material-symbols-outlined src-person-icon">person</i>
-        <span class="src-name">{{ skill.name }}</span>
-        <span class="skill-tag tag--reviewing">審核中</span>
-        <span :class="['src-mode-tag', submitMode === 'version_update' ? 'src-mode-tag--update' : 'src-mode-tag--new']">
-          <i class="material-symbols-outlined">{{ submitMode === 'version_update' ? 'update' : 'add_circle' }}</i>
-          {{ submitModeLabel }}
-        </span>
-        <span class="skill-tag src-scope-tag" :class="targetScope === 'team' ? 'tag--team' : 'tag--enterprise'">
-          <i class="material-symbols-outlined">{{ targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
-          預計發布：{{ targetScope === 'team' ? `團隊技能（${targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
-        </span>
+      <div class="src-icon-row">
+        <div :class="['src-icon', targetScope === 'team' ? 'icon--team' : 'icon--enterprise']">
+          <i class="material-symbols-outlined">psychology</i>
+        </div>
+        <div class="src-title-block">
+          <div class="src-name-row">
+            <span class="src-name">{{ skill.name }}</span>
+            <span class="skill-tag tag--reviewing src-status-tag">審核中</span>
+          </div>
+          <div class="src-tag-row">
+            <span :class="['src-mode-tag', submitMode === 'version_update' ? 'src-mode-tag--update' : 'src-mode-tag--new']">
+              <i class="material-symbols-outlined">{{ submitMode === 'version_update' ? 'update' : 'add_circle' }}</i>
+              {{ submitModeLabel }}
+            </span>
+            <i class="material-symbols-outlined src-tag-arrow">arrow_forward</i>
+            <span class="skill-tag src-scope-tag" :class="targetScope === 'team' ? 'tag--team' : 'tag--enterprise'">
+              <i class="material-symbols-outlined">{{ targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
+              {{ targetScope === 'team' ? `團隊技能（${targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
+            </span>
+          </div>
+        </div>
       </div>
       <div class="src-meta">
         <span v-if="submittedBy" class="src-meta-item">
