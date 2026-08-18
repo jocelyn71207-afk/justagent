@@ -55,10 +55,14 @@
         <!-- 查無資料 -->
         <div class="p-5 mt-4 text-center fc-grey-1" v-if="displayList.length === 0">目前沒有資源</div>
 
-        <!-- 卡片樣式列表 -->
+        <!-- 卡片樣式列表：頂部狀態色條（依 status，一眼看出哪些檔案還在
+             處理中/失敗，不用點開才知道）＋放大的圖示/縮圖區塊＋footer
+             改成「上傳者/時間」當主角、處理方式退成安靜的小圖示 -->
         <div class="card-list-box mt-2" v-if="viewMode === 'card' && displayList.length">
           <div class="one-card-box file-card" v-for="(item, i) in displayList" :key="'card' + i"
             @mouseleave="item.showMoreOption = false">
+
+            <div :class="['file-status-strip', `strip--${item.status}`]"></div>
 
             <!-- 卡片 header: 檔案名稱 + more button -->
             <div class="card-header-box">
@@ -83,8 +87,8 @@
               </div>
             </div>
 
-            <!-- 卡片 body: 圖片預覽 or OTHER icon or 檔案圖示（非圖片檔案配一塊
-                 淺色底板襯托圖示，不要讓圖示孤零零浮在一大片空白正中間） -->
+            <!-- 卡片 body: 圖片維持完整沉浸式預覽；非圖片檔案的圖示放大到
+                 接近縮圖的視覺份量，不再是小小一顆浮在空白正中間 -->
             <div class="card-body-box">
               <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="" class="preview-img">
               <div v-else class="file-icon-tile">
@@ -94,87 +98,84 @@
               </div>
             </div>
 
-            <!-- 卡片 footer：處理方式／狀態徽章 + 上傳者/時間，原本只有
-                 一行時間，資料明明就有 processType/status/ownerName 卻完全
-                 沒顯示——尤其「解析中/失敗」這種需要立刻被看到的狀態,
-                 之前完全沒有出現在卡片檢視 -->
+            <!-- 卡片 footer：上傳者/時間是主角（放大頭像），處理方式退成
+                 安靜的小圖示（滑鼠停留才看到文字說明），狀態異常時才用
+                 顯眼的徽章——不是三個東西一起搶視覺重量 -->
             <div class="card-footer-box">
-              <div class="file-footer-badges">
-                <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
-                  <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
-                  {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
-                </span>
+              <span class="file-owner">
+                <span class="file-owner-avatar" :style="{ background: avatarColor(item.ownerId) }">{{ item.ownerName.charAt(0) }}</span>
+                {{ item.ownerName }}
+              </span>
+              <span class="file-footer-right">
+                <i class="material-symbols-outlined file-process-icon"
+                  v-tooltip="item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型'">
+                  {{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}
+                </i>
                 <span v-if="item.status !== 'saved' && item.status !== 'stored'"
                   :class="['status-badge', `status-badge--${item.status}`]">
                   {{ fileStatusLabel(item.status) }}
                 </span>
-              </div>
-              <div class="file-footer-meta">
-                <span class="file-owner">
-                  <span class="file-owner-avatar" :style="{ background: avatarColor(item.ownerId) }">{{ item.ownerName.charAt(0) }}</span>
-                  {{ item.ownerName }}
-                </span>
                 <span class="file-date">{{ formatDate(item.lastModify) }}</span>
-              </div>
+              </span>
             </div>
 
           </div>
         </div>
 
-        <!-- 表格樣式列表 -->
-        <div class="table-list-box file-list mt-2" v-if="viewMode === 'list' && displayList.length">
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th>檔案名稱</th>
-                <th width="90">檔案格式</th>
-                <th width="130">處理方式</th>
-                <th>最後更新時間</th>
-                <th width="60"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, i) in displayList" :key="'list' + i"
-                @mouseleave="item.showMoreOption = false;">
-                <td>
-                  <div class="file-icon-box">
-                    <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
-                    <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                      class="material-symbols-outlined other-file-icon">question_mark</i>
-                    <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
-                  </div>
-                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
-                    {{ item.fileName }}
-                    <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
-                  </template>
-                  <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
-                    :id="'mofidyInput'+item.id"
-                    v-model="nowModifyItem.fileName"
-                    @blur="saveModifyFileName()" />
-                </td>
-                <td class="fc-grey-1">{{ item.fileType }}</td>
-                <td>
-                  <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
-                    <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
-                    {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
-                  </span>
-                </td>
-                <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
-                <td>
-                  <div class="d-flex">
-                    <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click.stop="item.showMoreOption = true"><i class="material-symbols-outlined material-fill">more_horiz</i></button>
-                  </div>
-                  <!-- 更多選項小介面 -->
-                  <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
-                    <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
-                    <div class="option-item">下載檔案</div>
-                    <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
-                    <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- 列表樣式：從原本的原生表格改成跟 Skill 頁面同一套「橫向長條」
+             視覺語言（獨立成一顆顆有邊框/hover 反應的列，不是死板的表格
+             格線），左側一樣有狀態色條，補上傳者頭像，資訊層級更清楚 -->
+        <div class="file-row-list mt-2" v-if="viewMode === 'list' && displayList.length">
+          <div class="file-row" v-for="(item, i) in displayList" :key="'list' + i"
+            @mouseleave="item.showMoreOption = false;">
+
+            <div :class="['file-status-strip', 'file-status-strip--row', `strip--${item.status}`]"></div>
+
+            <div class="file-row-icon">
+              <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
+              <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
+                class="material-symbols-outlined other-file-icon">question_mark</i>
+              <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
+            </div>
+
+            <div class="file-row-name">
+              <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
+                {{ item.fileName }}
+                <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+              </template>
+              <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
+                :id="'mofidyInput'+item.id"
+                v-model="nowModifyItem.fileName"
+                @blur="saveModifyFileName()" />
+            </div>
+
+            <i class="material-symbols-outlined file-process-icon"
+              v-tooltip="item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型'">
+              {{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}
+            </i>
+
+            <span v-if="item.status !== 'saved' && item.status !== 'stored'"
+              :class="['status-badge', `status-badge--${item.status}`]">
+              {{ fileStatusLabel(item.status) }}
+            </span>
+
+            <span class="file-owner file-row-owner">
+              <span class="file-owner-avatar" :style="{ background: avatarColor(item.ownerId) }">{{ item.ownerName.charAt(0) }}</span>
+              {{ item.ownerName }}
+            </span>
+
+            <span class="file-row-date">{{ formatDate(item.lastModify) }}</span>
+
+            <div class="more-menu-wrap" @click.stop>
+              <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click="item.showMoreOption = !item.showMoreOption"><i class="material-symbols-outlined material-fill">more_horiz</i></button>
+              <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+                <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
+                <div class="option-item">下載檔案</div>
+                <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
+                <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 分頁 -->

@@ -272,6 +272,20 @@
     &.file-card {
       cursor: default;
       border: 1px solid var(--divider-a50);
+      overflow: hidden;
+
+      // 頂部狀態色條：依 status 上色，一眼看出哪些檔案還在處理中/失敗，
+      // 不用點開更多選項或切到表格檢視才知道
+      .file-status-strip {
+        height: 4px;
+        width: 100%;
+
+        &.strip--failed             { background: $color-danger; }
+        &.strip--uploading,
+        &.strip--parsing            { background: $color-warning-amber; }
+        &.strip--saved,
+        &.strip--stored             { background: $color_main_1; }
+      }
 
       .card-header-box {
         display: flex;
@@ -339,59 +353,66 @@
           align-items: center;
           justify-content: center;
         }
+        // 圖示放大到接近縮圖的視覺份量（68px → 96px），不再是小小一顆
+        // 浮在大片空白正中間，圖片跟非圖片檔案在卡片裡的存在感更接近
         .file-type-icon {
-          max-height: 68px;
+          max-height: 96px;
           object-fit: contain;
         }
         .other-file-icon {
-          font-size: 48px;
+          font-size: 64px;
           color: var(--text-muted);
         }
       }
 
+      // footer 改成「上傳者是主角」──頭像放大、名稱直接顯示；處理方式
+      // 退成安靜的小圖示（hover 才顯示文字說明），不再是一整塊有顏色的
+      // 徽章跟頭像/日期搶視覺重量；狀態異常時才用顯眼徽章提醒
       .card-footer-box {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        font-size: 12px;
-        color: var(--text-muted);
-        padding: 10px 14px 14px;
-      }
-
-      .file-footer-badges {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-
-      .file-footer-meta {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        padding: 10px 14px 14px;
+      }
+
+      .file-footer-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .file-process-icon {
+        font-size: 16px;
+        color: var(--text-faint);
+        cursor: default;
       }
 
       .file-owner {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 7px;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        font-weight: 500;
+        color: var(--text);
       }
 
       .file-owner-avatar {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #fff;
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 700;
         user-select: none;
       }
@@ -400,6 +421,115 @@
     }
   }
 }
+
+// ── 列表檢視：跟 Skill 頁面同一套「橫向長條」語言，不是死板的原生表格
+// 格線，每一列自己是一張有邊框、hover 有反應的卡片，左側一樣有狀態色條 ──
+.file-row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--divider-a50);
+  border-radius: 12px;
+  padding: 10px 14px 10px 0;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--divider);
+    box-shadow: 0 2px 10px -4px rgba(var(--shadow), 0.12);
+  }
+}
+
+.file-status-strip--row {
+  align-self: stretch;
+  width: 3px;
+  flex-shrink: 0;
+
+  &.strip--failed             { background: $color-danger; }
+  &.strip--uploading,
+  &.strip--parsing            { background: $color-warning-amber; }
+  &.strip--saved,
+  &.strip--stored             { background: $color_main_1; }
+}
+
+.file-row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+  .other-file-icon { font-size: 18px; color: var(--text-muted); }
+}
+
+.file-row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-row-owner {
+  flex-shrink: 0;
+  width: 110px;
+  font-size: 12.5px;
+}
+
+.file-row-date {
+  flex-shrink: 0;
+  width: 150px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.file-row .more-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+
+  .more-btn {
+    font-size: 20px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+    display: block;
+
+    &:hover { background-color: var(--page-bg); color: var(--text); }
+  }
+
+  .next-option-box {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    visibility: hidden;
+
+    &.show { visibility: visible; }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .file-row-owner,
+  .file-row-date { display: none; }
+}
+
 // 處理平板時
 @media (max-width: $breakpoint-tablet) {
   // 卡片列表變成一欄的樣式
