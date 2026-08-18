@@ -13,10 +13,11 @@
     backdrop-filter: blur(3px);
   }
 
+  // 雙欄版型（內容主欄 + 中繼資料側欄）需要比原本單欄版多一點寬度
   .drawer-panel {
     position: relative;
     z-index: 1;
-    width: 680px;
+    width: 860px;
     max-width: calc(100vw - 32px);
     max-height: 86vh;
     background: var(--surface);
@@ -226,15 +227,58 @@
     white-space: nowrap;
   }
 
-  // ── Body ─────────────────────────────────────
+  // ── Body：雙欄——左邊主內容（這個技能在做什麼），右邊中繼資料側欄
+  //   （來源/Agent/趨勢/版本），概念上跟 GitHub PR 頁面「說明在左、
+  //   標籤在右」是同一種分法，兩種性質不同的資訊不用擠在同一條捲軸裡 ──
 
   .drawer-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .drawer-body-main {
+    flex: 1;
+    min-width: 0;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 22px;
     overflow-y: auto;
-    flex: 1;
+    border-right: 1px solid var(--divider-a50);
+  }
+
+  .drawer-body-side {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    overflow-y: auto;
+    background: var(--page-bg);
+  }
+
+  // 窄螢幕收成單欄，側欄疊到主內容下面，不用側邊卡在旁邊擠成一團
+  @media (max-width: 760px) {
+    .drawer-panel { width: min(680px, calc(100vw - 32px)); }
+
+    .drawer-body {
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .drawer-body-main {
+      border-right: none;
+      border-bottom: 1px solid var(--divider-a50);
+      overflow-y: visible;
+    }
+
+    .drawer-body-side {
+      width: 100%;
+      overflow-y: visible;
+    }
   }
 
   .drawer-section {
@@ -394,13 +438,24 @@
   // 安靜的一行文字，跟 TeamAccessManagement 的角色統計同一種「輕量
   // metadata」處理方式
 
+  // 側欄只有 260px 寬，這一行文字＋兩個 tag 常常放不下，需要能換行；
+  // .lineage-text 包住「延伸自「XX」/自建」這段文字，讓它整段一起換行，
+  // 不會斷在句子中間變成「系統\n技能」這種難看的斷法
   .lineage-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 4px 6px;
     font-size: 13px;
     color: var(--text-muted);
     padding: 2px 0;
+
+    .lineage-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
 
     .lineage-icon {
       font-size: 16px;
@@ -417,6 +472,7 @@
       align-items: center;
       gap: 4px;
       color: var(--text-faint);
+      white-space: nowrap;
 
       .material-symbols-outlined { font-size: 15px; }
     }

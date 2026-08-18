@@ -100,252 +100,264 @@
             </div>
           </div>
 
-          <!-- ── Body ───────────────────────────────── -->
+          <!-- ── Body：雙欄——左邊是「這個技能在做什麼」的主要內容，
+               右邊是常駐的中繼資料側欄（來源/Agent/趨勢/版本），概念上
+               跟 GitHub PR 頁面「說明在左、標籤在右」是同一種分法 ──── -->
           <div class="drawer-body">
 
-            <!-- Upstream update banner -->
-            <div v-if="upstreamVersion" class="upstream-update-banner">
-              <div class="upstream-banner-text">
-                <i class="material-symbols-outlined">upgrade</i>
-                上游系統技能已更新至 <strong>v{{ upstreamVersion }}</strong>
-              </div>
-              <button class="custom-btn" @click="emit('openUpstreamUpdate', skill!)">查看更新</button>
-            </div>
+            <div class="drawer-body-main">
 
-            <!-- 來源關係 -->
-            <div class="drawer-section">
-              <div class="section-label">來源關係</div>
-              <div class="lineage-row">
-                <template v-if="lineageSourceName">
-                  <i class="material-symbols-outlined lineage-icon">call_split</i>
-                  延伸自「{{ lineageSourceName }}」
-                  <span v-if="lineageSourceVersion" class="skill-tag tag--version">v{{ lineageSourceVersion }}</span>
-                  <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
-                </template>
-                <template v-else>
-                  <i class="material-symbols-outlined lineage-icon">edit_note</i>
-                  自建
-                </template>
-                <span v-if="creationMethodLabel" class="lineage-divider">·</span>
-                <span v-if="creationMethodLabel" class="lineage-method">
-                  <i class="material-symbols-outlined">{{ skill.creationMethod === 'ai_assisted' ? 'auto_awesome' : 'edit' }}</i>
-                  {{ creationMethodLabel }}
-                </span>
-              </div>
-            </div>
-
-            <!-- 技能指令 -->
-            <div v-if="skill.instructions" class="drawer-section">
-              <div class="section-label">技能指令</div>
-              <div class="instructions-block">{{ skill.instructions }}</div>
-            </div>
-
-            <!-- 附加檔案 -->
-            <div v-if="skill.files?.length" class="drawer-section">
-              <div class="section-label">附加檔案</div>
-              <div class="attached-file-list">
-                <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
-                  <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
-                  <span class="af-name">{{ f.fileName }}</span>
-                  <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
+              <!-- Upstream update banner -->
+              <div v-if="upstreamVersion" class="upstream-update-banner">
+                <div class="upstream-banner-text">
+                  <i class="material-symbols-outlined">upgrade</i>
+                  上游系統技能已更新至 <strong>v{{ upstreamVersion }}</strong>
                 </div>
+                <button class="custom-btn" @click="emit('openUpstreamUpdate', skill!)">查看更新</button>
               </div>
-            </div>
 
-            <!-- 覆蓋能力 -->
-            <div v-if="skill.capabilities?.length" class="drawer-section">
-              <div class="section-label">覆蓋能力</div>
-              <div class="capability-grid">
-                <div
-                  v-for="cap in skill.capabilities"
-                  :key="cap.name"
-                  class="capability-card"
-                >
-                  <div class="cap-name">{{ cap.name }}</div>
-                  <div class="cap-desc">{{ cap.description }}</div>
-                </div>
-              </div>
-              <div class="skill-summary">{{ skill.description }}</div>
-            </div>
-
-            <!-- 實際使用情境 -->
-            <div v-if="skill.usageScenarios?.length" class="drawer-section">
-              <div class="section-label">實際使用情境</div>
-              <div class="scenario-list">
-                <div
-                  v-for="(sc, i) in skill.usageScenarios"
-                  :key="sc.title"
-                  class="scenario-item"
-                >
-                  <div class="scenario-num">{{ i + 1 }}</div>
-                  <div class="scenario-body">
-                    <div class="scenario-title">{{ sc.title }}</div>
-                    <div class="scenario-desc">{{ sc.description }}</div>
+              <!-- 個人技能目前狀態：可能包含審核退回原因，屬於需要立刻
+                   看到的內容，不放進側欄 -->
+              <div v-if="isPersonal" class="drawer-section">
+                <div class="section-label">目前狀態</div>
+                <div class="psv-card">
+                  <div class="psv-head">
+                    <span
+                      v-if="personalStatusLabel"
+                      :class="['skill-tag', personalStatusClass]"
+                    >
+                      {{ personalStatusLabel }}
+                    </span>
+                    <span v-if="skill.submitMode" class="psv-mode">
+                      {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
+                    </span>
+                    <span
+                      v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
+                      class="skill-tag psv-scope-tag"
+                      :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
+                    >
+                      <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
+                      預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
+                    </span>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- 可調用此技能的 Agent -->
-            <div class="drawer-section">
-              <div class="section-label">可調用此技能的 Agent</div>
-              <div v-if="skill.assignedAgents?.length" class="agent-tag-list">
-                <span v-for="agent in skill.assignedAgents" :key="agent" class="agent-tag">
-                  <i class="material-symbols-outlined">smart_toy</i>
-                  {{ agent }}
-                </span>
-              </div>
-              <div v-else class="agent-empty">尚未指派給任何 Agent</div>
-            </div>
+                  <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
+                    <i class="material-symbols-outlined">system_update_alt</i>
+                    <span>
+                      Library 來源技能有新版本
+                      <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
+                    </span>
+                  </div>
 
-            <!-- 近 7 天使用趨勢 -->
-            <div class="drawer-section">
-              <div class="section-label chart-section-label">
-                <span>近 7 天使用趨勢</span>
-              </div>
-              <div class="chart-wrap">
-                <svg viewBox="0 0 400 100" preserveAspectRatio="none" class="trend-svg">
-                  <defs>
-                    <linearGradient :id="`grad-${skill.id}`" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#059669" stop-opacity="0.18" />
-                      <stop offset="100%" stop-color="#059669" stop-opacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path :d="chartData.area" :fill="`url(#grad-${skill.id})`" />
-                  <path :d="chartData.line" fill="none" stroke="#059669" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                  <circle
-                    v-for="(p, i) in chartData.pts"
-                    :key="i"
-                    :cx="p.x" :cy="p.y" r="2.5"
-                    fill="#059669"
-                  />
-                </svg>
-                <div class="chart-x-labels">
-                  <span v-for="l in CHART_LABELS" :key="l">{{ l }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 版本歷史 -->
-            <div v-if="skill.versions?.length" class="drawer-section">
-              <div class="section-label">版本歷史</div>
-              <div class="vt-list">
-                <div v-for="(ver, i) in sortedVersions" :key="ver.id" class="vt-item">
-                  <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
-                  <div class="vt-body">
-                    <div class="vt-header">
-                      <span class="vt-version-tag">v{{ ver.versionTag }}</span>
-                      <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
-                        {{ versionStatusLabel(ver.status) }}
-                      </span>
-                      <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
-                    </div>
-                    <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
-                    <div class="vt-actions">
-                      <button
-                        v-if="props.manageable && !isPersonal && ver.status !== 'active'"
-                        class="custom-btn vt-activate-btn"
-                        @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
-                      >
-                        <i class="material-symbols-outlined">check_circle</i>設為使用中
-                      </button>
-                      <button
-                        v-if="ver.status === 'reviewing'"
-                        class="custom-btn"
-                        @click="emit('review', skill!.id, ver.id)"
-                      >
-                        <i class="material-symbols-outlined">rate_review</i>開始審核
-                      </button>
-                      <button
-                        v-if="i < sortedVersions.length - 1"
-                        class="custom-btn"
-                        @click="openCompare(sortedVersions[i + 1].id, ver.id)"
-                      >
-                        <i class="material-symbols-outlined">difference</i>與前版比較
-                      </button>
+                  <div v-if="skill.submitNote" class="psv-note">
+                    <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
+                  </div>
+                  <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
+                    <i class="material-symbols-outlined">feedback</i>
+                    <div>
+                      <div class="psv-reject-feedback-label">審核退回原因</div>
+                      <div>{{ skill.reviewFeedback }}</div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- 演化上下文 -->
-            <div v-if="skill.evolutionContext" class="drawer-section">
-              <div class="section-label">
-                <i class="material-symbols-outlined">auto_awesome</i>演化上下文
+              <!-- 技能指令 -->
+              <div v-if="skill.instructions" class="drawer-section">
+                <div class="section-label">技能指令</div>
+                <div class="instructions-block">{{ skill.instructions }}</div>
               </div>
-              <p class="evolution-context">{{ skill.evolutionContext }}</p>
-            </div>
 
-            <!-- 操作記錄 -->
-            <div v-if="auditLog.length" class="drawer-section">
-              <div class="section-label">操作記錄</div>
-              <div class="audit-timeline">
-                <div v-for="(rec, i) in auditLog" :key="i" class="audit-item">
-                  <div :class="['audit-dot', `audit-dot--${rec.action.toLowerCase()}`]"></div>
-                  <div class="audit-body">
-                    <span class="audit-action">{{ auditActionLabel(rec.action) }}</span>
-                    <span class="audit-meta">· {{ rec.by }} · {{ formatAuditDate(rec.time) }}</span>
+              <!-- 附加檔案 -->
+              <div v-if="skill.files?.length" class="drawer-section">
+                <div class="section-label">附加檔案</div>
+                <div class="attached-file-list">
+                  <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
+                    <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
+                    <span class="af-name">{{ f.fileName }}</span>
+                    <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- 個人技能目前狀態 -->
-            <div v-if="isPersonal" class="drawer-section">
-              <div class="section-label">目前狀態</div>
-              <div class="psv-card">
-                <div class="psv-head">
-                  <span
-                    v-if="personalStatusLabel"
-                    :class="['skill-tag', personalStatusClass]"
+              <!-- 覆蓋能力 -->
+              <div v-if="skill.capabilities?.length" class="drawer-section">
+                <div class="section-label">覆蓋能力</div>
+                <div class="capability-grid">
+                  <div
+                    v-for="cap in skill.capabilities"
+                    :key="cap.name"
+                    class="capability-card"
                   >
-                    {{ personalStatusLabel }}
-                  </span>
-                  <span v-if="skill.submitMode" class="psv-mode">
-                    {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
-                  </span>
-                  <span
-                    v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
-                    class="skill-tag psv-scope-tag"
-                    :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
+                    <div class="cap-name">{{ cap.name }}</div>
+                    <div class="cap-desc">{{ cap.description }}</div>
+                  </div>
+                </div>
+                <div class="skill-summary">{{ skill.description }}</div>
+              </div>
+
+              <!-- 實際使用情境 -->
+              <div v-if="skill.usageScenarios?.length" class="drawer-section">
+                <div class="section-label">實際使用情境</div>
+                <div class="scenario-list">
+                  <div
+                    v-for="(sc, i) in skill.usageScenarios"
+                    :key="sc.title"
+                    class="scenario-item"
                   >
-                    <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
-                    預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
-                  </span>
-                </div>
-
-                <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
-                  <i class="material-symbols-outlined">system_update_alt</i>
-                  <span>
-                    Library 來源技能有新版本
-                    <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
-                  </span>
-                </div>
-
-                <div v-if="skill.submitNote" class="psv-note">
-                  <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
-                </div>
-                <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
-                  <i class="material-symbols-outlined">feedback</i>
-                  <div>
-                    <div class="psv-reject-feedback-label">審核退回原因</div>
-                    <div>{{ skill.reviewFeedback }}</div>
+                    <div class="scenario-num">{{ i + 1 }}</div>
+                    <div class="scenario-body">
+                      <div class="scenario-title">{{ sc.title }}</div>
+                      <div class="scenario-desc">{{ sc.description }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <!-- 演化上下文 -->
+              <div v-if="skill.evolutionContext" class="drawer-section">
+                <div class="section-label">
+                  <i class="material-symbols-outlined">auto_awesome</i>演化上下文
+                </div>
+                <p class="evolution-context">{{ skill.evolutionContext }}</p>
+              </div>
+
+              <!-- 危險操作 -->
+              <div v-if="isPersonal" class="drawer-danger-zone">
+                <div class="danger-zone-label">危險操作</div>
+                <button
+                  class="custom-btn btn--danger-ghost drawer-delete-btn"
+                  @click="showConfirm = true"
+                >
+                  <i class="material-symbols-outlined">delete</i>刪除此技能
+                </button>
+              </div>
             </div>
 
-            <!-- 危險操作 -->
-            <div v-if="isPersonal" class="drawer-danger-zone">
-              <div class="danger-zone-label">危險操作</div>
-              <button
-                class="custom-btn btn--danger-ghost drawer-delete-btn"
-                @click="showConfirm = true"
-              >
-                <i class="material-symbols-outlined">delete</i>刪除此技能
-              </button>
+            <div class="drawer-body-side">
+
+              <!-- 來源關係 -->
+              <div class="drawer-section">
+                <div class="section-label">來源關係</div>
+                <div class="lineage-row">
+                  <template v-if="lineageSourceName">
+                    <span class="lineage-text">
+                      <i class="material-symbols-outlined lineage-icon">call_split</i>
+                      延伸自「{{ lineageSourceName }}」
+                    </span>
+                    <span v-if="lineageSourceVersion" class="skill-tag tag--version">v{{ lineageSourceVersion }}</span>
+                    <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
+                  </template>
+                  <span v-else class="lineage-text">
+                    <i class="material-symbols-outlined lineage-icon">edit_note</i>
+                    自建
+                  </span>
+                  <span v-if="creationMethodLabel" class="lineage-divider">·</span>
+                  <span v-if="creationMethodLabel" class="lineage-method">
+                    <i class="material-symbols-outlined">{{ skill.creationMethod === 'ai_assisted' ? 'auto_awesome' : 'edit' }}</i>
+                    {{ creationMethodLabel }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 可調用此技能的 Agent -->
+              <div class="drawer-section">
+                <div class="section-label">可調用此技能的 Agent</div>
+                <div v-if="skill.assignedAgents?.length" class="agent-tag-list">
+                  <span v-for="agent in skill.assignedAgents" :key="agent" class="agent-tag">
+                    <i class="material-symbols-outlined">smart_toy</i>
+                    {{ agent }}
+                  </span>
+                </div>
+                <div v-else class="agent-empty">尚未指派給任何 Agent</div>
+              </div>
+
+              <!-- 近 7 天使用趨勢 -->
+              <div class="drawer-section">
+                <div class="section-label chart-section-label">
+                  <span>近 7 天使用趨勢</span>
+                </div>
+                <div class="chart-wrap">
+                  <svg viewBox="0 0 400 100" preserveAspectRatio="none" class="trend-svg">
+                    <defs>
+                      <linearGradient :id="`grad-${skill.id}`" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#059669" stop-opacity="0.18" />
+                        <stop offset="100%" stop-color="#059669" stop-opacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path :d="chartData.area" :fill="`url(#grad-${skill.id})`" />
+                    <path :d="chartData.line" fill="none" stroke="#059669" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                    <circle
+                      v-for="(p, i) in chartData.pts"
+                      :key="i"
+                      :cx="p.x" :cy="p.y" r="2.5"
+                      fill="#059669"
+                    />
+                  </svg>
+                  <div class="chart-x-labels">
+                    <span v-for="l in CHART_LABELS" :key="l">{{ l }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 版本歷史 -->
+              <div v-if="skill.versions?.length" class="drawer-section">
+                <div class="section-label">版本歷史</div>
+                <div class="vt-list">
+                  <div v-for="(ver, i) in sortedVersions" :key="ver.id" class="vt-item">
+                    <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
+                    <div class="vt-body">
+                      <div class="vt-header">
+                        <span class="vt-version-tag">v{{ ver.versionTag }}</span>
+                        <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
+                          {{ versionStatusLabel(ver.status) }}
+                        </span>
+                        <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
+                      </div>
+                      <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
+                      <div class="vt-actions">
+                        <button
+                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                          class="custom-btn vt-activate-btn"
+                          @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
+                        >
+                          <i class="material-symbols-outlined">check_circle</i>設為使用中
+                        </button>
+                        <button
+                          v-if="ver.status === 'reviewing'"
+                          class="custom-btn"
+                          @click="emit('review', skill!.id, ver.id)"
+                        >
+                          <i class="material-symbols-outlined">rate_review</i>開始審核
+                        </button>
+                        <button
+                          v-if="i < sortedVersions.length - 1"
+                          class="custom-btn"
+                          @click="openCompare(sortedVersions[i + 1].id, ver.id)"
+                        >
+                          <i class="material-symbols-outlined">difference</i>與前版比較
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 操作記錄 -->
+              <div v-if="auditLog.length" class="drawer-section">
+                <div class="section-label">操作記錄</div>
+                <div class="audit-timeline">
+                  <div v-for="(rec, i) in auditLog" :key="i" class="audit-item">
+                    <div :class="['audit-dot', `audit-dot--${rec.action.toLowerCase()}`]"></div>
+                    <div class="audit-body">
+                      <span class="audit-action">{{ auditActionLabel(rec.action) }}</span>
+                      <span class="audit-meta">· {{ rec.by }} · {{ formatAuditDate(rec.time) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
