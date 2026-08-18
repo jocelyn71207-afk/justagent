@@ -119,11 +119,12 @@
     }
   }
 
+  // 不用 text-transform: uppercase —— 標題裡混了「Agent」這種英文字，
+  // 全大寫轉換套在中文字上沒作用，套在英文字上會變成刺眼的「AGENT」
   .board-title {
     font-size: 13px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     color: var(--text-faint);
   }
 
@@ -142,7 +143,32 @@
     }
   }
 
-  // ── 人員看板：Agent + 平台管理者合併成同一種人卡 ──
+  // ── 現有 Agent：安靜的 pill 標籤，跟平台管理者的人卡是不同語彙 ──
+  .agent-list {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .agent-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background-color: var(--page-bg);
+    border: 1px solid var(--divider);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+
+    i {
+      font-size: 16px;
+      color: var(--primary);
+    }
+  }
+
+  // ── 平台管理者：可操作的帳號名冊，用人卡呈現 ──
   .person-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -177,16 +203,6 @@
       background-color: var(--hint);
       border-color: var(--accent);
       color: var(--primary-hover);
-    }
-
-    &.person-avatar--agent {
-      background-color: var(--tag-violet-bg);
-      border-color: transparent;
-      color: var(--tag-violet-text);
-
-      .material-symbols-outlined {
-        font-size: 17px;
-      }
     }
   }
 

@@ -14,9 +14,13 @@
         只能選擇已在企業下的 Email 帳號，如不在清單中，請先邀請對方加入企業後再設定為系統管理員。
       </div>
       <div class="account-list">
+        <!-- 欄位標籤只在最上面顯示一次，不用每一行都重複「選擇帳號」 -->
+        <div class="account-col-headers">
+          <div class="form-label">選擇帳號</div>
+          <span class="account-remove-spacer"></span>
+        </div>
         <div class="account-row" v-for="(item, i) in accountList" :key="i">
           <div class="account-select-box">
-            <div class="form-label">選擇帳號</div>
             <compAutocomplete
               :options="accountOptions"
               :defaultValue="item.accountLabel"
@@ -25,6 +29,9 @@
               @select="(opt) => { item.accountId = String(opt.value); item.accountLabel = opt.label }"
               @input="(val) => { item.accountLabel = val; if (!val) item.accountId = ''; }"
             />
+            <div class="account-hint" v-if="item.accountLabel && !isKnownAccount(item.accountLabel)">
+              此 Email 不在企業帳號清單中，請重新選擇
+            </div>
           </div>
           <i class="material-symbols-outlined remove-btn" v-if="accountList.length > 1"
             v-tooltip="'移除'"
@@ -86,9 +93,16 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// 只能選企業既有帳號，格式對但不在清單中一樣視為無效
+// （比起送出後才用 alert 告知，讓使用者輸入當下就看得到）
+function isKnownAccount(label: string) {
+  const norm = label.trim().toLowerCase();
+  return accountOptions.value.some(o => o.label.trim().toLowerCase() === norm);
+}
+
 const isValid = computed(() => {
   return accountList.value.length > 0 && accountList.value.every(item =>
-    item.accountLabel.trim() !== '' && isValidEmail(item.accountLabel)
+    item.accountLabel.trim() !== '' && isValidEmail(item.accountLabel) && isKnownAccount(item.accountLabel)
   );
 });
 
@@ -152,12 +166,29 @@ watch(
   .account-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  // 欄位標籤只出現在這一行，spacer 寬度跟 .remove-btn 對齊，
+  // 讓下面每一行的選單都能對到同一條起始線
+  .account-col-headers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .form-label {
+      flex: 1;
+    }
+  }
+
+  .account-remove-spacer {
+    width: 36px;
+    flex-shrink: 0;
   }
 
   .account-row {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 8px;
   }
 
@@ -166,16 +197,24 @@ watch(
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+  }
+
+  .account-hint {
+    font-size: 12.5px;
+    color: var(--danger);
   }
 
   .remove-btn {
-    align-self: flex-end;
-    margin-bottom: 3px;
-    font-size: 24px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
     color: var(--color-text-alpha50);
     flex-shrink: 0;
     border-radius: 10px;
-    padding: 6px;
     cursor: pointer;
     &:hover {
       background-color: var(--color-background-2-alpha20);

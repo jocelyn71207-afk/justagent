@@ -31,10 +31,23 @@
         </a>
       </div>
 
-      <!-- 人員看板：現有 Agent + 平台管理者合併成同一種「人卡」呈現，不再是表格 -->
+      <!-- 現有 Agent：安靜的標籤列，跟平台管理者是不同性質的東西
+           （Agent 不是帳號、沒有帳號的增刪/權限操作），不套用同一種人卡 -->
       <div class="board-section">
         <div class="board-title-row">
-          <span class="board-title">人員</span>
+          <span class="board-title">現有 Agent</span>
+        </div>
+        <div class="agent-list">
+          <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
+            <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 平台管理者：真正的帳號名冊，用人卡呈現才看得出誰是誰、能不能刪 -->
+      <div class="board-section">
+        <div class="board-title-row">
+          <span class="board-title">平台管理者</span>
           <button class="custom-btn no-border no-bg" @click="isAddPlatformAdminModalOpen = true">
             <i class="material-symbols-outlined">add</i>
             新增平台管理者
@@ -58,15 +71,6 @@
             </div>
             <i v-if="!admin.isOwner" class="material-symbols-outlined delete-btn"
               @click="deleteAdmin(admin)">delete</i>
-          </div>
-          <div class="person-card person-card--agent" v-for="agent in agentList" :key="agent.id">
-            <div class="person-avatar person-avatar--agent">
-              <i class="material-symbols-outlined">{{ agent.icon }}</i>
-            </div>
-            <div class="person-info">
-              <div class="person-name">{{ agent.name }}</div>
-              <div class="person-role">Agent</div>
-            </div>
           </div>
         </div>
       </div>

@@ -36,23 +36,33 @@
       <!-- 新增模式 -->
       <template v-else>
         <div class="invite-list">
-          <div class="invite-row" v-for="(item, i) in inviteList" :key="i">
-            <div class="invite-email-box">
-              <label class="invite-sub-label" :for="`invite-email-${i}`">E-mail</label>
-              <div class="invite-input-wrap mt-1">
-                <input class="custom-input"
-                  type="email"
-                  :id="`invite-email-${i}`"
-                  v-model="item.email"
-                  placeholder="請填寫E-mail"/>
-                <i class="material-symbols-outlined material-fill clear-trigger-icon"
-                  v-if="item.email"
-                  @click="item.email = ''">close</i>
-              </div>
+          <!-- 欄位標籤只在最上面顯示一次，不用每一行都重複同樣的「E-mail」「選擇職位」 -->
+          <div class="invite-col-headers">
+            <div class="invite-fields">
+              <span class="invite-sub-label">E-mail</span>
+              <span class="invite-sub-label">選擇職位</span>
             </div>
-            <div class="invite-role-box">
-              <div class="invite-sub-label">選擇職位</div>
-              <div class="mt-1">
+            <span class="invite-remove-spacer"></span>
+          </div>
+          <div class="invite-row" v-for="(item, i) in inviteList" :key="i">
+            <div class="invite-fields">
+              <div class="invite-email-box">
+                <div class="invite-input-wrap">
+                  <input class="custom-input"
+                    type="email"
+                    :aria-label="`E-mail ${i + 1}`"
+                    v-model="item.email"
+                    @blur="item.touched = true"
+                    placeholder="請填寫E-mail"/>
+                  <i class="material-symbols-outlined material-fill clear-trigger-icon"
+                    v-if="item.email"
+                    @click="item.email = ''">close</i>
+                </div>
+                <div class="invite-field-error" v-if="item.touched && item.email && !isValidEmail(item.email)">
+                  Email 格式不正確
+                </div>
+              </div>
+              <div class="invite-role-box">
                 <compDropDown
                   :options="roleOptions"
                   :defaultValue="item.role"
@@ -137,6 +147,7 @@ const roleOptions: DropDownOption[] = [
 interface InviteItem {
   email: string;
   role: string;
+  touched: boolean; // 是否已經 blur 過，控制格式錯誤訊息何時顯示
 }
 
 // 簡單的 email 格式驗證
@@ -145,11 +156,11 @@ function isValidEmail(email: string) {
 }
 
 // 新增模式: 邀請列表，初始一筆空資料
-const inviteList = ref<InviteItem[]>([{ email: '', role: '' }]);
+const inviteList = ref<InviteItem[]>([{ email: '', role: '', touched: false }]);
 
 // 新增模式: 新增一筆邀請資料
 function addInvite() {
-  inviteList.value.push({ email: '', role: '' });
+  inviteList.value.push({ email: '', role: '', touched: false });
 }
 
 // 新增模式: 移除邀請資料
@@ -180,7 +191,7 @@ async function saveCreate() {
 
 // --- 編輯模式 ---
 function resetForm() {
-  inviteList.value = [{ email: '', role: '' }];
+  inviteList.value = [{ email: '', role: '', touched: false }];
 }
 
 // 編輯模式: 刪除協作帳號
@@ -246,13 +257,33 @@ watch(
   .invite-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  // 欄位標籤只出現在這一行，跟下面每一行的欄位寬度共用同一套
+  // .invite-fields 版面，才能對齊
+  .invite-col-headers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .invite-remove-spacer {
+    width: 36px;
+    flex-shrink: 0;
   }
 
   .invite-row {
     display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .invite-fields {
+    display: flex;
+    flex: 1;
     gap: 12px;
-    align-items: flex-end;
+    min-width: 0;
   }
 
   .invite-email-box {
@@ -287,18 +318,27 @@ watch(
   }
 
   .invite-sub-label {
+    width: 50%;
     font-size: 14px;
     color: var(--color-text);
   }
 
+  .invite-field-error {
+    font-size: 12.5px;
+    color: var(--danger);
+    margin-top: 4px;
+  }
+
   .invite-remove-btn {
-    align-self: flex-end;
-    margin-bottom: 3px;
-    font-size: 24px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
     color: var(--color-text-alpha50);
     flex-shrink: 0;
     border-radius: 10px;
-    padding: 6px;
     cursor: pointer;
     &:hover {
       background-color: var(--color-background-2-alpha20);
