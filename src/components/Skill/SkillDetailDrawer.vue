@@ -63,28 +63,32 @@
           </div>
 
           <!-- ── Metrics bar ────────────────────────── -->
+          <!-- 固定顯示 3 格，不會因為技能還沒有真實流量就縮成 1 格、
+               在整排統計列裡留下一大塊空白。從沒被觸發過的技能，測試
+               通過率/延遲用「—」表示「還沒有資料」，不是顯示 0%（會被
+               誤讀成測試失敗）也不是直接不見（看起來像排版壞掉） -->
           <div class="drawer-metrics">
             <div class="dm-cell">
               <i class="material-symbols-outlined dm-icon dm-icon--bolt">bolt</i>
               <div class="dm-num">{{ formatCount(skill.usageCount) }}</div>
               <div class="dm-lbl">本月使用</div>
             </div>
-            <!-- 從沒被觸發過就不顯示測試通過率/延遲——0% 會誤讀成「測試失敗」，
-                 其實只是還沒有真實流量可以算 -->
-            <template v-if="skill.usageCount > 0">
-              <div class="dm-divider"></div>
-              <div class="dm-cell">
-                <i :class="['material-symbols-outlined', 'dm-icon', rateIconClass]">verified</i>
-                <div :class="['dm-num', rateNumClass]">{{ Math.round(skill.testPassRate * 100) }}%</div>
-                <div class="dm-lbl">測試通過率</div>
+            <div class="dm-divider"></div>
+            <div class="dm-cell">
+              <i :class="['material-symbols-outlined', 'dm-icon', skill.usageCount > 0 ? rateIconClass : 'dm-icon--empty']">verified</i>
+              <div :class="['dm-num', skill.usageCount > 0 ? rateNumClass : 'dm-num--empty']">
+                {{ skill.usageCount > 0 ? Math.round(skill.testPassRate * 100) + '%' : '—' }}
               </div>
-              <div class="dm-divider"></div>
-              <div class="dm-cell">
-                <i class="material-symbols-outlined dm-icon">timer</i>
-                <div class="dm-num">{{ skill.avgLatencyMs }}ms</div>
-                <div class="dm-lbl">平均延遲</div>
+              <div class="dm-lbl">測試通過率</div>
+            </div>
+            <div class="dm-divider"></div>
+            <div class="dm-cell">
+              <i :class="['material-symbols-outlined', 'dm-icon', { 'dm-icon--empty': skill.usageCount === 0 }]">timer</i>
+              <div :class="['dm-num', { 'dm-num--empty': skill.usageCount === 0 }]">
+                {{ skill.usageCount > 0 ? skill.avgLatencyMs + 'ms' : '—' }}
               </div>
-            </template>
+              <div class="dm-lbl">平均延遲</div>
+            </div>
             <div class="dm-divider"></div>
             <div v-if="isPersonal || manageable" class="dm-toggle">
               <button

@@ -182,6 +182,7 @@
     &.dm-icon--good { color: $color_main_1; }
     &.dm-icon--warn { color: $color-warning-amber; }
     &.dm-icon--bad  { color: $color-danger; }
+    &.dm-icon--empty { opacity: 0.4; }
   }
 
   .dm-num {
@@ -194,6 +195,8 @@
     &--good { color: $color_main_1; }
     &--warn { color: $color-warning-amber; }
     &--bad  { color: $color-danger; }
+    // 還沒有真實流量可以算，「—」是「尚無資料」而不是數值，字重跟著降下來
+    &--empty { color: var(--text-faint); font-weight: 600; }
   }
 
   .dm-lbl {
@@ -386,6 +389,10 @@
   }
 
   // ── Lineage ───────────────────────────────────
+  // 只有一行metadata，不需要跟技能指令/附加檔案一樣包一層卡片盒子——
+  // 整頁如果每個區塊都是「標籤+灰色盒子」，看久了會覺得單調，這裡改成
+  // 安靜的一行文字，跟 TeamAccessManagement 的角色統計同一種「輕量
+  // metadata」處理方式
 
   .lineage-row {
     display: flex;
@@ -393,9 +400,7 @@
     gap: 6px;
     font-size: 13px;
     color: var(--text-muted);
-    background: var(--page-bg);
-    padding: 10px 14px;
-    border-radius: 10px;
+    padding: 2px 0;
 
     .lineage-icon {
       font-size: 16px;
