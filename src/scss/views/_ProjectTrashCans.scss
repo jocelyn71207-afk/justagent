@@ -51,30 +51,55 @@
   }
 
   // ── 卡片整體：跟其他頁面一樣統一大小，不再讓 urgent 卡片跨欄放大 ──
+  // 但整齊 ≠ 死板：用圖片的色彩/景深、角標的質感、跟格線的細微錯落
+  // 讓畫面有呼吸感，而不是單純把統一大小做成一張死板的表格。
   .card-list-box .one-card-box.project-card {
     cursor: default;
 
-    &:hover {
-      transform: translateY(-2px);
+    // 每三張（大致對到格線的中間欄）微微往下錯開，
+    // 讓格狀版面不是每一行都死板對齊，同時不影響卡片本身大小
+    &:nth-child(3n+2) {
+      margin-top: 16px;
     }
 
-    // ── 圖片灰階 ─────────────────────────────────
+    &:hover {
+      transform: translateY(-2px);
+
+      // hover 時圖片恢復色彩，讓卡片感覺是「活的」而不是封存照片
+      .img-box img {
+        filter: grayscale(0.15) saturate(1.05);
+        opacity: 1;
+      }
+    }
+
+    // ── 圖片：改用柔和雙色調，避免整頁死灰冷冰冰 ──
     .img-box {
       position: relative;
 
       img {
-        filter: grayscale(1);
-        opacity: 0.55;
+        filter: grayscale(0.55) saturate(0.85);
+        opacity: 0.78;
         cursor: default;
+        transition: filter 0.25s ease, opacity 0.25s ease;
       }
 
-      // ── 左上垃圾桶角標 ─────────────────────────
+      // 底部漸層讓角標/徽章有落點，圖片也不是單調的一片灰
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 55%, rgba(var(--shadow), 0.32) 100%);
+        pointer-events: none;
+      }
+
+      // ── 左上垃圾桶角標：霧面玻璃質感，不是死板色塊 ──
       .trash-icon-overlay {
         position: absolute;
         top: 10px;
         left: 10px;
-        background: rgba($black, 0.30);
-        border-radius: 8px;
+        background: rgba(var(--shadow), 0.32);
+        backdrop-filter: blur(6px);
+        border-radius: 10px;
         width: 28px;
         height: 28px;
         display: flex;
@@ -86,7 +111,8 @@
         pointer-events: none;
       }
 
-      // ── 右上到期標籤 ───────────────────────────
+      // ── 右上到期標籤：保留語意色（一眼辨識急迫度），
+      // 但加一點浮起的深度，不是貼在圖上的扁平色塊 ──
       .expiry-badge {
         position: absolute;
         top: 10px;
@@ -100,10 +126,20 @@
         letter-spacing: 0.02em;
         z-index: 2;
         pointer-events: none;
+        box-shadow: 0 2px 6px -2px rgba(var(--shadow), 0.45);
 
         &--urgent  { background: var(--danger); }
         &--warning { background: var(--warning); color: $color-warning-text-dark; }
         &--normal  { background: rgba($black, 0.38); }
+      }
+    }
+
+    // ── 底部資訊：多留一點呼吸空間，名稱/刪除資訊不要黏在一起 ──
+    .footer-box {
+      padding: 16px;
+
+      .info-box .project-name {
+        margin-bottom: 3px;
       }
     }
 
