@@ -47,14 +47,98 @@
       </div>
     </div>
 
+    <!-- .plc-body 預設是 display:contents（見 scss），不影響 team 模式版面；
+         只有 mode="recent" 時才變成「內容＋右側常駐 widget 欄」的 2 欄 grid -->
+    <div class="plc-body" :class="{ 'plc-body--home': mode === 'recent' }">
     <div class="plc-content">
     <AppSkeleton v-if="isLoading" type="list" class="mt-4" />
     <AppErrorState v-else-if="hasError" :message="apiErrorMessage" @retry="retry" />
     <template v-else>
 
-      <!-- 卡片樣式列表 -->
+      <!-- 精選區：只有「最近使用」的卡片檢視才顯示，依已加星號的專案數量切換呈現方式 -->
+      <div class="featured-zone" v-if="mode === 'recent' && projectListMode === 'card' && favoriteProjects.length">
+        <div class="plc-section-label">★ 已加星號<span v-if="favoriteProjects.length > 1">（{{ favoriteProjects.length }}）</span></div>
+
+        <!-- 剛好 1 顆星：維持大張 Hero -->
+        <div class="hero-card" v-if="favoriteProjects.length === 1" @click="gotoAiViewer(favoriteProjects[0])">
+          <div class="hero-thumb"><img :src="favoriteProjects[0].imgSrc" alt=""></div>
+          <div class="hero-body">
+            <div class="hero-eyebrow-row">
+              <span class="hero-eyebrow">已加星號 · {{ favoriteProjects[0].team.name }}</span>
+              <i class="material-symbols-outlined card-star material-fill active"
+                @click.stop="toggleFavorite(favoriteProjects[0])">star</i>
+            </div>
+            <div class="hero-name">{{ favoriteProjects[0].name }}</div>
+            <div class="hero-meta-row">
+              <div class="card-avatars">
+                <div :class="['avatar-chip', { 'avatar-owner': ci === 0 }]"
+                  v-for="(c, ci) in favoriteProjects[0].collaborators.slice(0, 3)" :key="ci"
+                  :style="{ backgroundColor: avatarColor(ci) }">{{ c.name.slice(0, 1) }}</div>
+              </div>
+              <span class="hero-collab-count">{{ favoriteProjects[0].collaborators.length }} 人共編</span>
+            </div>
+            <div class="hero-chart">
+              <div class="bar" v-for="(count, di) in favoriteProjects[0].weeklyUsage" :key="di"
+                :class="{ today: di === favoriteProjects[0].weeklyUsage.length - 1 }"
+                :style="{ height: barHeight(count, favoriteProjects[0].weeklyUsage) + 'px' }"></div>
+            </div>
+            <div class="hero-foot">
+              <span :class="['card-status', `status-${favoriteProjects[0].status}`]">
+                <i class="status-dot"></i>{{ statusLabel(favoriteProjects[0].status) }}
+              </span>
+              <span class="card-time">{{ formatTimeToDisplay(favoriteProjects[0].lastModify) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 剛好 2 顆星：兩張等寬中型卡片並排撐滿整排，避免橫向捲動列留白 -->
+        <div class="featured-duo" v-else-if="favoriteProjects.length === 2">
+          <div class="duo-card" v-for="item in favoriteProjects" :key="'duo' + item.id" @click="gotoAiViewer(item)">
+            <div class="duo-thumb"><img :src="item.imgSrc" alt=""></div>
+            <div class="duo-body">
+              <div class="hero-eyebrow-row">
+                <span class="duo-eyebrow">{{ item.team.name }}</span>
+                <i class="material-symbols-outlined card-star material-fill active"
+                  @click.stop="toggleFavorite(item)">star</i>
+              </div>
+              <div class="duo-name">{{ item.name }}</div>
+              <div class="duo-foot">
+                <span :class="['card-status', `status-${item.status}`]">
+                  <i class="status-dot"></i>{{ statusLabel(item.status) }}
+                </span>
+                <span class="card-time">{{ formatTimeToDisplay(item.lastModify) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 顆星以上：固定寬度、可橫向捲動的精選列 -->
+        <div class="featured-row" v-else>
+          <div class="featured-card" v-for="item in favoriteProjects" :key="'feat' + item.id" @click="gotoAiViewer(item)">
+            <div class="featured-thumb"><img :src="item.imgSrc" alt=""></div>
+            <div class="featured-body">
+              <div class="hero-eyebrow-row">
+                <span class="featured-eyebrow">{{ item.team.name }}</span>
+                <i class="material-symbols-outlined card-star material-fill active"
+                  @click.stop="toggleFavorite(item)">star</i>
+              </div>
+              <div class="featured-name">{{ item.name }}</div>
+              <div class="featured-foot">
+                <span :class="['card-status', `status-${item.status}`]">
+                  <i class="status-dot"></i>{{ statusLabel(item.status) }}
+                </span>
+                <span class="card-time">{{ formatTimeToDisplay(item.lastModify) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="plc-section-label">其他專案</div>
+      </div>
+
+      <!-- 卡片樣式列表：「最近使用」卡片檢視時排除已在上面精選區出現的專案，避免重複 -->
       <div class="card-list-box" v-if="projectListMode === 'card' && projectList.length">
-        <div class="project-card" v-for="(item, i) in displayProjectList" :key="'card' + i"
+        <div class="project-card" v-for="item in gridProjects" :key="'card' + item.id"
           @click="gotoAiViewer(item)"
           @mouseenter="item.isHovered = true"
           @mouseleave="item.isHovered = false; item.showMoreOption = false">
@@ -87,9 +171,9 @@
             <div class="card-row-top">
               <span class="card-team" v-if="mode === 'recent'">{{ item.team.name }}</span>
               <i :class="['material-symbols-outlined card-star', {
-                'material-fill': i === 0,
-                'active': i === 0
-              }]" @click.stop>star</i>
+                'material-fill': item.isFavorite,
+                'active': item.isFavorite
+              }]" @click.stop="toggleFavorite(item)">star</i>
             </div>
 
             <div class="card-name" v-show="!item.isHovered">{{ item.name }}</div>
@@ -144,9 +228,9 @@
               <td>
                 <div class="d-flex flex-align-center" style="gap: 10px">
                   <i :class="['material-symbols-outlined favorite-btn', {
-                    'material-fill': i === 0,
-                    'active': i === 0
-                  }]">star</i>
+                    'material-fill': item.isFavorite,
+                    'active': item.isFavorite
+                  }]" @click.stop="toggleFavorite(item)">star</i>
                   <img :src="item.imgSrc" alt="" class="td-thumb">
                   <span style="font-weight: 600">{{ item.name }}</span>
                 </div>
@@ -196,6 +280,56 @@
     </template>
     </div><!-- /plc-content -->
 
+    <!-- 右側常駐 widget 欄：只有「最近使用」才顯示，內容都取自產品已有的資料
+         （journeyStore 的旅程紀錄、各團隊專案數、依時間排序的近期專案動態） -->
+    <div class="plc-home-side" v-if="mode === 'recent'">
+
+      <div class="plc-widget">
+        <div class="plc-widget-head">
+          <span class="plc-widget-title">旅程進度</span>
+          <button type="button" class="plc-widget-link" @click="goToJourneys">查看全部 →</button>
+        </div>
+        <template v-if="journeys.length">
+          <div class="journey-summary"><b>{{ journeyRunningCount }}</b>&nbsp;進行中&nbsp;&nbsp;·&nbsp;&nbsp;<b>{{ journeyDoneCount }}</b>&nbsp;已完成</div>
+          <div class="journey-row" v-for="j in recentJourneys" :key="j.id">
+            <div :class="['journey-icon', j.status]">
+              <i class="material-symbols-outlined">{{ j.status === 'done' ? 'check_circle' : 'autorenew' }}</i>
+            </div>
+            <div class="journey-main">
+              <div class="journey-name">{{ journeyTypeLabel(j.journeyType) }} · {{ j.userName }}</div>
+              <div class="journey-sub">{{ j.nodes.filter((n: any) => n.status === 'done').length }}／{{ j.nodes.length }} 節點完成</div>
+            </div>
+            <div class="journey-progress-track"><div class="journey-progress-fill" :style="{ width: journeyProgressPct(j) + '%' }"></div></div>
+          </div>
+        </template>
+        <div class="plc-widget-empty" v-else>
+          尚無旅程紀錄。到 AiViewer 生成行銷自動化旅程後，會顯示在這裡。
+        </div>
+      </div>
+
+      <div class="plc-widget" v-if="teamStats.length">
+        <div class="plc-widget-head"><span class="plc-widget-title">團隊統計</span></div>
+        <div class="team-stat-row" v-for="(t, ti) in teamStats" :key="t.id">
+          <span class="team-stat-dot" :style="{ background: avatarColor(ti) }"></span>
+          <span class="team-stat-name">{{ t.name }}</span>
+          <span class="team-stat-count">{{ t.count }}</span>
+        </div>
+      </div>
+
+      <div class="plc-widget" v-if="recentActivity.length">
+        <div class="plc-widget-head"><span class="plc-widget-title">近期動態</span></div>
+        <div class="activity-row" v-for="item in recentActivity" :key="'act' + item.id">
+          <div class="activity-main">
+            <div class="activity-text"><b>{{ item.name }}</b>　{{ statusLabel(item.status) }}</div>
+            <div class="activity-time">{{ formatTimeToDisplay(item.lastModify) }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    </div><!-- /plc-body -->
+
   </div>
 
   <!-- 專案設定 Modal -->
@@ -214,6 +348,7 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRootStore } from '@/stores/rootStore';
+import { useJourneyStore, type JourneyRecord, type JourneyType } from '@/stores/journeyStore';
 import compTabs from '@/components/compTabs/compTabs.vue';
 import compListCardSwitch from '@/components/compListCardSwitch/compListCardSwitch.vue';
 import ProjectSettingModal from "@/components/AiViewer/ProjectSettingModal.vue";
@@ -233,6 +368,7 @@ const props = defineProps<{
 }>();
 
 const { projectListMode } = storeToRefs(useRootStore());
+const { journeys } = storeToRefs(useJourneyStore());
 
 // Agent 過濾條件 (只有 recent 模式才有)
 const filterAgent = ref('ALL');
@@ -276,6 +412,20 @@ const displayProjectList = computed(() => {
   return list;
 });
 
+// 已加星號 / 其他專案：只有「最近使用」的卡片檢視會把已加星號的專案
+// 拉到上面的精選區，其他情境（團隊專案、表格檢視）維持完整清單，不拆分
+function toggleFavorite(item: any) {
+  item.isFavorite = !item.isFavorite;
+}
+const favoriteProjects = computed(() => displayProjectList.value.filter((item: any) => item.isFavorite));
+const otherProjects = computed(() => displayProjectList.value.filter((item: any) => !item.isFavorite));
+const gridProjects = computed(() => {
+  if (props.mode === 'recent' && projectListMode.value === 'card') {
+    return otherProjects.value;
+  }
+  return displayProjectList.value;
+});
+
 // 開啟專案設定 Modal 相關
 const isOpenProjectSettingModal = ref(false);
 const currentModifyProjectId = ref('');
@@ -308,6 +458,47 @@ function gotoAiViewer(item: any) {
   window.open(href, '_blank', 'noopener');
 }
 
+// ── 右側常駐 widget 欄（只有 mode="recent" 會用到）─────────────────
+// 團隊統計：依團隊分組算出每個團隊目前的專案數量，資料直接來自現有專案清單
+const teamStats = computed(() => {
+  const map = new Map<string, { id: string; name: string; count: number }>();
+  for (const item of (projectListData.value ?? []) as any[]) {
+    const key = item.team.id;
+    if (!map.has(key)) map.set(key, { id: key, name: item.team.name, count: 0 });
+    map.get(key)!.count += 1;
+  }
+  return Array.from(map.values());
+});
+
+// 近期動態：依最後編輯時間排序取前幾筆，跟卡片/表格用的是同一份真實資料，
+// 只是換一個「動態」的呈現角度，不是憑空生出來的假事件
+const recentActivity = computed(() => {
+  return [...((projectListData.value ?? []) as any[])]
+    .sort((a, b) => new Date(b.lastModify).getTime() - new Date(a.lastModify).getTime())
+    .slice(0, 4);
+});
+
+// 旅程進度：抓 journeyStore 的真實紀錄（AiViewer 生成行銷自動化旅程時寫入）。
+// 目前這頁完全沒有入口在主選單上，藉這個 widget 順便讓使用者找得到。
+const journeyRunningCount = computed(() => journeys.value.filter((j: JourneyRecord) => j.status === 'running').length);
+const journeyDoneCount = computed(() => journeys.value.filter((j: JourneyRecord) => j.status === 'done').length);
+const recentJourneys = computed(() => journeys.value.slice(0, 2));
+function journeyProgressPct(journey: JourneyRecord): number {
+  if (!journey.nodes.length) return 0;
+  const done = journey.nodes.filter(n => n.status === 'done').length;
+  return Math.round((done / journey.nodes.length) * 100);
+}
+const JOURNEY_TYPE_LABELS: Record<JourneyType, string> = {
+  marketing: '行銷自動化旅程',
+  birthday: '生日自動化旅程',
+};
+function journeyTypeLabel(type: JourneyType): string {
+  return JOURNEY_TYPE_LABELS[type] ?? '自動化旅程';
+}
+function goToJourneys() {
+  router.push('/view/journeys');
+}
+
 function deleteProject(item: any) {
   console.log('delete project, item = ', item);
   popDialog.confirm(`
@@ -327,6 +518,7 @@ function getProjectList() {
   const temp = [{
     showMoreOption: false, // TODO... 前端UI用, 之後後端吐的資料中, 前端要自己加上這個欄位來控制UI
     id: 'aaa',
+    isFavorite: true,
     name: '26W官網選品建議',
     agents: ['testAgent1'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=62',
@@ -352,6 +544,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'bbb',
+    isFavorite: false,
     name: '26W特色鞋款行銷方案',
     agents: ['testAgent2', 'testAgent3'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=63',
@@ -377,6 +570,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'ccc',
+    isFavorite: false,
     name: '門市－長青鞋款銷售數據分析',
     agents: ['testAgent1', 'testAgent2', 'testAgent3'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=64',
@@ -402,6 +596,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'ddd',
+    isFavorite: false,
     name: '電商－長青鞋款銷售數據分析',
     agents: ['testAgent1'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=65',
@@ -427,6 +622,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'eee',
+    isFavorite: false,
     name: '經常消費用戶圖譜',
     agents: ['testAgent2'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=66',
@@ -450,6 +646,7 @@ function getProjectList() {
   {
     showMoreOption: false,
     id: 'fff',
+    isFavorite: false,
     name: '新用戶消費傾向分析＋潛在消費傾向',
     agents: ['testAgent3'],
     imgSrc: 'https://picsum.photos/410/240.webp?random=67',
