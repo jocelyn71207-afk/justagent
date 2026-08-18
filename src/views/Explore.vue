@@ -2,6 +2,24 @@
   <div class="Explore views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
+      <!-- 分頁籤 -->
+      <div class="explore-tabs">
+        <button
+          :class="['explore-tab', { active: activeExploreTab === 'agent' }]"
+          @click="activeExploreTab = 'agent'"
+        >
+          <i class="material-symbols-outlined">support_agent</i>Agent 探索
+        </button>
+        <button
+          :class="['explore-tab', { active: activeExploreTab === 'skill' }]"
+          @click="activeExploreTab = 'skill'"
+        >
+          <i class="material-symbols-outlined">psychology</i>Skill 探索
+        </button>
+      </div>
+
+      <template v-if="activeExploreTab === 'agent'">
+
       <!-- 搜尋列 -->
       <div class="explore-search-bar">
         <i class="material-symbols-outlined">search</i>
@@ -32,7 +50,7 @@
         <div class="hero-cta" @click="openModal(featuredAgent)">
           <div class="hero-cta-label">由我推薦</div>
           <div class="hero-cta-name">{{ featuredAgent.name }}</div>
-          <div class="hero-cta-desc">{{ featuredAgent.desc }}</div>
+          <div class="hero-cta-desc">{{ featuredAgent.painPoint }}</div>
           <div class="hero-cta-link">立即使用 →</div>
         </div>
       </div>
@@ -54,7 +72,7 @@
             <i class="material-symbols-outlined">{{ agent.icon }}</i>
           </div>
           <h4>{{ agent.name }}</h4>
-          <p>{{ agent.desc }}</p>
+          <p>{{ agent.painPoint }}</p>
         </div>
       </div>
       <div
@@ -67,7 +85,7 @@
           <i class="material-symbols-outlined">{{ fourthRankedAgent.icon }}</i>
         </div>
         <span class="ranking-more-name">{{ fourthRankedAgent.name }}</span>
-        <span class="ranking-more-desc">{{ fourthRankedAgent.desc }}</span>
+        <span class="ranking-more-desc">{{ fourthRankedAgent.painPoint }}</span>
       </div>
 
       <!-- 大家都在用 -->
@@ -89,7 +107,7 @@
             <i class="material-symbols-outlined">{{ agent.icon }}</i>
           </div>
           <h4>{{ agent.name }}</h4>
-          <p>{{ agent.desc }}</p>
+          <p>{{ agent.painPoint }}</p>
         </div>
       </div>
 
@@ -123,10 +141,12 @@
                 {{ agent.badge.label }}
               </span>
             </div>
-            <p class="rec-card-desc">{{ agent.desc }}</p>
+            <p class="rec-card-desc">{{ agent.painPoint }}</p>
           </div>
         </div>
       </div>
+
+      </template>
 
     </div>
   </div>
@@ -144,6 +164,7 @@
           <div :class="['explore-modal-icon', `agent-icon--${selectedAgent.colorKey}`]">
             <i class="material-symbols-outlined">{{ selectedAgent.icon }}</i>
           </div>
+          <p class="explore-modal-painpoint">{{ selectedAgent.painPoint }}</p>
           <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
           <div class="explore-modal-tags">
             <span v-for="tag in selectedAgent.tags" :key="tag" class="explore-modal-tag">{{ tag }}</span>
@@ -169,6 +190,8 @@ import popDialog from '@/services/popDialog'
 
 const rootStore = useRootStore()
 const { isEnterAppSearchPage } = storeToRefs(rootStore)
+
+const activeExploreTab = ref<'agent' | 'skill'>('agent')
 
 // 搜尋
 const searchKeyword = ref('')
@@ -202,6 +225,7 @@ type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
 interface Agent {
   name: string
   desc: string
+  painPoint: string
   icon: string
   colorKey: ColorKey
   tags: string[]
@@ -213,6 +237,7 @@ const allAgents: Agent[] = [
   {
     name: '內容創作者',
     desc: '撰寫高品質的文章與多媒體內容，精準策略角度，吸引目標受眾，增強社交媒體互動。',
+    painPoint: '還在對著空白文件發呆，不知道從何下筆？',
     icon: 'edit_note',
     colorKey: 'violet',
     tags: ['內容', '創作', '社群', '行銷'],
@@ -221,6 +246,7 @@ const allAgents: Agent[] = [
   {
     name: '社群管理',
     desc: '管理各平台社群，增進用戶互動，制定策略以提升用戶忠誠度和品牌影響力。',
+    painPoint: '每天要顧好幾個社群帳號，回覆訊息回到分身乏術？',
     icon: 'group',
     colorKey: 'teal',
     tags: ['社群', '行銷', '策略', '互動'],
@@ -229,6 +255,7 @@ const allAgents: Agent[] = [
   {
     name: '專案管理',
     desc: '從規劃到執行，確保資源最佳配置和時程有效利用。',
+    painPoint: '專案時程一多，資源分配跟進度追蹤就開始亂？',
     icon: 'task_alt',
     colorKey: 'amber',
     tags: ['專案', '管理', '規劃', '執行'],
@@ -237,6 +264,7 @@ const allAgents: Agent[] = [
   {
     name: '財務分析師',
     desc: '分析公司財務數據，制定預算與報告，提供可行建議以支持企業經營目標。',
+    painPoint: '一堆報表數字擺在眼前，卻看不出關鍵趨勢？',
     icon: 'bar_chart',
     colorKey: 'blue',
     tags: ['財務', '分析', '預算', '報告'],
@@ -246,6 +274,7 @@ const allAgents: Agent[] = [
   {
     name: 'SEO 專家',
     desc: '優化網站內容與結構，提升搜尋引擎排名，幫助品牌獲得更多自然流量。',
+    painPoint: '網站流量怎麼做都上不去，搜尋排名一直卡關？',
     icon: 'travel_explore',
     colorKey: 'green',
     tags: ['SEO', '優化', '搜尋', '流量'],
@@ -255,6 +284,7 @@ const allAgents: Agent[] = [
   {
     name: '顧客服務管理',
     desc: '提升客戶整體滿意度，解決客戶問題並收集回饋，提升服務品質與客戶忠誠度。',
+    painPoint: '客訴訊息一多，回覆速度跟服務品質很難兼顧？',
     icon: 'support_agent',
     colorKey: 'rust',
     tags: ['客服', '滿意度', '回饋', '忠誠'],
@@ -264,6 +294,7 @@ const allAgents: Agent[] = [
   {
     name: '記帳助理',
     desc: '帳務整理、報帳核對與簡單財務報表製作，確保每筆費用都有跡可循。',
+    painPoint: '帳務單據一多就對不上，報帳核銷永遠卡在對帳？',
     icon: 'receipt_long',
     colorKey: 'teal',
     tags: ['帳務', '報表', '財務', '核對'],
@@ -273,6 +304,7 @@ const allAgents: Agent[] = [
   {
     name: '人資行政助理',
     desc: '快速產出職位說明、履歷篩選建議與面試準備，將複雜 HR 行政工作自動化。',
+    painPoint: '職缺說明跟履歷篩選佔掉大半天，招募進度卻停滯不前？',
     icon: 'badge',
     colorKey: 'green',
     tags: ['HR', '招募', '行政', '人才'],
@@ -282,6 +314,7 @@ const allAgents: Agent[] = [
   {
     name: '設計助理',
     desc: '協助創建視覺素材，提供設計建議與排版指引，提升品牌視覺一致性。',
+    painPoint: '想要的視覺效果說不清楚，設計來回改版改到懷疑人生？',
     icon: 'palette',
     colorKey: 'rose',
     tags: ['設計', '素材', '視覺', '排版'],
@@ -290,6 +323,7 @@ const allAgents: Agent[] = [
   {
     name: '會議記錄員',
     desc: '自動整理會議記錄，摘要關鍵決議與行動項目，確保團隊決策能落實執行。',
+    painPoint: '開完會才發現重點都忘了，行動項目沒人跟進？',
     icon: 'mic',
     colorKey: 'violet',
     tags: ['會議', '記錄', '摘要', '行動'],

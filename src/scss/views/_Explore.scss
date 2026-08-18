@@ -659,3 +659,41 @@
     }
   }
 }
+
+.Explore.views-page {
+  .explore-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    .explore-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--divider-a50);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+
+      .material-symbols-outlined { font-size: 18px; }
+
+      &.active {
+        background: $color_main_1;
+        border-color: $color_main_1;
+        color: #fff;
+      }
+
+      &:hover:not(.active) { background: var(--page-bg); }
+    }
+  }
+
+  .explore-modal-painpoint {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+}
