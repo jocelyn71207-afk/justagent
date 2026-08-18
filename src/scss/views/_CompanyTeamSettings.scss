@@ -53,8 +53,9 @@
     flex-wrap: wrap;
   }
 
-  // 現有 Agent 收進企業卡片裡面呈現，跟企業類型/方案同一張卡，
-  // 但用小標籤跟上面的 meta 區分開，不會誤以為 Agent 也是企業屬性
+  // 現有 Agent 收進企業卡片裡面呈現，跟企業類型/方案同一張卡；
+  // 不另外加文字標籤，靠 agent-tag 本身的圖示/名稱跟上面一排 hairline
+  // 分隔就夠辨識，不需要多一行「現有 Agent」的說明文字
   .company-hero-agents {
     display: flex;
     align-items: center;
@@ -63,13 +64,6 @@
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--divider-a50);
-  }
-
-  .company-hero-agents-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-faint);
-    flex-shrink: 0;
   }
 
   .company-hero-link {

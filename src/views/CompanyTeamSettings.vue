@@ -23,7 +23,6 @@
             <span class="plan-badge">標準版<span class="plan-badge-expire">・到期 2026.08.09</span></span>
           </div>
           <div class="company-hero-agents">
-            <span class="company-hero-agents-label">現有 Agent</span>
             <span class="agent-tag" v-for="agent in agentList" :key="agent.id">
               <i class="material-symbols-outlined">{{ agent.icon }}</i>{{ agent.name }}
             </span>
