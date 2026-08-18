@@ -105,9 +105,8 @@
               <tr v-if="!displayList.length">
                 <td colspan="6" class="text-center fc-grey-1 py-4">無符合條件的條目</td>
               </tr>
+              <template v-for="item in displayList" :key="item.id">
               <tr
-                v-for="item in displayList"
-                :key="item.id"
                 :class="{ 'table-row--needs-update': item.status === 'needs_update' }"
               >
                 <td>
@@ -118,17 +117,30 @@
                   />
                 </td>
                 <td>
-                  <div class="fw-500 cursor-pointer" @click="goToDetail(item.id)">
-                    {{ item.title }}
-                    <span v-if="item.status === 'needs_update'" class="source-stale-badge ml-1">來源已更新</span>
-                  </div>
-                  <div class="fs-12 fc-grey-1">{{ item.category }}</div>
-                  <!-- Pipeline 進度條 -->
-                  <div v-if="item.status === 'processing'" class="pipeline-progress-wrap">
-                    <div class="pipeline-progress-bar">
-                      <div class="pipeline-progress-fill" :style="{ width: item.pipelineProgress + '%' }"></div>
+                  <div class="entry-cell">
+                    <button
+                      type="button"
+                      class="row-caret-btn"
+                      :class="{ 'is-open': expandedId === item.id }"
+                      :aria-label="expandedId === item.id ? '收合詳細資訊' : '展開詳細資訊'"
+                      @click="toggleExpand(item.id)"
+                    >
+                      <i class="material-symbols-outlined">chevron_right</i>
+                    </button>
+                    <div class="entry-cell-main">
+                      <div class="fw-500 cursor-pointer" @click="goToDetail(item.id)">
+                        {{ item.title }}
+                        <span v-if="item.status === 'needs_update'" class="source-stale-badge ml-1">來源已更新</span>
+                      </div>
+                      <div class="fs-12 fc-grey-1">{{ item.category }}</div>
+                      <!-- Pipeline 進度條 -->
+                      <div v-if="item.status === 'processing'" class="pipeline-progress-wrap">
+                        <div class="pipeline-progress-bar">
+                          <div class="pipeline-progress-fill" :style="{ width: item.pipelineProgress + '%' }"></div>
+                        </div>
+                        <span class="pipeline-stage-label">{{ item.pipelineStage }} {{ item.pipelineProgress }}%</span>
+                      </div>
                     </div>
-                    <span class="pipeline-stage-label">{{ item.pipelineStage }} {{ item.pipelineProgress }}%</span>
                   </div>
                 </td>
                 <td>
@@ -196,6 +208,40 @@
                   </div>
                 </td>
               </tr>
+              <!-- 展開的詳細資訊：不佔用主要欄位，點左側箭頭才看得到 -->
+              <tr v-if="expandedId === item.id" class="table-row--detail">
+                <td colspan="6">
+                  <dl class="row-detail-grid">
+                    <div class="row-detail-field">
+                      <dt>最後編輯人</dt>
+                      <dd>{{ item.lastUpdateBy }}</dd>
+                    </div>
+                    <div class="row-detail-field">
+                      <dt>本次更新說明</dt>
+                      <dd>{{ activeVersion(item)?.updateNote || '（無）' }}</dd>
+                    </div>
+                    <div v-if="activeVersion(item)?.tags?.length" class="row-detail-field">
+                      <dt>標籤</dt>
+                      <dd>{{ activeVersion(item)!.tags.join('、') }}</dd>
+                    </div>
+                    <div v-if="item.status === 'reviewing' && reviewingVersion(item)?.reviewNote" class="row-detail-field">
+                      <dt>送審備註</dt>
+                      <dd>{{ reviewingVersion(item)!.reviewNote }}</dd>
+                    </div>
+                    <div v-if="item.status === 'needs_update'" class="row-detail-field">
+                      <dt>資料來源</dt>
+                      <dd>
+                        {{ item.apiSourceName ?? '手動上傳檔案' }}<template v-if="item.staleSourceFileIds.length">，{{ item.staleSourceFileIds.length }} 個來源檔案已更新</template>
+                      </dd>
+                    </div>
+                    <div v-if="item.status === 'failed' && item.pipelineError" class="row-detail-field">
+                      <dt>錯誤訊息</dt>
+                      <dd class="row-detail-error">{{ item.pipelineError }}</dd>
+                    </div>
+                  </dl>
+                </td>
+              </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -369,6 +415,17 @@ function toggleSelect(id: string) {
   } else {
     selectedIds.value = [...selectedIds.value, id]
   }
+}
+
+// ── 列展開：次要資訊（編輯人／更新說明／標籤等）收進展開區，不用整排塞欄位 ──
+const expandedId = ref<string | null>(null)
+
+function toggleExpand(id: string) {
+  expandedId.value = expandedId.value === id ? null : id
+}
+
+function reviewingVersion(item: KnowledgeItem) {
+  return item.versions.find(v => v.status === 'reviewing')
 }
 
 function handleBatchArchive() {
