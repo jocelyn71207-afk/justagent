@@ -341,27 +341,20 @@
           object-fit: cover;
           border-radius: 8px;
         }
-        // 非圖片檔案：圖示配一塊淺色底板，不要讓它孤零零浮在一大片
-        // 空白正中間——同樣是「填滿版面」的問題，圖示本身還是同一顆，
-        // 只是給它一個看起來刻意設計過的容器
+        // 非圖片檔案：色塊底板依檔案類型上色（跟全站 tag 色票同一組
+        // token），不要讓圖示孤零零浮在一大片空白正中間
         .file-icon-tile {
           width: 100%;
           height: 100%;
           border-radius: 10px;
-          background: var(--page-bg);
           display: flex;
           align-items: center;
           justify-content: center;
         }
-        // 圖示放大到接近縮圖的視覺份量（68px → 96px），不再是小小一顆
+        // material icon 放大到接近縮圖的視覺份量，不再是小小一顆
         // 浮在大片空白正中間，圖片跟非圖片檔案在卡片裡的存在感更接近
         .file-type-icon {
-          max-height: 96px;
-          object-fit: contain;
-        }
-        .other-file-icon {
-          font-size: 64px;
-          color: var(--text-muted);
+          font-size: 56px;
         }
       }
 
@@ -469,15 +462,27 @@
   height: 36px;
   border-radius: 8px;
   flex-shrink: 0;
-  background: var(--page-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 
   img { width: 100%; height: 100%; object-fit: cover; }
-  .other-file-icon { font-size: 18px; color: var(--text-muted); }
+  .material-symbols-outlined { font-size: 18px; }
 }
+
+// ── 檔案類型色塊：卡片檢視的 .file-icon-tile（96px）跟列表檢視的
+// .file-row-icon（36px）共用同一組顏色 modifier，寫成頂層規則才能
+// 兩種 context 都吃到（同一種「巢狀規則只在原本容器內生效」的坑，
+// 這裡直接用頂層 class 避開）──────────────────────────────────
+.file-icon-tile--rose    { background: var(--tag-rose-bg);    color: var(--tag-rose-text); }
+.file-icon-tile--rust    { background: var(--tag-rust-bg);    color: var(--tag-rust-text); }
+.file-icon-tile--green   { background: var(--tag-green-bg);   color: var(--tag-green-text); }
+.file-icon-tile--blue    { background: var(--tag-blue-bg);    color: var(--tag-blue-text); }
+.file-icon-tile--violet  { background: var(--tag-violet-bg);  color: var(--tag-violet-text); }
+.file-icon-tile--amber   { background: var(--tag-amber-bg);   color: var(--tag-amber-text); }
+.file-icon-tile--teal    { background: var(--tag-teal-bg);    color: var(--tag-teal-text); }
+.file-icon-tile--neutral { background: var(--page-bg);        color: var(--text-muted); }
 
 .file-row-name {
   flex: 1;

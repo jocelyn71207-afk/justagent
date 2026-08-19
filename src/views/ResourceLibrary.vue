@@ -91,10 +91,10 @@
                  接近縮圖的視覺份量，不再是小小一顆浮在空白正中間 -->
             <div class="card-body-box">
               <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="" class="preview-img">
-              <div v-else class="file-icon-tile">
-                <i v-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                  class="material-symbols-outlined other-file-icon">question_mark</i>
-                <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
+              <div v-else class="file-icon-tile" :class="`file-icon-tile--${fileTypeMeta(item.fileType).color}`">
+                <i class="material-symbols-outlined file-type-icon" v-tooltip="fileTypeMeta(item.fileType).label">
+                  {{ fileTypeMeta(item.fileType).icon }}
+                </i>
               </div>
             </div>
 
@@ -131,11 +131,11 @@
 
             <div :class="['file-status-strip', 'file-status-strip--row', `strip--${item.status}`]"></div>
 
-            <div class="file-row-icon">
+            <div class="file-row-icon" :class="!isImageType(item.fileType) ? `file-icon-tile--${fileTypeMeta(item.fileType).color}` : ''">
               <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
-              <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                class="material-symbols-outlined other-file-icon">question_mark</i>
-              <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
+              <i v-else class="material-symbols-outlined" v-tooltip="fileTypeMeta(item.fileType).label">
+                {{ fileTypeMeta(item.fileType).icon }}
+              </i>
             </div>
 
             <div class="file-row-name">
@@ -241,16 +241,6 @@ watch(isWizardOpen, (open) => { if (!open) wizardFile.value = undefined; });
 const isSourceUpdateModalOpen = ref(false);
 const sourceUpdateFileId = ref('');
 
-// 檔案類型圖示 mapping
-import pdfIcon from '@/assets/fileTypeIcon/pdf.svg';
-import pptIcon from '@/assets/fileTypeIcon/ppt.svg';
-import excelIcon from '@/assets/fileTypeIcon/excel.svg';
-import htmlIcon from '@/assets/fileTypeIcon/html.svg';
-import mdIcon from '@/assets/fileTypeIcon/md.svg';
-import wordIcon from '@/assets/fileTypeIcon/word.svg';
-import txtIcon from '@/assets/fileTypeIcon/txt.svg';
-import chartIcon from '@/assets/fileTypeIcon/chart.svg';
-
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, projectListMode: viewMode } = storeToRefs(rootStore);
 const openBatchUploadFn = rootStore.openBatchUploadFn;
@@ -303,12 +293,26 @@ function isImageType(fileType: string) {
   return fileType.toUpperCase() === 'IMAGE';
 }
 
-function getFileTypeIcon(fileType: string) {
-  const map: Record<string, string> = {
-    PDF: pdfIcon, PPT: pptIcon, EXCEL: excelIcon, HTML: htmlIcon,
-    MD: mdIcon, WORD: wordIcon, TXT: txtIcon, CHART: chartIcon,
-  };
-  return map[fileType.toUpperCase()] || txtIcon;
+// 檔案類型圖示：改用跟全站一致的「色塊 tile + material icon」語言，
+// 不再用外部 SVG 那種折角+漸層邊框+內建假文字/假內文線的通用素材圖，
+// 那種畫法在卡片放大看很廉價，縮到列表小圖示時內建文字更是完全糊掉、
+// 讀不出字——本質上是同一個「圖示大小跟語意脫節」的問題
+// 顏色刻意讓最常見的四種格式（PDF/PPT/Excel/Word）互相盡量不撞色——
+// rust/rose 這兩個暖色系 token 放在一起太像，PPT 改用 amber 才跟
+// PDF 的 rose 分得開
+const FILE_TYPE_META: Record<string, { icon: string; color: string; label: string }> = {
+  PDF:   { icon: 'picture_as_pdf', color: 'rose',    label: 'PDF 文件' },
+  PPT:   { icon: 'slideshow',      color: 'amber',   label: 'PowerPoint 簡報' },
+  EXCEL: { icon: 'table_chart',    color: 'green',   label: 'Excel 表格' },
+  WORD:  { icon: 'description',    color: 'blue',    label: 'Word 文件' },
+  HTML:  { icon: 'code',           color: 'violet',  label: 'HTML 檔案' },
+  MD:    { icon: 'article',        color: 'teal',    label: 'Markdown 文件' },
+  TXT:   { icon: 'draft',          color: 'neutral', label: '純文字檔' },
+  CHART: { icon: 'bar_chart',      color: 'rust',    label: '圖表檔案' },
+  OTHER: { icon: 'question_mark',  color: 'neutral', label: '未知的檔案類型' },
+};
+function fileTypeMeta(fileType: string) {
+  return FILE_TYPE_META[fileType.toUpperCase()] ?? FILE_TYPE_META.OTHER;
 }
 
 function formatDate(dateStr: string) {
