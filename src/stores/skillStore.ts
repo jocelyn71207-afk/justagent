@@ -1058,6 +1058,26 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  function filesEqual(a: SkillFile[], b: SkillFile[]): boolean {
+    const key = (f: SkillFile) => `${f.fileName}::${f.fileSize}`
+    const setA = new Set(a.map(key))
+    const setB = new Set(b.map(key))
+    if (setA.size !== setB.size) return false
+    return [...setA].every(k => setB.has(k))
+  }
+
+  function updateSkillFiles(skillId: string, files: SkillFile[]): void {
+    const skill = findSkill(skillId)
+    if (!skill) return
+    skill.files = files
+    if (
+      skill.personalStatus === 'draft' &&
+      !filesEqual(files, findSkill(skill.derivedFrom ?? '')?.files ?? [])
+    ) {
+      skill.personalStatus = 'available'
+    }
+  }
+
   function submitSkillForReview(skillId: string, versionId: string, note: string): void {
     const skill = _findAny(skillId)
     const version = skill?.versions?.find(v => v.id === versionId)
@@ -1539,6 +1559,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     permanentlyDeleteSkill,
     createSkill,
     updateSkill,
+    updateSkillFiles,
     toggleSkill,
     mergeUpstreamUpdate,
     ignoreUpstreamUpdate,
