@@ -141,6 +141,21 @@
     }
   }
 
+  .secm-files-panel {
+    padding: 12px 20px;
+    border-top: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+  }
+
+  .secm-files-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
   .secm-input-row {
     display: flex;
     align-items: center;
