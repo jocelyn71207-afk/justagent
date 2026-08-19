@@ -275,6 +275,15 @@
       letter-spacing: 0.5px;
       margin-bottom: 10px;
     }
+
+    .section-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+
+      .section-label { margin-bottom: 0; }
+    }
   }
 
   // ── Instructions block ───────────────────────
@@ -328,6 +337,35 @@
     color: var(--text-faint);
     font-size: 11px;
     flex-shrink: 0;
+  }
+
+  .section-edit-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--divider-a50);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+
+    &:hover { background: var(--page-bg); color: var(--text); }
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
+  .section-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .section-empty-hint {
+    color: var(--text-faint);
+    font-size: 12.5px;
   }
 
   // ── Upstream update banner ────────────────────

@@ -152,15 +152,36 @@
               </div>
 
               <!-- 附加檔案 -->
-              <div v-if="skill.files?.length" class="drawer-section">
-                <div class="section-label">附加檔案</div>
-                <div class="attached-file-list">
-                  <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
-                    <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
-                    <span class="af-name">{{ f.fileName }}</span>
-                    <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
-                  </div>
+              <div v-if="skill.files?.length || canEditFiles" class="drawer-section">
+                <div class="section-label-row">
+                  <span class="section-label">附加檔案</span>
+                  <button
+                    v-if="canEditFiles && !isEditingFiles"
+                    class="section-edit-btn"
+                    @click="startEditFiles"
+                  >
+                    <i class="material-symbols-outlined">edit</i>
+                  </button>
                 </div>
+
+                <template v-if="isEditingFiles">
+                  <SkillFileUpload v-model="editFilesDraft" />
+                  <div class="section-edit-actions">
+                    <button class="custom-btn" @click="cancelEditFiles">取消</button>
+                    <button class="custom-btn custom-main-btn" @click="saveEditFiles">儲存</button>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <div v-if="skill.files?.length" class="attached-file-list">
+                    <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
+                      <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
+                      <span class="af-name">{{ f.fileName }}</span>
+                      <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
+                    </div>
+                  </div>
+                  <p v-else class="section-empty-hint">尚未附加檔案</p>
+                </template>
               </div>
 
               <!-- 覆蓋能力 -->
@@ -378,11 +399,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Skill, SkillVersionStatus, OperationRecord } from '@/stores/skillStore'
+import { ref, computed, watch } from 'vue'
+import type { Skill, SkillVersionStatus, OperationRecord, SkillFile } from '@/stores/skillStore'
 import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
+import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import { skillFileIcon } from '@/components/Skill/skillFileUpload'
 import { formatFileSize } from '@/utils/file'
 
@@ -413,6 +435,32 @@ const compareV1Id = ref('')
 const compareV2Id = ref('')
 
 const isPersonal = computed(() => props.skill?.zone === 'personal')
+
+// ── 附加檔案：抽屜內直接編輯 ──────────────
+const canEditFiles = computed(() => {
+  if (!isPersonal.value) return true
+  return props.skill?.personalStatus !== 'reviewing'
+})
+
+const isEditingFiles = ref(false)
+const editFilesDraft = ref<SkillFile[]>([])
+
+function startEditFiles() {
+  editFilesDraft.value = [...(props.skill?.files ?? [])]
+  isEditingFiles.value = true
+}
+
+function cancelEditFiles() {
+  isEditingFiles.value = false
+}
+
+function saveEditFiles() {
+  if (!props.skill) return
+  skillStore.updateSkillFiles(props.skill.id, editFilesDraft.value)
+  isEditingFiles.value = false
+}
+
+watch(() => props.skill?.id, () => { isEditingFiles.value = false })
 
 const derivedFromName = computed(() => {
   if (!props.skill?.derivedFrom) return ''
