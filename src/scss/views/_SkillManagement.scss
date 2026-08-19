@@ -193,6 +193,46 @@
     padding: 0 6px;
   }
 
+  // ── 管理區底下的子分頁（待審核／Library 管理）：比照 pill 樣式，跟上面
+  //    底線樣式的主分頁（.skill-tab）拉開視覺層級，一眼看出這是次一層 ──
+  .review-subtabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .review-subtab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+    &:hover { background: var(--page-bg); }
+
+    &.is-active {
+      // 用 CSS 變數而非 $color_main_4/5（那組寫死給淺色模式用，深色模式
+      // 底下不會換色，之前 SkillReviewQueue 選中列就是同一個坑）
+      background: var(--accent-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+
+      .skill-tab-count {
+        background: var(--surface);
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+    }
+  }
+
   .skill-tab-panel-desc {
     font-size: 12.5px;
     color: var(--text-faint);

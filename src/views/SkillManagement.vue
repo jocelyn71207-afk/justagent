@@ -42,7 +42,7 @@
           有 {{ store.pendingReviewSkills.length }} 個技能等待審核
         </span>
         <div class="upstream-banner-actions">
-          <button class="custom-btn" @click="activeTab = 'review'">前往審核</button>
+          <button class="custom-btn" @click="activeTab = 'review'; reviewSubTab = 'pending'">前往審核</button>
         </div>
       </div>
 
@@ -70,9 +70,27 @@
           </button>
         </div>
 
-        <!-- 管理區：待審核送審 + Library 現有技能管理（限企業擁有者 / 企業管理者） -->
+        <!-- 管理區：待審核送審 + Library 現有技能管理（限企業擁有者 / 企業管理者）
+             兩塊內容都不小，不再直接上下堆疊成一個超長頁面，改成子分頁各自獨立 -->
         <div v-if="isManager" v-show="activeTab === 'review'" class="skill-tab-panel">
-          <div class="skill-review-block">
+          <div class="review-subtabs">
+            <button
+              :class="['review-subtab', { 'is-active': reviewSubTab === 'pending' }]"
+              @click="reviewSubTab = 'pending'"
+            >
+              待審核
+              <span class="skill-tab-count">{{ store.pendingReviewSkills.length }}</span>
+            </button>
+            <button
+              :class="['review-subtab', { 'is-active': reviewSubTab === 'library' }]"
+              @click="reviewSubTab = 'library'"
+            >
+              Library 管理
+              <span class="skill-tab-count">{{ store.enterpriseExtensionCount + store.teamExtensionCount }}</span>
+            </button>
+          </div>
+
+          <div v-show="reviewSubTab === 'pending'" class="skill-review-block">
             <p class="skill-tab-panel-desc">等待審核的技能送審申請，通過後將發佈至 Library</p>
             <SkillReviewQueue
               v-if="store.pendingReviewSkills.length"
@@ -85,7 +103,7 @@
           </div>
 
           <!-- Library 現有技能管理 -->
-          <div class="skill-manage-block">
+          <div v-show="reviewSubTab === 'library'" class="skill-manage-block">
             <div class="skill-manage-block-header">
               <span class="skill-manage-block-title">
                 <i class="material-symbols-outlined">inventory_2</i>Library 現有技能管理
@@ -473,6 +491,9 @@ const isManager = computed(() =>
 
 // Tab：從 side-menu 進入一律預設「我的技能」
 const activeTab = ref<'my' | 'review'>('my')
+// 管理區底下再分兩個子分頁：待審核送審／Library 現有技能管理，
+// 兩塊內容都不小，不再直接上下堆疊成一個超長頁面
+const reviewSubTab = ref<'pending' | 'library'>('pending')
 
 // 分頁
 const PAGE_SIZE = 10
