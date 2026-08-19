@@ -133,6 +133,43 @@
 
       </template>
 
+      <template v-if="activeExploreTab === 'skill'">
+
+      <!-- Skill 搜尋列 -->
+      <div class="explore-search-bar">
+        <i class="material-symbols-outlined">search</i>
+        <input
+          type="text"
+          v-model="skillSearchKeyword"
+          placeholder="搜尋技能..."
+          @keydown.enter="onSkillSearchEnter"
+        />
+      </div>
+
+      <!-- 功能類型 chip -->
+      <div class="recs-chips mb-4">
+        <span
+          v-for="chip in skillFunctionTypeChips"
+          :key="chip"
+          :class="['recs-chip', { active: activeSkillChip === chip }]"
+          @click="activeSkillChip = chip"
+        >{{ chip }}</span>
+      </div>
+
+      <div class="section-header">
+        <h3>熱門技能</h3>
+      </div>
+      <div class="skill-grid lively-stagger">
+        <ExploreSkillCard
+          v-for="skill in filteredExploreSkills"
+          :key="skill.name"
+          :skill="skill"
+          @click="openSkillModal(skill)"
+        />
+      </div>
+
+      </template>
+
     </div>
   </div>
 
@@ -164,6 +201,32 @@
       </div>
     </template>
   </compModal>
+
+  <!-- Skill 詳情 Modal -->
+  <compModal
+    v-model="isSkillModalOpen"
+    :title="selectedExploreSkill?.name ?? ''"
+    :width="440"
+    :closeOnMask="true"
+  >
+    <template v-if="selectedExploreSkill">
+      <div class="Explore explore-modal-box">
+        <div class="explore-modal-content">
+          <div class="explore-modal-icon" :style="{ background: selectedExploreSkill.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: selectedExploreSkill.accentColor }">{{ selectedExploreSkill.icon }}</i>
+          </div>
+          <span class="skill-function-badge">{{ selectedExploreSkill.functionType }}</span>
+          <p class="explore-modal-desc">{{ selectedExploreSkill.capability }}</p>
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="Explore explore-modal-footer">
+        <button class="custom-btn custom-main-btn" @click="useExploreSkill">加入我的技能</button>
+        <button class="custom-btn" @click="isSkillModalOpen = false">取消</button>
+      </div>
+    </template>
+  </compModal>
 </template>
 
 <script setup lang="ts">
@@ -172,6 +235,7 @@ import { storeToRefs } from 'pinia'
 import { useRootStore } from '@/stores/rootStore'
 import compModal from '@/components/compModal/compModal.vue'
 import AgentCard from '@/components/Explore/AgentCard.vue'
+import ExploreSkillCard from '@/components/Explore/ExploreSkillCard.vue'
 import popDialog from '@/services/popDialog'
 
 const rootStore = useRootStore()
@@ -323,6 +387,60 @@ const allAgents: Agent[] = [
     categories: ['全部', '會議準備'],
   },
 ]
+
+// Skill 探索型別
+type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
+
+interface ExploreSkill {
+  name: string
+  functionType: SkillFunctionType
+  capability: string
+  icon: string
+  bgColor: string
+  accentColor: string
+  badge?: AgentBadge
+}
+
+const allExploreSkills: ExploreSkill[] = [
+  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', bgColor: '#EEEDFE', accentColor: '#534AB7' },
+  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', bgColor: '#E6F1FB', accentColor: '#185FA5', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', bgColor: '#E1F5EE', accentColor: '#0F6E56' },
+  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', bgColor: '#FAEEDA', accentColor: '#854F0B', badge: { type: 'new', label: '新上架' } },
+  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', bgColor: '#FAECE7', accentColor: '#993C1D' },
+  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', bgColor: '#EAF3DE', accentColor: '#3B6D11', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', bgColor: '#FBEAF0', accentColor: '#993556' },
+  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', bgColor: '#E6F1FB', accentColor: '#185FA5' },
+]
+
+const skillFunctionTypeChips = ['全部', '文字生成', '資料查詢', '流程自動化', '分析報表', '溝通協作']
+const activeSkillChip = ref('全部')
+const skillSearchKeyword = ref('')
+
+const filteredExploreSkills = computed(() =>
+  allExploreSkills.filter(s =>
+    (activeSkillChip.value === '全部' || s.functionType === activeSkillChip.value) &&
+    (!skillSearchKeyword.value.trim() || s.name.includes(skillSearchKeyword.value.trim()))
+  )
+)
+
+function onSkillSearchEnter() {
+  const kw = skillSearchKeyword.value.trim()
+  if (!kw) return
+  if (!filteredExploreSkills.value.length) popDialog.toast('找不到相關技能')
+}
+
+const isSkillModalOpen = ref(false)
+const selectedExploreSkill = ref<ExploreSkill | null>(null)
+
+function openSkillModal(skill: ExploreSkill) {
+  selectedExploreSkill.value = skill
+  isSkillModalOpen.value = true
+}
+
+function useExploreSkill() {
+  popDialog.toast('已加入我的技能')
+  isSkillModalOpen.value = false
+}
 
 // 使用熱度榜（前 4）
 const rankingAgents = computed(() =>

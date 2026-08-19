@@ -686,4 +686,33 @@
     color: var(--text);
     margin-bottom: 6px;
   }
+
+  .skill-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .explore-skill-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+
+    h4 { margin: 10px 0 4px; font-size: 15px; }
+    p { font-size: 13px; color: var(--text-muted); margin: 0; }
+  }
+
+  .skill-function-badge {
+    display: inline-block;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--page-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--divider-a50);
+    margin-top: 8px;
+  }
 }
