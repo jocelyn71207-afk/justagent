@@ -21,6 +21,10 @@
           <span class="category-tag">{{ knowledge.category }}</span>
         </div>
         <div class="header-right-box">
+          <button class="custom-btn" @click="isMetadataOpen = !isMetadataOpen">
+            <i class="material-symbols-outlined">{{ isMetadataOpen ? 'right_panel_close' : 'right_panel_open' }}</i>
+            {{ isMetadataOpen ? '隱藏詳細資訊' : '顯示詳細資訊' }}
+          </button>
           <template v-if="knowledge.status === 'active'">
             <button v-if="draftVersion" class="custom-btn ml-2" @click="goToEditor">
               <i class="material-symbols-outlined">edit</i>繼續編輯草稿
@@ -62,193 +66,201 @@
         </div>
       </div>
 
-      <!-- 4 Tabs -->
-      <div class="detail-tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          :class="['detail-tab-btn', { 'is-active': activeTabKey === tab.key }]"
-          @click="activeTabKey = tab.key"
-        >{{ tab.label }}</button>
-      </div>
+      <!-- 導覽列 + 主內容 + metadata 抽屜 -->
+      <div class="detail-shell">
 
-      <!-- Tab 1: 概覽 -->
-      <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'overview' }]">
-
-        <!-- Pipeline 審核提示 banner -->
-        <div v-if="isPipelineReview" class="pipeline-review-banner">
-          <i class="material-symbols-outlined">smart_toy</i>
-          <span>此條目由 Pipeline 處理完成，以下為 AI 生成的知識摘要。請切換至「分段預覽」審查內容品質，確認無誤後點擊「開始審核」批准發佈。</span>
-        </div>
-
-        <div class="detail-overview-grid">
-
-          <!-- 左：內容預覽 -->
-          <div class="content-preview">
-            <div class="article-meta">
-              <span class="fc-grey-1 fs-14">{{ activeVer?.summary || '（無摘要）' }}</span>
-            </div>
-            <div class="article-body">
-              <div class="markdown-body" v-html="renderedContent"></div>
-            </div>
-          </div>
-
-          <!-- 右：側欄 -->
-          <div class="detail-sidebar-card">
-            <!-- 版本 & 狀態 -->
-            <div class="sidebar-section">
-              <div class="sidebar-section-title">版本資訊</div>
-              <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                <span class="version-badge" :class="{ major: activeVer?.versionNumber?.endsWith('.0') }">
-                  {{ activeVer?.versionNumber }}
-                </span>
-                <span :class="['status-badge', `status-badge--${activeVer?.status}`]">
-                  {{ statusLabelMap[activeVer?.status ?? ''] }}
-                </span>
-                <span v-if="activeVer?.versionType" class="tag-chip">{{ activeVer.versionType }}</span>
-              </div>
-              <div class="sidebar-row">
-                <span class="sidebar-label">更新人</span>
-                <span>{{ activeVer?.lastUpdateBy }}</span>
-              </div>
-              <div class="sidebar-row">
-                <span class="sidebar-label">更新時間</span>
-                <span>{{ activeVer?.lastUpdateTime }}</span>
-              </div>
-              <div v-if="activeVer?.updateNote" class="sidebar-row sidebar-row--top">
-                <span class="sidebar-label">說明</span>
-                <span class="fc-grey-1">{{ activeVer.updateNote }}</span>
-              </div>
-            </div>
-
-            <div class="sidebar-divider"></div>
-
-            <!-- 分類 & 標籤 -->
-            <div class="sidebar-section">
-              <div class="sidebar-row">
-                <span class="sidebar-label">分類</span>
-                <span class="category-tag">{{ knowledge.category }}</span>
-              </div>
-              <div class="sidebar-row sidebar-row--top">
-                <span class="sidebar-label">標籤</span>
-                <div class="d-flex flex-wrap gap-1">
-                  <span
-                    v-for="tag in activeVer?.tags"
-                    :key="tag"
-                    :class="['tag-chip', { 'tag-chip--system': activeVer?.systemTags?.includes(tag) }]"
-                  >
-                    <i v-if="activeVer?.systemTags?.includes(tag)" class="material-symbols-outlined fs-11 mr-1">smart_toy</i>
-                    {{ tag }}
-                  </span>
-                  <span v-if="!activeVer?.tags?.length" class="fc-grey-1 fs-13">無標籤</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="sidebar-divider"></div>
-
-            <!-- Pipeline -->
-            <div class="sidebar-section">
-              <div class="sidebar-section-title">Pipeline</div>
-              <template v-if="knowledge.status === 'processing'">
-                <div class="pipeline-progress-wrap">
-                  <div class="pipeline-progress-bar" style="flex:1; max-width:120px;">
-                    <div class="pipeline-progress-fill" :style="{ width: knowledge.pipelineProgress + '%' }"></div>
-                  </div>
-                  <span class="pipeline-stage-label">{{ pipelineStageLabelMap[knowledge.pipelineStage ?? ''] ?? knowledge.pipelineStage }} {{ knowledge.pipelineProgress }}%</span>
-                </div>
-              </template>
-              <template v-else>
-                <div class="pipeline-stages">
-                  <span class="pipeline-stage-badge is-done">✓ 分段</span>
-                  <span class="pipeline-stage-badge is-done">✓ 向量化</span>
-                  <span class="pipeline-stage-badge is-done">✓ 建立索引</span>
-                </div>
-              </template>
-              <div v-if="knowledge.pipelineError" class="fs-12 mt-2 pipeline-error-text">
-                {{ knowledge.pipelineError }}
-              </div>
-            </div>
-
-            <div class="sidebar-divider"></div>
-
-            <!-- 來源附件 -->
-            <div class="sidebar-section">
-              <div class="sidebar-section-title">來源附件</div>
-              <div v-if="activeVer?.sourceFiles?.length" class="d-flex flex-column gap-2">
-                <div
-                  v-for="f in activeVer.sourceFiles"
-                  :key="f.fileId"
-                  class="sidebar-file-item"
-                >
-                  <i class="material-symbols-outlined fs-14">description</i>
-                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.fileName }}</span>
-                  <button
-                    class="custom-btn fs-11 py-0 px-2"
-                    style="white-space:nowrap;"
-                    @click="openFilePreview(f.fileId, f.fileName)"
-                  >查看原檔</button>
-                </div>
-              </div>
-              <div v-else class="fc-grey-1 fs-13">尚未關聯任何來源檔案</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Tab 2: 版本歷程 -->
-      <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'history' }]">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="fc-grey-1 fs-13">共 {{ knowledge.versions.length }} 個版本</div>
-        </div>
-        <div class="version-timeline lively-stagger">
-          <div
-            v-for="(ver, idx) in [...knowledge.versions].reverse()"
-            :key="ver.id"
-            class="version-timeline-item lively-card"
+        <!-- 左：導覽列 -->
+        <div class="detail-nav-rail">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            :class="['detail-nav-item', { 'is-active': activeTabKey === tab.key }]"
+            @click="activeTabKey = tab.key"
           >
-            <div class="version-timeline-node">
-              <div :class="['node-dot', { 'is-active': ver.status === 'active' }]"></div>
-              <div v-if="idx < knowledge.versions.length - 1" class="node-line"></div>
+            <i class="material-symbols-outlined">{{ tab.icon }}</i>
+            <span>{{ tab.label }}</span>
+          </button>
+        </div>
+
+        <!-- 中：主內容 -->
+        <div class="detail-main">
+
+          <!-- Tab 1: 概覽 -->
+          <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'overview' }]">
+
+            <!-- Pipeline 審核提示 banner -->
+            <div v-if="isPipelineReview" class="pipeline-review-banner">
+              <i class="material-symbols-outlined">smart_toy</i>
+              <span>此條目由 Pipeline 處理完成，以下為 AI 生成的知識摘要。請切換至「分段預覽」審查內容品質，確認無誤後點擊「開始審核」批准發佈。</span>
             </div>
-            <div class="version-timeline-body">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <div class="d-flex gap-2 align-items-center">
-                  <span class="fw-600 fs-14">{{ ver.versionNumber }}</span>
-                  <span :class="['status-badge', `status-badge--${ver.status}`]">{{ statusLabelMap[ver.status] }}</span>
-                  <span v-if="ver.versionType" class="tag-chip">{{ ver.versionType }}</span>
-                </div>
-                <span class="fc-grey-1 fs-13">{{ ver.lastUpdateTime }}</span>
+
+            <div class="content-preview">
+              <div class="article-meta">
+                <span class="fc-grey-1 fs-14">{{ activeVer?.summary || '（無摘要）' }}</span>
               </div>
-              <div class="fc-grey-1 fs-13">{{ ver.updateNote }} ・ {{ ver.lastUpdateBy }}</div>
-              <div v-if="ver.status === 'history'" class="d-flex gap-2 mt-2">
-                <button class="custom-btn fs-12 py-1 px-2" @click="openRestore(ver.id)">
-                  <i class="material-symbols-outlined fs-14">restore</i>還原為草稿
-                </button>
-                <button class="custom-btn fs-12 py-1 px-2" @click="openCompare(ver.id)">
-                  <i class="material-symbols-outlined fs-14">compare</i>與目前版比較
-                </button>
+              <div class="article-body">
+                <div class="markdown-body" v-html="renderedContent"></div>
               </div>
             </div>
           </div>
+
+          <!-- Tab 2: 版本歷程 -->
+          <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'history' }]">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="fc-grey-1 fs-13">共 {{ knowledge.versions.length }} 個版本</div>
+            </div>
+            <div class="version-timeline lively-stagger">
+              <div
+                v-for="(ver, idx) in [...knowledge.versions].reverse()"
+                :key="ver.id"
+                class="version-timeline-item lively-card"
+              >
+                <div class="version-timeline-node">
+                  <div :class="['node-dot', { 'is-active': ver.status === 'active' }]"></div>
+                  <div v-if="idx < knowledge.versions.length - 1" class="node-line"></div>
+                </div>
+                <div class="version-timeline-body">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="d-flex gap-2 align-items-center">
+                      <span class="fw-600 fs-14">{{ ver.versionNumber }}</span>
+                      <span :class="['status-badge', `status-badge--${ver.status}`]">{{ statusLabelMap[ver.status] }}</span>
+                      <span v-if="ver.versionType" class="tag-chip">{{ ver.versionType }}</span>
+                    </div>
+                    <span class="fc-grey-1 fs-13">{{ ver.lastUpdateTime }}</span>
+                  </div>
+                  <div class="fc-grey-1 fs-13">{{ ver.updateNote }} ・ {{ ver.lastUpdateBy }}</div>
+                  <div v-if="ver.status === 'history'" class="d-flex gap-2 mt-2">
+                    <button class="custom-btn fs-12 py-1 px-2" @click="openRestore(ver.id)">
+                      <i class="material-symbols-outlined fs-14">restore</i>還原為草稿
+                    </button>
+                    <button class="custom-btn fs-12 py-1 px-2" @click="openCompare(ver.id)">
+                      <i class="material-symbols-outlined fs-14">compare</i>與目前版比較
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: 分段預覽 -->
+          <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'chunks' }]">
+            <ChunkPreviewTab
+              :chunks="activeVer?.chunks ?? []"
+              :source-type="knowledge.sourceType"
+            />
+          </div>
+
+          <!-- Tab 4: 轉換結果 -->
+          <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'conversion' }]">
+            <ConversionLogTab
+              :conversion-log="activeVer?.conversionLog ?? []"
+              :status="knowledge.status"
+            />
+          </div>
+
         </div>
-      </div>
 
-      <!-- Tab 3: 分段預覽 -->
-      <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'chunks' }]">
-        <ChunkPreviewTab
-          :chunks="activeVer?.chunks ?? []"
-          :source-type="knowledge.sourceType"
-        />
-      </div>
+        <!-- 右：metadata 抽屜（4 個導覽項目共用，不隨 activeTabKey 卸載） -->
+        <div v-if="isMetadataOpen" class="detail-metadata-drawer">
+          <!-- 版本 & 狀態 -->
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">版本資訊</div>
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+              <span class="version-badge" :class="{ major: activeVer?.versionNumber?.endsWith('.0') }">
+                {{ activeVer?.versionNumber }}
+              </span>
+              <span :class="['status-badge', `status-badge--${activeVer?.status}`]">
+                {{ statusLabelMap[activeVer?.status ?? ''] }}
+              </span>
+              <span v-if="activeVer?.versionType" class="tag-chip">{{ activeVer.versionType }}</span>
+            </div>
+            <div class="sidebar-row">
+              <span class="sidebar-label">更新人</span>
+              <span>{{ activeVer?.lastUpdateBy }}</span>
+            </div>
+            <div class="sidebar-row">
+              <span class="sidebar-label">更新時間</span>
+              <span>{{ activeVer?.lastUpdateTime }}</span>
+            </div>
+            <div v-if="activeVer?.updateNote" class="sidebar-row sidebar-row--top">
+              <span class="sidebar-label">說明</span>
+              <span class="fc-grey-1">{{ activeVer.updateNote }}</span>
+            </div>
+          </div>
 
-      <!-- Tab 4: 轉換結果 -->
-      <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'conversion' }]">
-        <ConversionLogTab
-          :conversion-log="activeVer?.conversionLog ?? []"
-          :status="knowledge.status"
-        />
+          <div class="sidebar-divider"></div>
+
+          <!-- 分類 & 標籤 -->
+          <div class="sidebar-section">
+            <div class="sidebar-row">
+              <span class="sidebar-label">分類</span>
+              <span class="category-tag">{{ knowledge.category }}</span>
+            </div>
+            <div class="sidebar-row sidebar-row--top">
+              <span class="sidebar-label">標籤</span>
+              <div class="d-flex flex-wrap gap-1">
+                <span
+                  v-for="tag in activeVer?.tags"
+                  :key="tag"
+                  :class="['tag-chip', { 'tag-chip--system': activeVer?.systemTags?.includes(tag) }]"
+                >
+                  <i v-if="activeVer?.systemTags?.includes(tag)" class="material-symbols-outlined fs-11 mr-1">smart_toy</i>
+                  {{ tag }}
+                </span>
+                <span v-if="!activeVer?.tags?.length" class="fc-grey-1 fs-13">無標籤</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-divider"></div>
+
+          <!-- Pipeline -->
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Pipeline</div>
+            <template v-if="knowledge.status === 'processing'">
+              <div class="pipeline-progress-wrap">
+                <div class="pipeline-progress-bar" style="flex:1; max-width:120px;">
+                  <div class="pipeline-progress-fill" :style="{ width: knowledge.pipelineProgress + '%' }"></div>
+                </div>
+                <span class="pipeline-stage-label">{{ pipelineStageLabelMap[knowledge.pipelineStage ?? ''] ?? knowledge.pipelineStage }} {{ knowledge.pipelineProgress }}%</span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="pipeline-stages">
+                <span class="pipeline-stage-badge is-done">✓ 分段</span>
+                <span class="pipeline-stage-badge is-done">✓ 向量化</span>
+                <span class="pipeline-stage-badge is-done">✓ 建立索引</span>
+              </div>
+            </template>
+            <div v-if="knowledge.pipelineError" class="fs-12 mt-2 pipeline-error-text">
+              {{ knowledge.pipelineError }}
+            </div>
+          </div>
+
+          <div class="sidebar-divider"></div>
+
+          <!-- 來源附件 -->
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">來源附件</div>
+            <div v-if="activeVer?.sourceFiles?.length" class="d-flex flex-column gap-2">
+              <div
+                v-for="f in activeVer.sourceFiles"
+                :key="f.fileId"
+                class="sidebar-file-item"
+              >
+                <i class="material-symbols-outlined fs-14">description</i>
+                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.fileName }}</span>
+                <button
+                  class="custom-btn fs-11 py-0 px-2"
+                  style="white-space:nowrap;"
+                  @click="openFilePreview(f.fileId, f.fileName)"
+                >查看原檔</button>
+              </div>
+            </div>
+            <div v-else class="fc-grey-1 fs-13">尚未關聯任何來源檔案</div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -374,12 +386,13 @@ const renderedContent = computed(() => {
 
 // ── Tabs ──
 const tabs = [
-  { key: 'overview', label: '概覽' },
-  { key: 'history', label: '版本歷程' },
-  { key: 'chunks', label: '分段預覽' },
-  { key: 'conversion', label: '轉換結果' },
+  { key: 'overview', label: '概覽', icon: 'description' },
+  { key: 'history', label: '版本歷程', icon: 'history' },
+  { key: 'chunks', label: '分段預覽', icon: 'view_agenda' },
+  { key: 'conversion', label: '轉換結果', icon: 'sync_alt' },
 ]
 const activeTabKey = ref('overview')
+const isMetadataOpen = ref(true)
 
 // ── Breadcrumb ──
 const { setDynamic } = useBreadcrumb()
