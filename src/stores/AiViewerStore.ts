@@ -1009,12 +1009,12 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     const BLOCK_W = 640;
     const BLOCK_H = 750;
     const GAP = 24;
-    const slot = aiViewerBlocks.value.filter((b: any) => b.id?.startsWith('report-assembly-')).length;
+    const slot = aiViewerBlocks.value.filter((b: any) => b.id?.startsWith('reportassembly-')).length;
     const nonReportBottom = aiViewerBlocks.value
-      .filter((b: any) => !b.id?.startsWith('report-assembly-'))
+      .filter((b: any) => !b.id?.startsWith('reportassembly-'))
       .reduce((max: number, b: any) => Math.max(max, (b.y ?? 0) + (b.height ?? 0)), centerSpaceY);
     const rowY = nonReportBottom + GAP;
-    const id = 'report-assembly-' + Date.now();
+    const id = 'reportassembly-' + Date.now();
     const temp: any = {
       id,
       x: centerSpaceX + slot * (BLOCK_W + GAP),
