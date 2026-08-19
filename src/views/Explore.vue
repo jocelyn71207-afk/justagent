@@ -159,7 +159,8 @@
       <div class="section-header">
         <h3>熱門技能</h3>
       </div>
-      <div class="skill-grid lively-stagger">
+      <div v-if="!filteredExploreSkills.length" class="explore-empty-state">找不到符合條件的技能</div>
+      <div v-else class="skill-grid lively-stagger">
         <ExploreSkillCard
           v-for="skill in filteredExploreSkills"
           :key="skill.name"
@@ -412,7 +413,7 @@ const allExploreSkills: ExploreSkill[] = [
   { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', bgColor: '#E6F1FB', accentColor: '#185FA5' },
 ]
 
-const skillFunctionTypeChips = ['全部', '文字生成', '資料查詢', '流程自動化', '分析報表', '溝通協作']
+const skillFunctionTypeChips: ('全部' | SkillFunctionType)[] = ['全部', '文字生成', '資料查詢', '流程自動化', '分析報表', '溝通協作']
 const activeSkillChip = ref('全部')
 const skillSearchKeyword = ref('')
 

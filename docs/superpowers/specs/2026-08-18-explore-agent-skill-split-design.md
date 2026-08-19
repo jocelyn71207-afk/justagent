@@ -234,7 +234,7 @@ Explore.vue
 
 ## 測試計畫
 
-沒有現成的 Vue component test 基礎設施（沿用過去幾份 spec 的結論），用型別檢查 + 手動驗證：
+專案已有現成的 Vue component test 基礎設施（`src/views/__tests__/Explore.ranking.test.ts`，用 `@vue/test-utils` + Pinia 掛載 `Explore.vue`），並非「沒有」——這點過去幾份 spec 的結論是錯的。本次分頁/篩選行為的測試覆蓋已補進 `src/views/__tests__/Explore.skillTab.test.ts`（涵蓋切換到 Skill 分頁、功能類型 chip 篩選、關鍵字搜尋篩選三種情境），另外仍搭配型別檢查 + 手動驗證：
 
 - 型別檢查：`npm run type-check` 通過，確認 `Agent`／`ExploreSkill` 兩個型別、`AgentCard`／`ExploreSkillCard` 兩個元件的 props 型別正確串接。
 - 手動驗證（`npm run dev`）：
