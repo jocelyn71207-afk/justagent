@@ -84,6 +84,38 @@
     }
   }
 
+  // 篩選 chips（個人化推薦 / Skill 功能類型共用）
+  .recs-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+
+    .recs-chip {
+      padding: 5px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(0, 160, 120, 0.08);
+      color: var(--text-muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.16s;
+      white-space: nowrap;
+
+      &:hover {
+        background: rgba(0, 160, 120, 0.14);
+        color: var(--text);
+      }
+
+      &.active {
+        background: var(--accent);
+        color: var(--primary-hover);
+        transform: scale(1.04);
+      }
+    }
+  }
+
   // ── Hero Banner ──────────────────────────────────
   .explore-hero {
     display: flex;
@@ -502,37 +534,6 @@
       }
     }
 
-    .recs-chips {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-
-      .recs-chip {
-        padding: 5px 16px;
-        border-radius: 9999px;
-        font-size: 13px;
-        font-weight: 600;
-        background: rgba(0, 160, 120, 0.08);
-        color: var(--text-muted);
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: all 0.16s;
-        white-space: nowrap;
-
-        &:hover {
-          background: rgba(0, 160, 120, 0.14);
-          color: var(--text);
-        }
-
-        &.active {
-          background: var(--accent);
-          color: var(--primary-hover);
-          transform: scale(1.04);
-        }
-      }
-    }
-
     .recs-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -615,6 +616,13 @@
       }
     }
 
+    .explore-modal-painpoint {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
     .explore-modal-desc {
       font-size: 14px;
       color: var(--text-a70);
@@ -647,5 +655,117 @@
     .custom-btn {
       flex: 1;
     }
+  }
+
+  // Skill 功能類型標籤：需同時適用於卡片網格（.explore-skill-card 內）與 Modal
+  // （Modal 根層 .Explore.explore-modal-box 與頁面 .Explore.views-page 是兩個平行的
+  // .Explore 子樹，因此不掛在 .explore-skill-card 或 .views-page 之下，直接掛在 .Explore）
+  .skill-function-badge {
+    display: inline-block;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--page-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--divider-a50);
+    margin-top: 8px;
+  }
+}
+
+.Explore.views-page {
+  .explore-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    .explore-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--divider-a50);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+
+      .material-symbols-outlined { font-size: 18px; }
+
+      &.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--primary-hover);
+      }
+
+      &:hover:not(.active) { background: var(--page-bg); }
+    }
+  }
+
+  .skill-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .explore-skill-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+
+    // .agent-icon/.agent-badge 的共用規則原本只掛在 .agent-card/.podium-card/
+    // .ranking-more 底下，這裡補上同一份 box-model，讓 Skill 卡片也能正確呈現
+    .agent-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      border: 1px solid var(--divider);
+
+      i {
+        font-size: 22px;
+      }
+    }
+
+    .agent-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 9999px;
+
+      &--new {
+        background: var(--hint);
+        color: var(--primary-hover);
+      }
+
+      &--hot {
+        background: var(--color-wise-badge-hot-bg);
+        color: var(--color-wise-badge-hot-text);
+      }
+
+      &--sat {
+        background: var(--hint);
+        color: var(--primary);
+      }
+    }
+
+    h4 { margin: 10px 0 4px; font-size: 15px; }
+    p { font-size: 13px; color: var(--text-muted); margin: 0; }
+  }
+
+  .explore-empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 0;
+    font-size: 14px;
   }
 }

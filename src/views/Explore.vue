@@ -2,6 +2,24 @@
   <div class="Explore views-page" v-show="!isEnterAppSearchPage">
     <div class="views-page-content-box">
 
+      <!-- 分頁籤 -->
+      <div class="explore-tabs">
+        <button
+          :class="['explore-tab', { active: activeExploreTab === 'agent' }]"
+          @click="activeExploreTab = 'agent'"
+        >
+          <i class="material-symbols-outlined">support_agent</i>Agent 探索
+        </button>
+        <button
+          :class="['explore-tab', { active: activeExploreTab === 'skill' }]"
+          @click="activeExploreTab = 'skill'"
+        >
+          <i class="material-symbols-outlined">psychology</i>Skill 探索
+        </button>
+      </div>
+
+      <template v-if="activeExploreTab === 'agent'">
+
       <!-- 搜尋列 -->
       <div class="explore-search-bar">
         <i class="material-symbols-outlined">search</i>
@@ -32,7 +50,7 @@
         <div class="hero-cta" @click="openModal(featuredAgent)">
           <div class="hero-cta-label">由我推薦</div>
           <div class="hero-cta-name">{{ featuredAgent.name }}</div>
-          <div class="hero-cta-desc">{{ featuredAgent.desc }}</div>
+          <div class="hero-cta-desc">{{ featuredAgent.painPoint }}</div>
           <div class="hero-cta-link">立即使用 →</div>
         </div>
       </div>
@@ -43,19 +61,13 @@
         <span class="see-all" @click="showToast('查看全部熱度')">查看全部</span>
       </div>
       <div class="ranking-podium lively-stagger mb-3">
-        <div
+        <AgentCard
           v-for="(agent, i) in podiumAgents"
           :key="agent.name"
-          :class="['podium-card', 'lively-card', `podium-card--rank-${i + 1}`]"
+          :agent="agent"
+          :rank="i + 1"
           @click="openModal(agent)"
-        >
-          <div class="rank-badge">{{ i + 1 }}</div>
-          <div class="agent-icon" :style="{ background: agent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
-          </div>
-          <h4>{{ agent.name }}</h4>
-          <p>{{ agent.desc }}</p>
-        </div>
+        />
       </div>
       <div
         v-if="fourthRankedAgent"
@@ -67,7 +79,7 @@
           <i class="material-symbols-outlined" :style="{ color: fourthRankedAgent.accentColor }">{{ fourthRankedAgent.icon }}</i>
         </div>
         <span class="ranking-more-name">{{ fourthRankedAgent.name }}</span>
-        <span class="ranking-more-desc">{{ fourthRankedAgent.desc }}</span>
+        <span class="ranking-more-desc">{{ fourthRankedAgent.painPoint }}</span>
       </div>
 
       <!-- 大家都在用 -->
@@ -76,21 +88,12 @@
         <span class="see-all" @click="showToast('查看全部熱門')">查看全部</span>
       </div>
       <div class="agent-grid agent-grid--4 lively-stagger mb-5">
-        <div
+        <AgentCard
           v-for="agent in popularAgents"
           :key="agent.name"
-          class="agent-card lively-card"
+          :agent="agent"
           @click="openModal(agent)"
-        >
-          <span v-if="agent.badge" :class="['agent-badge', `agent-badge--${agent.badge.type}`]">
-            {{ agent.badge.label }}
-          </span>
-          <div class="agent-icon" :style="{ background: agent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
-          </div>
-          <h4>{{ agent.name }}</h4>
-          <p>{{ agent.desc }}</p>
-        </div>
+        />
       </div>
 
       <!-- 個人化推薦 -->
@@ -123,10 +126,50 @@
                 {{ agent.badge.label }}
               </span>
             </div>
-            <p class="rec-card-desc">{{ agent.desc }}</p>
+            <p class="rec-card-desc">{{ agent.painPoint }}</p>
           </div>
         </div>
       </div>
+
+      </template>
+
+      <template v-if="activeExploreTab === 'skill'">
+
+      <!-- Skill 搜尋列 -->
+      <div class="explore-search-bar">
+        <i class="material-symbols-outlined">search</i>
+        <input
+          type="text"
+          v-model="skillSearchKeyword"
+          placeholder="搜尋技能..."
+          @keydown.enter="onSkillSearchEnter"
+        />
+      </div>
+
+      <!-- 功能類型 chip -->
+      <div class="recs-chips mb-4">
+        <span
+          v-for="chip in skillFunctionTypeChips"
+          :key="chip"
+          :class="['recs-chip', { active: activeSkillChip === chip }]"
+          @click="activeSkillChip = chip"
+        >{{ chip }}</span>
+      </div>
+
+      <div class="section-header">
+        <h3>熱門技能</h3>
+      </div>
+      <div v-if="!filteredExploreSkills.length" class="explore-empty-state">找不到符合條件的技能</div>
+      <div v-else class="skill-grid lively-stagger">
+        <ExploreSkillCard
+          v-for="skill in filteredExploreSkills"
+          :key="skill.name"
+          :skill="skill"
+          @click="openSkillModal(skill)"
+        />
+      </div>
+
+      </template>
 
     </div>
   </div>
@@ -144,6 +187,7 @@
           <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
             <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
           </div>
+          <p class="explore-modal-painpoint">{{ selectedAgent.painPoint }}</p>
           <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
           <div class="explore-modal-tags">
             <span v-for="tag in selectedAgent.tags" :key="tag" class="explore-modal-tag">{{ tag }}</span>
@@ -158,6 +202,32 @@
       </div>
     </template>
   </compModal>
+
+  <!-- Skill 詳情 Modal -->
+  <compModal
+    v-model="isSkillModalOpen"
+    :title="selectedExploreSkill?.name ?? ''"
+    :width="440"
+    :closeOnMask="true"
+  >
+    <template v-if="selectedExploreSkill">
+      <div class="Explore explore-modal-box">
+        <div class="explore-modal-content">
+          <div class="explore-modal-icon" :style="{ background: selectedExploreSkill.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: selectedExploreSkill.accentColor }">{{ selectedExploreSkill.icon }}</i>
+          </div>
+          <span class="skill-function-badge">{{ selectedExploreSkill.functionType }}</span>
+          <p class="explore-modal-desc">{{ selectedExploreSkill.capability }}</p>
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="Explore explore-modal-footer">
+        <button class="custom-btn custom-main-btn" @click="useExploreSkill">加入我的技能</button>
+        <button class="custom-btn" @click="isSkillModalOpen = false">取消</button>
+      </div>
+    </template>
+  </compModal>
 </template>
 
 <script setup lang="ts">
@@ -165,10 +235,14 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRootStore } from '@/stores/rootStore'
 import compModal from '@/components/compModal/compModal.vue'
+import AgentCard from '@/components/Explore/AgentCard.vue'
+import ExploreSkillCard from '@/components/Explore/ExploreSkillCard.vue'
 import popDialog from '@/services/popDialog'
 
 const rootStore = useRootStore()
 const { isEnterAppSearchPage } = storeToRefs(rootStore)
+
+const activeExploreTab = ref<'agent' | 'skill'>('agent')
 
 // 搜尋
 const searchKeyword = ref('')
@@ -198,6 +272,7 @@ interface AgentBadge {
 interface Agent {
   name: string
   desc: string
+  painPoint: string
   icon: string
   bgColor: string
   accentColor: string
@@ -210,6 +285,7 @@ const allAgents: Agent[] = [
   {
     name: '內容創作者',
     desc: '撰寫高品質的文章與多媒體內容，精準策略角度，吸引目標受眾，增強社交媒體互動。',
+    painPoint: '還在對著空白文件發呆，不知道從何下筆？',
     icon: 'edit_note',
     bgColor: '#EEEDFE',
     accentColor: '#534AB7',
@@ -219,6 +295,7 @@ const allAgents: Agent[] = [
   {
     name: '社群管理',
     desc: '管理各平台社群，增進用戶互動，制定策略以提升用戶忠誠度和品牌影響力。',
+    painPoint: '每天要顧好幾個社群帳號，回覆訊息回到分身乏術？',
     icon: 'group',
     bgColor: '#E1F5EE',
     accentColor: '#0F6E56',
@@ -228,6 +305,7 @@ const allAgents: Agent[] = [
   {
     name: '專案管理',
     desc: '從規劃到執行，確保資源最佳配置和時程有效利用。',
+    painPoint: '專案時程一多，資源分配跟進度追蹤就開始亂？',
     icon: 'task_alt',
     bgColor: '#FAEEDA',
     accentColor: '#854F0B',
@@ -237,6 +315,7 @@ const allAgents: Agent[] = [
   {
     name: '財務分析師',
     desc: '分析公司財務數據，制定預算與報告，提供可行建議以支持企業經營目標。',
+    painPoint: '一堆報表數字擺在眼前，卻看不出關鍵趨勢？',
     icon: 'bar_chart',
     bgColor: '#E6F1FB',
     accentColor: '#185FA5',
@@ -247,6 +326,7 @@ const allAgents: Agent[] = [
   {
     name: 'SEO 專家',
     desc: '優化網站內容與結構，提升搜尋引擎排名，幫助品牌獲得更多自然流量。',
+    painPoint: '網站流量怎麼做都上不去，搜尋排名一直卡關？',
     icon: 'travel_explore',
     bgColor: '#EAF3DE',
     accentColor: '#3B6D11',
@@ -257,6 +337,7 @@ const allAgents: Agent[] = [
   {
     name: '顧客服務管理',
     desc: '提升客戶整體滿意度，解決客戶問題並收集回饋，提升服務品質與客戶忠誠度。',
+    painPoint: '客訴訊息一多，回覆速度跟服務品質很難兼顧？',
     icon: 'support_agent',
     bgColor: '#FAECE7',
     accentColor: '#993C1D',
@@ -267,6 +348,7 @@ const allAgents: Agent[] = [
   {
     name: '記帳助理',
     desc: '帳務整理、報帳核對與簡單財務報表製作，確保每筆費用都有跡可循。',
+    painPoint: '帳務單據一多就對不上，報帳核銷永遠卡在對帳？',
     icon: 'receipt_long',
     bgColor: '#E1F5EE',
     accentColor: '#0F6E56',
@@ -277,6 +359,7 @@ const allAgents: Agent[] = [
   {
     name: '人資行政助理',
     desc: '快速產出職位說明、履歷篩選建議與面試準備，將複雜 HR 行政工作自動化。',
+    painPoint: '職缺說明跟履歷篩選佔掉大半天，招募進度卻停滯不前？',
     icon: 'badge',
     bgColor: '#EAF3DE',
     accentColor: '#3B6D11',
@@ -287,6 +370,7 @@ const allAgents: Agent[] = [
   {
     name: '設計助理',
     desc: '協助創建視覺素材，提供設計建議與排版指引，提升品牌視覺一致性。',
+    painPoint: '想要的視覺效果說不清楚，設計來回改版改到懷疑人生？',
     icon: 'palette',
     bgColor: '#FBEAF0',
     accentColor: '#993556',
@@ -296,6 +380,7 @@ const allAgents: Agent[] = [
   {
     name: '會議記錄員',
     desc: '自動整理會議記錄，摘要關鍵決議與行動項目，確保團隊決策能落實執行。',
+    painPoint: '開完會才發現重點都忘了，行動項目沒人跟進？',
     icon: 'mic',
     bgColor: '#EEEDFE',
     accentColor: '#534AB7',
@@ -303,6 +388,60 @@ const allAgents: Agent[] = [
     categories: ['全部', '會議準備'],
   },
 ]
+
+// Skill 探索型別
+type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
+
+interface ExploreSkill {
+  name: string
+  functionType: SkillFunctionType
+  capability: string
+  icon: string
+  bgColor: string
+  accentColor: string
+  badge?: AgentBadge
+}
+
+const allExploreSkills: ExploreSkill[] = [
+  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', bgColor: '#EEEDFE', accentColor: '#534AB7' },
+  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', bgColor: '#E6F1FB', accentColor: '#185FA5', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', bgColor: '#E1F5EE', accentColor: '#0F6E56' },
+  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', bgColor: '#FAEEDA', accentColor: '#854F0B', badge: { type: 'new', label: '新上架' } },
+  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', bgColor: '#FAECE7', accentColor: '#993C1D' },
+  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', bgColor: '#EAF3DE', accentColor: '#3B6D11', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', bgColor: '#FBEAF0', accentColor: '#993556' },
+  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', bgColor: '#E6F1FB', accentColor: '#185FA5' },
+]
+
+const skillFunctionTypeChips: ('全部' | SkillFunctionType)[] = ['全部', '文字生成', '資料查詢', '流程自動化', '分析報表', '溝通協作']
+const activeSkillChip = ref('全部')
+const skillSearchKeyword = ref('')
+
+const filteredExploreSkills = computed(() =>
+  allExploreSkills.filter(s =>
+    (activeSkillChip.value === '全部' || s.functionType === activeSkillChip.value) &&
+    (!skillSearchKeyword.value.trim() || s.name.includes(skillSearchKeyword.value.trim()))
+  )
+)
+
+function onSkillSearchEnter() {
+  const kw = skillSearchKeyword.value.trim()
+  if (!kw) return
+  if (!filteredExploreSkills.value.length) popDialog.toast('找不到相關技能')
+}
+
+const isSkillModalOpen = ref(false)
+const selectedExploreSkill = ref<ExploreSkill | null>(null)
+
+function openSkillModal(skill: ExploreSkill) {
+  selectedExploreSkill.value = skill
+  isSkillModalOpen.value = true
+}
+
+function useExploreSkill() {
+  popDialog.toast('已加入我的技能')
+  isSkillModalOpen.value = false
+}
 
 // 使用熱度榜（前 4）
 const rankingAgents = computed(() =>

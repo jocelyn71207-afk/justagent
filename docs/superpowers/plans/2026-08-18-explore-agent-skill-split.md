@@ -10,6 +10,8 @@
 
 ## Global Constraints
 
+**2026-08-18 修訂說明（Task 1 完成後才發現）：** 本文件與同名 spec 原始版本誤把另一個尚未合併回 `main` 的並行分支上的 `Explore.vue`（用 `colorKey: ColorKey` CSS class 做圖示配色）當成 `main` 現況。`main`／`origin/main` 上實際的 `Agent`／`ExploreSkill` 圖示配色欄位是 `bgColor: string`／`accentColor: string`（inline style，寫死 hex，沿用既有調色盤）。Task 1 已經照實際檔案結構正確實作（未受影響，因為 Task 1 不touch 顏色欄位）；Task 2、Task 3 以下的程式碼範例已全部修正為 `bgColor`/`accentColor`，不要再套用任何 `colorKey`/`ColorKey` 相關程式碼。
+
 - 使用 `<script setup lang="ts">`，禁止 Options API。
 - 樣式統一在 `src/scss/` 管理，禁止 `<style scoped>`；本次不新增 scss 檔案，所有新 class 都加進既有的 `src/scss/views/_Explore.scss`（已被 `src/scss/views/_index.scss` `@import`，不需要額外處理 index）。
 - 不接真實 `skillStore`／後端資料——`ExploreSkill` 是這個頁面自己的 mock 資料，跟 `skillStore.ts` 的 `Skill`型別無關，不互相 import。
@@ -300,8 +302,8 @@ Hero Banner（原第 35 行）：
     <template v-if="selectedAgent">
       <div class="Explore explore-modal-box">
         <div class="explore-modal-content">
-          <div :class="['explore-modal-icon', `agent-icon--${selectedAgent.colorKey}`]">
-            <i class="material-symbols-outlined">{{ selectedAgent.icon }}</i>
+          <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
           </div>
           <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
           <div class="explore-modal-tags">
@@ -318,8 +320,8 @@ Hero Banner（原第 35 行）：
     <template v-if="selectedAgent">
       <div class="Explore explore-modal-box">
         <div class="explore-modal-content">
-          <div :class="['explore-modal-icon', `agent-icon--${selectedAgent.colorKey}`]">
-            <i class="material-symbols-outlined">{{ selectedAgent.icon }}</i>
+          <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
           </div>
           <p class="explore-modal-painpoint">{{ selectedAgent.painPoint }}</p>
           <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
@@ -430,8 +432,8 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
     >
       {{ agent.badge.label }}
     </span>
-    <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
-      <i class="material-symbols-outlined">{{ agent.icon }}</i>
+    <div class="agent-icon" :style="{ background: agent.bgColor }">
+      <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
     </div>
     <h4>{{ agent.name }}</h4>
     <p>{{ agent.painPoint }}</p>
@@ -444,14 +446,13 @@ interface AgentBadge {
   label: string
 }
 
-type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
-
 interface Agent {
   name: string
   desc: string
   painPoint: string
   icon: string
-  colorKey: ColorKey
+  bgColor: string
+  accentColor: string
   tags: string[]
   badge?: AgentBadge
   categories: string[]
@@ -483,8 +484,8 @@ const emit = defineEmits<{
           @click="openModal(agent)"
         >
           <div class="rank-badge">{{ i + 1 }}</div>
-          <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
-            <i class="material-symbols-outlined">{{ agent.icon }}</i>
+          <div class="agent-icon" :style="{ background: agent.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
           </div>
           <h4>{{ agent.name }}</h4>
           <p>{{ agent.painPoint }}</p>
@@ -521,8 +522,8 @@ const emit = defineEmits<{
           <span v-if="agent.badge" :class="['agent-badge', `agent-badge--${agent.badge.type}`]">
             {{ agent.badge.label }}
           </span>
-          <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
-            <i class="material-symbols-outlined">{{ agent.icon }}</i>
+          <div class="agent-icon" :style="{ background: agent.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
           </div>
           <h4>{{ agent.name }}</h4>
           <p>{{ agent.painPoint }}</p>
@@ -595,8 +596,8 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
     <span v-if="skill.badge" :class="['agent-badge', `agent-badge--${skill.badge.type}`]">
       {{ skill.badge.label }}
     </span>
-    <div :class="['agent-icon', `agent-icon--${skill.colorKey}`]">
-      <i class="material-symbols-outlined">{{ skill.icon }}</i>
+    <div class="agent-icon" :style="{ background: skill.bgColor }">
+      <i class="material-symbols-outlined" :style="{ color: skill.accentColor }">{{ skill.icon }}</i>
     </div>
     <span class="skill-function-badge">{{ skill.functionType }}</span>
     <h4>{{ skill.name }}</h4>
@@ -610,7 +611,6 @@ interface AgentBadge {
   label: string
 }
 
-type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
 type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
 
 interface ExploreSkill {
@@ -618,7 +618,8 @@ interface ExploreSkill {
   functionType: SkillFunctionType
   capability: string
   icon: string
-  colorKey: ColorKey
+  bgColor: string
+  accentColor: string
   badge?: AgentBadge
 }
 
@@ -645,19 +646,20 @@ interface ExploreSkill {
   functionType: SkillFunctionType
   capability: string
   icon: string
-  colorKey: ColorKey
+  bgColor: string
+  accentColor: string
   badge?: AgentBadge
 }
 
 const allExploreSkills: ExploreSkill[] = [
-  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', colorKey: 'violet' },
-  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', colorKey: 'blue', badge: { type: 'hot', label: '熱門' } },
-  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', colorKey: 'teal' },
-  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', colorKey: 'amber', badge: { type: 'new', label: '新上架' } },
-  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', colorKey: 'rust' },
-  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', colorKey: 'green', badge: { type: 'hot', label: '熱門' } },
-  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', colorKey: 'rose' },
-  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', colorKey: 'blue' },
+  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', bgColor: '#EEEDFE', accentColor: '#534AB7' },
+  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', bgColor: '#E6F1FB', accentColor: '#185FA5', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', bgColor: '#E1F5EE', accentColor: '#0F6E56' },
+  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', bgColor: '#FAEEDA', accentColor: '#854F0B', badge: { type: 'new', label: '新上架' } },
+  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', bgColor: '#FAECE7', accentColor: '#993C1D' },
+  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', bgColor: '#EAF3DE', accentColor: '#3B6D11', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', bgColor: '#FBEAF0', accentColor: '#993556' },
+  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', bgColor: '#E6F1FB', accentColor: '#185FA5' },
 ]
 
 const skillFunctionTypeChips = ['全部', '文字生成', '資料查詢', '流程自動化', '分析報表', '溝通協作']
@@ -749,8 +751,8 @@ function useExploreSkill() {
     <template v-if="selectedExploreSkill">
       <div class="Explore explore-modal-box">
         <div class="explore-modal-content">
-          <div :class="['explore-modal-icon', `agent-icon--${selectedExploreSkill.colorKey}`]">
-            <i class="material-symbols-outlined">{{ selectedExploreSkill.icon }}</i>
+          <div class="explore-modal-icon" :style="{ background: selectedExploreSkill.bgColor }">
+            <i class="material-symbols-outlined" :style="{ color: selectedExploreSkill.accentColor }">{{ selectedExploreSkill.icon }}</i>
           </div>
           <span class="skill-function-badge">{{ selectedExploreSkill.functionType }}</span>
           <p class="explore-modal-desc">{{ selectedExploreSkill.capability }}</p>
