@@ -674,6 +674,11 @@
             @click="isOpenKnowledgeRefFnBox = true">
             <i class="material-symbols-outlined">menu_book</i>
           </button>
+          <!-- 展開工具箱選單按鈕 -->
+          <button class="custom-btn" v-tooltip.top="'工具箱'"
+            @click="isOpenToolboxFnBox = true">
+            <i class="material-symbols-outlined">construction</i>
+          </button>
         </div>
         <!-- 附件功能選項清單 -->
         <div :class="['accessory-file-fn-box next-option-box', {'show': isOpenAccessoryFileFnBox}]"
@@ -696,6 +701,19 @@
           <div v-if="knowledgeList.length === 0" class="option-item">尚無知識庫項目</div>
           <div v-else class="option-item" v-for="item in knowledgeList" :key="item.id"
             @click="insertKnowledgeRef(item)">{{ item.title }}</div>
+        </div>
+        <!-- 工具箱選單 -->
+        <div :class="['toolbox-fn-box', 'AiViewer-next-option-box', {'show': isOpenToolboxFnBox}]"
+          ref="toolboxFnBox">
+          <div v-for="item in toolboxItems" :key="item.id"
+            :class="['toolbox-item', { disabled: !item.enabled }]"
+            @click="openToolboxTool(item)">
+            <i class="material-symbols-outlined toolbox-item-icon">{{ item.icon }}</i>
+            <div class="toolbox-item-body">
+              <div class="toolbox-item-name">{{ item.name }}</div>
+              <div class="toolbox-item-desc">{{ item.description }}</div>
+            </div>
+          </div>
         </div>
         <!-- 發送按鈕 -->
         <button class="custom-btn" v-if="!inputAreaHidden" v-tooltip="'發送訊息'"
@@ -755,6 +773,8 @@ import { useJourneyStore } from '@/stores/journeyStore'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
+import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
+import type { ToolboxItem } from '@/types/AiViewer';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
 import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
@@ -800,6 +820,7 @@ const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
   if (currentConversationId.value === 'conv5') return conv5Title.value || 'Teva 換季促銷方案規劃';
   if (currentConversationId.value === 'conv6') return conv6Title.value || 'TEVA涼鞋銷售分析';
+  if (currentConversationId.value === 'conv7') return conv7Title.value || '行銷報告組裝';
   return conv1Title.value;
 });
 
@@ -932,6 +953,43 @@ function inputBlur() {
 }
 
 const { getBlockTypeByFileMime } = aiviewerStore;
+// 工具箱選單資料（本輪只有「行銷報告生成」可點，其餘為即將推出的佔位項目）
+const toolboxItems: ToolboxItem[] = [
+  { id: 'reportAssembly', icon: 'bar_chart', name: '行銷報告生成', description: '拖曳組裝行銷週報章節', enabled: true },
+  { id: 'imageGen', icon: 'palette', name: '圖像生成', description: '即將推出', enabled: false },
+  { id: 'musicGen', icon: 'music_note', name: '創作音樂', description: '即將推出', enabled: false },
+  { id: 'deepSearch', icon: 'search', name: 'Deep Search', description: '即將推出', enabled: false },
+];
+
+const toolboxFnBox = ref<HTMLElement|null>(null);
+const isOpenToolboxFnBox = ref(false);
+onMounted(() => {
+  initClickOutsideListener(toolboxFnBox.value!, () => {
+    isOpenToolboxFnBox.value = false;
+  });
+});
+
+const {
+  conv7Msgs,
+  conv7Title,
+  resetConv7,
+  conv7InitFlow,
+  conv7ConfirmGenerate,
+  conv7Satisfied,
+  conv7Adjust,
+} = useReportAssemblyConversation();
+
+// 點擊工具箱項目：目前只有「行銷報告生成」可用，其餘 enabled: false 不處理
+function openToolboxTool(item: ToolboxItem) {
+  if (!item.enabled) return;
+  isOpenToolboxFnBox.value = false;
+  if (item.id === 'reportAssembly') {
+    currentConversationId.value = 'conv7';
+    resetConversation();
+    nextTick(() => conv7InitFlow());
+  }
+}
+
 // 附件功能選項清單
 const accessoryFileFnBox = ref<HTMLElement|null>(null);
 const isOpenAccessoryFileFnBox = ref(false);
@@ -2099,6 +2157,18 @@ function handleChatAreaClick(e: MouseEvent) {
     conv4ConfirmSaveSkill();
     return;
   }
+  if (action === 'conv7-confirm-generate') {
+    conv7ConfirmGenerate();
+    return;
+  }
+  if (action === 'conv7-satisfied') {
+    conv7Satisfied();
+    return;
+  }
+  if (action === 'conv7-adjust') {
+    conv7Adjust();
+    return;
+  }
   if (action === 'goto-skill-management') {
     router.push({ name: 'SkillManagement' });
     return;
@@ -3126,6 +3196,7 @@ const testMsgs = computed(() => {
     : currentConversationId.value === 'conv4' ? conv4Msgs.value
     : currentConversationId.value === 'conv5' ? conv5Msgs.value
     : currentConversationId.value === 'conv6' ? conv6Msgs.value
+    : currentConversationId.value === 'conv7' ? conv7Msgs.value
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
@@ -3207,6 +3278,9 @@ function resetConversation() {
     conv6Msgs.value = [];
     conv6ReportChoiceMade.value = false;
     conv6FlowStarted.value = false;
+  }
+  if (currentConversationId.value === 'conv7') {
+    resetConv7();
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
