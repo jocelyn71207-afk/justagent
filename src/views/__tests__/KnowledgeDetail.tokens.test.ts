@@ -58,7 +58,7 @@ describe('KnowledgeDetail 活潑感套用', () => {
     await new Promise(resolve => setTimeout(resolve, 600))
 
     // 切到版本歷程分頁
-    const historyTabBtn = wrapper.findAll('.detail-tab-btn').find(b => b.text().includes('版本歷程'))
+    const historyTabBtn = wrapper.findAll('.detail-nav-item').find(b => b.text().includes('版本歷程'))
     expect(historyTabBtn).toBeTruthy()
     await historyTabBtn!.trigger('click')
     const timelineContainer = wrapper.find('.version-timeline')
