@@ -33,7 +33,13 @@
         >
           <i class="material-symbols-outlined">content_copy</i>
         </button>
-        <button class="custom-btn skill-action-btn" @click="emit('test', skill)">測試</button>
+        <button
+          class="custom-btn skill-action-btn skill-action-btn--icon"
+          title="測試"
+          @click="emit('test', skill)"
+        >
+          <i class="material-symbols-outlined">science</i>
+        </button>
       </div>
     </div>
   </div>
