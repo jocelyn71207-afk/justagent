@@ -253,6 +253,7 @@ function buildNewResourceEntry(item: ChoicedFileItem): Omit<ResourceFile, 'versi
     ownerId: 'user1',
     ownerName: 'Current User',
     lastModify: new Date().toISOString().replace('T', ' ').slice(0, 16),
+    knowledgeIds: [],
   };
 }
 

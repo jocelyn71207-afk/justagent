@@ -13,24 +13,39 @@ export interface ResourceFile {
   ownerName: string;
   lastModify: string;
   version: number;
-  knowledgeId?: string;
+  knowledgeIds: string[];
+  needsColumnConfirmation?: boolean;
   showMoreOption?: boolean;
+}
+
+export type KbSourceStatusLabel = '已有資料' | '待確認' | '需解析';
+
+// 供「知識庫來源勾選」情境使用的衍生狀態標籤，不改變 status 本身語意。
+export function getKbSourceStatusLabel(file: ResourceFile): KbSourceStatusLabel {
+  if (file.needsColumnConfirmation) return '待確認';
+  if (file.status === 'uploading' || file.status === 'parsing' || file.status === 'failed') return '需解析';
+  return '已有資料';
+}
+
+// 供「知識庫來源勾選」情境使用：只有真正解析失敗的檔案不可勾選。
+export function isKbSourceSelectable(file: ResourceFile): boolean {
+  return file.status !== 'failed';
 }
 
 export const useResourceStore = defineStore('resource', () => {
   const resourceList = ref<ResourceFile[]>([
-    { showMoreOption: false, id: 'res1',  version: 1, fileName: '26W產品特色簡報.pptx',         fileUrl: '',                                         fileType: 'PPT',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res2',  version: 1, fileName: '25W產品銷售DM.pdf',             fileUrl: '',                                         fileType: 'PDF',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res3',  version: 1, fileName: 'UGG2025商品總表.xlsx',       fileUrl: '',                                         fileType: 'EXCEL', processType: 'AI_PARSED', status: 'stored',  creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res4',  version: 1, fileName: '25W產品特色搭配建議.pdf',       fileUrl: '',                                         fileType: 'PDF',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res5',  version: 1, fileName: '競品戶外涼鞋分析報告.html',     fileUrl: '',                                         fileType: 'HTML',  processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res6',  version: 1, fileName: 'DM設計用背景圖1.png',           fileUrl: 'https://picsum.photos/410/240.webp?random=10', fileType: 'IMAGE', processType: 'RAW',  status: 'saved',   creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res7',  version: 1, fileName: 'DM設計用背景圖2.png',           fileUrl: 'https://picsum.photos/410/240.webp?random=11', fileType: 'IMAGE', processType: 'RAW',  status: 'saved',   creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res8',  version: 1, fileName: '特殊材質名稱轉換清單.md',       fileUrl: '',                                         fileType: 'MD',    processType: 'AI_PARSED', status: 'parsing', creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res9',  version: 1, fileName: '特殊材質名稱轉換清單(新）.txt', fileUrl: '',                                         fileType: 'TXT',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res10', version: 1, fileName: '26W電商上架資訊包含SEO.docx',   fileUrl: '',                                         fileType: 'WORD',  processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res11', version: 1, fileName: '官網新用戶消費傾向分析.chart',  fileUrl: '',                                         fileType: 'CHART', processType: 'RAW',       status: 'saved',   creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
-    { showMoreOption: false, id: 'res12', version: 1, fileName: 'unknown.xyz',                  fileUrl: '',                                         fileType: 'OTHER', processType: 'RAW',       status: 'saved',   creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00' },
+    { showMoreOption: false, id: 'res1',  version: 1, fileName: '26W產品特色簡報.pptx',         fileUrl: '',                                         fileType: 'PPT',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res2',  version: 1, fileName: '25W產品銷售DM.pdf',             fileUrl: '',                                         fileType: 'PDF',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res3',  version: 1, fileName: 'UGG2025商品總表.xlsx',       fileUrl: '',                                         fileType: 'EXCEL', processType: 'AI_PARSED', status: 'stored',  creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: ['k1'] },
+    { showMoreOption: false, id: 'res4',  version: 1, fileName: '25W產品特色搭配建議.pdf',       fileUrl: '',                                         fileType: 'PDF',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res5',  version: 1, fileName: '競品戶外涼鞋分析報告.html',     fileUrl: '',                                         fileType: 'HTML',  processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res6',  version: 1, fileName: 'DM設計用背景圖1.png',           fileUrl: 'https://picsum.photos/410/240.webp?random=10', fileType: 'IMAGE', processType: 'RAW',  status: 'saved',   creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res7',  version: 1, fileName: 'DM設計用背景圖2.png',           fileUrl: 'https://picsum.photos/410/240.webp?random=11', fileType: 'IMAGE', processType: 'RAW',  status: 'saved',   creatorType: 'AI',   ownerId: 'AiAgent1', ownerName: 'Ai Agent', lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res8',  version: 1, fileName: '特殊材質名稱轉換清單.md',       fileUrl: '',                                         fileType: 'MD',    processType: 'AI_PARSED', status: 'parsing', creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res9',  version: 1, fileName: '特殊材質名稱轉換清單(新）.txt', fileUrl: '',                                         fileType: 'TXT',   processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [], needsColumnConfirmation: true },
+    { showMoreOption: false, id: 'res10', version: 1, fileName: '26W電商上架資訊包含SEO.docx',   fileUrl: '',                                         fileType: 'WORD',  processType: 'RAW',       status: 'saved',   creatorType: 'USER', ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res11', version: 1, fileName: '官網新用戶消費傾向分析.chart',  fileUrl: '',                                         fileType: 'CHART', processType: 'RAW',       status: 'saved',   creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
+    { showMoreOption: false, id: 'res12', version: 1, fileName: 'unknown.xyz',                  fileUrl: '',                                         fileType: 'OTHER', processType: 'RAW',       status: 'saved',   creatorType: 'AI',   ownerId: 'user1',    ownerName: 'Lucas',    lastModify: '2026-02-06 14:15:00', knowledgeIds: [] },
   ]);
 
   function getFileById(id: string) {
@@ -50,9 +65,18 @@ export const useResourceStore = defineStore('resource', () => {
     resourceList.value.unshift({ ...file, version: 1, showMoreOption: false });
   }
 
-  function markAsKnowledge(fileId: string, knowledgeId: string) {
+  // 新增檔案與知識庫的關聯（去重）
+  function addKnowledgeMembership(fileId: string, knowledgeId: string) {
     const file = getFileById(fileId);
-    if (file) file.knowledgeId = knowledgeId;
+    if (file && !file.knowledgeIds.includes(knowledgeId)) {
+      file.knowledgeIds.push(knowledgeId);
+    }
+  }
+
+  // 移除檔案與知識庫的關聯
+  function removeKnowledgeMembership(fileId: string, knowledgeId: string) {
+    const file = getFileById(fileId);
+    if (file) file.knowledgeIds = file.knowledgeIds.filter(id => id !== knowledgeId);
   }
 
   function deleteFile(fileId: string) {
@@ -82,12 +106,13 @@ export const useResourceStore = defineStore('resource', () => {
       processType: 'RAW',
       status: 'stored',
       creatorType: 'USER',
-      ownerId: '',
-      ownerName: '',
+      ownerId: 'current-user',
+      ownerName: 'Current User',
       lastModify: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      knowledgeIds: [],
     })
     return { id, fileName: file.name }
   }
 
-  return { resourceList, getFileById, uploadNewVersion, addFile, addFileFromUpload, markAsKnowledge, deleteFile };
+  return { resourceList, getFileById, uploadNewVersion, addFile, addFileFromUpload, addKnowledgeMembership, removeKnowledgeMembership, deleteFile };
 });

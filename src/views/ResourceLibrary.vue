@@ -65,7 +65,7 @@
               <div class="file-name">
                 <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
                   {{ item.fileName }}
-                  <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+                  <span v-if="item.knowledgeIds.length" class="knowledge-badge">已轉為知識</span>
                 </template>
                 <input class="custom-input mofidyInput w-100" v-else-if="nowModifyItem.id === item.id"
                   :id="'mofidyInput'+item.id"
@@ -123,7 +123,7 @@
                   </div>
                   <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
                     {{ item.fileName }}
-                    <span v-if="item.knowledgeId" class="knowledge-badge">已轉為知識</span>
+                    <span v-if="item.knowledgeIds.length" class="knowledge-badge">已轉為知識</span>
                   </template>
                   <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
                     :id="'mofidyInput'+item.id"
@@ -171,7 +171,7 @@
   <CreateKnowledgeWizardModal
     v-model="isWizardOpen"
     :prefill-file="wizardFile"
-    @done="({ fileId, knowledgeId }) => resourceStore.markAsKnowledge(fileId, knowledgeId)"
+    @done="({ fileId, knowledgeId }) => resourceStore.addKnowledgeMembership(fileId, knowledgeId)"
   />
 
   <SourceUpdateModal
