@@ -51,7 +51,8 @@
         props.source.blockType === 'EXCEL' ||
         props.source.blockType === 'TXT' ||
         props.source.blockType === 'MD' ||
-        props.source.blockType === 'CHART'
+        props.source.blockType === 'CHART' ||
+        props.source.blockType === 'REPORT'
       )
     )"
     :lock-aspect-ratio="isAspectRatioMode"
@@ -194,6 +195,7 @@
           'for-CHART': props.source.blockType === 'CHART',
           'for-MD': props.source.blockType === 'MD',
           'for-WORD': props.source.blockType === 'WORD',
+          'for-REPORT': props.source.blockType === 'REPORT',
         }]"
         @wheel.stop="handleContentWheel($event); stopWhellZoomEvent($event);"
         @mouseenter="handleContentMouseenter(true)"
@@ -249,6 +251,11 @@
         <!-- WORD -->
         <wordViewBox v-if="props.source.blockType === 'WORD'"
           :id="props.id" :source="props.source"/>
+
+        <!-- REPORT -->
+        <reportAssemblyViewBox v-if="props.source.blockType === 'REPORT'"
+          :id="props.id"
+          :source="(props.source as { blockType: 'REPORT'; data: ReportAssemblyBlockData })"/>
 
         <!-- TODO... 測試用 發話文字 -->
         <div class="textViewBox" v-if="props.source.blockType === 'OTHER'">
@@ -333,6 +340,8 @@ import imageViewBox from '@/components/AiViewer/viewBlock/imageViewBox.vue';
 import markdownViewBox from '@/components/AiViewer/viewBlock/markdownViewBox.vue';
 import chartViewBox from '@/components/AiViewer/viewBlock/chartViewBox.vue';
 import wordViewBox from '@/components/AiViewer/viewBlock/wordViewBox.vue';
+import reportAssemblyViewBox from '@/components/AiViewer/viewBlock/reportAssemblyViewBox.vue';
+import type { ReportAssemblyBlockData } from '@/types/AiViewer';
 
 const props = defineProps({
   source: {
