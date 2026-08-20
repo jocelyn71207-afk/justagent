@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import UpdateKnowledgeSourcesModal from '../UpdateKnowledgeSourcesModal.vue'
 import ResourceFilePicker from '../ResourceFilePicker.vue'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
+
+vi.mock('@/services/popDialog', () => ({ default: { toast: vi.fn() } }))
 
 function makeRouter() {
   return createRouter({
@@ -28,6 +30,22 @@ async function mountModal() {
 }
 
 describe('UpdateKnowledgeSourcesModal', () => {
+  it('僅顯示 sourceType 為 FILE 的知識庫選項，MANUAL/API 來源的知識庫不應出現在下拉選單', async () => {
+    const wrapper = await mountModal()
+    const knowledgeStore = useKnowledgeStore()
+    const manualItem = knowledgeStore.getKnowledgeById('k2')! // sourceType: 'MANUAL'
+    const apiItem = knowledgeStore.getKnowledgeById('k5')! // sourceType: 'API'
+    const fileItem = knowledgeStore.getKnowledgeById('k1')! // sourceType: 'FILE'
+    expect(manualItem.sourceType).toBe('MANUAL')
+    expect(apiItem.sourceType).toBe('API')
+    expect(fileItem.sourceType).toBe('FILE')
+
+    const options = wrapper.findAll('select.custom-input option').map(o => o.text())
+    expect(options.some(t => t.includes(manualItem.title))).toBe(false)
+    expect(options.some(t => t.includes(apiItem.title))).toBe(false)
+    expect(options.some(t => t.includes(fileItem.title))).toBe(true)
+  })
+
   it('選擇知識庫後，pickedFiles 預填為該知識庫目前生效版本的來源檔案', async () => {
     const wrapper = await mountModal()
     await wrapper.find('select.custom-input').setValue('k1')

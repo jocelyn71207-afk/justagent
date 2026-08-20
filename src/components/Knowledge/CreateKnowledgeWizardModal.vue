@@ -40,8 +40,8 @@
           @drop.prevent="handleDrop"
           @click="fileInputRef?.click()"
         >
-          <i class="material-symbols-outlined fs-32 mb-2" style="color:#93c5fd;">cloud_upload</i>
-          <div class="fs-13 fw-500" style="color:#2563eb;">拖曳檔案至此或點擊選取</div>
+          <i class="material-symbols-outlined fs-32 mb-2" style="color:var(--tag-blue-text);">cloud_upload</i>
+          <div class="fs-13 fw-500" style="color:var(--tag-blue-text);">拖曳檔案至此或點擊選取</div>
           <div class="fs-12 fc-grey-1 mt-1">支援 PDF、DOCX、XLSX，最大 50MB</div>
         </div>
         <input ref="fileInputRef" type="file" accept=".pdf,.docx,.xlsx" style="display:none;" @change="handleFileSelect" />
@@ -138,7 +138,11 @@
         </button>
       </div>
     </div>
-    <ResourceFilePicker v-model="showResourcePicker" @select="onPickerSelect" />
+    <ResourceFilePicker
+      v-model="showResourcePicker"
+      :preselected-ids="pickedFiles.filter(f => !f.fromUpload).map(f => f.fileId)"
+      @select="onPickerSelect"
+    />
   </compModal>
 </template>
 
@@ -197,7 +201,12 @@ function removePickedFile(fileId: string) {
 }
 
 function onPickerSelect(payload: { files: { fileId: string; fileName: string }[] }) {
-  payload.files.forEach(f => addPickedFile({ fileId: f.fileId, fileName: f.fileName, fromUpload: false }))
+  const uploaded = pickedFiles.value.filter(f => f.fromUpload)
+  const uploadedIds = new Set(uploaded.map(f => f.fileId))
+  const fromLibrary = payload.files
+    .filter(f => !uploadedIds.has(f.fileId))
+    .map(f => ({ fileId: f.fileId, fileName: f.fileName, fromUpload: false }))
+  pickedFiles.value = [...uploaded, ...fromLibrary]
   showResourcePicker.value = false
 }
 

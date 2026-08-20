@@ -8,10 +8,10 @@
 
     <div class="update-sources-body">
       <div class="mb-3">
-        <label class="form-label">指定知識庫 <span style="color:#dc2626;">*</span></label>
+        <label class="form-label">指定知識庫 <span style="color:var(--danger);">*</span></label>
         <select v-model="selectedKnowledgeId" class="custom-input w-100">
           <option value="">選擇要更新的知識庫...</option>
-          <option v-for="k in knowledgeList" :key="k.id" :value="k.id">{{ k.title }}（{{ k.category }}）</option>
+          <option v-for="k in eligibleKnowledgeList" :key="k.id" :value="k.id">{{ k.title }}（{{ k.category }}）</option>
         </select>
       </div>
 
@@ -82,6 +82,8 @@ const router = useRouter()
 const knowledgeStore = useKnowledgeStore()
 const resourceStore = useResourceStore()
 const { knowledgeList } = storeToRefs(knowledgeStore)
+
+const eligibleKnowledgeList = computed(() => knowledgeList.value.filter(k => k.sourceType === 'FILE'))
 
 const selectedKnowledgeId = ref('')
 const showResourcePicker = ref(false)
