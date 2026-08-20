@@ -21,11 +21,39 @@
             <div class="conv1-empty-input-left">
               <button><i class="material-symbols-outlined">add</i></button>
               <button><i class="material-symbols-outlined">bolt</i></button>
+              <!-- 空白開始狀態下也要能觸發工具箱，否則首次進入頁面完全無法使用 -->
+              <button v-tooltip.top="'工具箱'" ref="toolboxBtnOverlay"
+                @click="openToolboxMenu(toolboxBtnOverlay)">
+                <i class="material-symbols-outlined">construction</i>
+              </button>
             </div>
             <button class="conv1-empty-send-btn" @click="submitConv1Overlay">
               <i class="material-symbols-outlined">send</i>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工具箱選單：兩個入口（主輸入列 / conv1 空白遮罩下方的按鈕）共用同一份選單。
+         刻意放在 .AiViewerRightBox 的最外層（而不是原本的 .AiViewrUserInputArea 內），
+         是因為 .conv1-empty-overlay 是 position:fixed 且 z-index:999 的全螢幕遮罩，
+         若選單仍是 .AiViewrUserInputArea（z-index:1）的子層級，其 stacking context
+         會被限制在 1，無論子層再設多高的 z-index 都無法蓋過遮罩。放在這裡當同層級的
+         兄弟節點、給予高於遮罩的 z-index，兩個入口都能正常開啟同一份選單。
+         位置採 position:fixed + 每次開啟時依實際點擊的按鈕座標動態計算（見 openToolboxMenu），
+         而不是寫死相對 .AiViewerRightBox 的座標——因為 .AiViewerRightBox 是可變寬度、
+         可能大部分被捲到畫面外的側欄，寫死座標在不同視窗寬度下會跑到看不到的地方。 -->
+    <div :class="['toolbox-fn-box', 'AiViewer-next-option-box', {'show': isOpenToolboxFnBox}]"
+      :style="toolboxFnBoxStyle"
+      ref="toolboxFnBox">
+      <div v-for="item in toolboxItems" :key="item.id"
+        :class="['toolbox-item', { disabled: !item.enabled }]"
+        @click="openToolboxTool(item)">
+        <i class="material-symbols-outlined toolbox-item-icon">{{ item.icon }}</i>
+        <div class="toolbox-item-body">
+          <div class="toolbox-item-name">{{ item.name }}</div>
+          <div class="toolbox-item-desc">{{ item.description }}</div>
         </div>
       </div>
     </div>
@@ -675,8 +703,8 @@
             <i class="material-symbols-outlined">menu_book</i>
           </button>
           <!-- 展開工具箱選單按鈕 -->
-          <button class="custom-btn" v-tooltip.top="'工具箱'"
-            @click="isOpenToolboxFnBox = true">
+          <button class="custom-btn" v-tooltip.top="'工具箱'" ref="toolboxBtnMain"
+            @click="openToolboxMenu(toolboxBtnMain)">
             <i class="material-symbols-outlined">construction</i>
           </button>
         </div>
@@ -701,19 +729,6 @@
           <div v-if="knowledgeList.length === 0" class="option-item">尚無知識庫項目</div>
           <div v-else class="option-item" v-for="item in knowledgeList" :key="item.id"
             @click="insertKnowledgeRef(item)">{{ item.title }}</div>
-        </div>
-        <!-- 工具箱選單 -->
-        <div :class="['toolbox-fn-box', 'AiViewer-next-option-box', {'show': isOpenToolboxFnBox}]"
-          ref="toolboxFnBox">
-          <div v-for="item in toolboxItems" :key="item.id"
-            :class="['toolbox-item', { disabled: !item.enabled }]"
-            @click="openToolboxTool(item)">
-            <i class="material-symbols-outlined toolbox-item-icon">{{ item.icon }}</i>
-            <div class="toolbox-item-body">
-              <div class="toolbox-item-name">{{ item.name }}</div>
-              <div class="toolbox-item-desc">{{ item.description }}</div>
-            </div>
-          </div>
         </div>
         <!-- 發送按鈕 -->
         <button class="custom-btn" v-if="!inputAreaHidden" v-tooltip="'發送訊息'"
@@ -836,6 +851,8 @@ watch(currentConversationId, (id) => {
   } else if (id === 'conv5') {
     aiViewerBlocks.value = [];
   } else if (id === 'conv6') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv7') {
     aiViewerBlocks.value = [];
   }
 }, { immediate: true });
@@ -963,6 +980,22 @@ const toolboxItems: ToolboxItem[] = [
 
 const toolboxFnBox = ref<HTMLElement|null>(null);
 const isOpenToolboxFnBox = ref(false);
+// 工具箱選單有兩個觸發入口（主輸入列按鈕 / conv1 空白遮罩下方按鈕），
+// 選單本身固定在 .AiViewerRightBox 最外層、position:fixed，每次開啟時
+// 依「實際點擊的那個按鈕」的座標動態定位，避免寫死座標在不同視窗寬度/側欄狀態下跑版
+const toolboxBtnMain = ref<HTMLElement|null>(null);
+const toolboxBtnOverlay = ref<HTMLElement|null>(null);
+const toolboxFnBoxStyle = ref<{ left?: string; bottom?: string }>({});
+function openToolboxMenu(anchorBtnRef: HTMLElement | null) {
+  if (anchorBtnRef) {
+    const rect = anchorBtnRef.getBoundingClientRect();
+    toolboxFnBoxStyle.value = {
+      left: rect.left + 'px',
+      bottom: (window.innerHeight - rect.top + 8) + 'px',
+    };
+  }
+  isOpenToolboxFnBox.value = true;
+}
 onMounted(() => {
   initClickOutsideListener(toolboxFnBox.value!, () => {
     isOpenToolboxFnBox.value = false;

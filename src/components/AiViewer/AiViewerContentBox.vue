@@ -254,7 +254,8 @@
 
         <!-- REPORT -->
         <reportAssemblyViewBox v-if="props.source.blockType === 'REPORT'"
-          :id="props.id" :source="props.source"/>
+          :id="props.id"
+          :source="(props.source as { blockType: 'REPORT'; data: ReportAssemblyBlockData })"/>
 
         <!-- TODO... 測試用 發話文字 -->
         <div class="textViewBox" v-if="props.source.blockType === 'OTHER'">
@@ -340,6 +341,7 @@ import markdownViewBox from '@/components/AiViewer/viewBlock/markdownViewBox.vue
 import chartViewBox from '@/components/AiViewer/viewBlock/chartViewBox.vue';
 import wordViewBox from '@/components/AiViewer/viewBlock/wordViewBox.vue';
 import reportAssemblyViewBox from '@/components/AiViewer/viewBlock/reportAssemblyViewBox.vue';
+import type { ReportAssemblyBlockData } from '@/types/AiViewer';
 
 const props = defineProps({
   source: {

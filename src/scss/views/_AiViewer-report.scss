@@ -1,8 +1,15 @@
-// 工具箱選單（沿用 accessory-file-fn-box 的定位方式，搭配正確的 AiViewer-next-option-box 外觀樣式）
+// 工具箱選單
+// 刻意定位在 .AiViewerRightBox 最外層（而不是 .AiViewrUserInputArea 內部），
+// 是為了在 conv1 空白狀態的全螢幕遮罩（.conv1-empty-overlay，z-index:999，fixed）開啟時，
+// 選單也能正確蓋在遮罩之上 —— 若還是 .AiViewrUserInputArea（z-index:1）的子層級，
+// 不管子層自己的 z-index 設多高，都會被限制在該層級的 stacking context 裡蓋不過遮罩。
+// position 用 fixed（而非 absolute），座標由 openToolboxMenu() 依實際觸發按鈕動態算出並
+// 以 inline style 帶入，這裡的 left/bottom 只是尚未計算前的保底預設值。
 .toolbox-fn-box {
-  position: absolute;
-  left: -12px;
-  bottom: 44px;
+  position: fixed;
+  left: 20px;
+  bottom: 90px;
+  z-index: 1000; // 需高於 .conv1-empty-overlay 的 z-index:999
   visibility: hidden;
   min-width: 220px;
   &.show {

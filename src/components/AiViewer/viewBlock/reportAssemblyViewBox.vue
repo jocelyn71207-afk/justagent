@@ -18,7 +18,7 @@
           'drag-over-after': dragOverId === sectionId && !dragOverBefore,
         }"
         draggable="true"
-        @dragstart="handleDragStart(sectionId)"
+        @dragstart.stop="handleDragStart($event, sectionId)"
         @dragend="handleDragEnd"
         @dragover="handleDragOver($event, sectionId)"
         @dragleave="handleDragLeave"
@@ -65,6 +65,7 @@ import { ref, computed } from 'vue';
 import type { PropType } from 'vue';
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import popDialog from '@/services/popDialog';
+import type { ReportAssemblyBlockData } from '@/types/AiViewer';
 
 interface ReportSection {
   id: string
@@ -85,7 +86,7 @@ const props = defineProps({
     required: true
   },
   source: {
-    type: Object as PropType<any>,
+    type: Object as PropType<{ blockType: 'REPORT'; data: ReportAssemblyBlockData }>,
     required: true
   }
 });
@@ -154,8 +155,11 @@ const dragId = ref<string | null>(null);
 const dragOverId = ref<string | null>(null);
 const dragOverBefore = ref(true);
 
-function handleDragStart(sectionId: string) {
+function handleDragStart(event: DragEvent, sectionId: string) {
   dragId.value = sectionId;
+  // 部分瀏覽器（尤其 Firefox）若未設定 dataTransfer 資料/effectAllowed，可能拒絕啟動原生拖曳
+  event.dataTransfer?.setData('text/plain', sectionId);
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
 }
 function handleDragEnd() {
   dragId.value = null;
@@ -163,7 +167,11 @@ function handleDragEnd() {
 }
 function handleDragOver(event: DragEvent, sectionId: string) {
   event.preventDefault();
-  if (sectionId === dragId.value) return;
+  if (sectionId === dragId.value) {
+    // 拖曳到自己身上時清除殘留的 drag-over 高亮，避免卡在錯誤的元素上
+    dragOverId.value = null;
+    return;
+  }
   const target = event.currentTarget as HTMLElement;
   const rect = target.getBoundingClientRect();
   dragOverId.value = sectionId;

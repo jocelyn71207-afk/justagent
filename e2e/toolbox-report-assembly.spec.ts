@@ -72,4 +72,30 @@ test.describe('工具箱 × 報告組裝', () => {
     await page.locator('.report-assembly-save-btn').click()
     await expect(page.locator('.pop-toast')).toBeVisible()
   })
+
+  test('拖曳排序後驗證順序有變化', async ({ page }) => {
+    await dismissEmptyOverlayAndOpenReportAssembly(page)
+    await expect(page.locator('.conv1-quick-btn[data-action="conv7-confirm-generate"]')).toBeVisible({ timeout: 5000 })
+    await page.locator('.conv1-quick-btn[data-action="conv7-confirm-generate"]').click()
+    await expect(page.locator('.reportAssemblyViewBox')).toBeVisible({ timeout: 5000 })
+
+    // 限定在「已組裝」的 <ol> 清單內，避免選到下方積木盒同樣叫 .report-assembly-item-name 的項目
+    const assembledNames = page.locator('.reportAssemblyViewBox .report-assembly-list .report-assembly-item-name')
+    const assembledItems = page.locator('.reportAssemblyViewBox .report-assembly-list .report-assembly-item')
+
+    const namesBefore = await assembledNames.allTextContents()
+    expect(namesBefore).toEqual(['促銷核心 KPI', '前 10 大活動', '活動類型分析', '月度促銷趨勢', '銷售熱門時段'])
+
+    // 把第 1 個章節拖到第 3 個章節上
+    await assembledItems.nth(0).dragTo(assembledItems.nth(2))
+
+    const namesAfter = await assembledNames.allTextContents()
+    expect(namesAfter).not.toEqual(namesBefore)
+    // 章節數量不應變動，只是順序改變（純拖曳排序，不會新增/移除章節）
+    expect(namesAfter).toHaveLength(namesBefore.length)
+    expect(namesAfter.slice().sort()).toEqual(namesBefore.slice().sort())
+    // 「促銷核心 KPI」應該被移動到「活動類型分析」之前，不再是第一個
+    expect(namesAfter[0]).not.toBe('促銷核心 KPI')
+    expect(namesAfter.indexOf('促銷核心 KPI')).toBeLessThan(namesAfter.indexOf('活動類型分析'))
+  })
 })
