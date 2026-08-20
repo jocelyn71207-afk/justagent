@@ -1,11 +1,13 @@
 <template>
   <div class="reportAssemblyViewBox">
     <div class="report-assembly-head">
-      <span class="report-assembly-count">已選 {{ sectionIds.length }} 個章節</span>
-      <button class="custom-btn report-assembly-save-btn"
+      <span class="report-assembly-count">
+        <i class="material-symbols-outlined">stacks</i>已選 {{ sectionIds.length }} 個章節
+      </span>
+      <button class="report-assembly-save-btn"
         :disabled="sectionIds.length === 0"
         @click="handleSaveTemplate">
-        <i class="material-symbols-outlined">save</i>存成模板
+        <i class="material-symbols-outlined">bookmark_add</i>存成模板
       </button>
     </div>
 
@@ -24,23 +26,26 @@
         @dragleave="handleDragLeave"
         @drop="handleDrop($event, sectionId)">
         <span class="report-assembly-handle material-symbols-outlined">drag_indicator</span>
-        <span class="report-assembly-dot" :style="{ background: categoryColor(sectionId) }"></span>
+        <span class="report-assembly-dot" :style="{ '--dot-color': categoryColor(sectionId) }"></span>
         <span class="report-assembly-item-body">
           <span class="report-assembly-item-name">{{ sectionName(sectionId) }}</span>
           <span class="report-assembly-item-desc">{{ sectionDesc(sectionId) }}</span>
         </span>
-        <button class="report-assembly-remove" @click="removeSection(sectionId)">
+        <button class="report-assembly-remove" v-tooltip="'移除章節'" @click="removeSection(sectionId)">
           <i class="material-symbols-outlined">close</i>
         </button>
       </li>
     </ol>
-    <div class="report-assembly-empty" v-else>還沒有章節，從下方積木盒加入</div>
+    <div class="report-assembly-empty" v-else>
+      <i class="material-symbols-outlined">library_add</i>
+      還沒有章節，從下方積木盒加入
+    </div>
 
     <div class="report-assembly-palette">
       <details v-for="category in categories" :key="category.id" class="report-assembly-category" open>
         <summary>
-          <span class="report-assembly-dot" :style="{ background: category.color }"></span>
-          {{ category.label }}
+          <span class="report-assembly-dot" :style="{ '--dot-color': category.color }"></span>
+          <span class="report-assembly-category-label">{{ category.label }}</span>
           <span class="report-assembly-category-count">{{ addedCountInCategory(category.id) }}/{{ sectionsByCategory(category.id).length }}</span>
         </summary>
         <div class="report-assembly-category-items">
@@ -50,7 +55,7 @@
               <span class="report-assembly-item-name">{{ section.name }}</span>
               <span class="report-assembly-item-desc">{{ section.description }}</span>
             </span>
-            <button class="report-assembly-add-btn" @click="addSection(section.id)">
+            <button class="report-assembly-add-btn" v-tooltip="sectionIds.includes(section.id) ? '已加入' : '加入章節'" @click="addSection(section.id)">
               <i class="material-symbols-outlined">{{ sectionIds.includes(section.id) ? 'check' : 'add' }}</i>
             </button>
           </div>
@@ -196,6 +201,6 @@ function handleSaveTemplate() {
   if (sectionIds.value.length === 0) return;
   const name = props.source.data.templateName || '促銷週報';
   aiviewerStore.saveReportAssemblyTemplate(props.id, name);
-  popDialog.toast(`已存成「${name}」模板`);
+  popDialog.toast('已儲存章節排列。跟 AI 說「用新的組合幫我生成新的報告」就能套用最新排列重新產生報告。', 3000);
 }
 </script>

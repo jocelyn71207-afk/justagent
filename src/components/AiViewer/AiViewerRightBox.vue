@@ -679,7 +679,7 @@
         <!-- fp 互動模式時完全移除輸入框 -->
         <textarea v-if="!inputAreaHidden" :class="['custom-textarea']"
           id="userInput"
-          placeholder="請輸入您的需求"
+          :placeholder="currentConversationId === 'conv7' ? '描述您的行銷報告' : '請輸入您的需求'"
           ref="userInputRef"
           v-model.trim="userInputModal.msg"
           @focus="inputFocus()"
@@ -1007,7 +1007,6 @@ const {
   conv7Title,
   resetConv7,
   conv7InitFlow,
-  conv7ConfirmGenerate,
   conv7Satisfied,
   conv7Adjust,
 } = useReportAssemblyConversation();
@@ -2188,10 +2187,6 @@ function handleChatAreaClick(e: MouseEvent) {
   }
   if (action === 'conv4-confirm-save-skill') {
     conv4ConfirmSaveSkill();
-    return;
-  }
-  if (action === 'conv7-confirm-generate') {
-    conv7ConfirmGenerate();
     return;
   }
   if (action === 'conv7-satisfied') {

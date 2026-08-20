@@ -2,14 +2,14 @@ import { ref } from 'vue';
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 
 // 報告組裝引導對話（conv7）：從工具箱點「行銷報告生成」後，
-// 走一段腳本化的澄清對話，最終在畫布建立可互動的報告組裝 Block。
+// 立刻在畫布建立可互動的報告組裝 Block，接著走一段腳本化的澄清對話；
+// 對話結束時再額外產生一份靜態「行銷報告」Block（沿用既有 addReportBlock 機制）。
 export function useReportAssemblyConversation() {
   const aiviewerStore = useAiviewerStore();
 
   const conv7Msgs = ref<any[]>([]);
   let conv7IdCounter = 2;
   const conv7Title = ref('');
-  const conv7Confirmed = ref(false);
   const conv7Adjusted = ref(false);
 
   const DEFAULT_SECTION_IDS = ['promo_kpi', 'promo_top10', 'promo_type', 'promo_monthly', 'time_heatmap'];
@@ -22,13 +22,13 @@ export function useReportAssemblyConversation() {
     conv7IdCounter = 2;
     conv7Title.value = '';
     conv7Msgs.value = [];
-    conv7Confirmed.value = false;
     conv7Adjusted.value = false;
   }
 
   function conv7InitFlow() {
     if (conv7Msgs.value.length > 0) return;
     conv7Title.value = '行銷報告組裝';
+    aiviewerStore.addReportAssemblyBlock([...DEFAULT_SECTION_IDS]);
     c7Push({ forUser: true, msg: '我想看一下最近的促銷活動效果' });
     setTimeout(() => {
       c7Push({ msg: '好，我來幫你看行銷活動成效報告。想先確認一下方向——你是想知道「這次/最近的活動該不該延續」，還是想比較「哪種促銷類型最有效，下次要選哪種」？' });
@@ -37,30 +37,17 @@ export function useReportAssemblyConversation() {
       c7Push({ forUser: true, msg: '我覺得上個月那個促銷活動好像沒什麼用' });
     }, 1200);
     setTimeout(() => {
-      c7Push({
-        msg: `了解，那我打算生成「行銷活動成效報告」，重點放在促銷活動成效與趨勢分析，可以嗎？
-<div class="conv1-quick-btns" style="margin-top:8px">
-  <span class="conv1-quick-btn" data-action="conv7-confirm-generate">可以</span>
-</div>`,
-      });
-    }, 2000);
-  }
-
-  function conv7ConfirmGenerate() {
-    if (conv7Confirmed.value) return;
-    conv7Confirmed.value = true;
-    c7Push({ forUser: true, msg: '可以' });
-    setTimeout(() => {
-      aiviewerStore.addReportAssemblyBlock([...DEFAULT_SECTION_IDS]);
+      // demo 階段沒有專門對應促銷主題的靜態報告檔，先借用既有的銷售報告檔頂著
+      aiviewerStore.addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '促銷活動成效報告.html');
       c7Push({
         finishResponse: true,
-        msg: `報告生成好了，畫布上可以看到內容。這樣的報告你滿意嗎？
+        msg: `報告已經放到畫布上了，這樣你滿意嗎？若有不滿意的區塊，可以用「行銷報告組裝」調整內容順序。
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv7-satisfied">滿意，先這樣</span>
   <span class="conv1-quick-btn" data-action="conv7-adjust">我要調整一下</span>
 </div>`,
       });
-    }, 600);
+    }, 2000);
   }
 
   function conv7Satisfied() {
@@ -84,7 +71,6 @@ export function useReportAssemblyConversation() {
     conv7Title,
     resetConv7,
     conv7InitFlow,
-    conv7ConfirmGenerate,
     conv7Satisfied,
     conv7Adjust,
   };
