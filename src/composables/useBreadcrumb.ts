@@ -29,7 +29,15 @@ export function useBreadcrumb() {
 
   const items = computed<BreadcrumbItem[]>(() => {
     const result: BreadcrumbItem[] = []
-    const { title, parentName, useCompanyName } = route.meta
+    // vue-tsc/@vue/language-core mis-resolves RouteMeta's augmented fields (src/router/index.ts)
+    // to `{}` when accessed via useRoute()/router.getRoutes() from a plain .ts composable —
+    // plain `tsc` type-checks this correctly, confirming it's a checker bug, not a type error.
+    // The explicit annotation sidesteps the buggy inference path without changing behavior.
+    const { title, parentName, useCompanyName } = route.meta as {
+      title?: string
+      parentName?: string
+      useCompanyName?: boolean
+    }
 
     if (useCompanyName) {
       result.push({ label: rootStore.nowMenuTreeCompanyName })
@@ -49,7 +57,8 @@ export function useBreadcrumb() {
     }
 
     if (parentName) {
-      const parentMeta = router.getRoutes().find(r => r.name === parentName)?.meta
+      // Same vue-tsc inference bug as above, applied at this second RouteMeta access point.
+      const parentMeta = router.getRoutes().find(r => r.name === parentName)?.meta as { title?: string } | undefined
       result.push({
         label: parentMeta?.title ?? parentName,
         to: {
