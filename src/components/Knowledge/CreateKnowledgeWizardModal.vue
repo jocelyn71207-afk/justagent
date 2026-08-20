@@ -25,7 +25,7 @@
       <template v-if="selectedSourceType === 'FILE'">
         <div v-if="pickedFiles.length" class="picked-files-list mb-2">
           <div v-for="f in pickedFiles" :key="f.fileId" class="picked-file-row">
-            <i class="material-symbols-outlined fs-18" style="color:#16a34a;">task_alt</i>
+            <i class="material-symbols-outlined fs-18" style="color:var(--success);">task_alt</i>
             <span class="fs-13 fw-600 picked-file-name">{{ f.fileName }}</span>
             <span class="fs-11 fc-grey-1">{{ f.fromUpload ? '新上傳' : '共用檔案管理' }}</span>
             <button class="picked-file-remove" @click.stop="removePickedFile(f.fileId)">
