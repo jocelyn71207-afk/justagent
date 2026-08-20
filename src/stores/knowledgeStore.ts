@@ -1356,13 +1356,20 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return newVersion.id;
   };
 
-  const approveVersion = (knowledgeId: string, versionId: string) => {
+  const approveVersion = (
+    knowledgeId: string,
+    versionId: string,
+    syncMembership?: (opts: { added: string[]; removed: string[]; knowledgeId: string }) => void,
+  ) => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
     if (!v || v.status !== 'reviewing') return;
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    const previouslyActive = k.versions.find(ver => ver.status === 'active');
+    const prevFileIds = new Set((previouslyActive?.sourceFiles ?? []).map(f => f.fileId));
+    const newFileIds = new Set(v.sourceFiles.map(f => f.fileId));
 
     // Previous active version becomes history
     for (const ver of k.versions) {
@@ -1376,6 +1383,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       ...(v.reviewHistory ?? []),
       { action: 'APPROVED', by: 'Current User', time: now },
     ];
+
+    if (syncMembership) {
+      const added = [...newFileIds].filter(id => !prevFileIds.has(id));
+      const removed = [...prevFileIds].filter(id => !newFileIds.has(id));
+      if (added.length || removed.length) {
+        syncMembership({ added, removed, knowledgeId });
+      }
+    }
 
     if (k.sourceType === 'MANUAL') {
       k.status = 'processing'
@@ -1424,18 +1439,24 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.status = 'pending';
   };
 
-  // 從共用檔案建立新的知識條目草稿
+  // 從共用檔案建立新的知識條目草稿（支援多個來源檔案）
   const createFromFile = (params: {
-    fileId: string;
-    fileName: string;
+    files: { fileId: string; fileName: string }[];
     template: string;
     content: string;
     category: string;
   }) => {
+    const primary = params.files[0];
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
     const newId = `k-${Date.now()}`;
     const draftId = `v1.0-draft-${Date.now()}`;
-    const baseName = params.fileName.replace(/\.[^.]+$/, '');
+    const baseName = primary.fileName.replace(/\.[^.]+$/, '');
+    const summary = params.files.length > 1
+      ? `由「${primary.fileName}」等 ${params.files.length} 個來源檔案生成的知識條目草稿`
+      : `由「${primary.fileName}」生成的知識條目草稿`;
+    const updateNote = params.files.length > 1
+      ? `從共用檔案「${params.files.map(f => f.fileName).join('、')}」建立，使用模板：${params.template}`
+      : `從共用檔案「${primary.fileName}」建立，使用模板：${params.template}`;
 
     const newKnowledge: KnowledgeItem = {
       id: newId,
@@ -1460,14 +1481,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         versionType: null,
         status: 'draft',
         title: baseName,
-        summary: `由「${params.fileName}」生成的知識條目草稿`,
+        summary,
         content: params.content,
         tags: [],
         systemTags: [],
         lastUpdateBy: 'AI 生成',
         lastUpdateTime: now,
-        updateNote: `從共用檔案「${params.fileName}」建立，使用模板：${params.template}`,
-        sourceFiles: [{ fileId: params.fileId, fileName: params.fileName, linkedVersion: 1 }],
+        updateNote,
+        sourceFiles: params.files.map(f => ({ fileId: f.fileId, fileName: f.fileName, linkedVersion: 1 })),
         chunks: [],
         embeddingModel: null,
         embeddingDimension: null,
@@ -1586,6 +1607,35 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.staleSourceFileIds = [];
     return newVersion.id;
   }
+
+  // 手動調整知識庫的檔案來源成員（新增/移除），建立新草稿版本
+  const createDraftFromMemberUpdate = (
+    knowledgeId: string,
+    files: { fileId: string; fileName: string; linkedVersion: number }[],
+  ): string | undefined => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+
+    const base = k.versions.find(v => v.status === 'active') ?? k.versions[k.versions.length - 1];
+    if (!base) return;
+    const [major, minor] = base.versionNumber.replace('v', '').split('.').map(Number);
+    const newNum = `v${major}.${minor + 1}`;
+
+    const newVersion: KnowledgeVersion = {
+      ...JSON.parse(JSON.stringify(base)),
+      id: `${newNum}-member-update-${Date.now()}`,
+      versionNumber: newNum,
+      status: 'draft' as VersionStatus,
+      updateNote: `調整檔案來源成員（共 ${files.length} 個來源檔案）`,
+      lastUpdateBy: 'Current User',
+      lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      sourceFiles: files.map(f => ({ fileId: f.fileId, fileName: f.fileName, linkedVersion: f.linkedVersion })),
+    };
+
+    k.versions.push(newVersion);
+    k.status = 'pending';
+    return newVersion.id;
+  };
 
   // 稍後處理：清除 stale 標記（不建立草稿）
   function dismissSourceStale(knowledgeId: string) {
@@ -2137,6 +2187,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     withdrawReview,
     markFileStale,
     createDraftFromSourceUpdate,
+    createDraftFromMemberUpdate,
     dismissSourceStale,
     apiSources,
     createApiSource,

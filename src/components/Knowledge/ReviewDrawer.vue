@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import { useResourceStore } from '@/stores/resourceStore';
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue';
 import popDialog from '@/services/popDialog';
 import AppSkeleton from '@/components/AppSkeleton.vue';
@@ -148,6 +149,7 @@ const emit = defineEmits<{
 }>();
 
 const knowledgeStore = useKnowledgeStore();
+const resourceStore = useResourceStore();
 const {
   isLoading: drawerLoading,
   hasError: drawerError,
@@ -166,7 +168,10 @@ function close() {
 }
 
 function handleApprove() {
-  knowledgeStore.approveVersion(props.knowledgeId, props.versionId);
+  knowledgeStore.approveVersion(props.knowledgeId, props.versionId, ({ added, removed, knowledgeId }) => {
+    added.forEach(fileId => resourceStore.addKnowledgeMembership(fileId, knowledgeId));
+    removed.forEach(fileId => resourceStore.removeKnowledgeMembership(fileId, knowledgeId));
+  });
   const vNum = version.value?.versionNumber ?? '';
   close();
   emit('approved');
