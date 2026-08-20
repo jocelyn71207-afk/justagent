@@ -180,7 +180,7 @@
     white-space: nowrap;
 
     &.status-ready   { background: rgba(0, 160, 120, 0.12); color: var(--success); }
-    &.status-confirm { background: rgba(37, 99, 235, 0.12); color: var(--primary-hover); }
+    &.status-confirm { background: var(--hint); color: var(--primary-hover); }
     &.status-parsing { background: rgba(207, 138, 31, 0.12); color: var(--warning); }
   }
 
