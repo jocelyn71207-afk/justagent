@@ -21,49 +21,28 @@
         </div>
       </div>
 
-      <!-- FILE: 已預填來源檔案（從共用檔案管理建立）-->
-      <template v-if="selectedSourceType === 'FILE' && prefillFile">
-        <div class="upload-dropzone mb-3 has-file" style="cursor:default;">
-          <i class="material-symbols-outlined fs-28 mb-1" style="color:#16a34a;">task_alt</i>
-          <div class="fs-13 fw-600">{{ prefillFile.fileName }}</div>
-          <div class="fs-12 fc-grey-1 mt-1">來自共用檔案管理</div>
+      <!-- FILE: 已選檔案清單（可能來自 prefill、上傳、或共用庫選取）-->
+      <template v-if="selectedSourceType === 'FILE'">
+        <div v-if="pickedFiles.length" class="picked-files-list mb-2">
+          <div v-for="f in pickedFiles" :key="f.fileId" class="picked-file-row">
+            <i class="material-symbols-outlined fs-18" style="color:#16a34a;">task_alt</i>
+            <span class="fs-13 fw-600 picked-file-name">{{ f.fileName }}</span>
+            <span class="fs-11 fc-grey-1">{{ f.fromUpload ? '新上傳' : '共用檔案管理' }}</span>
+            <button class="picked-file-remove" @click.stop="removePickedFile(f.fileId)">
+              <i class="material-symbols-outlined fs-16">close</i>
+            </button>
+          </div>
         </div>
-      </template>
 
-      <!-- FILE: 已從共用庫選取 -->
-      <template v-else-if="selectedSourceType === 'FILE' && selectedLibraryFile">
-        <div class="upload-dropzone mb-2 has-file" style="cursor:default;">
-          <i class="material-symbols-outlined fs-28 mb-1" style="color:var(--success);">task_alt</i>
-          <div class="fs-13 fw-600">{{ selectedLibraryFile.fileName }}</div>
-          <div class="fs-12 fc-grey-1 mt-1">來自共用檔案管理</div>
-          <button
-            class="fs-11 fc-grey-1 mt-2"
-            style="background:none;border:none;cursor:pointer;text-decoration:underline;"
-            @click="selectedLibraryFile = null"
-          >更換</button>
-        </div>
-      </template>
-
-      <!-- FILE: 上傳區 -->
-      <template v-else-if="selectedSourceType === 'FILE'">
         <div
           class="upload-dropzone mb-2"
-          :class="{ 'has-file': uploadedFile }"
           @dragover.prevent
           @drop.prevent="handleDrop"
           @click="fileInputRef?.click()"
         >
-          <template v-if="!uploadedFile">
-            <i class="material-symbols-outlined fs-32 mb-2" style="color:#93c5fd;">cloud_upload</i>
-            <div class="fs-13 fw-500" style="color:#2563eb;">拖曳檔案至此或點擊選取</div>
-            <div class="fs-12 fc-grey-1 mt-1">支援 PDF、DOCX、XLSX，最大 50MB</div>
-          </template>
-          <template v-else>
-            <i class="material-symbols-outlined fs-28 mb-1" style="color:#16a34a;">task_alt</i>
-            <div class="fs-13 fw-600">{{ uploadedFile.name }}</div>
-            <div class="fs-12 fc-grey-1 mt-1">{{ (uploadedFile.size / 1024).toFixed(0) }} KB</div>
-            <button class="fs-11 fc-grey-1 mt-2" style="background:none;border:none;cursor:pointer;text-decoration:underline;" @click.stop="uploadedFile = null">更換檔案</button>
-          </template>
+          <i class="material-symbols-outlined fs-32 mb-2" style="color:#93c5fd;">cloud_upload</i>
+          <div class="fs-13 fw-500" style="color:#2563eb;">拖曳檔案至此或點擊選取</div>
+          <div class="fs-12 fc-grey-1 mt-1">支援 PDF、DOCX、XLSX，最大 50MB</div>
         </div>
         <input ref="fileInputRef" type="file" accept=".pdf,.docx,.xlsx" style="display:none;" @change="handleFileSelect" />
 
@@ -80,7 +59,7 @@
             @click.stop="showResourcePicker = true"
           >
             <i class="material-symbols-outlined fs-14">folder_open</i>
-            從共用檔案管理選取
+            從共用檔案管理選取更多檔案
           </button>
         </div>
       </template>
@@ -177,7 +156,6 @@ import { useResourceStore } from '@/stores/resourceStore'
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void
   (e: 'created', knowledgeId: string): void
-  (e: 'done', payload: { fileId: string; knowledgeId: string }): void
 }>()
 const props = defineProps<{
   modelValue: boolean
@@ -204,25 +182,40 @@ const sourceTypes = [
 const selectedSourceType = ref<SourceType>('FILE')
 
 // ── FILE ──
+interface PickedFile { fileId: string; fileName: string; fromUpload: boolean }
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const uploadedFile = ref<File | null>(null)
-const selectedLibraryFile = ref<{ fileId: string; fileName: string } | null>(null)
+const pickedFiles = ref<PickedFile[]>([])
 const showResourcePicker = ref(false)
 
-function onPickerSelect(file: { fileId: string; fileName: string }) {
-  selectedLibraryFile.value = file
-  uploadedFile.value = null
+function addPickedFile(file: PickedFile) {
+  if (pickedFiles.value.some(f => f.fileId === file.fileId)) return
+  pickedFiles.value.push(file)
+}
+
+function removePickedFile(fileId: string) {
+  pickedFiles.value = pickedFiles.value.filter(f => f.fileId !== fileId)
+}
+
+function onPickerSelect(payload: { files: { fileId: string; fileName: string }[] }) {
+  payload.files.forEach(f => addPickedFile({ fileId: f.fileId, fileName: f.fileName, fromUpload: false }))
   showResourcePicker.value = false
+}
+
+function addUploadedFile(file: File) {
+  const saved = resourceStore.addFileFromUpload(file)
+  addPickedFile({ fileId: saved.id, fileName: saved.fileName, fromUpload: true })
 }
 
 function handleDrop(e: DragEvent) {
   const file = e.dataTransfer?.files?.[0]
-  if (file) uploadedFile.value = file
+  if (file) addUploadedFile(file)
 }
 
 function handleFileSelect(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (file) uploadedFile.value = file
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (file) addUploadedFile(file)
+  input.value = ''
 }
 
 // ── API ──
@@ -258,20 +251,22 @@ function removeTag(tag: string) {
 
 const canSubmit = computed(() => {
   if (!selectedCategory.value) return false
-  if (props.prefillFile) return true
-  if (selectedSourceType.value === 'FILE') return !!(uploadedFile.value || selectedLibraryFile.value)
+  if (selectedSourceType.value === 'FILE') return pickedFiles.value.length > 0
   if (selectedSourceType.value === 'API') return !!selectedApiSourceId.value
   if (selectedSourceType.value === 'MANUAL') return !!manualTitle.value.trim()
   if (selectedSourceType.value === 'JUSTKA') return !!selectedJustkaBot.value
   return false
 })
 
-// ── 表單重置 ──
+// ── 開啟時預填 prefillFile／關閉時表單重置 ──
 watch(isOpenModal, (open) => {
-  if (!open) {
+  if (open) {
+    if (props.prefillFile) {
+      pickedFiles.value = [{ fileId: props.prefillFile.fileId, fileName: props.prefillFile.fileName, fromUpload: false }]
+    }
+  } else {
     selectedSourceType.value = 'FILE'
-    uploadedFile.value = null
-    selectedLibraryFile.value = null
+    pickedFiles.value = []
     showResourcePicker.value = false
     selectedApiSourceId.value = ''
     selectedJustkaBot.value = ''
@@ -280,27 +275,11 @@ watch(isOpenModal, (open) => {
     selectedTags.value = []
     tagInput.value = ''
   }
-})
+}, { immediate: true })
 
 // ── 送出 ──
 function handleSubmit() {
   if (!canSubmit.value) return
-
-  if (props.prefillFile) {
-    const { knowledgeId } = knowledgeStore.createFromFile({
-      fileId: props.prefillFile.fileId,
-      fileName: props.prefillFile.fileName,
-      category: selectedCategory.value,
-      template: '',
-      content: '',
-    })
-    emit('done', { fileId: props.prefillFile.fileId, knowledgeId })
-    isOpenModal.value = false
-    popDialog.toast('AI 正在解析檔案並生成知識內容…', 3000)
-    simulateFileAiGeneration(knowledgeId, props.prefillFile.fileName)
-    router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
-    return
-  }
 
   if (selectedSourceType.value === 'MANUAL') {
     const { knowledgeId, versionId } = knowledgeStore.createManualDraft({
@@ -314,30 +293,22 @@ function handleSubmit() {
   }
 
   if (selectedSourceType.value === 'FILE') {
-    const isFromLibrary = !!selectedLibraryFile.value
-    const fileRef = isFromLibrary
-      ? { fileId: selectedLibraryFile.value!.fileId, fileName: selectedLibraryFile.value!.fileName }
-      : (() => {
-          const saved = resourceStore.addFileFromUpload(uploadedFile.value!)
-          return { fileId: saved.id, fileName: saved.fileName }
-        })()
-
     const { knowledgeId } = knowledgeStore.createFromFile({
-      fileId: fileRef.fileId,
-      fileName: fileRef.fileName,
+      files: pickedFiles.value.map(f => ({ fileId: f.fileId, fileName: f.fileName })),
       category: selectedCategory.value,
       template: '',
       content: '',
     })
 
-    const toastMsg = isFromLibrary
-      ? 'AI 正在解析檔案並生成知識內容…'
-      : '檔案已儲存至共用檔案管理，AI 正在解析並生成知識內容…'
+    pickedFiles.value.forEach(f => resourceStore.addKnowledgeMembership(f.fileId, knowledgeId))
 
-    emit('done', { fileId: fileRef.fileId, knowledgeId })
+    const toastMsg = pickedFiles.value.length > 1
+      ? `已整合 ${pickedFiles.value.length} 個來源檔案，AI 正在解析並生成知識內容…`
+      : 'AI 正在解析檔案並生成知識內容…'
+
     isOpenModal.value = false
     popDialog.toast(toastMsg, 3000)
-    simulateFileAiGeneration(knowledgeId, fileRef.fileName)
+    simulateFileAiGeneration(knowledgeId, pickedFiles.value[0].fileName)
     router.push({ name: 'KnowledgeDetail', params: { id: knowledgeId } })
     return
   }

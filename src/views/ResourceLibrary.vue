@@ -171,7 +171,6 @@
   <CreateKnowledgeWizardModal
     v-model="isWizardOpen"
     :prefill-file="wizardFile"
-    @done="({ fileId, knowledgeId }) => resourceStore.addKnowledgeMembership(fileId, knowledgeId)"
   />
 
   <SourceUpdateModal

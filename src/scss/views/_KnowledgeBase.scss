@@ -1635,7 +1635,8 @@
 }
 
 // ── CreateKnowledgeWizardModal ──
-.CreateKnowledgeWizardModal {
+.CreateKnowledgeWizardModal,
+.UpdateKnowledgeSourcesModal {
   .wizard-modal-body {
     padding: 4px 0;
   }
@@ -1701,6 +1702,46 @@
     color: var(--text);
     min-width: 100px;
     flex: 1;
+  }
+
+  .picked-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .picked-file-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    background: var(--page-bg);
+  }
+
+  .picked-file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .picked-file-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+    padding: 2px;
+    border-radius: 4px;
+
+    &:hover {
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
   }
 }
 
