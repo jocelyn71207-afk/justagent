@@ -143,12 +143,12 @@ watch(() => props.skill?.id, () => { isEditingFiles.value = false })
 
 ```vue
 <div class="secm-files-panel">
-  <div class="section-label-row">
-    <span class="section-label">附加檔案</span>
-  </div>
-  <SkillFileUpload v-model="localFiles" />
+  <div class="secm-files-label">附加檔案</div>
+  <SkillFileUpload :model-value="localFiles" @update:model-value="onFilesChange" />
 </div>
 ```
+
+（實際實作沒有沿用 `.section-label-row`/`.section-label`——那兩個 class 巢狀寫在 `.SkillDetailDrawer` 底下，套用到這個 modal 會沒有樣式，因此改用獨立的 `.secm-files-label`；`v-model` 也改成 `:model-value` + `@update:model-value="onFilesChange"`，讓寫回 store 的動作跟本地 state 更新在同一個 handler 裡完成。）
 
 ```ts
 const localFiles = ref<SkillFile[]>([])

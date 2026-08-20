@@ -1069,9 +1069,11 @@ export const useSkillStore = defineStore('skillStore', () => {
   function updateSkillFiles(skillId: string, files: SkillFile[]): void {
     const skill = findSkill(skillId)
     if (!skill) return
-    skill.files = files
+    const previousFiles = skill.files ?? []
+    skill.files = [...files]
     if (
       skill.personalStatus === 'draft' &&
+      !filesEqual(files, previousFiles) &&
       !filesEqual(files, findSkill(skill.derivedFrom ?? '')?.files ?? [])
     ) {
       skill.personalStatus = 'available'

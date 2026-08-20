@@ -157,7 +157,9 @@
                   <span class="section-label">附加檔案</span>
                   <button
                     v-if="canEditFiles && !isEditingFiles"
+                    type="button"
                     class="section-edit-btn"
+                    aria-label="編輯附加檔案"
                     @click="startEditFiles"
                   >
                     <i class="material-symbols-outlined">edit</i>
@@ -167,8 +169,8 @@
                 <template v-if="isEditingFiles">
                   <SkillFileUpload v-model="editFilesDraft" />
                   <div class="section-edit-actions">
-                    <button class="custom-btn" @click="cancelEditFiles">取消</button>
-                    <button class="custom-btn custom-main-btn" @click="saveEditFiles">儲存</button>
+                    <button type="button" class="custom-btn" @click="cancelEditFiles">取消</button>
+                    <button type="button" class="custom-btn custom-main-btn" @click="saveEditFiles">儲存</button>
                   </div>
                 </template>
 

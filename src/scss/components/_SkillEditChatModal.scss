@@ -64,6 +64,7 @@
 
   .secm-messages {
     flex: 1;
+    min-height: 120px;
     overflow-y: auto;
     padding: 16px 20px;
     display: flex;
@@ -145,6 +146,9 @@
     padding: 12px 20px;
     border-top: 1px solid var(--divider-a50);
     flex-shrink: 0;
+    max-height: 40%;
+    overflow-y: auto;
+    @include use-scroll-bar(var(--scrollbar-a50));
   }
 
   .secm-files-label {

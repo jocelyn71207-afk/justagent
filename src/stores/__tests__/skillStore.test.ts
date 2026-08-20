@@ -512,5 +512,22 @@ describe('skillStore', () => {
       store.updateSkillFiles(skill.id, [file])
       expect(store.findSkill(skill.id)?.personalStatus).toBe('available')
     })
+
+    it('updateSkillFiles 對複製自「有附加檔案的來源」的草稿，儲存未變動的內容時 personalStatus 保持 draft（不會因為草稿一開始就跟來源的檔案不同就被誤判為已修改）', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('personal-001')
+      expect(copy.personalStatus).toBe('draft')
+      expect(copy.files ?? []).toEqual([]) // 複製不帶 files，這份草稿從一開始就跟有檔案的來源不同
+      store.updateSkillFiles(copy.id, copy.files ?? [])
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('draft')
+    })
+
+    it('updateSkillFiles 對複製自「有附加檔案的來源」的草稿，實際新增檔案後 personalStatus 轉為 available', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('personal-001')
+      const file = { id: 'sf-7', fileName: 'notes.txt', fileSize: 64, fileType: 'TXT' as const, uploadedAt: '2026-08-19T00:00:00Z' }
+      store.updateSkillFiles(copy.id, [file])
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('available')
+    })
   })
 })
