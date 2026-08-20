@@ -10,6 +10,10 @@
         </div>
         <div class="banner-right">
           <compListCardSwitch v-model="viewMode"/>
+          <button class="custom-btn" @click="isUpdateSourcesModalOpen = true">
+            <i class="material-symbols-outlined">sync_alt</i>
+            更新知識庫
+          </button>
           <button class="custom-btn custom-main-btn" @click="openBatchUploadFn()">
             <i class="material-symbols-outlined">add</i>
             上傳檔案
@@ -177,6 +181,8 @@
     v-model="isSourceUpdateModalOpen"
     :file-id="sourceUpdateFileId"
   />
+
+  <UpdateKnowledgeSourcesModal v-model="isUpdateSourcesModalOpen" />
 </template>
 
 <script setup lang="ts">
@@ -194,6 +200,7 @@ import popDialog from '@/services/popDialog';
 import { useResourceStore } from '@/stores/resourceStore';
 import CreateKnowledgeWizardModal from '@/components/Knowledge/CreateKnowledgeWizardModal.vue';
 import SourceUpdateModal from '@/components/Knowledge/SourceUpdateModal.vue';
+import UpdateKnowledgeSourcesModal from '@/components/Knowledge/UpdateKnowledgeSourcesModal.vue';
 import AppSkeleton from '@/components/AppSkeleton.vue';
 import AppErrorState from '@/components/AppErrorState.vue';
 import { useApiCall } from '@/composables/useApiCall';
@@ -216,6 +223,9 @@ watch(isWizardOpen, (open) => { if (!open) wizardFile.value = undefined; });
 // 來源更新 Modal
 const isSourceUpdateModalOpen = ref(false);
 const sourceUpdateFileId = ref('');
+
+// 更新知識庫（多檔來源成員調整）
+const isUpdateSourcesModalOpen = ref(false);
 
 // 檔案類型圖示 mapping
 import pdfIcon from '@/assets/fileTypeIcon/pdf.svg';
