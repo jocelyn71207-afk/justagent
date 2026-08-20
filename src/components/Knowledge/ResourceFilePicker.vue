@@ -2,7 +2,7 @@
   <compModal
     class="ResourceFilePicker"
     v-model="isOpen"
-    :width="700"
+    :width="820"
   >
     <template #title>選取共用檔案</template>
 
@@ -20,10 +20,13 @@
 
     <div class="picker-table">
       <div class="picker-table-header">
+        <div class="picker-col-check"></div>
         <div>檔案名稱</div>
         <div>類型</div>
+        <div>上傳者</div>
+        <div>上傳時間</div>
         <div>狀態</div>
-        <div>最後更新</div>
+        <div>目前成員</div>
       </div>
 
       <template v-if="filteredList.length > 0">
@@ -32,11 +35,19 @@
           :key="file.id"
           :class="[
             'picker-row',
-            { 'is-selected': selectedFile?.id === file.id },
-            { 'is-disabled': isDisabled(file) },
+            { 'is-selected': isSelected(file) },
+            { 'is-disabled': !isKbSourceSelectable(file) },
           ]"
-          @click="!isDisabled(file) && selectFile(file)"
+          @click="isKbSourceSelectable(file) && toggleFile(file)"
         >
+          <div class="picker-col-check">
+            <input
+              type="checkbox"
+              :checked="isSelected(file)"
+              :disabled="!isKbSourceSelectable(file)"
+              @click.stop="isKbSourceSelectable(file) && toggleFile(file)"
+            />
+          </div>
           <div class="picker-row-name">
             <i class="material-symbols-outlined fs-16">description</i>
             <span>{{ file.fileName }}</span>
@@ -46,12 +57,19 @@
               {{ file.processType === 'AI_PARSED' ? 'AI 解析' : '原始檔案' }}
             </span>
           </div>
+          <div class="fc-grey-1 fs-11">{{ file.ownerName || '—' }}</div>
+          <div class="fc-grey-1 fs-11">{{ file.lastModify.slice(0, 10) }}</div>
           <div>
-            <span :class="['status-badge', `status-${file.status}`]">
-              {{ statusLabel(file.status) }}
+            <span :class="['status-badge', `status-${kbStatusClass(file)}`]">
+              {{ getKbSourceStatusLabel(file) }}
             </span>
           </div>
-          <div class="fc-grey-1 fs-11">{{ file.lastModify.slice(0, 10) }}</div>
+          <div>
+            <span v-if="membershipTitles(file).length === 0" class="member-badge member-badge--none">非成員</span>
+            <span v-else class="member-badge">
+              {{ membershipTitles(file)[0] }}<template v-if="membershipTitles(file).length > 1"> +{{ membershipTitles(file).length - 1 }}</template>
+            </span>
+          </div>
         </div>
       </template>
 
@@ -62,9 +80,9 @@
     </div>
 
     <div class="picker-selected-hint">
-      <template v-if="selectedFile">
+      <template v-if="selectedFiles.length > 0">
         <i class="material-symbols-outlined">check_circle</i>
-        已選取：{{ selectedFile.fileName }}
+        已選取 {{ selectedFiles.length }} 個檔案：{{ selectedFiles.map(f => f.fileName).join('、') }}
       </template>
     </div>
 
@@ -72,7 +90,7 @@
       <button class="custom-btn" @click="isOpen = false">取消</button>
       <button
         class="custom-btn custom-main-btn"
-        :disabled="!selectedFile"
+        :disabled="selectedFiles.length === 0"
         @click="confirmSelect"
       >
         <i class="material-symbols-outlined">check</i>
@@ -86,15 +104,17 @@
 import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import compModal from '@/components/compModal/compModal.vue'
-import { useResourceStore } from '@/stores/resourceStore'
+import { useResourceStore, getKbSourceStatusLabel, isKbSourceSelectable } from '@/stores/resourceStore'
 import type { ResourceFile } from '@/stores/resourceStore'
+import { useKnowledgeStore } from '@/stores/knowledgeStore'
 
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void
-  (e: 'select', file: { fileId: string; fileName: string }): void
+  (e: 'select', payload: { files: { fileId: string; fileName: string }[] }): void
 }>()
 const props = defineProps<{
   modelValue: boolean
+  preselectedIds?: string[]
 }>()
 
 const isOpen = computed({
@@ -104,10 +124,11 @@ const isOpen = computed({
 
 const resourceStore = useResourceStore()
 const { resourceList } = storeToRefs(resourceStore)
+const knowledgeStore = useKnowledgeStore()
 
 const searchQuery = ref('')
 const filterType = ref('')
-const selectedFile = ref<ResourceFile | null>(null)
+const selectedFiles = ref<ResourceFile[]>([])
 
 const filteredList = computed(() => {
   return resourceList.value.filter(f => {
@@ -117,37 +138,47 @@ const filteredList = computed(() => {
   })
 })
 
-function isDisabled(file: ResourceFile): boolean {
-  return file.status === 'uploading' || file.status === 'parsing' || file.status === 'failed'
+function isSelected(file: ResourceFile): boolean {
+  return selectedFiles.value.some(f => f.id === file.id)
 }
 
-function selectFile(file: ResourceFile) {
-  selectedFile.value = selectedFile.value?.id === file.id ? null : file
+function toggleFile(file: ResourceFile) {
+  const idx = selectedFiles.value.findIndex(f => f.id === file.id)
+  if (idx === -1) selectedFiles.value.push(file)
+  else selectedFiles.value.splice(idx, 1)
 }
 
 function confirmSelect() {
-  if (!selectedFile.value) return
-  emit('select', { fileId: selectedFile.value.id, fileName: selectedFile.value.fileName })
+  if (selectedFiles.value.length === 0) return
+  emit('select', { files: selectedFiles.value.map(f => ({ fileId: f.id, fileName: f.fileName })) })
   isOpen.value = false
 }
 
-// reset state each time the picker opens
+function membershipTitles(file: ResourceFile): string[] {
+  return file.knowledgeIds
+    .map(id => knowledgeStore.getKnowledgeById(id)?.title)
+    .filter((title): title is string => !!title)
+}
+
+function kbStatusClass(file: ResourceFile): 'ready' | 'confirm' | 'parsing' {
+  const label = getKbSourceStatusLabel(file)
+  if (label === '已有資料') return 'ready'
+  if (label === '待確認') return 'confirm'
+  return 'parsing'
+}
+
+// 每次開啟時重置搜尋條件，並依 preselectedIds 預先勾選
+// immediate: true — 修正 controller 核准的 watch 時機 bug：若元件掛載時 modelValue 已為 true
+// （例如測試直接以 modelValue: true 掛載），非 immediate 的 watch 不會在掛載當下觸發，
+// 導致 preselectedIds 永遠不會被套用。掛載時 modelValue 為 false（正常使用情境）時，
+// immediate 呼叫的 open 為 false，if (open) 區塊不會執行，行為與原本相同。
 watch(() => props.modelValue, (open) => {
   if (open) {
     searchQuery.value = ''
     filterType.value = ''
-    selectedFile.value = null
+    selectedFiles.value = props.preselectedIds
+      ? resourceList.value.filter(f => props.preselectedIds!.includes(f.id))
+      : []
   }
-})
-
-function statusLabel(status: ResourceFile['status']): string {
-  const map: Record<ResourceFile['status'], string> = {
-    uploading: '上傳中',
-    parsing: '解析中',
-    stored: '已儲存',
-    saved: '已儲存',
-    failed: '失敗',
-  }
-  return map[status]
-}
+}, { immediate: true })
 </script>

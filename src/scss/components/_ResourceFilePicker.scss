@@ -59,7 +59,7 @@
 
   .picker-table-header {
     display: grid;
-    grid-template-columns: 1fr 90px 90px 110px;
+    grid-template-columns: 24px 1fr 70px 64px 84px 70px 120px;
     padding: 7px 14px;
     background: var(--page-bg);
     font-size: 11px;
@@ -71,7 +71,7 @@
 
   .picker-row {
     display: grid;
-    grid-template-columns: 1fr 90px 90px 110px;
+    grid-template-columns: 24px 1fr 70px 64px 84px 70px 120px;
     padding: 10px 14px;
     border-bottom: 1px solid var(--divider);
     font-size: 12px;
@@ -95,6 +95,16 @@
     &.is-disabled {
       opacity: 0.45;
       cursor: not-allowed;
+    }
+  }
+
+  .picker-col-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    input[type="checkbox"] {
+      cursor: pointer;
     }
   }
 
@@ -127,7 +137,8 @@
 
   .picker-selected-hint {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 6px;
     margin-top: 10px;
     font-size: 12px;
@@ -158,7 +169,7 @@
     &.badge-raw  { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider); }
   }
 
-  // Status badge
+  // 知識庫來源狀態 badge（已有資料/待確認/需解析）
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -168,8 +179,30 @@
     font-weight: 600;
     white-space: nowrap;
 
-    &.status-stored, &.status-saved  { background: rgba(0, 160, 120, 0.12); color: var(--success); }
-    &.status-uploading, &.status-parsing { background: rgba(207, 138, 31, 0.12); color: var(--warning); }
-    &.status-failed  { background: rgba(209, 68, 55, 0.12); color: var(--danger); }
+    &.status-ready   { background: rgba(0, 160, 120, 0.12); color: var(--success); }
+    &.status-confirm { background: rgba(37, 99, 235, 0.12); color: var(--primary-hover); }
+    &.status-parsing { background: rgba(207, 138, 31, 0.12); color: var(--warning); }
+  }
+
+  // 目前成員 badge
+  .member-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: var(--hint);
+    color: var(--primary-hover);
+
+    &.member-badge--none {
+      background: var(--page-bg);
+      color: var(--text-faint);
+      border: 1px solid var(--divider);
+    }
   }
 }
