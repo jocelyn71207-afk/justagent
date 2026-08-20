@@ -1023,6 +1023,33 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  // 手寫建立技能的正式入口（SkillEditor.vue 的「全新建立」）：一律先建立成個人技能，
+  // 不需要送審就能個人使用，跟 duplicateAsPersonalSkill() 同一套「寫進
+  // myPersonalSkillsRef」模式，只是沒有 derivedFrom（沒有來源可比對，personalStatus
+  // 直接是 available，不是 draft）。createSkill() 保留給送審通過、正式發佈進 Library
+  // 用（submitDraft()），不再由這裡呼叫。
+  function createPersonalSkill(data: CreateSkillPayload): void {
+    myPersonalSkillsRef.value.unshift({
+      id: `personal-${Date.now()}`,
+      name: data.name,
+      description: data.description ?? '',
+      type: 'extension',
+      origin: 'manually_created',
+      zone: 'personal',
+      personalStatus: 'available',
+      skillName: data.name,
+      version: '1.0.0',
+      isEnabled: data.isEnabled,
+      usageCount: 0,
+      testPassRate: 0,
+      avgLatencyMs: 0,
+      instructions: data.instructions,
+      triggerHint: data.triggerHint,
+      assignedAgents: data.assignedAgents,
+      files: data.files ?? [],
+    })
+  }
+
   function createSkill(data: CreateSkillPayload): void {
     skills.value.push({
       id: `ext-custom-${skills.value.length + 1}`,
@@ -1560,6 +1587,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     restoreSkill,
     permanentlyDeleteSkill,
     createSkill,
+    createPersonalSkill,
     updateSkill,
     updateSkillFiles,
     toggleSkill,

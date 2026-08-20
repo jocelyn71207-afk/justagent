@@ -190,6 +190,62 @@ describe('skillStore', () => {
     })
   })
 
+  describe('手寫建立個人技能（createPersonalSkill）', () => {
+    it('建立的技能出現在 myPersonalSkills，zone 為 personal', () => {
+      const store = useSkillStore()
+      store.createPersonalSkill({
+        name: '我的新技能',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '我的新技能')
+      expect(created).toBeDefined()
+      expect(created?.zone).toBe('personal')
+    })
+
+    it('建立的技能 personalStatus 為 available（不需要送審就能用）', () => {
+      const store = useSkillStore()
+      store.createPersonalSkill({
+        name: '我的新技能2',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '我的新技能2')
+      expect(created?.personalStatus).toBe('available')
+    })
+
+    it('不會把技能寫進 Library（store.skills 不受影響）', () => {
+      const store = useSkillStore()
+      const before = store.skills.length
+      store.createPersonalSkill({
+        name: '我的新技能3',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      expect(store.skills.length).toBe(before)
+      expect(store.skills.find(s => s.name === '我的新技能3')).toBeUndefined()
+    })
+
+    it('skillName 沿用使用者輸入的技能名稱（供之後的名稱衝突檢查使用）', () => {
+      const store = useSkillStore()
+      store.createPersonalSkill({
+        name: '我的新技能4',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '我的新技能4')
+      expect(created?.skillName).toBe('我的新技能4')
+    })
+  })
+
   describe('Library skill 欄位', () => {
     it('Library skill 有 isEnabled 欄位但 zone 不為 personal', () => {
       const store = useSkillStore()

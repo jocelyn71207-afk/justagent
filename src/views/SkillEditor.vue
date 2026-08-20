@@ -297,7 +297,8 @@ function handleSubmit() {
   } else if (isEditMode && editSkillId) {
     store.updateSkill(editSkillId, payload)
   } else {
-    store.createSkill(payload)
+    // 全新建立一律先進個人技能區，不需要送審就能個人使用（跟「建立副本」同一套模式）
+    store.createPersonalSkill(payload)
   }
   router.push('/view/Skills')
 }
