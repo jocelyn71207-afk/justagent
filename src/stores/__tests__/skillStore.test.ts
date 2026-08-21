@@ -190,6 +190,62 @@ describe('skillStore', () => {
     })
   })
 
+  describe('手寫建立個人技能（createPersonalSkill）', () => {
+    it('建立的技能出現在 myPersonalSkills，zone 為 personal', () => {
+      const store = useSkillStore()
+      store.createPersonalSkill({
+        name: '我的新技能',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '我的新技能')
+      expect(created).toBeDefined()
+      expect(created?.zone).toBe('personal')
+    })
+
+    it('建立的技能 personalStatus 為 available（不需要送審就能用）', () => {
+      const store = useSkillStore()
+      store.createPersonalSkill({
+        name: '我的新技能2',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '我的新技能2')
+      expect(created?.personalStatus).toBe('available')
+    })
+
+    it('不會把技能寫進 Library（store.skills 不受影響）', () => {
+      const store = useSkillStore()
+      const before = store.skills.length
+      store.createPersonalSkill({
+        name: '我的新技能3',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      expect(store.skills.length).toBe(before)
+      expect(store.skills.find(s => s.name === '我的新技能3')).toBeUndefined()
+    })
+
+    it('skillName 沿用使用者輸入的技能名稱（供之後的名稱衝突檢查使用）', () => {
+      const store = useSkillStore()
+      store.createPersonalSkill({
+        name: '我的新技能4',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '我的新技能4')
+      expect(created?.skillName).toBe('我的新技能4')
+    })
+  })
+
   describe('Library skill 欄位', () => {
     it('Library skill 有 isEnabled 欄位但 zone 不為 personal', () => {
       const store = useSkillStore()
@@ -471,6 +527,63 @@ describe('skillStore', () => {
         assignedAgents: [],
       })
       expect(store.findSkill('ext-cs-return-001')?.files).toEqual([])
+    })
+
+    it('updateSkillFiles 覆蓋技能的 files', () => {
+      const store = useSkillStore()
+      const file = { id: 'sf-3', fileName: 'sop.pdf', fileSize: 2048, fileType: 'PDF' as const, uploadedAt: '2026-08-19T00:00:00Z' }
+      store.updateSkillFiles('ext-cs-return-001', [file])
+      expect(store.findSkill('ext-cs-return-001')?.files).toEqual([file])
+    })
+
+    it('updateSkillFiles 傳入空陣列會清空技能的 files', () => {
+      const store = useSkillStore()
+      const file = { id: 'sf-4', fileName: 'sop.pdf', fileSize: 2048, fileType: 'PDF' as const, uploadedAt: '2026-08-19T00:00:00Z' }
+      store.updateSkillFiles('ext-cs-return-001', [file])
+      store.updateSkillFiles('ext-cs-return-001', [])
+      expect(store.findSkill('ext-cs-return-001')?.files).toEqual([])
+    })
+
+    it('updateSkillFiles 對草稿狀態的個人技能新增檔案後，personalStatus 轉為 available', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(copy.personalStatus).toBe('draft')
+      const file = { id: 'sf-5', fileName: 'rules.md', fileSize: 256, fileType: 'MD' as const, uploadedAt: '2026-08-19T00:00:00Z' }
+      store.updateSkillFiles(copy.id, [file])
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('available')
+    })
+
+    it('updateSkillFiles 對草稿狀態的個人技能傳入跟來源一樣的空陣列時，personalStatus 保持 draft', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(copy.personalStatus).toBe('draft')
+      store.updateSkillFiles(copy.id, [])
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('draft')
+    })
+
+    it('updateSkillFiles 對非草稿狀態的個人技能不會意外改動 personalStatus', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.personalStatus === 'available')!
+      const file = { id: 'sf-6', fileName: 'faq.txt', fileSize: 128, fileType: 'TXT' as const, uploadedAt: '2026-08-19T00:00:00Z' }
+      store.updateSkillFiles(skill.id, [file])
+      expect(store.findSkill(skill.id)?.personalStatus).toBe('available')
+    })
+
+    it('updateSkillFiles 對複製自「有附加檔案的來源」的草稿，儲存未變動的內容時 personalStatus 保持 draft（不會因為草稿一開始就跟來源的檔案不同就被誤判為已修改）', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('personal-001')
+      expect(copy.personalStatus).toBe('draft')
+      expect(copy.files ?? []).toEqual([]) // 複製不帶 files，這份草稿從一開始就跟有檔案的來源不同
+      store.updateSkillFiles(copy.id, copy.files ?? [])
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('draft')
+    })
+
+    it('updateSkillFiles 對複製自「有附加檔案的來源」的草稿，實際新增檔案後 personalStatus 轉為 available', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('personal-001')
+      const file = { id: 'sf-7', fileName: 'notes.txt', fileSize: 64, fileType: 'TXT' as const, uploadedAt: '2026-08-19T00:00:00Z' }
+      store.updateSkillFiles(copy.id, [file])
+      expect(store.findSkill(copy.id)?.personalStatus).toBe('available')
     })
   })
 })

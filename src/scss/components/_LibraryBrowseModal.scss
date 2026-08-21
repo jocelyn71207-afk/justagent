@@ -7,8 +7,9 @@
   align-items: flex-start;
   justify-content: flex-end;
 
+  // 改成多欄格狀目錄後給卡片多一點呼吸空間，比原本純列表版寬一些
   .lbm-panel {
-    width: min(640px, 90vw);
+    width: min(760px, 92vw);
     height: 100vh;
     background: var(--surface);
     display: flex;
@@ -64,67 +65,64 @@
     flex: 1;
     overflow-y: auto;
     padding: 0 20px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
     @include use-scroll-bar(var(--scrollbar-a50));
   }
 
-  .lbm-section {}
-
-  .lbm-section-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-    padding: 5px 10px;
-    border-radius: 7px;
-    .material-symbols-outlined { font-size: 15px; }
-
-    // 配色沿用「Library 現有技能管理」（_LibrarySkillRow.scss 的 lsr-section-block）
-    // 區隔企業／團隊的顏色，系統技能另外選用藍色系以三者互相區隔。
-    &--system {
-      background: rgba(#1565c0, 0.08);
-      color: #1565c0;
-      .material-symbols-outlined { color: #1565c0; }
-      .lbm-count { background: rgba(#1565c0, 0.14); color: #1565c0; border-color: transparent; }
-    }
-    &--enterprise {
-      background: $color_main_5;
-      color: $color_main_1;
-      .material-symbols-outlined { color: $color_main_1; }
-      .lbm-count { background: rgba($color_main_1, 0.12); color: $color_main_1; border-color: transparent; }
-    }
-    &--team {
-      background: rgba(#7c5fba, 0.06);
-      color: #7c5fba;
-      .material-symbols-outlined { color: #7c5fba; }
-      .lbm-count { background: rgba(#7c5fba, 0.12); color: #7c5fba; border-color: transparent; }
-    }
-  }
-
-  .lbm-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 9px;
+  // 範圍篩選：分頁切換（全部／系統／企業／團隊），取代原本一路往下堆疊
+  // 的三個區塊，一次只看一種範圍，捲動距離變短
+  .lbm-segctrl {
+    display: flex;
+    gap: 4px;
     background: var(--page-bg);
     border: 1px solid var(--divider-a50);
-    color: var(--text-faint);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 0 5px;
+    border-radius: 10px;
+    padding: 3px;
+    margin: 0 20px 16px;
+    flex-shrink: 0;
+
+    button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, color 0.15s;
+
+      &:hover { color: var(--text); }
+
+      &.is-on {
+        background: var(--surface);
+        color: $color_main_1;
+        box-shadow: 0 1px 3px rgba(var(--shadow), 0.15);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+    }
   }
 
-  .lbm-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .lbm-seg-count {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: inherit;
+    opacity: 0.7;
+  }
+
+  // 卡片式目錄：多欄格狀，一次看到更多技能方便橫向比較
+  .lbm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
   }
 
   .lbm-empty {

@@ -1,13 +1,32 @@
 <template>
-  <div class="PersonalSkillGroup" @click="emit('manage', skill)">
-    <i class="material-symbols-outlined psg-icon">person</i>
-    <span class="psg-name">{{ skill.name }}</span>
-    <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
-    <span class="psg-status">
-      <span :class="['psg-status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
-      {{ skill.isEnabled ? '啟用中' : '停用中' }}
-    </span>
-    <i class="material-symbols-outlined psg-arrow">chevron_right</i>
+  <!-- 跟 Library 瀏覽 Modal／管理區的 Library 現有技能管理同一套卡片式目錄
+       語言（掛 SkillTile class 直接沿用格狀磚塊樣式），整個技能管理頁
+       不管在哪個分頁都是一致的瀏覽體驗。個人技能的操作（編輯/測試/複製/
+       送審）都在點進去之後的詳情 drawer 裡，磚塊本身不需要重複放操作按鈕 -->
+  <div class="PersonalSkillGroup SkillTile" @click="emit('manage', skill)">
+    <div class="tile-icon icon--personal">
+      <i class="material-symbols-outlined">person</i>
+    </div>
+
+    <div class="tile-name">
+      {{ skill.name }}
+      <span class="skill-tag tag--version">v{{ skill.version }}</span>
+      <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
+    </div>
+    <div v-if="skill.description" class="tile-desc">{{ skill.description }}</div>
+
+    <div class="tile-stats">
+      <span class="sk-stat">
+        <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
+      </span>
+    </div>
+
+    <div class="tile-foot">
+      <div class="tile-meta">
+        <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
+        <span class="status-text">{{ skill.isEnabled ? '啟用中' : '停用中' }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -38,4 +57,8 @@ const statusTagClass = computed(() => {
   if (props.skill.personalStatus === 'has_library') return 'tag--has-library'
   return ''
 })
+
+function formatCount(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
+}
 </script>

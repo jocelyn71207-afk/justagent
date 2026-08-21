@@ -176,7 +176,7 @@
               </div>
             </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
-              <button class="conv2-fp-sec-btn" @click.stop="conv2DirectFpStep = 1">← 返回</button>
+              <button class="conv2-fp-sec-btn" @click.stop="conv2DirectFpStep = 1"><i class="material-symbols-outlined">arrow_back</i>返回</button>
               <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitSku()">確認送出 →</button>
             </div>
           </div>
@@ -199,7 +199,8 @@
             <div class="conv2-step-track">
               <template v-for="(s, si) in conv2StepDefs" :key="s.key">
                 <div :class="['conv2-sd', {'conv2-sd--done': isConv2StepDone(s.key), 'conv2-sd--active': conv2CurStep === s.key}]">
-                  {{ isConv2StepDone(s.key) ? '✓' : s.label }}
+                  <i v-if="isConv2StepDone(s.key) || s.label === '✓'" class="material-symbols-outlined">check</i>
+                  <template v-else>{{ s.label }}</template>
                 </div>
                 <div class="conv2-sl" v-if="si < conv2StepDefs.length - 1"></div>
               </template>
@@ -220,7 +221,7 @@
             <div v-if="conv2S1ShowSkuInput" class="conv2-sku-prompt" @click.stop>
               <input class="conv2-fi" v-model="conv2S1SkuInput" placeholder="輸入貨號，如 UG1166915BLK" @click.stop style="flex:1;min-width:0" />
               <button class="conv2-fp-btn" style="flex-shrink:0" @click.stop="conv2S1ApplySku()">帶入</button>
-              <button class="conv2-fp-sec-btn" style="flex-shrink:0;padding:4px 8px" @click.stop="conv2S1ShowSkuInput = false; conv2S1SkuInput = ''">✕</button>
+              <button class="conv2-fp-sec-btn" style="flex-shrink:0;padding:4px 8px" @click.stop="conv2S1ShowSkuInput = false; conv2S1SkuInput = ''"><i class="material-symbols-outlined">close</i></button>
             </div>
             <div :class="['conv2-up-img-box', {'conv2-up-img-box--empty': !conv2S1ImgLoaded}]" style="margin-bottom:10px" @click.stop="conv2S1ImgLoaded = true">
               <img v-if="conv2S1ImgLoaded" :src="DEMO_IMG" />
@@ -250,7 +251,7 @@
             </div>
             <input class="conv2-fi conv2-fi--full" v-model="conv2S1Custom" placeholder="找不到，自行輸入…" @click.stop style="margin-top:4px" />
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)">← 返回</button>
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
               <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認 →</button>
             </div>
           </div>
@@ -268,7 +269,7 @@
             <div class="conv2-err">{{ conv2S3Err }}</div>
             <div class="conv2-fp-btn-row">
               <span class="conv2-cbadge">已選 {{ conv2S3Features.filter(f => f.sel).length }} / {{ conv2S3Features.length }}</span>
-              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(2)">← 返回</button>
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(2)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
               <button class="conv2-fp-btn" @click.stop="conv2GoStep(4)">確認 →</button>
             </div>
           </div>
@@ -284,7 +285,7 @@
             </div>
             <div style="font-size:11px;color:var(--color-text-alpha50);margin-top:8px">確認後進入設定審核，無誤後 DeepAgent 開始搜索</div>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(3)">← 返回</button>
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(3)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
               <button class="conv2-fp-btn" @click.stop="conv2GoStep('45')">確認 →</button>
             </div>
           </div>
@@ -298,7 +299,7 @@
               <div class="conv2-rv-row"><span class="conv2-rv-k">搜索範圍</span><span class="conv2-rv-v">{{ conv2S4Scope === 'tw' ? '台灣市場' : '指定網址：' + conv2S4Domain }}</span></div>
             </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
-              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(4)">← 返回修改</button>
+              <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(4)"><i class="material-symbols-outlined">arrow_back</i>返回修改</button>
               <button class="conv2-fp-btn conv2-fp-btn--green" @click.stop="conv2StartSearch()">確認無誤，開始搜索 →</button>
             </div>
           </div>
@@ -588,13 +589,13 @@
             </div>
           </div>
           <div class="conv1-transl-footer">
-            <button v-if="conv1TranslStep > 1" class="conv2-fp-sec-btn" @click.stop="conv1TranslStep--">← 返回</button>
+            <button v-if="conv1TranslStep > 1" class="conv2-fp-sec-btn" @click.stop="conv1TranslStep--"><i class="material-symbols-outlined">arrow_back</i>返回</button>
             <button v-if="conv1TranslStep < 3" class="conv2-fp-btn"
                     :disabled="(conv1TranslStep === 1 && !conv1TranslFile) || (conv1TranslStep === 2 && !conv1TranslRange)"
-                    @click.stop="conv1TranslStep++">下一步 →</button>
+                    @click.stop="conv1TranslStep++">下一步<i class="material-symbols-outlined">arrow_forward</i></button>
             <button v-if="conv1TranslStep === 3" class="conv2-fp-btn"
                     :disabled="!conv1TranslLang"
-                    @click.stop="conv1TranslSubmit()">確認送出 ✓</button>
+                    @click.stop="conv1TranslSubmit()">確認送出<i class="material-symbols-outlined">check</i></button>
           </div>
         </div>
         <!-- Conv1 旅程修改需求懸浮面板 -->
@@ -1205,10 +1206,10 @@ const conv1LangOptions = [
 
 // ── Conv1 下一步追問邏輯 ──
 const C1_ALL_STEPS = [
-  { key: '行銷策略',       label: '🎯 生成行銷策略',       msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
-  { key: '用戶畫像',       label: '👤 目標客群用戶畫像',   msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
-  { key: '圖表',           label: '📊 產出圖表',           msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
-  { key: '行銷自動化旅程', label: '🗺️ 生成行銷自動化旅程', msg: '生成 Hurricane Trailsetter AW26 行銷自動化旅程' },
+  { key: '行銷策略',       label: '生成行銷策略',       msg: '生成 Hurricane Trailsetter AW26 行銷策略報告' },
+  { key: '用戶畫像',       label: '目標客群用戶畫像',   msg: '分析 Hurricane Trailsetter 目標客群的用戶畫像' },
+  { key: '圖表',           label: '產出圖表',           msg: '給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用' },
+  { key: '行銷自動化旅程', label: '生成行銷自動化旅程', msg: '生成 Hurricane Trailsetter AW26 行銷自動化旅程' },
 ];
 const conv1DoneSteps = ref<Set<string>>(new Set());
 

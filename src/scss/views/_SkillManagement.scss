@@ -10,69 +10,46 @@
   }
 
   // ── Stats row ─────────────────────────────────
+  // 跟 TeamAccessManagement 的 .role-stats-row 同一套「色點 + 文字」語彙：
+  // 一行安靜的文字，不用四個顏色各異、邊框卡片堆砌出來的統計磚塊。
+  // 這四個數字分屬不同範圍（我的技能／企業 Library／團隊 Library／
+  // 本月觸發量，非同一份清單的子集合），所以不做成可篩選的按鈕，
+  // 純資訊呈現即可。
 
   .skill-stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-bottom: 28px;
-
-    @media (max-width: 500px) { grid-template-columns: 1fr 1fr; }
-  }
-
-  .skill-stat-card {
-    background: var(--surface);
-    border: 1px solid var(--divider-a50);
-    border-radius: 16px;
-    padding: 20px 22px;
     display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+
+  .skill-stat {
+    display: inline-flex;
     align-items: center;
-    gap: 16px;
-  }
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
 
-  .skill-stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    .material-symbols-outlined { font-size: 22px; }
-
-    &.icon--enabled {
-      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
-      color: $color_main_2;
+    b {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      margin-right: 2px;
     }
-    &.icon--ext {
-      background: $color-badge-hot-bg;
-      color: $color-badge-hot-text;
-    }
-    &.icon--team {
-      background: rgba(#7c5fba, 0.1);
-      color: #7c5fba;
-    }
-    &.icon--usage {
-      background: $color-badge-ai-bg;
-      color: $color-badge-ai-text;
-    }
-  }
 
-  .skill-stat-body { flex: 1; min-width: 0; }
+    .stat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
 
-  .skill-stat-num {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--text);
-    line-height: 1;
-    letter-spacing: -0.5px;
-  }
-
-  .skill-stat-lbl {
-    font-size: 12px;
-    color: var(--text-faint);
-    margin-top: 5px;
+    &.skill-stat--enabled { color: var(--tag-teal-text); }
+    &.skill-stat--ext     { color: var(--tag-blue-text); }
+    &.skill-stat--team    { color: var(--tag-violet-text); }
+    &.skill-stat--usage   { color: var(--tag-amber-text); }
   }
 
   // ── Search ────────────────────────────────────
@@ -216,19 +193,50 @@
     padding: 0 6px;
   }
 
+  // ── 管理區底下的子分頁（待審核／Library 管理）：比照 pill 樣式，跟上面
+  //    底線樣式的主分頁（.skill-tab）拉開視覺層級，一眼看出這是次一層 ──
+  .review-subtabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .review-subtab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+    &:hover { background: var(--page-bg); }
+
+    &.is-active {
+      // 用 CSS 變數而非 $color_main_4/5（那組寫死給淺色模式用，深色模式
+      // 底下不會換色，之前 SkillReviewQueue 選中列就是同一個坑）
+      background: var(--accent-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+
+      .skill-tab-count {
+        background: var(--surface);
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+    }
+  }
+
   .skill-tab-panel-desc {
     font-size: 12.5px;
     color: var(--text-faint);
     margin: 0 0 12px;
-  }
-
-  .src-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    align-items: start;
-
-    @media (max-width: 860px) { grid-template-columns: 1fr; }
   }
 
   .skill-review-block {
@@ -271,11 +279,13 @@
   }
 
   // ── 我的技能 list ──────────────────────────────
+  // 跟 Library 瀏覽 Modal、管理區的 Library 現有技能管理同一套卡片式
+  // 目錄語言（格狀磚塊），整個技能管理頁不管在哪個分頁都是一致的瀏覽體驗
 
   .my-skills-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
   }
 
   .my-skills-pagination {

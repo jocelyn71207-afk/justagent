@@ -36,6 +36,11 @@
             </div>
           </div>
 
+          <div class="secm-files-panel">
+            <div class="secm-files-label">附加檔案</div>
+            <SkillFileUpload :model-value="localFiles" @update:model-value="onFilesChange" />
+          </div>
+
           <div class="secm-input-row">
             <input
               v-model="inputText"
@@ -66,8 +71,9 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
-import type { Skill } from '@/stores/skillStore'
+import type { Skill, SkillFile } from '@/stores/skillStore'
 import { useSkillStore } from '@/stores/skillStore'
+import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 
 const props = defineProps<{ modelValue: boolean; skill: Skill | null }>()
 const emit = defineEmits<{
@@ -78,6 +84,7 @@ const emit = defineEmits<{
 const store = useSkillStore()
 const inputText = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
+const localFiles = ref<SkillFile[]>([])
 
 const hasNameConflict = computed(() => {
   if (!props.skill || props.skill.zone !== 'personal' || !props.skill.derivedFrom) return false
@@ -95,8 +102,14 @@ watch(() => props.modelValue, (open) => {
   if (open) {
     store.resetEditChat()
     inputText.value = ''
+    localFiles.value = [...(props.skill?.files ?? [])]
   }
 })
+
+function onFilesChange(files: SkillFile[]) {
+  localFiles.value = files
+  if (props.skill) store.updateSkillFiles(props.skill.id, files)
+}
 
 async function handleSend() {
   const msg = inputText.value.trim()

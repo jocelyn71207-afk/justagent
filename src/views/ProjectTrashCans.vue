@@ -22,19 +22,20 @@
         </div>
       </div>
 
-      <div class="trash-bento-summary" v-if="trashList.length">
-        <div class="hero">
-          <div class="tag">最緊急</div>
-          <div class="big">{{ urgentCount }} 個</div>
-          <div class="cap">3 天內即將永久刪除，請盡快還原或確認刪除</div>
+      <div class="trash-summary" v-if="trashList.length">
+        <div class="trash-alert" v-if="urgentCount > 0">
+          <i class="material-symbols-outlined">warning</i>
+          {{ urgentCount }} 個專案將在 3 天內永久刪除，請盡快還原或確認刪除
         </div>
-        <div class="side"><b>{{ warningCount }}</b><span>7 天內到期</span></div>
-        <div class="side"><b>{{ trashList.length }}</b><span>全部項目</span></div>
+        <div class="trash-stats-row">
+          <span class="trash-stat"><i class="stat-dot"></i><b>{{ warningCount }}</b>7 天內到期</span>
+          <span class="trash-stat"><i class="stat-dot"></i><b>{{ trashList.length }}</b>全部項目</span>
+        </div>
       </div>
 
       <!-- 卡片列表 -->
       <div class="card-list-box mt-2" v-if="displayProjectList.length">
-        <div :class="['one-card-box', 'project-card', `bento-${expiryUrgency(item.remainingDays)}`]" v-for="(item, i) in displayProjectList" :key="i"
+        <div class="one-card-box project-card" v-for="(item, i) in displayProjectList" :key="i"
           @mouseleave="item.showMoreOption = false;">
           <div class="img-box">
             <img :src="item.imgSrc" alt="">

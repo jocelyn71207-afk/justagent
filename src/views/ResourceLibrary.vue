@@ -59,10 +59,14 @@
         <!-- 查無資料 -->
         <div class="p-5 mt-4 text-center fc-grey-1" v-if="displayList.length === 0">目前沒有資源</div>
 
-        <!-- 卡片樣式列表 -->
+        <!-- 卡片樣式列表：頂部狀態色條（依 status，一眼看出哪些檔案還在
+             處理中/失敗，不用點開才知道）＋放大的圖示/縮圖區塊＋footer
+             改成「上傳者/時間」當主角、處理方式退成安靜的小圖示 -->
         <div class="card-list-box mt-2" v-if="viewMode === 'card' && displayList.length">
           <div class="one-card-box file-card" v-for="(item, i) in displayList" :key="'card' + i"
             @mouseleave="item.showMoreOption = false">
+
+            <div :class="['file-status-strip', `strip--${item.status}`]"></div>
 
             <!-- 卡片 header: 檔案名稱 + more button -->
             <div class="card-header-box">
@@ -87,76 +91,95 @@
               </div>
             </div>
 
-            <!-- 卡片 body: 圖片預覽 or OTHER icon or 檔案圖示 -->
+            <!-- 卡片 body: 圖片維持完整沉浸式預覽；非圖片檔案的圖示放大到
+                 接近縮圖的視覺份量，不再是小小一顆浮在空白正中間 -->
             <div class="card-body-box">
               <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="" class="preview-img">
-              <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                class="material-symbols-outlined other-file-icon">question_mark</i>
-              <img v-else :src="getFileTypeIcon(item.fileType)" alt="" class="file-type-icon">
+              <div v-else class="file-icon-tile" :class="`file-icon-tile--${fileTypeMeta(item.fileType).color}`">
+                <i class="material-symbols-outlined file-type-icon" v-tooltip="fileTypeMeta(item.fileType).label">
+                  {{ fileTypeMeta(item.fileType).icon }}
+                </i>
+              </div>
             </div>
 
-            <!-- 卡片 footer: 時間 -->
+            <!-- 卡片 footer：上傳者/時間是主角（放大頭像），處理方式退成
+                 安靜的小圖示（滑鼠停留才看到文字說明），狀態異常時才用
+                 顯眼的徽章——不是三個東西一起搶視覺重量 -->
             <div class="card-footer-box">
-              <span class="fc-grey-1">{{ formatDate(item.lastModify) }}</span>
+              <span class="file-owner">
+                <span class="file-owner-avatar" :style="{ background: avatarColor(item.ownerId) }">{{ item.ownerName.charAt(0) }}</span>
+                {{ item.ownerName }}
+              </span>
+              <span class="file-footer-right">
+                <i class="material-symbols-outlined file-process-icon"
+                  v-tooltip="item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型'">
+                  {{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}
+                </i>
+                <span v-if="item.status !== 'saved' && item.status !== 'stored'"
+                  :class="['status-badge', `status-badge--${item.status}`]">
+                  {{ fileStatusLabel(item.status) }}
+                </span>
+                <span class="file-date">{{ formatDate(item.lastModify) }}</span>
+              </span>
             </div>
 
           </div>
         </div>
 
-        <!-- 表格樣式列表 -->
-        <div class="table-list-box file-list mt-2" v-if="viewMode === 'list' && displayList.length">
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th>檔案名稱</th>
-                <th width="90">檔案格式</th>
-                <th width="130">處理方式</th>
-                <th>最後更新時間</th>
-                <th width="60"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, i) in displayList" :key="'list' + i"
-                @mouseleave="item.showMoreOption = false;">
-                <td>
-                  <div class="file-icon-box">
-                    <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
-                    <i v-else-if="item.fileType === 'OTHER'" v-tooltip="'未知的檔案類型'"
-                      class="material-symbols-outlined other-file-icon">question_mark</i>
-                    <img v-else :src="getFileTypeIcon(item.fileType)" alt="">
-                  </div>
-                  <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
-                    {{ item.fileName }}
-                    <span v-if="item.knowledgeIds.length" class="knowledge-badge">已轉為知識</span>
-                  </template>
-                  <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
-                    :id="'mofidyInput'+item.id"
-                    v-model="nowModifyItem.fileName"
-                    @blur="saveModifyFileName()" />
-                </td>
-                <td class="fc-grey-1">{{ item.fileType }}</td>
-                <td>
-                  <span :class="['process-type-badge', item.processType === 'AI_PARSED' ? 'badge--ai' : 'badge--raw']">
-                    <i class="material-symbols-outlined">{{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}</i>
-                    {{ item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型' }}
-                  </span>
-                </td>
-                <td class="fc-grey-1">{{ formatDate(item.lastModify) }}</td>
-                <td>
-                  <div class="d-flex">
-                    <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click.stop="item.showMoreOption = true"><i class="material-symbols-outlined material-fill">more_horiz</i></button>
-                  </div>
-                  <!-- 更多選項小介面 -->
-                  <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
-                    <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
-                    <div class="option-item">下載檔案</div>
-                    <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
-                    <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- 列表樣式：從原本的原生表格改成跟 Skill 頁面同一套「橫向長條」
+             視覺語言（獨立成一顆顆有邊框/hover 反應的列，不是死板的表格
+             格線），左側一樣有狀態色條，補上傳者頭像，資訊層級更清楚 -->
+        <div class="file-row-list mt-2" v-if="viewMode === 'list' && displayList.length">
+          <div class="file-row" v-for="(item, i) in displayList" :key="'list' + i"
+            @mouseleave="item.showMoreOption = false;">
+
+            <div :class="['file-status-strip', 'file-status-strip--row', `strip--${item.status}`]"></div>
+
+            <div class="file-row-icon" :class="!isImageType(item.fileType) ? `file-icon-tile--${fileTypeMeta(item.fileType).color}` : ''">
+              <img v-if="isImageType(item.fileType)" :src="item.fileUrl" alt="">
+              <i v-else class="material-symbols-outlined" v-tooltip="fileTypeMeta(item.fileType).label">
+                {{ fileTypeMeta(item.fileType).icon }}
+              </i>
+            </div>
+
+            <div class="file-row-name">
+              <template v-if="!nowModifyItem || nowModifyItem.id !== item.id">
+                {{ item.fileName }}
+                <span v-if="item.knowledgeIds.length" class="knowledge-badge">已轉為知識</span>
+              </template>
+              <input class="custom-input mofidyInput w-80" v-else-if="nowModifyItem.id === item.id"
+                :id="'mofidyInput'+item.id"
+                v-model="nowModifyItem.fileName"
+                @blur="saveModifyFileName()" />
+            </div>
+
+            <i class="material-symbols-outlined file-process-icon"
+              v-tooltip="item.processType === 'AI_PARSED' ? '資料入庫型' : '原檔保存型'">
+              {{ item.processType === 'AI_PARSED' ? 'auto_awesome' : 'save' }}
+            </i>
+
+            <span v-if="item.status !== 'saved' && item.status !== 'stored'"
+              :class="['status-badge', `status-badge--${item.status}`]">
+              {{ fileStatusLabel(item.status) }}
+            </span>
+
+            <span class="file-owner file-row-owner">
+              <span class="file-owner-avatar" :style="{ background: avatarColor(item.ownerId) }">{{ item.ownerName.charAt(0) }}</span>
+              {{ item.ownerName }}
+            </span>
+
+            <span class="file-row-date">{{ formatDate(item.lastModify) }}</span>
+
+            <div class="more-menu-wrap" @click.stop>
+              <button type="button" class="icon-btn more-btn" aria-label="更多選項" @click="item.showMoreOption = !item.showMoreOption"><i class="material-symbols-outlined material-fill">more_horiz</i></button>
+              <div :class="['next-option-box', {'show': item.showMoreOption}]" @click.stop>
+                <div class="option-item" @click="editFileName(item)">編輯檔案名稱</div>
+                <div class="option-item">下載檔案</div>
+                <div class="option-item divider" @click="createKnowledge(item)">建立為知識內容</div>
+                <div class="option-item option-item--danger" @click="deleteResource(item)">刪除</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 分頁 -->
@@ -227,16 +250,6 @@ const sourceUpdateFileId = ref('');
 // 更新知識庫（多檔來源成員調整）
 const isUpdateSourcesModalOpen = ref(false);
 
-// 檔案類型圖示 mapping
-import pdfIcon from '@/assets/fileTypeIcon/pdf.svg';
-import pptIcon from '@/assets/fileTypeIcon/ppt.svg';
-import excelIcon from '@/assets/fileTypeIcon/excel.svg';
-import htmlIcon from '@/assets/fileTypeIcon/html.svg';
-import mdIcon from '@/assets/fileTypeIcon/md.svg';
-import wordIcon from '@/assets/fileTypeIcon/word.svg';
-import txtIcon from '@/assets/fileTypeIcon/txt.svg';
-import chartIcon from '@/assets/fileTypeIcon/chart.svg';
-
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, projectListMode: viewMode } = storeToRefs(rootStore);
 const openBatchUploadFn = rootStore.openBatchUploadFn;
@@ -289,17 +302,52 @@ function isImageType(fileType: string) {
   return fileType.toUpperCase() === 'IMAGE';
 }
 
-function getFileTypeIcon(fileType: string) {
-  const map: Record<string, string> = {
-    PDF: pdfIcon, PPT: pptIcon, EXCEL: excelIcon, HTML: htmlIcon,
-    MD: mdIcon, WORD: wordIcon, TXT: txtIcon, CHART: chartIcon,
-  };
-  return map[fileType.toUpperCase()] || txtIcon;
+// 檔案類型圖示：改用跟全站一致的「色塊 tile + material icon」語言，
+// 不再用外部 SVG 那種折角+漸層邊框+內建假文字/假內文線的通用素材圖，
+// 那種畫法在卡片放大看很廉價，縮到列表小圖示時內建文字更是完全糊掉、
+// 讀不出字——本質上是同一個「圖示大小跟語意脫節」的問題
+// 顏色刻意讓最常見的四種格式（PDF/PPT/Excel/Word）互相盡量不撞色——
+// rust/rose 這兩個暖色系 token 放在一起太像，PPT 改用 amber 才跟
+// PDF 的 rose 分得開
+const FILE_TYPE_META: Record<string, { icon: string; color: string; label: string }> = {
+  PDF:   { icon: 'picture_as_pdf', color: 'rose',    label: 'PDF 文件' },
+  PPT:   { icon: 'slideshow',      color: 'amber',   label: 'PowerPoint 簡報' },
+  EXCEL: { icon: 'table_chart',    color: 'green',   label: 'Excel 表格' },
+  WORD:  { icon: 'description',    color: 'blue',    label: 'Word 文件' },
+  HTML:  { icon: 'code',           color: 'violet',  label: 'HTML 檔案' },
+  MD:    { icon: 'article',        color: 'teal',    label: 'Markdown 文件' },
+  TXT:   { icon: 'draft',          color: 'neutral', label: '純文字檔' },
+  CHART: { icon: 'bar_chart',      color: 'rust',    label: '圖表檔案' },
+  OTHER: { icon: 'question_mark',  color: 'neutral', label: '未知的檔案類型' },
+};
+function fileTypeMeta(fileType: string) {
+  return FILE_TYPE_META[fileType.toUpperCase()] ?? FILE_TYPE_META.OTHER;
 }
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+// 檔案處理狀態文字：只有「上傳中/解析中/失敗」這幾個需要立刻被看到的
+// 過渡/異常狀態才會顯示徽章（saved/stored 是穩定的完成狀態，不需要提醒）
+const FILE_STATUS_LABELS: Record<string, string> = {
+  uploading: '上傳中',
+  parsing: '解析中',
+  stored: '已入庫',
+  saved: '已儲存',
+  failed: '處理失敗',
+};
+function fileStatusLabel(status: string): string {
+  return FILE_STATUS_LABELS[status] ?? status;
+}
+
+// 上傳者頭像色：跟全站其他地方（協作者頭像/團隊圖示）同一組去飽和調性，
+// 用 ownerId 雜湊挑色，同一個人在同一次載入裡顏色一致
+const AVATAR_COLORS = ['#00A078', '#5B7B8C', '#8A6D3B', '#6B5B95', '#B5654A'];
+function avatarColor(ownerId: string): string {
+  const hash = ownerId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
 
 // 編輯檔案名稱

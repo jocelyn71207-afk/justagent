@@ -13,10 +13,11 @@
     backdrop-filter: blur(3px);
   }
 
+  // 雙欄版型（內容主欄 + 中繼資料側欄）需要比原本單欄版多一點寬度
   .drawer-panel {
     position: relative;
     z-index: 1;
-    width: 680px;
+    width: 860px;
     max-width: calc(100vw - 32px);
     max-height: 86vh;
     background: var(--surface);
@@ -158,30 +159,29 @@
 
   .drawer-metrics {
     display: flex;
-    align-items: stretch;
+    align-items: center;
+    justify-content: space-between;
     background: var(--page-bg);
     border-bottom: 1px solid var(--divider-a50);
     flex-shrink: 0;
   }
 
+  // 只有「本月使用」一格，不套用多格平分寬度那種排版，改成靠左的
+  // 緊湊橫排（icon + 數字 + 標籤都在同一行），不會在整排統計列裡
+  // 撐出一大塊空白
   .dm-cell {
-    flex: 1;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 8px;
-    gap: 3px;
+    align-items: baseline;
+    gap: 8px;
+    padding: 14px 18px;
   }
 
   .dm-icon {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-faint);
+    align-self: center;
 
     &.dm-icon--bolt { color: $color_main_1; }
-    &.dm-icon--good { color: $color_main_1; }
-    &.dm-icon--warn { color: $color-warning-amber; }
-    &.dm-icon--bad  { color: $color-danger; }
   }
 
   .dm-num {
@@ -190,23 +190,12 @@
     color: var(--text);
     line-height: 1;
     letter-spacing: -0.3px;
-
-    &--good { color: $color_main_1; }
-    &--warn { color: $color-warning-amber; }
-    &--bad  { color: $color-danger; }
   }
 
   .dm-lbl {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-faint);
     white-space: nowrap;
-  }
-
-  .dm-divider {
-    width: 1px;
-    background: var(--divider-a50);
-    flex-shrink: 0;
-    margin: 10px 0;
   }
 
   .dm-toggle {
@@ -223,15 +212,58 @@
     white-space: nowrap;
   }
 
-  // ── Body ─────────────────────────────────────
+  // ── Body：雙欄——左邊主內容（這個技能在做什麼），右邊中繼資料側欄
+  //   （來源/Agent/趨勢/版本），概念上跟 GitHub PR 頁面「說明在左、
+  //   標籤在右」是同一種分法，兩種性質不同的資訊不用擠在同一條捲軸裡 ──
 
   .drawer-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .drawer-body-main {
+    flex: 1;
+    min-width: 0;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 22px;
     overflow-y: auto;
-    flex: 1;
+    border-right: 1px solid var(--divider-a50);
+  }
+
+  .drawer-body-side {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    overflow-y: auto;
+    background: var(--page-bg);
+  }
+
+  // 窄螢幕收成單欄，側欄疊到主內容下面，不用側邊卡在旁邊擠成一團
+  @media (max-width: 760px) {
+    .drawer-panel { width: min(680px, calc(100vw - 32px)); }
+
+    .drawer-body {
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .drawer-body-main {
+      border-right: none;
+      border-bottom: 1px solid var(--divider-a50);
+      overflow-y: visible;
+    }
+
+    .drawer-body-side {
+      width: 100%;
+      overflow-y: visible;
+    }
   }
 
   .drawer-section {
@@ -242,6 +274,15 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 10px;
+    }
+
+    .section-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+
+      .section-label { margin-bottom: 0; }
     }
   }
 
@@ -296,6 +337,35 @@
     color: var(--text-faint);
     font-size: 11px;
     flex-shrink: 0;
+  }
+
+  .section-edit-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--divider-a50);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+
+    &:hover { background: var(--page-bg); color: var(--text); }
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
+  .section-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .section-empty-hint {
+    color: var(--text-faint);
+    font-size: 12.5px;
   }
 
   // ── Upstream update banner ────────────────────
@@ -386,16 +456,29 @@
   }
 
   // ── Lineage ───────────────────────────────────
+  // 只有一行metadata，不需要跟技能指令/附加檔案一樣包一層卡片盒子——
+  // 整頁如果每個區塊都是「標籤+灰色盒子」，看久了會覺得單調，這裡改成
+  // 安靜的一行文字，跟 TeamAccessManagement 的角色統計同一種「輕量
+  // metadata」處理方式
 
+  // 側欄只有 260px 寬，這一行文字＋兩個 tag 常常放不下，需要能換行；
+  // .lineage-text 包住「延伸自「XX」/自建」這段文字，讓它整段一起換行，
+  // 不會斷在句子中間變成「系統\n技能」這種難看的斷法
   .lineage-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 4px 6px;
     font-size: 13px;
     color: var(--text-muted);
-    background: var(--page-bg);
-    padding: 10px 14px;
-    border-radius: 10px;
+    padding: 2px 0;
+
+    .lineage-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
 
     .lineage-icon {
       font-size: 16px;
@@ -412,6 +495,7 @@
       align-items: center;
       gap: 4px;
       color: var(--text-faint);
+      white-space: nowrap;
 
       .material-symbols-outlined { font-size: 15px; }
     }
@@ -638,7 +722,7 @@
     z-index: 1;
 
     &.vt-dot--active    { background: $color_main_1; box-shadow: 0 0 0 3px $color_main_4; }
-    &.vt-dot--reviewing { background: #d97706; box-shadow: 0 0 0 3px #fef3c7; }
+    &.vt-dot--reviewing { background: $color-warning-amber; box-shadow: 0 0 0 3px var(--tag-amber-bg); }
     &.vt-dot--history   { background: var(--text-faint); }
     &.vt-dot--draft     { background: var(--divider-a50); border: 2px solid var(--text-faint); }
     &.vt-dot--rejected  { background: $color-danger; }

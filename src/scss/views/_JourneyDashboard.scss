@@ -38,6 +38,9 @@
 }
 
 .jd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid var(--divider);
@@ -46,6 +49,8 @@
   font-size: 12px;
   cursor: pointer;
   transition: color 0.15s ease;
+
+  i { font-size: 16px; }
 
   &:hover {
     color: var(--text);
@@ -66,6 +71,7 @@
 .jd-empty-icon {
   font-size: 40px;
   opacity: 0.3;
+  color: var(--text-faint);
 }
 
 .jd-empty-title {
@@ -215,6 +221,8 @@
   border: 2px solid;
   margin-bottom: 8px;
   background: var(--surface);
+
+  i { font-size: 14px; }
 }
 
 .jd-step--done .jd-dot {
@@ -226,6 +234,21 @@
 .jd-step--running .jd-dot {
   border-color: var(--tag-blue-text);
   color: var(--tag-blue-text);
+}
+
+// 執行中節點：用跟 jd-step-running 一樣的脈動語彙，不用文字符號「●」
+.jd-dot-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tag-blue-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jd-dot-pulse {
+    animation: jd-blink 1s ease-in-out infinite;
+  }
 }
 
 .jd-step--pending .jd-dot {

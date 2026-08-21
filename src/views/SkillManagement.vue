@@ -18,43 +18,20 @@
         </div>
       </div>
 
-      <!-- Hero 統計列 -->
-      <div class="skill-stats-row lively-stagger">
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--enabled lively-icon">
-            <i class="material-symbols-outlined">check_circle</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.enabledCount }}</div>
-            <div class="skill-stat-lbl">啟用中技能</div>
-          </div>
+      <!-- 統計列：跟 TeamAccessManagement 的角色統計同一套「色點 + 文字」語彙，
+           不用四個顏色各異的邊框卡片堆砌成一整排，避免看起來太像後台儀表板 -->
+      <div class="skill-stats-row">
+        <div class="skill-stat skill-stat--enabled">
+          <i class="stat-dot"></i><b>{{ store.enabledCount }}</b>啟用中技能
         </div>
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--ext lively-icon">
-            <i class="material-symbols-outlined">corporate_fare</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.enterpriseExtensionCount }}</div>
-            <div class="skill-stat-lbl">企業擴充</div>
-          </div>
+        <div class="skill-stat skill-stat--ext">
+          <i class="stat-dot"></i><b>{{ store.enterpriseExtensionCount }}</b>企業擴充
         </div>
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--team lively-icon">
-            <i class="material-symbols-outlined">group</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.teamExtensionCount }}</div>
-            <div class="skill-stat-lbl">團隊擴充</div>
-          </div>
+        <div class="skill-stat skill-stat--team">
+          <i class="stat-dot"></i><b>{{ store.teamExtensionCount }}</b>團隊擴充
         </div>
-        <div class="skill-stat-card lively-card">
-          <div class="skill-stat-icon icon--usage lively-icon">
-            <i class="material-symbols-outlined">bolt</i>
-          </div>
-          <div class="skill-stat-body">
-            <div class="skill-stat-num">{{ store.totalUsageCount.toLocaleString() }}</div>
-            <div class="skill-stat-lbl">本月自動觸發次數</div>
-          </div>
+        <div class="skill-stat skill-stat--usage">
+          <i class="stat-dot"></i><b>{{ store.totalUsageCount.toLocaleString() }}</b>本月自動觸發次數
         </div>
       </div>
 
@@ -65,7 +42,7 @@
           有 {{ store.pendingReviewSkills.length }} 個技能等待審核
         </span>
         <div class="upstream-banner-actions">
-          <button class="custom-btn" @click="activeTab = 'review'">前往審核</button>
+          <button class="custom-btn" @click="activeTab = 'review'; reviewSubTab = 'pending'">前往審核</button>
         </div>
       </div>
 
@@ -93,25 +70,40 @@
           </button>
         </div>
 
-        <!-- 管理區：待審核送審 + Library 現有技能管理（限企業擁有者 / 企業管理者） -->
+        <!-- 管理區：待審核送審 + Library 現有技能管理（限企業擁有者 / 企業管理者）
+             兩塊內容都不小，不再直接上下堆疊成一個超長頁面，改成子分頁各自獨立 -->
         <div v-if="isManager" v-show="activeTab === 'review'" class="skill-tab-panel">
-          <div class="skill-review-block">
+          <div class="review-subtabs">
+            <button
+              :class="['review-subtab', { 'is-active': reviewSubTab === 'pending' }]"
+              @click="reviewSubTab = 'pending'"
+            >
+              待審核
+              <span class="skill-tab-count">{{ store.pendingReviewSkills.length }}</span>
+            </button>
+            <button
+              :class="['review-subtab', { 'is-active': reviewSubTab === 'library' }]"
+              @click="reviewSubTab = 'library'"
+            >
+              Library 管理
+              <span class="skill-tab-count">{{ store.enterpriseExtensionCount + store.teamExtensionCount }}</span>
+            </button>
+          </div>
+
+          <div v-show="reviewSubTab === 'pending'" class="skill-review-block">
             <p class="skill-tab-panel-desc">等待審核的技能送審申請，通過後將發佈至 Library</p>
-            <div v-if="store.pendingReviewSkills.length" class="src-list lively-stagger">
-              <SkillReviewCard
-                v-for="skill in store.pendingReviewSkills"
-                :key="skill.id"
-                :skill="skill"
-                @view="detailSkillId = $event.id"
-                @approve="handleApprove"
-                @reject="handleReject"
-              />
-            </div>
+            <SkillReviewQueue
+              v-if="store.pendingReviewSkills.length"
+              :skills="store.pendingReviewSkills"
+              @view="detailSkillId = $event.id"
+              @approve="handleApprove"
+              @reject="handleReject"
+            />
             <div v-else class="skill-section-empty">目前沒有待審核的技能</div>
           </div>
 
           <!-- Library 現有技能管理 -->
-          <div class="skill-manage-block">
+          <div v-show="reviewSubTab === 'library'" class="skill-manage-block">
             <div class="skill-manage-block-header">
               <span class="skill-manage-block-title">
                 <i class="material-symbols-outlined">inventory_2</i>Library 現有技能管理
@@ -130,11 +122,13 @@
                   <span class="lsr-section-count">{{ filteredEnterpriseSkills.length }}</span>
                 </div>
                 <div class="lsr-section-list">
-                  <LibrarySkillRow
+                  <SkillTile
                     v-for="skill in filteredEnterpriseSkills"
                     :key="skill.id"
                     :skill="skill"
                     @click="detailSkillId = skill.id"
+                    @test="handleTest"
+                    @duplicate="handleDuplicate"
                   />
                 </div>
               </div>
@@ -156,11 +150,13 @@
                       <span class="lsr-section-count">{{ group.skills.length }}</span>
                     </div>
                     <div class="lsr-section-list lsr-section-list--in-card">
-                      <LibrarySkillRow
+                      <SkillTile
                         v-for="skill in group.skills"
                         :key="skill.id"
                         :skill="skill"
                         @click="detailSkillId = skill.id"
+                        @test="handleTest"
+                        @duplicate="handleDuplicate"
                       />
                     </div>
                   </div>
@@ -448,9 +444,9 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
-import LibrarySkillRow from '@/components/Skill/LibrarySkillRow.vue'
+import SkillTile from '@/components/Skill/SkillTile.vue'
 import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
-import SkillReviewCard from '@/components/Skill/SkillReviewCard.vue'
+import SkillReviewQueue from '@/components/Skill/SkillReviewQueue.vue'
 import LibraryBrowseModal from '@/components/Skill/LibraryBrowseModal.vue'
 import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
@@ -495,6 +491,9 @@ const isManager = computed(() =>
 
 // Tab：從 side-menu 進入一律預設「我的技能」
 const activeTab = ref<'my' | 'review'>('my')
+// 管理區底下再分兩個子分頁：待審核送審／Library 現有技能管理，
+// 兩塊內容都不小，不再直接上下堆疊成一個超長頁面
+const reviewSubTab = ref<'pending' | 'library'>('pending')
 
 // 分頁
 const PAGE_SIZE = 10

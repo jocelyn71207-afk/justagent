@@ -829,8 +829,8 @@
   // 統計卡片列
   .stats-row {
     display: grid;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 14px;
+    margin-bottom: 26px;
   }
 
   .stat-card {
@@ -842,7 +842,7 @@
     border: 1px solid var(--divider-a50);
     border-radius: 12px;
     padding: 16px 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(var(--shadow), 0.04);
 
     .stat-icon {
       width: 44px;
@@ -1047,6 +1047,10 @@
 
   // ── 表格內的顯示 ──
   .custom-table {
+    // 精簡版型：留白比預設 .custom-table 的 0.55rem 再多一點、分隔線更淡，
+    // 密集的狀態/操作欄位不用跟著加寬，只有內容欄需要呼吸空間
+    td { padding: 0.85rem 0.7rem; border-bottom-color: var(--divider-a50); }
+
     .entry-title {
       font-weight: 600;
       color: var(--text);
@@ -1056,6 +1060,42 @@
       font-size: 12px;
       color: var(--text-faint);
       margin-top: 2px;
+    }
+
+    // 標題欄：展開箭頭 + 標題/分類/pipeline 進度，箭頭跟內容分兩欄，
+    // 內容欄照舊可以再往下疊 pipeline 進度條
+    .entry-cell {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .entry-cell-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .row-caret-btn {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      margin-top: 1px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      color: var(--text-faint);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+
+      i {
+        font-size: 18px;
+        transition: transform 0.15s ease;
+      }
+
+      &:hover { background: var(--sidebar-hover-a20); color: var(--text); }
+      &.is-open i { transform: rotate(90deg); }
+      &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
     }
     .category-tag {
       display: inline-flex;
@@ -1148,6 +1188,42 @@
         &:hover { background: var(--danger-soft); }
       }
     }
+  }
+
+  // ── 列展開的詳細資訊：次要欄位（編輯人／更新說明／標籤…）收在這裡，
+  //    不用把所有東西攤平塞進主要那一列 ──
+  .table-row--detail td {
+    padding: 0;
+    background: var(--page-bg);
+  }
+
+  .row-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px 24px;
+    margin: 0;
+    padding: 14px 20px;
+  }
+
+  .row-detail-field {
+    min-width: 0;
+
+    dt {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-bottom: 3px;
+    }
+    dd {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+  }
+
+  .row-detail-error {
+    color: var(--danger);
   }
 
   // ── tag-chip (standalone, outside .custom-table) ──
@@ -1620,12 +1696,17 @@
   }
 
   .batch-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.7);
     padding: 3px 8px;
     cursor: pointer;
     font-size: 12px;
+
+    i { font-size: 15px; }
   }
 }
 

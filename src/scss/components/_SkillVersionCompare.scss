@@ -68,8 +68,8 @@
     font-size: 11px;
     font-weight: 500;
 
-    &--added  { background: rgba(0, 150, 105, 0.1); color: #047857; }
-    &--removed { background: rgba(209, 68, 55, 0.08); color: #b91c1c; text-decoration: line-through; }
+    &--added  { background: rgba(var(--diff-added-rgb), 0.1); color: var(--primary-hover); }
+    &--removed { background: rgba(var(--diff-removed-rgb), 0.08); color: var(--danger); text-decoration: line-through; }
   }
 
   .svc-diff-grid {
@@ -134,8 +134,8 @@
     border: 1px solid transparent;
     line-height: 1.5;
 
-    &.is-added   { background: rgba(0, 150, 105, 0.08); border-color: rgba(0, 150, 105, 0.25); color: #047857; }
-    &.is-removed { background: rgba(209, 68, 55, 0.06); border-color: rgba(209, 68, 55, 0.2); color: #b91c1c; text-decoration: line-through; }
+    &.is-added   { background: rgba(var(--diff-added-rgb), 0.08); border-color: rgba(var(--diff-added-rgb), 0.25); color: var(--primary-hover); }
+    &.is-removed { background: rgba(var(--diff-removed-rgb), 0.06); border-color: rgba(var(--diff-removed-rgb), 0.2); color: var(--danger); text-decoration: line-through; }
   }
 
   .svc-caps {
@@ -152,12 +152,12 @@
     border-radius: 12px;
     font-size: 12px;
     font-weight: 500;
-    background: $color_main_4;
-    color: $color_main_2;
+    background: var(--accent-soft);
+    color: var(--primary-hover);
     border: 1px solid transparent;
 
-    &.cap--added   { background: rgba(0, 150, 105, 0.12); color: #047857; border-color: rgba(0, 150, 105, 0.3); }
-    &.cap--removed { background: rgba(209, 68, 55, 0.08); color: #b91c1c; border-color: rgba(209, 68, 55, 0.25); text-decoration: line-through; }
+    &.cap--added   { background: rgba(var(--diff-added-rgb), 0.12); color: var(--primary-hover); border-color: rgba(var(--diff-added-rgb), 0.3); }
+    &.cap--removed { background: rgba(var(--diff-removed-rgb), 0.08); color: var(--danger); border-color: rgba(var(--diff-removed-rgb), 0.25); text-decoration: line-through; }
   }
 
   .svc-empty {
@@ -186,8 +186,8 @@
     white-space: pre-wrap;
     word-break: break-word;
 
-    &.is-added   { background: rgba(0, 150, 105, 0.1); color: #047857; }
-    &.is-removed { background: rgba(209, 68, 55, 0.06); color: #b91c1c; text-decoration: line-through; }
+    &.is-added   { background: rgba(var(--diff-added-rgb), 0.1); color: var(--primary-hover); }
+    &.is-removed { background: rgba(var(--diff-removed-rgb), 0.06); color: var(--danger); text-decoration: line-through; }
   }
 
   .svc-status {
@@ -196,11 +196,11 @@
     padding: 2px 7px;
     border-radius: 10px;
 
-    &--active   { background: $color_main_4; color: $color_main_2; }
-    &--reviewing { background: $color-warning-bg; color: $color-warning-text; }
+    &--active   { background: var(--accent-soft); color: var(--primary-hover); }
+    &--reviewing { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
     &--history   { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
     &--draft     { background: var(--page-bg); color: var(--text-muted); }
-    &--rejected  { background: rgba(209, 68, 55, 0.08); color: #b91c1c; }
+    &--rejected  { background: rgba(var(--diff-removed-rgb), 0.08); color: var(--danger); }
   }
 
   .svc-empty-state {

@@ -90,8 +90,18 @@
     --tag-amber-text:         #F0C878;
     --tag-teal-bg:            #0E3E32;
     --tag-teal-text:          #6EE7C4;
+    --tag-green-bg:           #1F2E12;
+    --tag-green-text:         #A8D66B;
+    --tag-rust-bg:            #3A1F12;
+    --tag-rust-text:          #F0A882;
+    --tag-rose-bg:            #3A1826;
+    --tag-rose-text:          #F0A0BC;
 
     --danger-soft:            #3A1E1A;
+
+    // ── Diff 顏色（版本比較用）────────────────────────────────────────────
+    --diff-added-rgb:         0,200,150;
+    --diff-removed-rgb:       236,107,94;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -180,7 +190,17 @@
     --tag-amber-text:         #F0C878;
     --tag-teal-bg:            #0E3E32;
     --tag-teal-text:          #6EE7C4;
+    --tag-green-bg:           #1F2E12;
+    --tag-green-text:         #A8D66B;
+    --tag-rust-bg:            #3A1F12;
+    --tag-rust-text:          #F0A882;
+    --tag-rose-bg:            #3A1826;
+    --tag-rose-text:          #F0A0BC;
 
     --danger-soft:            #3A1E1A;
+
+    // ── Diff 顏色（版本比較用）────────────────────────────────────────────
+    --diff-added-rgb:         0,200,150;
+    --diff-removed-rgb:       236,107,94;
   }
 }

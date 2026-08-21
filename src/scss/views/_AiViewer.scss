@@ -2913,6 +2913,8 @@
     flex-shrink: 0;
     &--done { background: var(--tag-teal-bg); border-color: var(--tag-teal-text); color: var(--tag-teal-text); }
     &--active { background: var(--tag-blue-bg); border-color: var(--tag-blue-text); color: var(--tag-blue-text); }
+
+    i { font-size: 12px; }
   }
   .conv2-sl { width: 8px; height: 0.5px; background: var(--divider); flex-shrink: 0; }
   .conv2-step-title { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -3078,19 +3080,30 @@
   // ── Buttons ──
   .conv2-fp-btn-row { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
   .conv2-fp-submit-btn,
+  // 主要動作按鈕：用品牌色而不是近黑色實心底
   .conv2-fp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     padding: 5px 14px;
     border-radius: 6px;
     font-size: 12px; font-weight: 500;
-    background: var(--text);
-    color: var(--page-bg);
+    background: var(--primary);
+    color: var(--primary-fg);
     border: none; cursor: pointer;
     white-space: nowrap;
     &--green { background: var(--success); }
     &:disabled { opacity: 0.45; cursor: default; }
-    &:hover:not(:disabled) { opacity: 0.85; }
+    &:hover:not(:disabled) { background: var(--primary-hover); }
+
+    i { font-size: 15px; }
   }
   .conv2-fp-sec-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     padding: 5px 10px;
     border-radius: 6px;
     font-size: 12px;
@@ -3099,6 +3112,8 @@
     background: transparent; cursor: pointer;
     white-space: nowrap;
     &:hover { background: var(--surface); }
+
+    i { font-size: 15px; }
   }
 }
 
@@ -3863,6 +3878,8 @@
     50%       { opacity: .35; }
   }
   .jcd-row-badge {
+    display: inline-flex;
+    align-items: center;
     font-size: 9px;
     font-weight: 700;
     padding: 1px 6px;
@@ -3870,6 +3887,8 @@
     flex-shrink: 0;
     &.running { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
     &.done    { background: var(--tag-teal-bg); color: var(--tag-teal-text); }
+
+    i { font-size: 11px; }
   }
 }
 

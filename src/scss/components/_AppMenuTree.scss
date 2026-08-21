@@ -1,341 +1,476 @@
+// ============================================================
+// AppMenuTree — 圖示 rail ＋ 常駐展開的團隊選單面板
+//
+// 骨架邏輯：
+//   .rail        圖示條：使用者頭像（上）、通用單元（最近使用/探索/搜尋）、
+//                企業設定、產品 logo（下）
+//   .side-panel  常駐展開的面板，最上方是「團隊切換器」（顯示目前選中團隊，
+//                點擊展開下拉清單切換），下方是該團隊的導覽項目——
+//                企業/團隊切換不再長在 rail 上，改坐在面板頂端
+// ============================================================
+
 .AppMenuTree {
   position: sticky;
   top: 0;
   left: 0;
   z-index: 10;
-  background-color: var(--sidebar-bg);
-  // border-right: 1px solid var(--divider);
-  width: $menuWidth;
   height: 100svh;
-  transition: all $menutransition;
-  display: grid;
-  grid-template-rows: $menuHeaderHeight 1fr $menuFooterHeight;
+  flex: none;
+  display: flex;
+  width: $menuWidth;
 
-  .header-box {
-    padding: 16px;
-    // background-color: var(--surface);
-    height: $menuHeaderHeight;
-    border-bottom: 1px solid var(--divider);
-    .user-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-      .user-avatar {
-        font-weight: bold;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        margin-right: 12px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        background-color: var(--primary);
-        color: var(--primary-fg);
-        font-size: 14px;
-      }
-      .user-name {
-        font-size: 16px;
-        user-select: none;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        p {
-          max-width: 155px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          margin: 0;
-        }
-        > i {
-          margin-left: 5px;
-          border-radius: 6px;
-        }
-      }
-      &.active {
-        .user-name > i {
-          background-color: var(--accent-soft);
-        }
-      }
-      // 更多用戶選項選單
-      .more-userOption-box {
-        position: absolute;
-        top: 100%;
-        right: 0%;
-      }
-    }
+  // 「最近使用」「探索」不顯示團隊層的常駐選單面板，寬度只剩 rail
+  &.no-team-panel {
+    width: $railWidth;
+  }
+}
 
-    // 通用性查詢關鍵字輸入框
-    .universal-search-box {
-      position: relative;
-      margin: 12px 0;
-      background: var(--sidebar-hover);
-      border-radius: 8px;
-      i {
-        position: absolute;
-        left: 11px;
-        top: 8px;
-        font-size: 21px;
-        color: var(--sidebar-muted);
-        &.clear-btn {
-          left: auto;
-          right: 11px;
-          cursor: pointer;
-        }
-      }
-      input {
-        padding-left: 40px;
-        background: transparent;
-        border: none;
-        color: var(--sidebar-muted);
-        &::placeholder {
-          color: var(--sidebar-muted);
-        }
-      }
-    }
+.rail {
+  position: relative; // rail 上彈出的浮層（搜尋／團隊／使用者選單）都靠這個當定位基準，
+                       // 不然浮層會相對整個 .AppMenuTree 定位——側邊面板有沒有顯示會讓
+                       // .AppMenuTree 寬度跳動，浮層就跟著跑位，離觸發的圖示很遠
+  width: $railWidth;
+  flex: none;
+  height: 100%;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--divider);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// ── 常駐圖示共用樣式（.rail-btn 用於通用單元；.rail-team-btn 用於團隊）──
+.rail-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sidebar-muted);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+
+  i { font-size: 21px; }
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active,
+  &.router-link-active {
+    background: var(--sidebar-active);
+    color: var(--primary);
   }
 
-  .menu-list-box {
-    // position: sticky;
-    // top: $menuHeaderHeight + 20px;
-    // z-index: 1;
-    // height: calc(100dvh - #{$menuHeaderHeight} - #{$menuFooterHeight} - 20px);
-    height: 100%;
-    width: 100%;
-    overflow-y: auto;
-    height: 100%;
-    padding: 16px;
-    @include no-scroll-bar();
-    // @include use-scroll-bar(var(--scrollbar-a50));
-
-    .company-box {
-      position: relative;
-      margin-bottom: 5px;
-    }
-
-    // 企業切換器：色塊圖示＋名稱＋箭頭，跟使用者選單同一套視覺語言，
-    // 不再是一個沒有標籤、容易被忽略的原生 select
-    .company-switcher {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 10px;
-      margin-bottom: 4px;
-      border-radius: $radius;
-      cursor: pointer;
-      background: var(--sidebar-hover);
-      user-select: none;
-
-      &:hover,
-      &.is-open {
-        background: var(--sidebar-active);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 1px;
-      }
-    }
-
-    .company-switcher-icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--primary-fg);
-      background: var(--primary);
-    }
-
-    .company-switcher-name {
-      flex: 1;
-      min-width: 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .company-switcher-caret {
-      flex-shrink: 0;
-      font-size: 18px;
-      color: var(--text-muted);
-    }
-
-    // 企業清單下拉：從切換器正下方展開
-    .company-switch-list {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: calc(100% - 2px);
-      z-index: 5;
-
-      .option-item.active {
-        background-color: var(--accent-soft);
-        color: var(--primary);
-        font-weight: 600;
-      }
-    }
-
-    // 可展開的父層項目（非 <a>，直接是 div）— 適用 company-box 和 group-btn-box
-    .sub-group-header {
-      display: flex;
-      align-items: center;
-      font-size: 14px;
-      color: var(--text);
-      padding: 9px 10px;
-      border-radius: $radius;
-      cursor: pointer;
-      user-select: none;
-      &:hover {
-        background-color: var(--sidebar-hover);
-      }
-      &.active {
-        background-color: var(--accent-soft);
-        box-shadow: none;
-        border-radius: $radius;
-        color: var(--primary);
-        font-weight: 500;
-      }
-      > i:first-child {
-        margin: 0 10px 0 0;
-        font-size: 19px;
-      }
-      .sub-arrow {
-        margin-left: auto;
-        font-size: 17px;
-        color: var(--text-muted);
-      }
-    }
-    // 子選單縮排區
-    .sub-menu-box {
-      padding-left: 14px;
-      margin-top: 2px;
-      border-left: 2px solid var(--divider);
-      margin-left: 19px;
-      .one-btn-item {
-        margin-bottom: 2px;
-      }
-    }
-
-    // 單一個團隊區塊
-    .one-group-box {
-      margin-top: 4px;
-      .group-name-box {
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        font-size: 14px;
-        color: var(--text-muted);
-        border-radius: $radius;
-        user-select: none;
-        cursor: pointer;
-        &:hover {
-          background-color: var(--sidebar-hover);
-        }
-        .group-name {
-          max-width: 90%;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          padding: 10px 10px 10px 10px;
-        }
-        i {
-          font-size: 19px;
-          color: var(--text-muted);
-        }
-      }
-      .group-btn-box {
-        margin-top: 4px;
-        .one-btn-item {
-          margin-bottom: 4px;
-        }
-      }
-    }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
+}
 
-  .menu-footer {
-    // position: fixed;
-    // bottom: 0px;
-    // z-index: 1;
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 5px;
-    height: $menuFooterHeight;
-    width: $menuWidth;
-    // border-top: 1px solid var(--divider);
+.rail-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0 10px;
+  flex-shrink: 0;
+}
+
+.rail-logo {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 8px;
+}
+
+.rail-divider {
+  width: 26px;
+  height: 1px;
+  background: var(--divider);
+  margin: 6px 0 2px;
+  flex-shrink: 0;
+}
+
+// ── rail 中段留白：把 .rail-bottom 推到最底，企業/團隊切換已移到 side-panel 頂端 ──
+.rail-spacer {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.rail-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 16px;
+  flex-shrink: 0;
+}
+
+.rail-user-btn {
+  position: relative;
+  cursor: pointer;
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    transition: all $menutransition;
-    > img {
-      height: 80%;
-      margin: 0;
-    }
+    font-weight: 700;
+    font-size: 13px;
+    background-color: var(--primary);
+    color: var(--primary-fg);
+    user-select: none;
   }
 
-  .one-btn-item {
-    display: flex;
-    align-items: center;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-bottom: 0px;
-    user-select: none;
-    a {
-      text-decoration: none;
-      font-size: 14px;
+  &:hover .user-avatar,
+  &.active .user-avatar {
+    box-shadow: 0 0 0 2px var(--sidebar-active);
+  }
+}
+
+// ── 使用者選單／搜尋框：這兩個還是「點擊才出現」的浮層，貼著 rail 展開 ──
+.rail-popover {
+  position: absolute;
+  left: calc(100% + 10px);
+  z-index: 20;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px -8px rgba(var(--shadow), 0.24);
+  transform-origin: left center;
+}
+
+// 展開動畫：從貼著 rail 的位置「長出來」，不是瞬間出現/消失
+.rail-expand-enter-active,
+.rail-expand-leave-active {
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+.rail-expand-enter-from,
+.rail-expand-leave-to {
+  opacity: 0;
+  transform: scale(0.94) translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-expand-enter-active,
+  .rail-expand-leave-active {
+    transition: opacity 0.1s linear;
+  }
+  .rail-expand-enter-from,
+  .rail-expand-leave-to {
+    transform: none;
+  }
+}
+
+.search-popover {
+  top: 0;
+  width: 260px;
+  padding: 10px;
+
+  .universal-search-box {
+    position: relative;
+    background: var(--sidebar-hover);
+    border-radius: 8px;
+
+    i {
+      position: absolute;
+      left: 11px;
+      top: 8px;
+      font-size: 21px;
       color: var(--sidebar-muted);
-      display: flex;
-      align-items: center;
-      padding: 9px 12px;
-      border-radius: 8px;
-      width: 100%;
-      gap: 12px;
-      &:hover {
-        background: var(--sidebar-hover);
-      }
-      &:focus {
-        outline: 1px solid transparent;
-      }
-      &.router-link-active,
-      &.active {
-        background: var(--sidebar-active);
-        box-shadow: none;
-        border-radius: 8px;
-        color: var(--sidebar-fg);
-        font-weight: 500;
-      }
-      i {
-        margin: 0;
-        font-size: 18px;
-        color: var(--sidebar-muted);
-      }
-      &.router-link-active i,
-      &.active i {
-        color: var(--sidebar-fg);
-      }
+      &.clear-btn { left: auto; right: 11px; cursor: pointer; }
+    }
+
+    input {
+      padding-left: 40px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      &::placeholder { color: var(--sidebar-muted); }
     }
   }
 }
 
-// 處理瀏覽器小於平板但大於手機時，主選單寬度變小
-@media (max-width: $breakpoint-tablet) and (min-width: $breakpoint-mobile) {
-  .AppMenuTree {
-    width: $menuSmallWidth;
-    .menu-footer {
-      width: $menuSmallWidth;
+// 企業入口彈出清單：貼著 rail 上「企業」圖示右側展開，跟團隊入口同一種模式
+.company-rail-list {
+  top: 67px;
+  width: 200px;
+  padding: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+// 團隊入口彈出清單：貼著 rail 上「團隊」圖示右側展開（跟 .search-popover 同一種
+// 貼右側模式，不是 .team-switch-list 那種貼切換器正下方展開）
+.team-rail-list {
+  top: 251px;
+  width: 200px;
+  padding: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.user-flyout {
+  top: -4px;
+  width: 200px;
+
+  .user-flyout-title {
+    padding: 4px 8px 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--divider);
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 6px;
     }
   }
+}
+
+// ── 常駐團隊選單面板：跟企業/團隊圖示同步，不是浮層 ──
+.side-panel {
+  width: $sidePanelWidth;
+  flex: none;
+  height: 100%;
+  background: var(--surface);
+  border-right: 1px solid var(--divider);
+  padding: 20px 10px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.side-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 2px 10px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── 團隊切換器：坐在面板最上方，取代原本長在 rail 上的企業圖示 ──
+.side-panel-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 8px 8px 6px;
+  margin-bottom: 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.is-open {
+    background: var(--sidebar-hover);
+
+    .side-panel-switcher-caret { transform: rotate(180deg); }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.side-panel-switcher-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  user-select: none;
+}
+
+.side-panel-switcher-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-panel-switcher-caret {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--text-faint);
+  transition: transform 0.14s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-panel-switcher-caret { transition: none; }
+}
+
+// 團隊切換下拉清單：從切換器「正下方」長出來，不是 .rail-popover 預設的貼右側展開
+.team-switch-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  padding: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+
+.team-switch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active { font-weight: 700; }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+}
+
+.team-switch-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  user-select: none;
+}
+
+.team-switch-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-switch-check {
+  flex-shrink: 0;
+  font-size: 17px;
+  color: var(--primary);
+}
+
+.side-panel-divider {
+  height: 1px;
+  background: var(--divider-a50);
+  margin: 4px 6px 10px;
+}
+
+// 切換團隊時面板內容淡入淡出，避免整塊文字瞬間跳掉
+.panel-fade-enter-active,
+.panel-fade-leave-active {
+  transition: opacity 0.12s ease;
+}
+.panel-fade-enter-from,
+.panel-fade-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-fade-enter-active,
+  .panel-fade-leave-active {
+    transition: none;
+  }
+}
+
+.side-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  margin-bottom: 2px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--sidebar-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  i { font-size: 19px; color: var(--sidebar-muted); flex-shrink: 0; }
+
+  &:hover { background: var(--sidebar-hover); }
+
+  &.active,
+  &.router-link-active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-fg);
+    font-weight: 500;
+    i { color: var(--sidebar-fg); }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+// 第二層可展開群組（技能管理／共享資源庫）：本身也是一個項目，
+// 但點擊是展開/收合子項目，不是導覽。group 的 .active 只代表「目前路徑
+// 落在這個群組底下」，真正選中的子項目會在下面自己再亮一次——兩層都用
+// 同一種實心底色會疊成一大塊，看起來很擠，所以 group 這層改成輕量標示
+// （字重＋icon 上色），不填滿底色，把唯一的實心高亮留給子項目
+.side-panel-group {
+  user-select: none;
+
+  &.active {
+    background: transparent;
+    color: var(--sidebar-fg);
+    font-weight: 600;
+
+    i:first-child { color: var(--primary); }
+
+    &:hover { background: var(--sidebar-hover); }
+  }
+
+  .side-panel-caret {
+    margin-left: auto;
+    font-size: 17px;
+    color: var(--text-faint);
+  }
+}
+
+.side-panel-sub {
+  padding: 3px 4px 0 14px;
+  margin: 2px 0 2px 12px;
+  border-left: 1px solid var(--divider-a50);
+
+  .side-panel-item { font-size: 13px; }
 }
 
 // 漢堡按鈕預設隱藏（非手機尺寸不顯示）
@@ -343,9 +478,12 @@
   display: none;
 }
 
-// 處理手機時，主選單變成漢堡模式
+// ============================================================
+// 手機：漢堡選單改回清單式抽屜（常駐雙欄在小螢幕上放不下）
+// ============================================================
 @media (max-width: $breakpoint-mobile) {
-  // 漢堡按鈕（fixed 浮動在左上角）
+  .AppMenuTree { display: none; }
+
   .hamburger-btn {
     display: flex;
     position: fixed;
@@ -365,27 +503,100 @@
     i { font-size: 22px; }
   }
 
-  // 選單預設隱藏
-  .AppMenuTree {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100svh;
-    width: $menuWidth;
-    transform: translateX(-#{$menuWidth});
-    transition: transform $menutransition;
-    z-index: 300;
-
-    &.is-mobile-open {
-      transform: translateX(0);
-    }
-  }
-
-  // 半透明 overlay
   .mobile-overlay {
     position: fixed;
     inset: 0;
     z-index: 200;
     background: rgba(#09151A, 0.45);
+  }
+
+  .AppMenuTreeMobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(84vw, 300px);
+    background: var(--sidebar-bg);
+    z-index: 300;
+    overflow-y: auto;
+    padding: 16px 12px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px 14px;
+
+      .user-avatar {
+        width: 32px; height: 32px; border-radius: 999px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 13px;
+        background-color: var(--primary); color: var(--primary-fg);
+      }
+      .user-name { font-size: 14px; font-weight: 600; margin: 0; }
+    }
+
+    .mobile-search {
+      position: relative;
+      background: var(--sidebar-hover);
+      border-radius: 8px;
+      margin-bottom: 12px;
+
+      i {
+        position: absolute; left: 11px; top: 8px;
+        font-size: 21px; color: var(--sidebar-muted);
+      }
+      input {
+        padding-left: 40px; background: transparent; border: none; color: var(--text);
+        &::placeholder { color: var(--sidebar-muted); }
+      }
+    }
+
+    .mobile-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--sidebar-muted);
+      text-decoration: none;
+
+      i { font-size: 19px; }
+
+      &:hover { background: var(--sidebar-hover); }
+      &.router-link-active {
+        background: var(--sidebar-active);
+        color: var(--sidebar-fg);
+        font-weight: 500;
+      }
+
+      &.mobile-sub { padding-left: 44px; font-size: 13px; }
+    }
+
+    .mobile-team-block { margin-top: 6px; }
+
+    .mobile-team-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+
+      &:hover { background: var(--sidebar-hover); }
+
+      .mobile-team-arrow { margin-left: auto; font-size: 18px; color: var(--text-muted); }
+    }
+
+    .mobile-team-dot {
+      width: 24px; height: 24px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 800; flex-shrink: 0;
+    }
   }
 }

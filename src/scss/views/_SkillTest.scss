@@ -197,6 +197,11 @@
       align-items: center;
       gap: 6px;
     }
+
+    .info-toggle-btn {
+      font-size: 12px;
+      padding: 5px 12px;
+    }
   }
 
   .test-panel-tabs {
@@ -268,6 +273,150 @@
       background: $color-badge-hot-bg;
       color: $color-badge-hot-text;
     }
+  }
+
+}
+
+// ── 技能資訊抽屜：Teleport 到 body，跟 .SkillTest 不是同一個 DOM 子樹，
+//    規則不能巢狀在 .SkillTest 裡面，不然完全套不上（比照其他 Drawer 元件的慣例，獨立成頂層 class）──
+.st-context-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+
+  .st-drawer-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(9, 21, 26, 0.35);
+    backdrop-filter: blur(4px);
+  }
+
+  .st-drawer-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+    @media (max-width: 480px) { width: 100vw; }
+  }
+
+  .st-drawer-head {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--divider-a50);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  .st-drawer-close-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-a50);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 18px; }
+    &:hover { background: var(--page-bg); color: var(--text); }
+  }
+
+  .st-drawer-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .context-card {
+    border: 1px solid var(--divider-a50);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .context-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+
+  .context-instructions {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .context-rate {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .context-rate-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: $color_main_1;
+    line-height: 1;
+  }
+
+  .context-rate-sub {
+    font-size: 11.5px;
+    color: var(--text-faint);
+  }
+
+  .context-empty-hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+}
+
+// 抽屜進出場：從右側滑入，跟 .st-drawer-panel 的 right:0 定位方式一致
+// （沒有沿用共用的 .drawer-fade，那組是 scale+fade 給置中 modal 用的，套在
+// 靠右側的面板上開合方向會不對）
+.st-drawer-fade-enter-active,
+.st-drawer-fade-leave-active {
+  transition: opacity 0.2s ease;
+  .st-drawer-panel { transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1); }
+}
+.st-drawer-fade-enter-from,
+.st-drawer-fade-leave-to {
+  opacity: 0;
+  .st-drawer-panel { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-drawer-fade-enter-active,
+  .st-drawer-fade-leave-active {
+    transition: opacity 0.1s linear;
+    .st-drawer-panel { transition: none; }
+  }
+  .st-drawer-fade-enter-from,
+  .st-drawer-fade-leave-to {
+    .st-drawer-panel { transform: none; }
   }
 }
 

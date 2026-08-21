@@ -12,11 +12,12 @@
   min-height: 100%;
 
   // ── Banner ──────────────────────────────────────────
+  // banner 跟下面的 toolbar 合起來是同一個「頁首」區塊，只在整個區塊
+  // 底部收一條 hairline（見 .plc-toolbar），banner 自己不再疊一條，
+  // 否則標題跟 tabs 之間會夾出兩條線的「三明治」感。
   .plc-banner {
-    padding: 20px 46px;
+    padding: 26px 46px 10px;
     background: var(--page-bg);
-    border-left: 3px solid var(--primary);
-    border-bottom: 1px solid var(--divider);
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -26,17 +27,17 @@
     .plc-banner-left {}
 
     .plc-banner-title {
-      font-size: 24px;
-      font-weight: 900;
+      font-family: $font-family-heading;
+      font-size: 26px;
+      font-weight: 700;
       color: var(--text);
-      letter-spacing: -0.4px;
+      letter-spacing: -0.3px;
     }
 
     .plc-banner-subtitle {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-faint);
-      margin-top: 3px;
-      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
     }
 
     .plc-banner-right {
@@ -45,52 +46,14 @@
       gap: 16px;
       flex-shrink: 0;
     }
-
-    // KPI 數字區
-    .plc-banner-kpi {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-shrink: 0;
-
-      .kpi-item {
-        text-align: center;
-        background: var(--page-bg);
-        border: 1px solid var(--accent-soft);
-        border-top: 2px solid var(--primary);
-        border-radius: 8px;
-        padding: 8px 16px;
-
-        &.kpi-review { border-top-color: var(--warning); }
-        &.kpi-done   { border-top-color: var(--text-faint); }
-
-        .kpi-num {
-          font-size: 22px;
-          font-weight: 900;
-          color: var(--primary);
-          line-height: 1;
-          font-family: 'JetBrains Mono', monospace;
-
-          &.review { color: var(--warning); }
-          &.done   { color: var(--text-faint); }
-        }
-
-        .kpi-label {
-          font-size: 8px;
-          font-weight: 700;
-          letter-spacing: 1.2px;
-          text-transform: uppercase;
-          color: var(--text-faint);
-          margin-top: 3px;
-        }
-      }
-    }
   }
 
   // ── Toolbar（含 Tabs）────────────────────────────────
+  // 跟上面的 .plc-banner 共用同一個頁首區塊，這條 hairline 是整個
+  // 區塊唯一的底線
   .plc-toolbar {
     background: var(--page-bg);
-    padding: 8px 46px;
+    padding: 6px 46px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -143,8 +106,7 @@
   .compDropDown .dropdown-trigger,
   :deep(.compDropDown .dropdown-trigger) {
     border-radius: 999px !important;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 13px;
   }
 
   // ── Content 區域 ────────────────────────────────────
@@ -185,19 +147,6 @@
       box-shadow: 0 0 0 3px rgba(0,160,120,0.13);
     }
 
-    // ── Spotlight 卡片（清單第一張，通常是最近更新的專案）──
-    &.is-spotlight {
-      grid-column: span 2;
-
-      // card-chart 是 hover 時取代 card-img 的面板（v-show 切換），兩者高度需一致，
-      // 否則 hover spotlight 卡片時，stretch 對齊的整列格線會跟著收縮 44px 造成跳動
-      .card-img, .card-chart { height: 220px; }
-      .card-footer .card-name {
-        font-size: 15px;
-        -webkit-line-clamp: 1;
-      }
-    }
-
     // ── 狀態色條（卡片頂部 4px）─────────────────────
     .card-status-strip {
       height: 4px;
@@ -209,7 +158,7 @@
       &.strip-pending { background: var(--text-muted); }
     }
 
-    // ── 圖片區 ──────────────────────────────────────
+    // ── 圖片區：純視覺，不再疊 UI 元件 ────────────────
     .card-img {
       position: relative;
       overflow: hidden;
@@ -222,91 +171,6 @@
         height: 100%;
         object-fit: cover;
         display: block;
-      }
-
-      .card-img-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 55%);
-      }
-
-      .card-star {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 18px;
-        color: rgba(255,255,255,0.65);
-        cursor: pointer;
-        z-index: 3;
-
-        &.active { color: var(--primary); }
-      }
-
-      .card-avatars {
-        position: absolute;
-        bottom: 10px;
-        left: 12px;
-        display: flex;
-        align-items: center;
-        z-index: 3;
-
-        .avatar-chip {
-          width: 24px;
-          height: 24px;
-          border-radius: 999px;
-          border: 2px solid $white;
-          background: var(--primary);
-          color: var(--primary-fg);
-          font-weight: 700;
-          font-size: 11px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-left: -6px;
-          position: relative;
-
-          &:first-child { margin-left: 0; }
-
-          .owner-crown {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            line-height: 1;
-          }
-        }
-
-        .collab-count {
-          font-size: 11px;
-          color: rgba(255,255,255,0.9);
-          margin-left: 7px;
-        }
-      }
-
-      // 卡片右上角專案 ID
-      .card-project-id {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: rgba(255,255,255,0.7);
-        font-family: 'JetBrains Mono', monospace;
-        z-index: 3;
-      }
-
-      .team-name-box {
-        position: absolute;
-        left: 10px;
-        top: 10px;
-        background: rgba(0,0,0,0.4);
-        color: $white;
-        border-radius: 6px;
-        padding: 3px 8px;
-        font-size: 10px;
-        z-index: 3;
       }
     }
 
@@ -366,40 +230,119 @@
       }
     }
 
-    // ── 卡片 footer ─────────────────────────────────
-    .card-footer {
-      padding: 11px 13px 13px;
+    // ── 卡片內容：團隊/收藏 → 標題 → 狀態/時間 → 協作者/更多 ──
+    // 四行各司其職，不再把 badge/時間/按鈕塞進同一行搶版面；
+    // 標題是唯一的視覺主角，其餘都是安靜的次要文字。
+    .card-body {
+      padding: 12px 14px 13px;
       position: relative;
 
+      .card-row-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 18px;
+        margin-bottom: 6px;
+
+        .card-team {
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+
+        .card-star {
+          margin-left: auto;
+          font-size: 17px;
+          color: var(--text-faint);
+          cursor: pointer;
+
+          &.active { color: var(--primary); }
+        }
+      }
+
       .card-name {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
         color: var(--text);
         line-height: 1.35;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
 
-      .card-meta {
+      .card-row-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+
+        .card-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-muted);
+
+          .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+          }
+
+          &.status-active  { color: var(--primary); }
+          &.status-review  { color: var(--warning); }
+          &.status-done    { color: var(--text-faint); }
+          &.status-pending { color: var(--text-muted); }
+        }
+
+        .card-time {
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+      }
+
+      .card-row-foot {
         display: flex;
         align-items: center;
         justify-content: space-between;
 
-        .card-meta-left {
+        .card-avatars {
           display: flex;
           align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-          min-width: 0;
-        }
 
-        .card-time {
-          font-size: 10px;
-          color: var(--text-faint);
-          font-family: 'JetBrains Mono', monospace;
+          .avatar-chip {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            border: 2px solid var(--surface);
+            background: var(--primary);
+            color: var(--primary-fg);
+            font-weight: 700;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: -6px;
+            position: relative;
+
+            &:first-child { margin-left: 0; }
+
+            // 擁有者：用一圈強調色的 ring 取代原本的皇冠 emoji 做區分
+            &.avatar-owner {
+              z-index: 1;
+              box-shadow: 0 0 0 2px var(--accent);
+            }
+          }
+
+          .collab-count {
+            font-size: 11px;
+            color: var(--text-faint);
+            margin-left: 7px;
+          }
         }
       }
 
@@ -431,23 +374,6 @@
 
         &.show { visibility: visible; }
       }
-    }
-
-    // ── 狀態 badge ──────────────────────────────────
-    .status-badge {
-      font-family: $font-family-mono;
-      letter-spacing: 0.04em;
-      border-radius: 999px;
-      font-size: 11px;
-      background: var(--surface);
-      border: 1px solid var(--divider);
-      color: var(--text-muted);
-      padding: 4px 10px;
-
-      &.status-active  { background: var(--accent-soft); color: var(--primary-hover); }
-      &.status-review  { background: rgba(207,138,31,0.12); color: var(--warning); }
-      &.status-done    { background: var(--page-bg); color: var(--text-muted); }
-      &.status-pending { background: var(--sidebar-hover); color: var(--text-muted); }
     }
   }
 
@@ -606,6 +532,429 @@
       font-size: 13px;
       color: var(--text-faint);
     }
+  }
+
+  // ── 首頁總覽（僅 mode="recent"）：精選區 + 右側常駐 widget 欄 ──────
+  // .plc-body 預設 display:contents，team 模式完全不受影響（.plc-content
+  // 仍是 .ProjectListContent 的直接 flex 子層）；只有 --home 這個修飾字
+  // 才會變成「內容＋側欄」的 2 欄 grid。
+  .plc-body {
+    display: contents;
+  }
+
+  .plc-body--home {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 24px;
+    align-items: start;
+    padding-right: 46px;
+
+    .plc-content { padding-right: 0; }
+  }
+
+  .plc-section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 12px;
+  }
+
+  .featured-zone { margin-bottom: 4px; }
+
+  // 精選區時卡片格線改用可自動換行的寬度，避免跟固定 4 欄搶版面
+  .plc-body--home .card-list-box {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  // .card-status/.status-dot/.card-time 原本巢狀定義在 .card-body .card-row-status
+  // 底下很深的層級，精選卡片（Hero／Duo／Featured）不在那個結構裡，
+  // 這裡補一份可以重複使用、樣式完全一致的基礎版本
+  .card-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    &.status-active  { color: var(--primary); }
+    &.status-review  { color: var(--warning); }
+    &.status-done    { color: var(--text-faint); }
+    &.status-pending { color: var(--text-muted); }
+  }
+
+  .card-time {
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  // 精選卡片（Hero／Duo／Featured）共用：頂部一行放團隊名 + 星號取消鈕，
+  // 精選卡本身一定是已加星號的專案，星星永遠是實心，點擊只會取消不會再加
+  .hero-eyebrow-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .card-star {
+      font-size: 18px;
+      color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  }
+
+  // 剛好 1 顆星：大張 Hero（左圖右文）
+  .hero-card {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: 22px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+
+    &:hover { box-shadow: 0 4px 12px -4px rgba(var(--shadow), 0.12); }
+
+    .hero-thumb {
+      width: 42%;
+      min-height: 200px;
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+
+      img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+
+    .hero-body {
+      flex: 1;
+      min-width: 0;
+      padding: 22px 26px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 12px;
+    }
+
+    .hero-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: auto;
+
+      // .card-avatars/.avatar-chip 原本的樣式定義在 .card-body .card-row-foot
+      // 底下很深的巢狀層級，這裡不在那個結構裡，需要自己補一份基本樣式
+      .card-avatars { display: flex; align-items: center; }
+
+      .avatar-chip {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        border: 2px solid var(--surface);
+        background: var(--primary);
+        color: var(--primary-fg);
+        font-weight: 700;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: -6px;
+        flex-shrink: 0;
+
+        &:first-child { margin-left: 0; }
+        &.avatar-owner { z-index: 1; box-shadow: 0 0 0 2px var(--accent); }
+      }
+
+      .hero-collab-count { font-size: 12px; color: var(--text-faint); }
+    }
+
+    .hero-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 46px;
+      margin-top: 16px;
+
+      .bar {
+        width: 10px;
+        min-height: 4px;
+        border-radius: 3px 3px 0 0;
+        background: var(--accent-soft);
+
+        &.today { background: var(--primary); }
+      }
+    }
+
+    .hero-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--divider-a50);
+    }
+  }
+
+  // 剛好 2 顆星：兩張等寬中型卡片並排撐滿整排，避免橫向捲動列大片留白
+  .featured-duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .duo-card {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s;
+
+    &:hover { box-shadow: 0 4px 12px -4px rgba(var(--shadow), 0.12); }
+
+    .duo-thumb {
+      height: 120px;
+      background: var(--sidebar-bg);
+      img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+
+    .duo-body { padding: 14px 16px 16px; }
+
+    .duo-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .duo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .duo-foot { display: flex; align-items: center; justify-content: space-between; }
+  }
+
+  // 3 顆星以上：固定寬度、可橫向捲動的精選列，不硬撐成好幾張巨大卡片
+  .featured-row {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 22px;
+    @include no-scroll-bar();
+  }
+
+  .featured-card {
+    flex: 0 0 220px;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s;
+
+    &:hover { box-shadow: 0 4px 12px -4px rgba(var(--shadow), 0.12); }
+
+    .featured-thumb {
+      height: 92px;
+      background: var(--sidebar-bg);
+      img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+
+    .featured-body { padding: 12px 14px 14px; }
+
+    .featured-eyebrow {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .featured-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 10px;
+      min-height: 2.7em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .featured-foot { display: flex; align-items: center; justify-content: space-between; }
+  }
+
+  // ── 右側常駐 widget 欄 ──────────────────────────────
+  .plc-home-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 20px;
+  }
+
+  .plc-widget {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .plc-widget-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .plc-widget-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+
+  .plc-widget-link {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  .plc-widget-empty {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+
+  // 旅程進度 widget
+  .journey-summary {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+
+    b { color: var(--text); font-variant-numeric: tabular-nums; }
+  }
+
+  .journey-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--divider-a50);
+
+    &:last-child { border-bottom: none; padding-bottom: 0; }
+  }
+
+  .journey-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i { font-size: 15px; }
+
+    &.running { background: rgba(0,160,120,0.1); color: var(--primary); }
+    &.done { background: var(--page-bg); color: var(--text-faint); }
+  }
+
+  .journey-main { flex: 1; min-width: 0; }
+
+  .journey-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .journey-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+
+  .journey-progress-track {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--page-bg);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .journey-progress-fill { height: 100%; background: var(--primary); }
+
+  // 團隊統計 widget
+  .team-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 0;
+  }
+
+  .team-stat-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+  .team-stat-name { flex: 1; font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .team-stat-count { font-size: 12.5px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  // 近期動態 widget
+  .activity-row {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--divider-a50);
+
+    &:last-child { border-bottom: none; padding-bottom: 0; }
+  }
+
+  .activity-text { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .activity-time { font-size: 10.5px; color: var(--text-faint); margin-top: 2px; }
+
+  @media (max-width: $breakpoint-tablet) {
+    .plc-body--home {
+      grid-template-columns: 1fr;
+      padding-right: 0;
+
+      .plc-content { padding-right: 46px; }
+    }
+
+    .plc-home-side { position: static; }
   }
 }
 

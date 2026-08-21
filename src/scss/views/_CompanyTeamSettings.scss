@@ -1,226 +1,98 @@
 .CompanyTeamSettings {
 
-  // 設計切換按鈕（演示用）
-  .design-toggle-btn {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 18px;
-    border-radius: 9999px;
-    border: none;
-    background: var(--accent);
-    color: var(--primary-hover);
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: rgba(4, 120, 87, 0.15) 0px 4px 16px;
-    transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.15s ease;
-
-    i { font-size: 18px; }
-
-    &:hover {
-      transform: scale(1.04);
-      box-shadow: rgba(4, 120, 87, 0.20) 0px 6px 20px;
-    }
-
-    &:active { transform: scale(0.98); }
-  }
-
-  .page-title-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-right: 24px;
-
-    h3 {
-      margin: 0;
-    }
-  }
-
-  .company-name-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    font-size: 13px;
-    font-weight: 600;
-    background-color: var(--page-bg);
-    border: 1px solid rgba(14, 15, 12, 0.12);
-    color: var(--text-muted);
-  }
-
-  .company-settings,
-  .team-settings {
+  .views-page-content-box {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     padding-top: 8px;
   }
 
-  .team-settings-toolbar {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .info-card {
-    border: 1px solid rgba(14, 15, 12, 0.10);
-    border-radius: 16px;
-    background-color: var(--surface);
-    overflow: hidden;
-  }
-
-  .info-row {
+  // ── 企業身分卡：唯一的「企業識別」入口，取代原本的頁籤 + 唯讀清單 ──
+  .company-hero {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 18px 24px;
-    border-bottom: 1px solid rgba(14, 15, 12, 0.08);
-    gap: 16px;
+    gap: 18px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent-soft), var(--surface) 70%);
+    border: 1px solid var(--divider-a50);
+  }
 
-    &.no-border {
-      border-bottom: none;
+  .company-hero-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
+    color: $color_main_2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined {
+      font-size: 26px;
     }
   }
 
-  .info-row-left {
+  .company-hero-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .company-hero-name {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .company-hero-meta {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-width: 140px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
-  .info-row-icon {
-    font-size: 20px;
-    color: var(--text);
-    flex-shrink: 0;
-  }
-
-  .info-row-label {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .info-row-right {
+  // 現有 Agent 收進企業卡片裡面呈現，跟企業類型/方案同一張卡；
+  // 不另外加文字標籤，靠 agent-tag 本身的圖示/名稱跟上面一排 hairline
+  // 分隔就夠辨識，不需要多一行「現有 Agent」的說明文字
+  .company-hero-agents {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--divider-a50);
   }
 
-  .info-row-value {
-    font-size: 14px;
-    color: var(--text-muted);
+  .company-hero-link {
+    flex-shrink: 0;
   }
 
   .type-tag {
     font-size: 13px;
     padding: 3px 12px;
     border-radius: 9999px;
-    background-color: var(--page-bg);
-    border: 1px solid rgba(14, 15, 12, 0.10);
+    background-color: var(--surface);
+    border: 1px solid var(--divider);
     color: var(--text-muted);
   }
 
+  // 用跟角色標籤同一套「淺底+品牌色文字」語彙，不用實心黑底 pill
   .plan-badge {
     font-size: 13px;
     font-weight: 600;
     padding: 4px 12px;
     border-radius: 9999px;
-    background-color: var(--text);
-    color: var(--accent);
+    background-color: var(--tag-teal-bg);
+    color: var(--tag-teal-text);
     letter-spacing: 0.3px;
   }
 
-  .plan-expire {
-    font-size: 13px;
-    color: var(--text-faint);
-  }
-
-  .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    align-items: start;
-
-    @media (max-width: $breakpoint-tablet) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  // 內容較寬（如含表格）的設定區塊，跨滿整個 grid 寬度，避免與另一欄互相擠壓
-  .settings-block--wide {
-    grid-column: 1 / -1;
-  }
-
-  .settings-block {
-    border: 1px solid rgba(14, 15, 12, 0.10);
-    border-radius: 16px;
-    background-color: var(--surface);
-    padding: 20px 24px;
-  }
-
-  .settings-block-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-
-    .custom-btn {
-      margin-left: auto;
-    }
-  }
-
-  .settings-block-icon {
-    font-size: 22px;
-    color: var(--text);
-  }
-
-  .settings-block-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  // ── 列表容器 ──
-  .agent-list,
-  .team-list {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  // ── Agent / Team 卡片基底 ──
-  .agent-card,
-  .team-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    background-color: var(--page-bg);
-    border: 1px solid rgba(14, 15, 12, 0.10);
-    border-radius: 12px;
-    user-select: none;
-  }
-
-  // ── 說明文字 ──
-  .setting-description {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    font-size: 14px;
-    color: var(--text-faint);
-    margin-bottom: 14px;
-
-    i {
-      font-size: 16px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
+  .plan-badge-expire {
+    font-weight: 500;
+    opacity: 0.8;
   }
 
   // ── 連結（更改請聯絡客服）──
@@ -243,94 +115,86 @@
     }
   }
 
-  // ── 管理者表格容器 ──
-  .admin-table-box {
-    border-radius: 12px;
-    border: 1px solid rgba(14, 15, 12, 0.10);
-    background-color: var(--page-bg);
-    overflow: hidden;
-    overflow-x: auto;
-
-    .custom-table {
-      border-radius: 0;
-
-      th,
-      td {
-        border-color: rgba(14, 15, 12, 0.08);
-      }
-
-      .col-action {
-        width: 40px;
-      }
-    }
-
-    .owner-icon {
-      font-size: 16px;
-      color: var(--text-faint);
-      vertical-align: middle;
-      margin-right: 4px;
-    }
-
-    .delete-btn {
-      font-size: 24px;
-      color: var(--text-faint);
-      cursor: pointer;
-      border-radius: 4px;
-      padding: 2px;
-
-      &:hover {
-        background-color: var(--accent-soft);
-        color: var(--text);
-      }
-    }
-  }
-
-  .agent-icon-bg {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background-color: var(--hint);
+  // ── 看板區塊共用：人員 / 團隊都用同一套標題列 ──
+  .board-section {
     display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-      font-size: 26px;
-      color: var(--primary-hover);
-    }
-  }
-
-  // 新版 Agent 卡片（覆蓋舊版規則）
-  .company-settings .agent-card {
     flex-direction: column;
-    min-width: 110px;
-    padding: 20px 24px;
-    background-color: var(--page-bg);
-    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
-
-    &:hover {
-      border-color: rgba(14, 15, 12, 0.20);
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: rgba(14, 15, 12, 0.08) 0px 8px 20px;
-    }
-
-    span {
-      min-width: unset;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-muted);
-    }
+    gap: 12px;
   }
 
-  .admin-name-cell {
+  .board-title-row {
     display: flex;
     align-items: center;
     gap: 10px;
+
+    .custom-btn {
+      margin-left: auto;
+    }
   }
 
-  .admin-avatar {
-    width: 32px;
-    height: 32px;
+  // 不用 text-transform: uppercase —— 標題裡混了「Agent」這種英文字，
+  // 全大寫轉換套在中文字上沒作用，套在英文字上會變成刺眼的「AGENT」
+  .board-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text-faint);
+  }
+
+  .setting-description {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-faint);
+    margin-top: -4px;
+
+    i {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+  }
+
+  // ── 現有 Agent：安靜的 pill 標籤，跟平台管理者的人卡是不同語彙 ──
+  .agent-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background-color: var(--page-bg);
+    border: 1px solid var(--divider);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+
+    i {
+      font-size: 16px;
+      color: var(--primary);
+    }
+  }
+
+  // ── 平台管理者：可操作的帳號名冊，用人卡呈現 ──
+  .person-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .person-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background-color: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+  }
+
+  .person-avatar {
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -339,7 +203,7 @@
     font-weight: 700;
     flex-shrink: 0;
     background-color: var(--page-bg);
-    border: 1px solid rgba(14, 15, 12, 0.12);
+    border: 1px solid var(--divider);
     color: var(--text-muted);
 
     &.is-owner {
@@ -349,20 +213,43 @@
     }
   }
 
-  .settings-block .owner-icon {
-    font-size: 15px;
-    color: var(--accent);
-    vertical-align: unset;
-    margin-right: 0;
+  .person-info {
+    flex: 1;
+    min-width: 0;
   }
 
-  .settings-block .delete-btn {
-    font-size: 20px;
+  .person-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .person-role {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  .owner-icon {
+    font-size: 14px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .person-card .delete-btn {
+    font-size: 19px;
     color: var(--text-faint);
     cursor: pointer;
     border-radius: 6px;
     padding: 3px;
     background-color: transparent;
+    flex-shrink: 0;
 
     &:hover {
       background-color: var(--accent-soft);
@@ -370,45 +257,84 @@
     }
   }
 
-  // 新版 team-card（覆蓋舊版規則）
-  .team-settings .team-card {
-    min-width: 200px;
-    background-color: var(--page-bg);
-    transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  // ── 團隊看板：依類型並排成兩條 lane ──
+  .team-lanes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
 
-    span {
-      min-width: unset;
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .team-lane {
+    background-color: var(--surface);
+    border: 1px solid var(--divider-a50);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+
+  .team-lane-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+
+    .material-symbols-outlined {
+      font-size: 19px;
+    }
+  }
+
+  .team-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background-color: var(--page-bg);
+    border: 1px solid var(--divider);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+    &:last-child {
+      margin-bottom: 0;
     }
 
     &:hover {
-      border-color: rgba(14, 15, 12, 0.20);
-      box-shadow: rgba(14, 15, 12, 0.08) 0px 6px 16px;
+      border-color: var(--text-faint);
+      box-shadow: rgba(var(--shadow), 0.08) 0px 6px 16px;
 
-      .team-card-actions {
+      .team-chip-actions {
         opacity: 1;
       }
     }
   }
 
-  .team-card-icon {
-    font-size: 20px;
+  .team-chip-icon {
+    font-size: 19px;
     color: var(--text);
     flex-shrink: 0;
   }
 
-  .team-card-name {
+  .team-chip-name {
     font-size: 14px;
     font-weight: 500;
     flex: 1;
     color: var(--text);
+    min-width: 0;
   }
 
-  .team-card-actions {
+  .team-chip-actions {
     display: flex;
     align-items: center;
     gap: 2px;
     opacity: 0;
     transition: opacity 0.15s ease;
+    flex-shrink: 0;
 
     .edit-btn {
       font-size: 18px;

@@ -227,9 +227,9 @@
             </template>
             <template v-else>
               <div class="pipeline-stages">
-                <span class="pipeline-stage-badge is-done">✓ 分段</span>
-                <span class="pipeline-stage-badge is-done">✓ 向量化</span>
-                <span class="pipeline-stage-badge is-done">✓ 建立索引</span>
+                <span class="pipeline-stage-badge is-done"><i class="material-symbols-outlined">check</i>分段</span>
+                <span class="pipeline-stage-badge is-done"><i class="material-symbols-outlined">check</i>向量化</span>
+                <span class="pipeline-stage-badge is-done"><i class="material-symbols-outlined">check</i>建立索引</span>
               </div>
             </template>
             <div v-if="knowledge.pipelineError" class="fs-12 mt-2 pipeline-error-text">
