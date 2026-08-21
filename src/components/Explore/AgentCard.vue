@@ -14,8 +14,8 @@
     >
       {{ agent.badge.label }}
     </span>
-    <div class="agent-icon" :style="{ background: agent.bgColor }">
-      <i class="material-symbols-outlined" :style="{ color: agent.accentColor }">{{ agent.icon }}</i>
+    <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
+      <i class="material-symbols-outlined">{{ agent.icon }}</i>
     </div>
     <h4>{{ agent.name }}</h4>
     <p>{{ agent.painPoint }}</p>
@@ -23,6 +23,9 @@
 </template>
 
 <script setup lang="ts">
+// colorKey 對應 src/scss/base/_theme.scss 裡的 --tag-*-bg/text token（light/dark 都有定義）
+type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
+
 interface AgentBadge {
   type: 'new' | 'hot' | 'sat'
   label: string
@@ -33,8 +36,7 @@ interface Agent {
   desc: string
   painPoint: string
   icon: string
-  bgColor: string
-  accentColor: string
+  colorKey: ColorKey
   tags: string[]
   badge?: AgentBadge
   categories: string[]

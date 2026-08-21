@@ -10,6 +10,8 @@
 
 **2026-08-18 修訂說明：** Task 1 完成後才發現，實際實作所在的 `main`（`origin/main`）分支上，`Explore.vue` 的圖示配色仍是舊版的 `bgColor`/`accentColor`（inline style、寫死 hex）欄位，不是本文件原始版本以為的 `colorKey: ColorKey`（CSS class 設計 token）——那個 `colorKey` 版本只存在於另一個尚未合併回 main 的並行分支上，是探索/寫這份 spec 時誤把該分支的檔案內容當成 main 的現況。以下第 2-4 節已修正為使用實際的 `bgColor`/`accentColor` 欄位，不再假設 `colorKey` 存在。
 
+**2026-08-21 merge 後更新：** 上面那個「尚未合併回 main 的並行分支」（`redesign/entry-and-sidebar-taste-pass`）後來合併回 main 了，合併時把這份 spec 涵蓋的 Skill 探索分頁功能，跟該分支既有的 `colorKey: ColorKey` dark-mode token 化改動做了整合——最終落地的程式碼是 `colorKey`，不是本文件第 2-4 節寫的 `bgColor`/`accentColor`。上一段「不再假設 colorKey 存在」的結論，在合併之後已經不成立，請勿依照第 2-4 節的 `bgColor`/`accentColor` 寫法去逆向修改現有程式碼。
+
 ## 目標
 
 - 探索頁分成兩個分頁籤：「Agent 探索」與「Skill 探索」。

@@ -3,8 +3,8 @@
     <span v-if="skill.badge" :class="['agent-badge', `agent-badge--${skill.badge.type}`]">
       {{ skill.badge.label }}
     </span>
-    <div class="agent-icon" :style="{ background: skill.bgColor }">
-      <i class="material-symbols-outlined" :style="{ color: skill.accentColor }">{{ skill.icon }}</i>
+    <div :class="['agent-icon', `agent-icon--${skill.colorKey}`]">
+      <i class="material-symbols-outlined">{{ skill.icon }}</i>
     </div>
     <span class="skill-function-badge">{{ skill.functionType }}</span>
     <h4>{{ skill.name }}</h4>
@@ -13,6 +13,9 @@
 </template>
 
 <script setup lang="ts">
+// colorKey 對應 src/scss/base/_theme.scss 裡的 --tag-*-bg/text token（light/dark 都有定義）
+type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
+
 interface AgentBadge {
   type: 'new' | 'hot' | 'sat'
   label: string
@@ -25,8 +28,7 @@ interface ExploreSkill {
   functionType: SkillFunctionType
   capability: string
   icon: string
-  bgColor: string
-  accentColor: string
+  colorKey: ColorKey
   badge?: AgentBadge
 }
 

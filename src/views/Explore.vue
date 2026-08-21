@@ -75,8 +75,8 @@
         @click="openModal(fourthRankedAgent)"
       >
         <span class="rank-badge">4</span>
-        <div class="agent-icon" :style="{ background: fourthRankedAgent.bgColor }">
-          <i class="material-symbols-outlined" :style="{ color: fourthRankedAgent.accentColor }">{{ fourthRankedAgent.icon }}</i>
+        <div :class="['agent-icon', `agent-icon--${fourthRankedAgent.colorKey}`]">
+          <i class="material-symbols-outlined">{{ fourthRankedAgent.icon }}</i>
         </div>
         <span class="ranking-more-name">{{ fourthRankedAgent.name }}</span>
         <span class="ranking-more-desc">{{ fourthRankedAgent.painPoint }}</span>
@@ -184,8 +184,8 @@
     <template v-if="selectedAgent">
       <div class="Explore explore-modal-box">
         <div class="explore-modal-content">
-          <div class="explore-modal-icon" :style="{ background: selectedAgent.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: selectedAgent.accentColor }">{{ selectedAgent.icon }}</i>
+          <div :class="['explore-modal-icon', `agent-icon--${selectedAgent.colorKey}`]">
+            <i class="material-symbols-outlined">{{ selectedAgent.icon }}</i>
           </div>
           <p class="explore-modal-painpoint">{{ selectedAgent.painPoint }}</p>
           <p class="explore-modal-desc">{{ selectedAgent.desc }}</p>
@@ -213,8 +213,8 @@
     <template v-if="selectedExploreSkill">
       <div class="Explore explore-modal-box">
         <div class="explore-modal-content">
-          <div class="explore-modal-icon" :style="{ background: selectedExploreSkill.bgColor }">
-            <i class="material-symbols-outlined" :style="{ color: selectedExploreSkill.accentColor }">{{ selectedExploreSkill.icon }}</i>
+          <div :class="['explore-modal-icon', `agent-icon--${selectedExploreSkill.colorKey}`]">
+            <i class="material-symbols-outlined">{{ selectedExploreSkill.icon }}</i>
           </div>
           <span class="skill-function-badge">{{ selectedExploreSkill.functionType }}</span>
           <p class="explore-modal-desc">{{ selectedExploreSkill.capability }}</p>
@@ -269,13 +269,16 @@ interface AgentBadge {
   label: string
 }
 
+// colorKey 對應 src/scss/base/_theme.scss 裡的 --tag-*-bg/text token（light/dark 都有定義），
+// 不再用每個 agent 各自寫死的 hex 顏色（那組顏色在深色模式下不會跟著換色）
+type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
+
 interface Agent {
   name: string
   desc: string
   painPoint: string
   icon: string
-  bgColor: string
-  accentColor: string
+  colorKey: ColorKey
   tags: string[]
   badge?: AgentBadge
   categories: string[]
@@ -287,8 +290,7 @@ const allAgents: Agent[] = [
     desc: '撰寫高品質的文章與多媒體內容，精準策略角度，吸引目標受眾，增強社交媒體互動。',
     painPoint: '還在對著空白文件發呆，不知道從何下筆？',
     icon: 'edit_note',
-    bgColor: '#EEEDFE',
-    accentColor: '#534AB7',
+    colorKey: 'violet',
     tags: ['內容', '創作', '社群', '行銷'],
     categories: ['全部', '文件撰寫'],
   },
@@ -297,8 +299,7 @@ const allAgents: Agent[] = [
     desc: '管理各平台社群，增進用戶互動，制定策略以提升用戶忠誠度和品牌影響力。',
     painPoint: '每天要顧好幾個社群帳號，回覆訊息回到分身乏術？',
     icon: 'group',
-    bgColor: '#E1F5EE',
-    accentColor: '#0F6E56',
+    colorKey: 'teal',
     tags: ['社群', '行銷', '策略', '互動'],
     categories: ['全部'],
   },
@@ -307,8 +308,7 @@ const allAgents: Agent[] = [
     desc: '從規劃到執行，確保資源最佳配置和時程有效利用。',
     painPoint: '專案時程一多，資源分配跟進度追蹤就開始亂？',
     icon: 'task_alt',
-    bgColor: '#FAEEDA',
-    accentColor: '#854F0B',
+    colorKey: 'amber',
     tags: ['專案', '管理', '規劃', '執行'],
     categories: ['全部', '會議準備'],
   },
@@ -317,8 +317,7 @@ const allAgents: Agent[] = [
     desc: '分析公司財務數據，制定預算與報告，提供可行建議以支持企業經營目標。',
     painPoint: '一堆報表數字擺在眼前，卻看不出關鍵趨勢？',
     icon: 'bar_chart',
-    bgColor: '#E6F1FB',
-    accentColor: '#185FA5',
+    colorKey: 'blue',
     tags: ['財務', '分析', '預算', '報告'],
     badge: { type: 'new', label: '新上架' },
     categories: ['全部', '報表分析', '財務管理'],
@@ -328,8 +327,7 @@ const allAgents: Agent[] = [
     desc: '優化網站內容與結構，提升搜尋引擎排名，幫助品牌獲得更多自然流量。',
     painPoint: '網站流量怎麼做都上不去，搜尋排名一直卡關？',
     icon: 'travel_explore',
-    bgColor: '#EAF3DE',
-    accentColor: '#3B6D11',
+    colorKey: 'green',
     tags: ['SEO', '優化', '搜尋', '流量'],
     badge: { type: 'new', label: '新上架' },
     categories: ['全部'],
@@ -339,8 +337,7 @@ const allAgents: Agent[] = [
     desc: '提升客戶整體滿意度，解決客戶問題並收集回饋，提升服務品質與客戶忠誠度。',
     painPoint: '客訴訊息一多，回覆速度跟服務品質很難兼顧？',
     icon: 'support_agent',
-    bgColor: '#FAECE7',
-    accentColor: '#993C1D',
+    colorKey: 'rust',
     tags: ['客服', '滿意度', '回饋', '忠誠'],
     badge: { type: 'sat', label: '高滿意度' },
     categories: ['全部', '客服分析'],
@@ -350,8 +347,7 @@ const allAgents: Agent[] = [
     desc: '帳務整理、報帳核對與簡單財務報表製作，確保每筆費用都有跡可循。',
     painPoint: '帳務單據一多就對不上，報帳核銷永遠卡在對帳？',
     icon: 'receipt_long',
-    bgColor: '#E1F5EE',
-    accentColor: '#0F6E56',
+    colorKey: 'teal',
     tags: ['帳務', '報表', '財務', '核對'],
     badge: { type: 'sat', label: '高滿意度' },
     categories: ['全部', '報表分析', '財務管理'],
@@ -361,8 +357,7 @@ const allAgents: Agent[] = [
     desc: '快速產出職位說明、履歷篩選建議與面試準備，將複雜 HR 行政工作自動化。',
     painPoint: '職缺說明跟履歷篩選佔掉大半天，招募進度卻停滯不前？',
     icon: 'badge',
-    bgColor: '#EAF3DE',
-    accentColor: '#3B6D11',
+    colorKey: 'green',
     tags: ['HR', '招募', '行政', '人才'],
     badge: { type: 'new', label: '新上架' },
     categories: ['全部', '人資行政'],
@@ -372,8 +367,7 @@ const allAgents: Agent[] = [
     desc: '協助創建視覺素材，提供設計建議與排版指引，提升品牌視覺一致性。',
     painPoint: '想要的視覺效果說不清楚，設計來回改版改到懷疑人生？',
     icon: 'palette',
-    bgColor: '#FBEAF0',
-    accentColor: '#993556',
+    colorKey: 'rose',
     tags: ['設計', '素材', '視覺', '排版'],
     categories: ['全部', '設計輔助'],
   },
@@ -382,8 +376,7 @@ const allAgents: Agent[] = [
     desc: '自動整理會議記錄，摘要關鍵決議與行動項目，確保團隊決策能落實執行。',
     painPoint: '開完會才發現重點都忘了，行動項目沒人跟進？',
     icon: 'mic',
-    bgColor: '#EEEDFE',
-    accentColor: '#534AB7',
+    colorKey: 'violet',
     tags: ['會議', '記錄', '摘要', '行動'],
     categories: ['全部', '會議準備'],
   },
@@ -397,20 +390,19 @@ interface ExploreSkill {
   functionType: SkillFunctionType
   capability: string
   icon: string
-  bgColor: string
-  accentColor: string
+  colorKey: ColorKey
   badge?: AgentBadge
 }
 
 const allExploreSkills: ExploreSkill[] = [
-  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', bgColor: '#EEEDFE', accentColor: '#534AB7' },
-  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', bgColor: '#E6F1FB', accentColor: '#185FA5', badge: { type: 'hot', label: '熱門' } },
-  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', bgColor: '#E1F5EE', accentColor: '#0F6E56' },
-  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', bgColor: '#FAEEDA', accentColor: '#854F0B', badge: { type: 'new', label: '新上架' } },
-  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', bgColor: '#FAECE7', accentColor: '#993C1D' },
-  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', bgColor: '#EAF3DE', accentColor: '#3B6D11', badge: { type: 'hot', label: '熱門' } },
-  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', bgColor: '#FBEAF0', accentColor: '#993556' },
-  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', bgColor: '#E6F1FB', accentColor: '#185FA5' },
+  { name: '週報自動生成', functionType: '文字生成', capability: '依本週資料自動產出結構化週報草稿。', icon: 'summarize', colorKey: 'violet' },
+  { name: '會議摘要', functionType: '文字生成', capability: '將會議逐字稿摘要成重點與待辦事項。', icon: 'mic', colorKey: 'blue', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 庫存查詢', functionType: '資料查詢', capability: '用自然語言查詢 ERP 系統即時庫存數量。', icon: 'inventory_2', colorKey: 'teal' },
+  { name: '客服對話品質評估', functionType: '分析報表', capability: '自動評分客服對話紀錄，標記待改進案例。', icon: 'reviews', colorKey: 'amber', badge: { type: 'new', label: '新上架' } },
+  { name: '合約審核摘要', functionType: '文字生成', capability: '擷取合約關鍵條款，產出審核重點摘要。', icon: 'gavel', colorKey: 'rust' },
+  { name: '產品 FAQ 自動回覆', functionType: '溝通協作', capability: '依知識庫內容自動回覆常見產品問題。', icon: 'forum', colorKey: 'green', badge: { type: 'hot', label: '熱門' } },
+  { name: 'ERP 報表彙整', functionType: '分析報表', capability: '跨系統彙整報表數據，產出單一檢視視圖。', icon: 'bar_chart', colorKey: 'rose' },
+  { name: '訂單流程通知', functionType: '流程自動化', capability: '訂單狀態變更時自動通知相關人員與系統。', icon: 'sync_alt', colorKey: 'blue' },
 ]
 
 const skillFunctionTypeChips: ('全部' | SkillFunctionType)[] = ['全部', '文字生成', '資料查詢', '流程自動化', '分析報表', '溝通協作']

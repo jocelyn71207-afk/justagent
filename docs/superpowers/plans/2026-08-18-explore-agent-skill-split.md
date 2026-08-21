@@ -12,6 +12,8 @@
 
 **2026-08-18 修訂說明（Task 1 完成後才發現）：** 本文件與同名 spec 原始版本誤把另一個尚未合併回 `main` 的並行分支上的 `Explore.vue`（用 `colorKey: ColorKey` CSS class 做圖示配色）當成 `main` 現況。`main`／`origin/main` 上實際的 `Agent`／`ExploreSkill` 圖示配色欄位是 `bgColor: string`／`accentColor: string`（inline style，寫死 hex，沿用既有調色盤）。Task 1 已經照實際檔案結構正確實作（未受影響，因為 Task 1 不touch 顏色欄位）；Task 2、Task 3 以下的程式碼範例已全部修正為 `bgColor`/`accentColor`，不要再套用任何 `colorKey`/`ColorKey` 相關程式碼。
 
+**2026-08-21 merge 後更新：** 上面提到的那個並行分支（`redesign/entry-and-sidebar-taste-pass`）後來合併回 main 了，合併時將本文件的 Skill 探索分頁實作跟該分支既有的 `colorKey: ColorKey` dark-mode token 化改動整合在一起——最終落地的程式碼是 `colorKey`，不是 `bgColor`/`accentColor`。上一段「不要再套用任何 colorKey」的結論，合併之後已經不成立，請勿依照這份文件的 `bgColor`/`accentColor` 寫法去逆向修改現有程式碼。
+
 - 使用 `<script setup lang="ts">`，禁止 Options API。
 - 樣式統一在 `src/scss/` 管理，禁止 `<style scoped>`；本次不新增 scss 檔案，所有新 class 都加進既有的 `src/scss/views/_Explore.scss`（已被 `src/scss/views/_index.scss` `@import`，不需要額外處理 index）。
 - 不接真實 `skillStore`／後端資料——`ExploreSkill` 是這個頁面自己的 mock 資料，跟 `skillStore.ts` 的 `Skill`型別無關，不互相 import。
