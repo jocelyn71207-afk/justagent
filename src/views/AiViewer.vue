@@ -58,42 +58,25 @@
     </div>
   </VueDragResizeRotate>
 
-  <!-- 左右區塊顯示控制按鈕 -->
-  <div :class="['AiViewr-ctrl-box right-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
-    v-show="!conv1IsEmpty"
-    :style="{
-      right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? ctrlRightGap + 'px' : '10px',
-    }"
-    v-tooltip="'收合對話介面'"
-    @wheel="stopWhellZoomEvent($event)"
-    @touchmove="stopTouchpadZoomEvent($event)"
-    @click="() => {
-      isShowRightFrame = !isShowRightFrame;
-      nextTick(() => {
-        checkRightSize(handleLREndResize);
-      });
-    }">
-    <i class="material-symbols-outlined ctrl-btn" v-if="!isShowRightFrame">dock_to_right</i>
-    <i class="material-symbols-outlined ctrl-btn" v-if="isShowRightFrame">dock_to_left</i>
-  </div>
-
-  <!-- 專案控制小介面 -->
-  <div :class="['AiViewr-ctrl-box user-project-ctrl-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
-    v-show="!conv1IsEmpty"
+  <!-- 固定頂部工具列：使用者身分／專案識別＋專案層級選單常駐在最上方，
+       畫布操作（縮放/上傳/資源庫/搜尋/旅程等）維持懸浮在畫布上，不收進這裡 -->
+  <div class="AiViewer-topbar" v-show="!conv1IsEmpty"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
 
-    <i class="material-symbols-outlined material-fill ctrl-btn" v-tooltip="'回首頁'"
+    <div class="AiViewer-topbar-avatar" v-tooltip="'Lucas'">L</div>
+    <div class="AiViewer-topbar-divider"></div>
+
+    <i class="material-symbols-outlined material-fill AiViewer-topbar-home" v-tooltip="'回首頁'"
       @click="goHome">home</i>
 
-    <!-- 用戶 -->
-    <div class="user-name" v-tooltip="'Lucas'">L</div>
+    <span class="AiViewer-topbar-title" v-tooltip.bottom="topbarProjectTitle">{{ topbarProjectTitle }}</span>
 
-    <i class="material-symbols-outlined ctrl-btn fs-17" v-tooltip="'more'"
+    <i class="material-symbols-outlined AiViewer-topbar-more" v-tooltip="'more'"
       @click="isOpenProjMoreOptions = !isOpenProjMoreOptions">keyboard_arrow_down</i>
 
     <!-- 更多選項選單 -->
-    <div class="more-options-box next-option-box" ref="projectMoreOptionsBox" v-show="isOpenProjMoreOptions">
+    <div class="more-options-box next-option-box AiViewer-topbar-menu" ref="projectMoreOptionsBox" v-show="isOpenProjMoreOptions">
       <!-- 多選模式切換: 手機或平板專用 -->
       <div class="option-item" v-if="isTouchDevice"
         @click="isMultiChoiceAiViewerMode = !isMultiChoiceAiViewerMode">
@@ -127,6 +110,25 @@
         旅程總覽
       </div>
     </div>
+  </div>
+
+  <!-- 左右區塊顯示控制按鈕 -->
+  <div :class="['AiViewr-ctrl-box right-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
+    v-show="!conv1IsEmpty"
+    :style="{
+      right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? ctrlRightGap + 'px' : '10px',
+    }"
+    v-tooltip="'收合對話介面'"
+    @wheel="stopWhellZoomEvent($event)"
+    @touchmove="stopTouchpadZoomEvent($event)"
+    @click="() => {
+      isShowRightFrame = !isShowRightFrame;
+      nextTick(() => {
+        checkRightSize(handleLREndResize);
+      });
+    }">
+    <i class="material-symbols-outlined ctrl-btn" v-if="!isShowRightFrame">dock_to_right</i>
+    <i class="material-symbols-outlined ctrl-btn" v-if="isShowRightFrame">dock_to_left</i>
   </div>
 
   <!-- 主功能小介面 -->
@@ -303,6 +305,7 @@
       v-show="!conv1IsEmpty && (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
     ></div>
     <AiViewerRightBox v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
+      ref="aiViewerRightBoxRef"
       :rightWidth="rightWidth"
       :setMainStagePosition="setMainStagePosition"/>
   </div>
@@ -618,6 +621,12 @@ const isOpenMoreSizeBox = ref(false); // 尺寸控制小介面: 是否開啟更�
 const useMap = ref(false); // 是否使用小地圖功能
 const isOpenProjectUseAngentModal = ref(false); // 是否開啟專案已使用Agent的 Modal
 const isOpenProjectSettingModal = ref(false); // 是否開啟專案設定 Modal
+
+// 頂部工具列的專案名稱：讀 AiViewerRightBox 內部算好的 currentConversationTitle，
+// 不重複一份標題邏輯（那份邏輯要對應好幾個對話的自訂標題，只有一份，
+// 才不會兩邊各自顯示不同的名稱）
+const aiViewerRightBoxRef = ref<InstanceType<typeof AiViewerRightBox> | null>(null);
+const topbarProjectTitle = computed(() => aiViewerRightBoxRef.value?.currentConversationTitle ?? '');
 
 // 回首頁
 function goHome(): void {

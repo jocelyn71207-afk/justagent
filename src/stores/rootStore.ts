@@ -16,6 +16,12 @@ export const useRootStore = defineStore('rootStore', () => {
   const nowMenuTreeCompanyId = ref(''); // 主選單目前選擇的公司 ID
   const nowMenuTreeCompanyName = ref<string>('UGG')
 
+  // 使用者可切換的企業清單, 之後會改成從後端拿資料——即使目前只有一間，
+  // 資料結構仍比照 testGroups 做成清單，UI（企業切換器）才有真正的資料可以列
+  const companyList = ref([
+    { id: 'ugg', name: 'UGG' },
+  ]);
+
   const isShowBuserModal = ref(false); // 是否顯示 Buser Modal
 
   // 打開批次上傳組件
@@ -60,6 +66,7 @@ export const useRootStore = defineStore('rootStore', () => {
 
     nowMenuTreeCompanyId,
     nowMenuTreeCompanyName,
+    companyList,
     isShowBuserModal,
 
     testGroups,

@@ -56,12 +56,29 @@
     </div>
 
     <div class="menu-list-box" @wheel.stop="handleContentWheel($event);">
-      <!-- 企業 -->
+      <!-- 企業：原本是一個沒有標籤的原生 select，跟其他選單長得完全不像
+           「企業切換」，容易被忽略；改成跟團隊/使用者選單同一套視覺
+           語言的切換器（色塊圖示＋名稱＋箭頭，點了才展開清單） -->
       <div class="company-box">
-        <select class="custom-select w-100" v-model="rootStore.nowMenuTreeCompanyName">
-          <option value="UGG">UGG</option>
-          <option value="UGG">UGG</option>
-        </select>
+        <div class="company-switcher" ref="companySwitcherBtn"
+          :class="{ 'is-open': isCompanySwitcherOpen }"
+          role="button" tabindex="0" :aria-expanded="isCompanySwitcherOpen"
+          @click="isCompanySwitcherOpen = !isCompanySwitcherOpen"
+          @keydown.enter.prevent="isCompanySwitcherOpen = !isCompanySwitcherOpen"
+          @keydown.space.prevent="isCompanySwitcherOpen = !isCompanySwitcherOpen">
+          <span class="company-switcher-icon">{{ nowMenuTreeCompanyName.charAt(0) }}</span>
+          <span class="company-switcher-name">{{ nowMenuTreeCompanyName }}</span>
+          <i class="material-symbols-outlined company-switcher-caret">unfold_more</i>
+        </div>
+        <div class="company-switch-list next-option-box" v-show="isCompanySwitcherOpen">
+          <div class="option-item" v-for="item in companyList" :key="item.id"
+            :class="{ active: item.name === nowMenuTreeCompanyName }"
+            @click="selectCompany(item)">
+            <i class="material-symbols-outlined">domain</i>
+            {{ item.name }}
+            <i v-if="item.name === nowMenuTreeCompanyName" class="material-symbols-outlined" style="margin-left: auto; margin-right: 0;">check</i>
+          </div>
+        </div>
         <div class="one-btn-item">
           <RouterLink :to="`/view/CompanyTeamSettings`">
             <i class="material-symbols-outlined">settings</i>
@@ -176,10 +193,19 @@ const route = useRoute();
 const router = useRouter();
 
 const rootStore = useRootStore();
-const { isEnterAppSearchPage, appSearchKeyword, testGroups } = storeToRefs(rootStore);
+const { isEnterAppSearchPage, appSearchKeyword, testGroups, companyList, nowMenuTreeCompanyName } = storeToRefs(rootStore);
 
 const moreUserOptionsBox = ref<HTMLElement | null>(null);
 const isOpenUserOptionsBox = ref(false);
+
+// 企業切換器：跟原本的 select 比，這裡有真正的清單資料可以列
+const isCompanySwitcherOpen = ref(false);
+const companySwitcherBtn = ref<HTMLElement | null>(null);
+function selectCompany(item: { id: string; name: string }) {
+  rootStore.nowMenuTreeCompanyId = item.id;
+  nowMenuTreeCompanyName.value = item.name;
+  isCompanySwitcherOpen.value = false;
+}
 
 const handleLogout = () => {
   isOpenUserOptionsBox.value = false;
@@ -193,6 +219,9 @@ const closeMobileMenu = () => { isMobileMenuOpen.value = false; };
 onMounted(() => {
   initClickOutsideListener(moreUserOptionsBox.value!, () => {
     isOpenUserOptionsBox.value = false;
+  });
+  initClickOutsideListener(companySwitcherBtn.value!, () => {
+    isCompanySwitcherOpen.value = false;
   });
 });
 

@@ -109,8 +109,79 @@
     // @include use-scroll-bar(var(--scrollbar-a50));
 
     .company-box {
-      select {
-        margin-bottom: 5px;
+      position: relative;
+      margin-bottom: 5px;
+    }
+
+    // 企業切換器：色塊圖示＋名稱＋箭頭，跟使用者選單同一套視覺語言，
+    // 不再是一個沒有標籤、容易被忽略的原生 select
+    .company-switcher {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      border-radius: $radius;
+      cursor: pointer;
+      background: var(--sidebar-hover);
+      user-select: none;
+
+      &:hover,
+      &.is-open {
+        background: var(--sidebar-active);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+    }
+
+    .company-switcher-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary-fg);
+      background: var(--primary);
+    }
+
+    .company-switcher-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .company-switcher-caret {
+      flex-shrink: 0;
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    // 企業清單下拉：從切換器正下方展開
+    .company-switch-list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% - 2px);
+      z-index: 5;
+
+      .option-item.active {
+        background-color: var(--accent-soft);
+        color: var(--primary);
+        font-weight: 600;
       }
     }
 

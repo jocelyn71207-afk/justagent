@@ -3214,4 +3214,8 @@ function resetConversation() {
 // degub 相關
 const { debugCount, lookDebug } = storeToRefs(aiviewerStore);
 
+// 讓父層（AiViewer.vue 的固定頂部工具列）可以顯示目前對話標題，
+// 不用在父層重複一份 currentConversationTitle 的判斷邏輯
+defineExpose({ currentConversationTitle });
+
 </script>

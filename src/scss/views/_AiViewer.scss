@@ -1,8 +1,92 @@
 @use "sass:color";
 
+// 固定頂部工具列：使用者身分／專案識別＋專案層級選單，常駐在畫布最上方，
+// 不隨畫布縮放/平移一起動——畫布操作（縮放/上傳/資源庫/搜尋/旅程）
+// 刻意不收進來，維持懸浮在畫布上的沉浸感
+.AiViewer-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: $header-AiViewer-height;
+  z-index: 15; // 高於一般懸浮控制球(8)/選單(9)，低於全螢幕檢視器(100)跟旅程面板(900)
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--divider);
+  font-family: $font-family;
+  @include user-select-none;
+}
+
+.AiViewer-topbar-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-fg);
+  background: var(--primary);
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.AiViewer-topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--divider);
+  flex-shrink: 0;
+}
+
+.AiViewer-topbar-home,
+.AiViewer-topbar-more {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--primary-a08);
+    color: var(--primary-hover);
+  }
+}
+.AiViewer-topbar-home { font-size: 19px; }
+.AiViewer-topbar-more { font-size: 17px; }
+
+.AiViewer-topbar-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  cursor: default;
+}
+
+// 「更多選項」選單：從工具列正下方展開，用 .AiViewer-topbar 本身的
+// position:fixed 當定位基準，不依賴舊版 .user-project-ctrl-box 那組樣式
+.AiViewer-topbar-menu {
+  position: absolute;
+  top: 100%;
+  left: 14px;
+  margin-top: 4px;
+}
+
 .AiViewer {
   padding: 0 !important;
   position: fixed; // 避免平板的小鍵盤出現時下方的白白區塊
+  top: $header-AiViewer-height; // 頂部工具列常駐，畫布從工具列下方開始
   // position: relative;
   // background-color: var(--page-bg);
   overflow: hidden;
@@ -896,37 +980,6 @@
     }
   }
 
-  // 專案控制小介面
-  &.user-project-ctrl-box {
-    padding: 8px 5px;
-    left: 10px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-
-    .more-options-box {
-      position: absolute;
-      top: calc(100% + 3px);
-      left: 35px;
-    }
-
-    .user-name {
-      width: 32px;
-      height: 32px;
-      border-radius: 32px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--primary-fg);
-      background-color: var(--text-faint); // TODO... 之後 js 改成動態給予顏色
-      cursor: pointer;
-      user-select: none;
-      margin: 0 6px;
-    }
-  }
 
   // 主場景尺寸比例控制小介面
   &.size-ctrl-box {
