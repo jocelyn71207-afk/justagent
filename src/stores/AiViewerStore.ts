@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import { defineStore } from 'pinia'
-import type { AiViewerBlock, BlockTypeData, BlockType, MemoItem } from '@/types/AiViewer'
+import type { AiViewerBlock, BlockTypeData, BlockType, MemoItem, ReportAssemblyBlockData } from '@/types/AiViewer'
 import { isTouchDeviceFn } from '@/utils/utils'
 import popDialog from '@/services/popDialog';
 import {
@@ -1004,6 +1004,49 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     aiViewerBlocks.value.push(temp);
   }
 
+  // 建立報告組裝 Block（互動式：可拖曳排序、從積木盒加入/移除章節）
+  function addReportAssemblyBlock(sectionIds: string[]): string {
+    const BLOCK_W = 640;
+    const BLOCK_H = 750;
+    const GAP = 24;
+    const slot = aiViewerBlocks.value.filter((b: any) => b.id?.startsWith('reportassembly-')).length;
+    const nonReportBottom = aiViewerBlocks.value
+      .filter((b: any) => !b.id?.startsWith('reportassembly-'))
+      .reduce((max: number, b: any) => Math.max(max, (b.y ?? 0) + (b.height ?? 0)), centerSpaceY);
+    const rowY = nonReportBottom + GAP;
+    const id = 'reportassembly-' + Date.now();
+    const reportData: ReportAssemblyBlockData = { sectionIds: [...sectionIds], templateName: null };
+    const temp: AiViewerBlock = {
+      id,
+      x: centerSpaceX + slot * (BLOCK_W + GAP),
+      y: rowY,
+      width: BLOCK_W,
+      height: BLOCK_H,
+      blockName: '行銷報告組裝',
+      z: calcNextZindex(),
+      data: { blockType: 'REPORT', data: reportData }
+    };
+    aiViewerBlocks.value.push(temp);
+    panToTarget.value = { x: temp.x, y: temp.y, width: temp.width, height: temp.height };
+    return id;
+  }
+
+  // 更新報告組裝 Block 的章節清單（拖曳排序、積木盒加入/移除後呼叫）
+  function updateReportAssemblySections(blockId: string, sectionIds: string[]): boolean {
+    const block = (aiViewerBlocks.value as AiViewerBlock[]).find((b) => b.id === blockId);
+    if (!block || block.data.blockType !== 'REPORT') return false;
+    block.data.data.sectionIds = [...sectionIds];
+    return true;
+  }
+
+  // 將報告組裝 Block 存成模板（本輪僅前端狀態，不接後端）
+  function saveReportAssemblyTemplate(blockId: string, templateName: string): boolean {
+    const block = (aiViewerBlocks.value as AiViewerBlock[]).find((b) => b.id === blockId);
+    if (!block || block.data.blockType !== 'REPORT') return false;
+    block.data.data.templateName = templateName;
+    return true;
+  }
+
   // TODO... 開發測試用 end
 
 
@@ -1070,6 +1113,9 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     renameBlock,
     addReportBlock,
     addChartBlock,
+    addReportAssemblyBlock,
+    updateReportAssemblySections,
+    saveReportAssemblyTemplate,
 
     resetAiViewerState,
   }

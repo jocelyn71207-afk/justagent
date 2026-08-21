@@ -35,6 +35,7 @@ type BlockDataMap = {
   PPT: any;
   WORD: any;
   OTHER: any;
+  REPORT: ReportAssemblyBlockData; // 報告組裝（可拖曳排序、積木盒加入/移除章節）
 }
 
 // block type 應該也是 file type 的定義, 實際還要同步於後端的定義
@@ -50,6 +51,25 @@ type SourceChart = {
   title?: string
   x_axis?: { title?: string }
   y_axis?: { title?: string }
+}
+
+/** 報告組裝相關 */
+
+// 報告組裝 Block 的資料結構，sectionIds 為已組裝章節（依排序），templateName 為存成模板後的名稱
+type ReportAssemblyBlockData = {
+  sectionIds: string[]
+  templateName: string | null
+}
+
+/** 工具箱相關 */
+
+// 工具箱選單裡的單一個工具項目
+interface ToolboxItem {
+  id: string
+  icon: string          // Material Symbols icon 名稱
+  name: string
+  description: string
+  enabled: boolean       // false = 灰化、不可點擊（即將推出）
 }
 
 /** comment 相關 */
@@ -74,6 +94,8 @@ export type {
   BlockTypeData,
   BlockType,
   SourceChart,
+  ReportAssemblyBlockData,
+  ToolboxItem,
 
   MemoItem,
 }

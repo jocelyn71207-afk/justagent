@@ -21,11 +21,39 @@
             <div class="conv1-empty-input-left">
               <button><i class="material-symbols-outlined">add</i></button>
               <button><i class="material-symbols-outlined">bolt</i></button>
+              <!-- 空白開始狀態下也要能觸發工具箱，否則首次進入頁面完全無法使用 -->
+              <button v-tooltip.top="'工具箱'" ref="toolboxBtnOverlay"
+                @click="openToolboxMenu(toolboxBtnOverlay)">
+                <i class="material-symbols-outlined">construction</i>
+              </button>
             </div>
             <button class="conv1-empty-send-btn" @click="submitConv1Overlay">
               <i class="material-symbols-outlined">send</i>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工具箱選單：兩個入口（主輸入列 / conv1 空白遮罩下方的按鈕）共用同一份選單。
+         刻意放在 .AiViewerRightBox 的最外層（而不是原本的 .AiViewrUserInputArea 內），
+         是因為 .conv1-empty-overlay 是 position:fixed 且 z-index:999 的全螢幕遮罩，
+         若選單仍是 .AiViewrUserInputArea（z-index:1）的子層級，其 stacking context
+         會被限制在 1，無論子層再設多高的 z-index 都無法蓋過遮罩。放在這裡當同層級的
+         兄弟節點、給予高於遮罩的 z-index，兩個入口都能正常開啟同一份選單。
+         位置採 position:fixed + 每次開啟時依實際點擊的按鈕座標動態計算（見 openToolboxMenu），
+         而不是寫死相對 .AiViewerRightBox 的座標——因為 .AiViewerRightBox 是可變寬度、
+         可能大部分被捲到畫面外的側欄，寫死座標在不同視窗寬度下會跑到看不到的地方。 -->
+    <div :class="['toolbox-fn-box', 'AiViewer-next-option-box', {'show': isOpenToolboxFnBox}]"
+      :style="toolboxFnBoxStyle"
+      ref="toolboxFnBox">
+      <div v-for="item in toolboxItems" :key="item.id"
+        :class="['toolbox-item', { disabled: !item.enabled }]"
+        @click="openToolboxTool(item)">
+        <i class="material-symbols-outlined toolbox-item-icon">{{ item.icon }}</i>
+        <div class="toolbox-item-body">
+          <div class="toolbox-item-name">{{ item.name }}</div>
+          <div class="toolbox-item-desc">{{ item.description }}</div>
         </div>
       </div>
     </div>
@@ -652,7 +680,7 @@
         <!-- fp 互動模式時完全移除輸入框 -->
         <textarea v-if="!inputAreaHidden" :class="['custom-textarea']"
           id="userInput"
-          placeholder="請輸入您的需求"
+          :placeholder="currentConversationId === 'conv7' ? '描述您的行銷報告' : '請輸入您的需求'"
           ref="userInputRef"
           v-model.trim="userInputModal.msg"
           @focus="inputFocus()"
@@ -674,6 +702,11 @@
           <button class="custom-btn" v-tooltip.top="'引用知識庫'"
             @click="isOpenKnowledgeRefFnBox = true">
             <i class="material-symbols-outlined">menu_book</i>
+          </button>
+          <!-- 展開工具箱選單按鈕 -->
+          <button class="custom-btn" v-tooltip.top="'工具箱'" ref="toolboxBtnMain"
+            @click="openToolboxMenu(toolboxBtnMain)">
+            <i class="material-symbols-outlined">construction</i>
           </button>
         </div>
         <!-- 附件功能選項清單 -->
@@ -756,6 +789,8 @@ import { useJourneyStore } from '@/stores/journeyStore'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
+import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
+import type { ToolboxItem } from '@/types/AiViewer';
 import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
 import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
@@ -801,6 +836,7 @@ const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
   if (currentConversationId.value === 'conv5') return conv5Title.value || 'Teva 換季促銷方案規劃';
   if (currentConversationId.value === 'conv6') return conv6Title.value || 'TEVA涼鞋銷售分析';
+  if (currentConversationId.value === 'conv7') return conv7Title.value || '行銷報告組裝';
   return conv1Title.value;
 });
 
@@ -816,6 +852,8 @@ watch(currentConversationId, (id) => {
   } else if (id === 'conv5') {
     aiViewerBlocks.value = [];
   } else if (id === 'conv6') {
+    aiViewerBlocks.value = [];
+  } else if (id === 'conv7') {
     aiViewerBlocks.value = [];
   }
 }, { immediate: true });
@@ -933,6 +971,58 @@ function inputBlur() {
 }
 
 const { getBlockTypeByFileMime } = aiviewerStore;
+// 工具箱選單資料（本輪只有「行銷報告生成」可點，其餘為即將推出的佔位項目）
+const toolboxItems: ToolboxItem[] = [
+  { id: 'reportAssembly', icon: 'bar_chart', name: '行銷報告生成', description: '拖曳組裝行銷週報章節', enabled: true },
+  { id: 'imageGen', icon: 'palette', name: '圖像生成', description: '即將推出', enabled: false },
+  { id: 'musicGen', icon: 'music_note', name: '創作音樂', description: '即將推出', enabled: false },
+  { id: 'deepSearch', icon: 'search', name: 'Deep Search', description: '即將推出', enabled: false },
+];
+
+const toolboxFnBox = ref<HTMLElement|null>(null);
+const isOpenToolboxFnBox = ref(false);
+// 工具箱選單有兩個觸發入口（主輸入列按鈕 / conv1 空白遮罩下方按鈕），
+// 選單本身固定在 .AiViewerRightBox 最外層、position:fixed，每次開啟時
+// 依「實際點擊的那個按鈕」的座標動態定位，避免寫死座標在不同視窗寬度/側欄狀態下跑版
+const toolboxBtnMain = ref<HTMLElement|null>(null);
+const toolboxBtnOverlay = ref<HTMLElement|null>(null);
+const toolboxFnBoxStyle = ref<{ left?: string; bottom?: string }>({});
+function openToolboxMenu(anchorBtnRef: HTMLElement | null) {
+  if (anchorBtnRef) {
+    const rect = anchorBtnRef.getBoundingClientRect();
+    toolboxFnBoxStyle.value = {
+      left: rect.left + 'px',
+      bottom: (window.innerHeight - rect.top + 8) + 'px',
+    };
+  }
+  isOpenToolboxFnBox.value = true;
+}
+onMounted(() => {
+  initClickOutsideListener(toolboxFnBox.value!, () => {
+    isOpenToolboxFnBox.value = false;
+  });
+});
+
+const {
+  conv7Msgs,
+  conv7Title,
+  resetConv7,
+  conv7InitFlow,
+  conv7Satisfied,
+  conv7Adjust,
+} = useReportAssemblyConversation();
+
+// 點擊工具箱項目：目前只有「行銷報告生成」可用，其餘 enabled: false 不處理
+function openToolboxTool(item: ToolboxItem) {
+  if (!item.enabled) return;
+  isOpenToolboxFnBox.value = false;
+  if (item.id === 'reportAssembly') {
+    currentConversationId.value = 'conv7';
+    resetConversation();
+    nextTick(() => conv7InitFlow());
+  }
+}
+
 // 附件功能選項清單
 const accessoryFileFnBox = ref<HTMLElement|null>(null);
 const isOpenAccessoryFileFnBox = ref(false);
@@ -2100,6 +2190,14 @@ function handleChatAreaClick(e: MouseEvent) {
     conv4ConfirmSaveSkill();
     return;
   }
+  if (action === 'conv7-satisfied') {
+    conv7Satisfied();
+    return;
+  }
+  if (action === 'conv7-adjust') {
+    conv7Adjust();
+    return;
+  }
   if (action === 'goto-skill-management') {
     router.push({ name: 'SkillManagement' });
     return;
@@ -3127,6 +3225,7 @@ const testMsgs = computed(() => {
     : currentConversationId.value === 'conv4' ? conv4Msgs.value
     : currentConversationId.value === 'conv5' ? conv5Msgs.value
     : currentConversationId.value === 'conv6' ? conv6Msgs.value
+    : currentConversationId.value === 'conv7' ? conv7Msgs.value
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
@@ -3208,6 +3307,9 @@ function resetConversation() {
     conv6Msgs.value = [];
     conv6ReportChoiceMade.value = false;
     conv6FlowStarted.value = false;
+  }
+  if (currentConversationId.value === 'conv7') {
+    resetConv7();
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }
