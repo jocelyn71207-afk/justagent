@@ -158,7 +158,7 @@
           <label>狀態</label>
           <select><option value="">ALL</option><option>已發佈</option><option>草稿</option><option>已停用</option></select>
           <label>來源</label>
-          <select><option value="">ALL</option><option>平台建立</option><option>對話演化</option><option>Builder</option></select>
+          <select><option value="">ALL</option><option>平台建立</option><option>自訂版本</option><option>手動建立</option></select>
           <button class="btn btn-primary">查詢</button>
           <button class="btn btn-default">清除</button>
         </div>
@@ -689,14 +689,16 @@ This product is broken, I need help
     <div class="page" id="page-my-drafts">
       <div class="page-header">
         <h2>草稿管理</h2>
-        <p style="font-size:13px;color:#8c8c8c;margin-top:2px;">所有企業成員的 Skill 草稿與待審核項目（唯讀）。<br>流程：個人草稿 → 送審 → 核准 → 團隊 Skill → 管理員可公開至企業層級</p>
+        <p style="font-size:13px;color:#8c8c8c;margin-top:2px;">所有企業成員的個人技能狀態總覽（唯讀）。<br>流程：建立後直接進入「我的技能」即可使用（不需送審）→ 使用者主動送審 → 管理員核准 → 依範圍發佈至團隊或企業層級 Library</p>
       </div>
       <div class="page-content">
 
-        <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid #e8e8e8;padding-bottom:12px;">
-          <button class="btn btn-primary btn-sm">全部 (5)</button>
-          <button class="btn btn-default btn-sm">草稿 (3)</button>
+        <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid #e8e8e8;padding-bottom:12px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm">全部 (6)</button>
           <button class="btn btn-default btn-sm">待審核 (2)</button>
+          <button class="btn btn-default btn-sm">可用（未送審）(1)</button>
+          <button class="btn btn-default btn-sm">草稿中 (2)</button>
+          <button class="btn btn-default btn-sm">已連結 Library (1)</button>
         </div>
 
         <!-- 待審核 1 -->
@@ -759,15 +761,30 @@ This product is broken, I need help
           </div>
         </div>
 
-        <!-- 草稿 3 -->
-        <div style="background:#fafafa;border:1px solid #d9d9d9;border-radius:6px;margin-bottom:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+        <!-- 可用（未送審） -->
+        <div style="background:#fff;border:1px solid #b7eb8f;border-radius:6px;margin-bottom:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
           <div style="flex:1;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
               <span style="font-size:14px;font-weight:600;">客服答覆 (VIP 客戶版)</span>
-              <span class="tag tag-gray">草稿</span>
+              <span class="tag tag-green">可用（未送審）</span>
               <span class="tag tag-orange" style="font-size:10px;">HERBALIFE</span>
             </div>
-            <div style="font-size:12px;color:#8c8c8c;">演化自 通用客服答覆 v2.4.0 · 編輯者：王小明 · 最後編輯 2 天前</div>
+            <div style="font-size:12px;color:#8c8c8c;">演化自 通用客服答覆 v2.4.0 · 建立者：王小明 · 個人使用中，最後編輯 2 天前</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button>
+          </div>
+        </div>
+
+        <!-- 已連結 Library -->
+        <div style="background:#fff;border:1px solid #d3adf7;border-radius:6px;margin-bottom:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-size:14px;font-weight:600;">客服答覆 (退貨版) 個人副本</span>
+              <span class="tag tag-purple">已連結 Library</span>
+              <span class="tag tag-orange" style="font-size:10px;">Acme</span>
+            </div>
+            <div style="font-size:12px;color:#8c8c8c;">已核准並發佈為 <strong>客服答覆 (Acme 退貨版)</strong>（企業層級）· 個人端保留副本供快速調整 · 提交者：陳美玲</div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
             <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button>
@@ -824,8 +841,15 @@ This product is broken, I need help
       <div class="modal-body">
         <div class="form-item"><label>Skill 名稱</label><input type="text" placeholder="e.g. ERP 庫存查詢"></div>
         <div class="form-item"><label>描述</label><textarea rows="3" placeholder="描述 Skill 的功能用途..."></textarea></div>
-        <div class="form-item"><label>層級</label><select><option>企業</option><option>團隊</option><option>個人</option></select></div>
+        <div class="form-item">
+          <label>層級</label><select><option>企業</option><option>團隊</option></select>
+          <div style="font-size:11px;color:#8c8c8c;margin-top:4px;">使用者自建的個人技能請至「草稿管理」頁查看送審狀態</div>
+        </div>
         <div class="form-item"><label>建立方式</label><select><option>使用 Skill Builder Agent (推薦)</option><option>手動配置</option></select></div>
+        <div class="form-item">
+          <label>附加檔案（選填）</label>
+          <div style="border:1px dashed #d9d9d9;border-radius:4px;padding:14px;text-align:center;font-size:12px;color:#8c8c8c;cursor:pointer;">📎 點擊或拖曳檔案至此上傳</div>
+        </div>
       </div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-create-skill')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-create-skill');showPage('skill-builder')">開始建立</button></div>
     </div>
@@ -973,6 +997,14 @@ This product is broken, I need help
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> sentiment-analysis/analyze <span class="tag tag-purple" style="margin-left:auto;">MCP</span></label>
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox"> order-query <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
           </div>
+        </div>
+        <div class="form-item">
+          <label>附加檔案</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+            <div class="tool-chip" style="display:flex;align-items:center;gap:6px;">📄 客服SOP手冊.pdf <span style="color:#8c8c8c;">1.2MB</span> <span style="cursor:pointer;color:#ff4d4f;">×</span></div>
+            <div class="tool-chip" style="display:flex;align-items:center;gap:6px;">📄 常見問題集.docx <span style="color:#8c8c8c;">340KB</span> <span style="cursor:pointer;color:#ff4d4f;">×</span></div>
+          </div>
+          <button class="btn btn-default btn-sm">+ 新增檔案</button>
         </div>
       </div>
       <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">

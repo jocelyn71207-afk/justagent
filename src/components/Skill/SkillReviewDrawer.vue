@@ -108,7 +108,7 @@
               <i class="material-symbols-outlined">cancel</i>退回
             </button>
             <button class="custom-btn custom-main-btn" @click="handleApprove">
-              <i class="material-symbols-outlined">check_circle</i>通過並發布
+              <i class="material-symbols-outlined">check_circle</i>通過審核
             </button>
           </div>
 

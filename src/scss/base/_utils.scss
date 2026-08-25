@@ -92,6 +92,11 @@ $fontWeight: (
 }
 
 // 顏色
+// 註：grey-1／red-1 全站有 25+ 處實際在用（大多是次要文字／必填標記），
+// 已改指到 --text-muted／--danger token，深色模式才會正確變色；其餘（
+// main-*／green-1／blue-1／red-2／yellow-1）維持寫死常數——green-1/blue-1
+// 是 LINE/Facebook 品牌色，不該隨主題變化，main-*/red-2/yellow-1 目前只
+// 剩這個 GUI 展示頁在用，非全站慣例，故不動。
 $colors: (
   "main-1": $color_main_1,
   "main-2": $color_main_2,
@@ -100,14 +105,14 @@ $colors: (
   "main-5": $color_main_5,
   "main-6": $color_main_6,
 
-  "grey-1": $color_grey_1,
+  "grey-1": var(--text-muted),
   "grey-2": $color_grey_2,
 
   "green-1": $color_green_1,
 
   "blue-1": $color_blue_1,
 
-  "red-1": $color_red_1,
+  "red-1": var(--danger),
   "red-2": $color_red_2,
 
   "yellow-1": $color_yellow_1,

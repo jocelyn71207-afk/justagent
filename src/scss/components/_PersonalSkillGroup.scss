@@ -1,10 +1,12 @@
 // PersonalSkillGroup 沿用 .SkillTile 的視覺語言（圖示/內文/統計列/狀態，
 // 見 _SkillTile.scss），這裡只補「個人技能」專屬的圖示色——個人技能不像
 // Library 技能有 enterprise/team/system scope 可以決定圖示配色，所以獨立
-// 一個中性的 icon--personal。
+// 一個中性的 icon--personal。用 slate（跟系統藍/企業品牌綠/團隊紫都不同色系
+// 的中性灰藍）取代原本的 accent-soft + primary，避免跟企業層級（品牌綠）
+// 配色太像、分不出兩種層級。
 .PersonalSkillGroup {
   .tile-icon.icon--personal {
-    background: var(--accent-soft);
-    color: var(--primary);
+    background: var(--tag-slate-bg);
+    color: var(--tag-slate-text);
   }
 }

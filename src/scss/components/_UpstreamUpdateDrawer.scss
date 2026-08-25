@@ -133,9 +133,8 @@
     .material-symbols-outlined { font-size: 18px; flex-shrink: 0; }
 
     &.conflict--ok {
-      background: $color-status-stored-bg;
-      color: $color-status-stored-text;
-      border: 1px solid rgba($color-status-stored-text, 0.3);
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
     }
 
     &.conflict--warn {

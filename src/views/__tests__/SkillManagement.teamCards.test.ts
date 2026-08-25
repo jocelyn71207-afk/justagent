@@ -13,10 +13,10 @@ describe('SkillManagement Library 團隊技能卡片', () => {
       global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true, SkillEditChatModal: true } },
     })
     const store = useSkillStore()
-    // 切到管理區 tab 才會渲染 Library 技能管理區塊（點擊真正的 tab 按鈕，不碰內部狀態）
-    const reviewTabBtn = wrapper.findAll('button').find(b => b.text().includes('管理區'))
-    expect(reviewTabBtn, '目前 mock 角色需為管理者才看得到「管理區」tab，若找不到請確認 SkillManagement.vue 的 currentUserRole 預設值').toBeTruthy()
-    await reviewTabBtn!.trigger('click')
+    // 切到管理區才會渲染 Library 技能管理區塊（點擊頂部「團隊技能管理」按鈕，不碰內部狀態）
+    const teamManageBtn = wrapper.findAll('button').find(b => b.text().includes('團隊技能管理'))
+    expect(teamManageBtn, '目前 mock 角色需為管理者才看得到「團隊技能管理」按鈕，若找不到請確認 SkillManagement.vue 的 currentUserRole 預設值').toBeTruthy()
+    await teamManageBtn!.trigger('click')
     await wrapper.vm.$nextTick()
 
     const teamSkillCount = store.flatSkills.filter(s => s.scope === 'team').length

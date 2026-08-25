@@ -6,21 +6,28 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">技能管理</div>
+          <div class="banner-title">{{ activeTab === 'review' ? '團隊技能管理' : '技能管理' }}</div>
         </div>
         <div class="page-banner-actions">
-          <button class="custom-btn" @click="showLibraryModal = true">
-            <i class="material-symbols-outlined">library_books</i>瀏覽 Library
-          </button>
-          <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
-            <i class="material-symbols-outlined">add</i>建立技能
+          <button v-if="isManager && activeTab === 'my'" class="custom-btn custom-main-btn" @click="activeTab = 'review'">
+            <i class="material-symbols-outlined">admin_panel_settings</i>團隊技能管理
           </button>
         </div>
       </div>
 
       <!-- 統計列：跟 TeamAccessManagement 的角色統計同一套「色點 + 文字」語彙，
-           不用四個顏色各異的邊框卡片堆砌成一整排，避免看起來太像後台儀表板 -->
-      <div class="skill-stats-row">
+           不用四個顏色各異的邊框卡片堆砌成一整排，避免看起來太像後台儀表板。
+           只跟「我的技能」有關，團隊技能管理頁不顯示。待審核提醒併進同一列的
+           最前面，但用實心 pill 徽章（不是安靜的色點），需要行動的提醒
+           要比純資訊的三個數字更搶眼，不能跟它們長得一樣低調 -->
+      <div v-if="activeTab === 'my'" class="skill-stats-row">
+        <button
+          v-if="isManager && store.pendingReviewSkills.length > 0"
+          class="skill-stat skill-stat--pending"
+          @click="activeTab = 'review'; reviewSubTab = 'pending'"
+        >
+          <i class="material-symbols-outlined">rate_review</i><b>{{ store.pendingReviewSkills.length }}</b>個技能等待審核
+        </button>
         <div class="skill-stat skill-stat--enabled">
           <i class="stat-dot"></i><b>{{ store.enabledCount }}</b>啟用中技能
         </div>
@@ -35,44 +42,17 @@
         </div>
       </div>
 
-      <!-- 待審核提醒 -->
-      <div v-if="isManager && store.pendingReviewSkills.length > 0 && activeTab !== 'review'" class="upstream-banner">
-        <span>
-          <i class="material-symbols-outlined">rate_review</i>
-          有 {{ store.pendingReviewSkills.length }} 個技能等待審核
-        </span>
-        <div class="upstream-banner-actions">
-          <button class="custom-btn" @click="activeTab = 'review'; reviewSubTab = 'pending'">前往審核</button>
-        </div>
-      </div>
-
       <!-- ── Sections ──────────────────────────────── -->
       <div class="skill-sections">
 
-        <!-- Tab bar -->
-        <div class="skill-tabs">
-          <button
-            :class="['skill-tab', { 'is-active': activeTab === 'my' }]"
-            @click="activeTab = 'my'"
-          >
-            <i class="material-symbols-outlined">person</i>
-            我的技能
-            <span class="skill-tab-count">{{ store.myPersonalSkills.length }}</span>
-          </button>
-          <button
-            v-if="isManager"
-            :class="['skill-tab', 'skill-tab--review', { 'is-active': activeTab === 'review', 'has-pending': store.pendingReviewSkills.length > 0 }]"
-            @click="activeTab = 'review'"
-          >
-            <i class="material-symbols-outlined">rate_review</i>
-            管理區
-            <span class="skill-tab-count">{{ store.pendingReviewSkills.length }}</span>
-          </button>
-        </div>
-
         <!-- 管理區：待審核送審 + Library 現有技能管理（限企業擁有者 / 企業管理者）
-             兩塊內容都不小，不再直接上下堆疊成一個超長頁面，改成子分頁各自獨立 -->
+             兩塊內容都不小，不再直接上下堆疊成一個超長頁面，改成子分頁各自獨立。
+             跟「我的技能」是完全分開的兩個頁面，不共用 tab bar 樣式，靠這顆按鈕互相切換 -->
         <div v-if="isManager" v-show="activeTab === 'review'" class="skill-tab-panel">
+          <button class="custom-btn skill-back-btn" @click="activeTab = 'my'">
+            <i class="material-symbols-outlined">arrow_back</i>返回技能管理
+          </button>
+
           <div class="review-subtabs">
             <button
               :class="['review-subtab', { 'is-active': reviewSubTab === 'pending' }]"
@@ -85,7 +65,7 @@
               :class="['review-subtab', { 'is-active': reviewSubTab === 'library' }]"
               @click="reviewSubTab = 'library'"
             >
-              Library 管理
+              團隊技能範本管理
               <span class="skill-tab-count">{{ store.enterpriseExtensionCount + store.teamExtensionCount }}</span>
             </button>
           </div>
@@ -102,11 +82,11 @@
             <div v-else class="skill-section-empty">目前沒有待審核的技能</div>
           </div>
 
-          <!-- Library 現有技能管理 -->
+          <!-- 團隊技能範本管理（原「Library 現有技能管理」） -->
           <div v-show="reviewSubTab === 'library'" class="skill-manage-block">
             <div class="skill-manage-block-header">
               <span class="skill-manage-block-title">
-                <i class="material-symbols-outlined">inventory_2</i>Library 現有技能管理
+                <i class="material-symbols-outlined">inventory_2</i>團隊技能範本管理
               </span>
               <div class="skill-search">
                 <i class="material-symbols-outlined">search</i>
@@ -169,6 +149,14 @@
 
         <!-- 我的技能 -->
         <div v-show="activeTab === 'my'" class="skill-tab-panel">
+          <div class="my-skills-actions">
+            <button class="custom-btn" @click="showLibraryModal = true">
+              <i class="material-symbols-outlined">library_books</i>瀏覽 Library
+            </button>
+            <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
+              <i class="material-symbols-outlined">add</i>建立技能
+            </button>
+          </div>
           <div v-if="store.myPersonalSkills.length" class="my-skills-list">
             <PersonalSkillGroup
               v-for="skill in pagedSkills"
@@ -218,7 +206,7 @@
       :upstream-version="upstreamVersionForDetail"
       @close="detailSkillId = null"
       @test="handleTest"
-      :manageable="isManager"
+      :manageable="isManager && activeTab === 'review'"
       @toggle="handleToggle"
       @edit="handleEdit"
       @delete="handlePersonalDelete"

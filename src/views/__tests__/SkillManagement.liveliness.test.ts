@@ -13,12 +13,21 @@ describe('SkillManagement 統計列', () => {
     const wrapper = mount(SkillManagement, {
       global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true, SkillEditChatModal: true } },
     })
+    // 目前 mock 角色為管理者且有待審核個人技能，所以會多一個「待審核」chip
+    // 排在最前面；它是需要行動的實心 pill 徽章（icon，不是安靜的色點），
+    // 其餘三個維持純資訊的色點語彙
     const stats = wrapper.findAll('.skill-stat')
-    expect(stats.length).toBe(4)
-    stats.forEach(stat => {
+    expect(stats.length).toBe(5)
+    const infoStats = stats.filter(s => !s.classes().includes('skill-stat--pending'))
+    expect(infoStats.length).toBe(4)
+    infoStats.forEach(stat => {
       expect(stat.find('.stat-dot').exists()).toBe(true)
       expect(stat.find('b').exists()).toBe(true)
     })
+    const pendingStat = wrapper.find('.skill-stat--pending')
+    expect(pendingStat.exists()).toBe(true)
+    expect(pendingStat.find('.material-symbols-outlined').exists()).toBe(true)
+    expect(pendingStat.find('b').exists()).toBe(true)
     expect(wrapper.find('.skill-stat--enabled').exists()).toBe(true)
     expect(wrapper.find('.skill-stat--ext').exists()).toBe(true)
     expect(wrapper.find('.skill-stat--team').exists()).toBe(true)

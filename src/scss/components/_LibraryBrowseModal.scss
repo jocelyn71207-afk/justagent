@@ -47,7 +47,7 @@
     border-radius: 8px;
     flex-shrink: 0;
     transition: border-color 0.15s;
-    &:focus-within { border-color: $color_main_1; }
+    &:focus-within { border-color: var(--primary); }
     .material-symbols-outlined { font-size: 18px; color: var(--text-faint); }
   }
 

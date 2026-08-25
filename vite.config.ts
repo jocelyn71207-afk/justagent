@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
     base, // content path 根據專案修改
     server: {
       host: '0.0.0.0', // 允許外部訪問
-      port: 8087,
+      port: 8088, // 本地開發服務器端口
       strictPort: true, // 若端口被佔用則直接退出
       allowedHosts: true, // 允許所有 ngrok / tunnel 訪問
     }

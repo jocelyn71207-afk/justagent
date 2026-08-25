@@ -37,25 +37,8 @@
   margin-top: 4px;
 }
 
-.jd-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--divider);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  transition: color 0.15s ease;
-
-  i { font-size: 16px; }
-
-  &:hover {
-    color: var(--text);
-  }
-}
+// .jd-back-btn 已移除：跟 .custom-btn 幾乎是同一份手刻複製品（少了
+// error/disabled/focus-visible 狀態），改用 base/_button.scss 的 .custom-btn。
 
 // ── Empty state ─────────────────────────────────────
 .jd-empty {

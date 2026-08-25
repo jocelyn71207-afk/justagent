@@ -139,14 +139,11 @@
           }">share_windows</i>
       </div>
 
-      <!-- // 便條紙提示 icon -->
+      <!-- // 便條紙提示 icon：單純圓形徽章 -->
       <div :class="['comment-btn', {
           'isMobile': isTouchDevice,
           'has-comment': memoData.length && memoData[0].list.length > 0
         }]"
-        :style="{
-          transform: 'rotate(45deg)'
-        }"
         @click="isShowCommentView = true; showCommentByBlockId = '';">
         <span v-if="memoData.length">{{ memoData[0].list.length }}</span>
         <span v-else>0</span>

@@ -18,12 +18,12 @@ button.custom-btn {
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
   &:hover {
-    border-color: $color_main_2;
-    color: $color_main_2;
+    border-color: var(--primary-hover);
+    color: var(--primary-hover);
   }
   &:active {
-    border-color: $color_main_2;
-    color: $color_main_2;
+    border-color: var(--primary-hover);
+    color: var(--primary-hover);
     background-color: var(--page-bg);
     transform: scale(0.98);
   }
@@ -42,14 +42,22 @@ button.custom-btn {
     }
   }
   &.error {
-    color: $color_red_2;
-    border-color: $color_red_2;
+    color: var(--danger);
+    border-color: var(--danger);
   }
   // icon 樣式
   > i {
     font-size: 16px;
     flex-shrink: 0;
   }
+}
+
+// 按鈕 - 縮小尺寸（緊湊版面用，例如卡片內的次要操作）
+.custom-btn.custom-btn--sm {
+  padding: 3px 10px;
+  font-size: 12px;
+  height: auto;
+  min-height: unset;
 }
 
 // 按鈕 - 企業色主題 (不受 light/dark 模式影響)
@@ -79,9 +87,12 @@ button.custom-btn {
     }
   }
   &.error {
+    // 跟外層 .custom-btn.error 統一用同一個「危險紅」，但這顆按鈕本身是
+    // 企業色主題、不隨深淺模式變化，所以用 $color-danger 這個固定常數
+    // （數值＝淺色模式的 var(--danger)），不是會隨主題切換的 CSS token。
     color: $white;
-    background-color: $color_red_2;
-    border-color: $color_red_2;
+    background-color: $color-danger;
+    border-color: $color-danger;
   }
 }
 

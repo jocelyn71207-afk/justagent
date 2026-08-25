@@ -773,17 +773,17 @@
     i { font-size: 20px; }
   }
 
-  // ── API 來源條目標記 ──
+  // ── API 來源條目標記 ── （跟 process-type-badge 的 AI 來源同一個色相）
   .knowledge-icon--api {
-    background: $color-badge-ai-bg;
-    color: $color-badge-ai-text;
+    background: var(--tag-violet-bg);
+    color: var(--tag-violet-text);
   }
 
   .api-source-badge {
     display: inline-flex;
     align-items: center;
-    background: $color-badge-ai-bg;
-    color: $color-badge-ai-text;
+    background: var(--tag-violet-bg);
+    color: var(--tag-violet-text);
     border-radius: 4px;
     padding: 2px 7px;
     font-size: 10px;
@@ -954,39 +954,15 @@
     }
   }
 
-  // ── 狀態標籤 (依照資源庫配色邏輯) ──
+  // ── 狀態標籤 ──
+  // 大小寫 modifier（PUBLISHED/REVIEWING/DRAFT/REJECTED/HISTORY）已移除：
+  // 全站只有 ReviewDrawer 真的產生過大寫 class，且跟這裡下面全域的小寫
+  // status-badge--reviewing 是同一個「審核中」概念，兩份定義顏色還不一樣，
+  // 是本次盤點抓到的真實碰撞──統一改吃小寫版本（見 ReviewDrawer.vue）。
   .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    padding: 2px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-    font-weight: 600;
+    @extend %badge-shape;
 
     i { font-size: 14px; }
-
-    &--PUBLISHED {
-      background: var(--primary-a12);
-      color: var(--primary);
-    }
-    &--REVIEWING {
-      background: var(--tag-amber-bg);
-      color: var(--tag-amber-text);
-    }
-    &--DRAFT {
-      background: var(--tag-blue-bg);
-      color: var(--tag-blue-text);
-    }
-    &--REJECTED {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
-    &--HISTORY {
-      background: var(--divider-a20);
-      color: var(--text-muted);
-    }
   }
 
   // ── 來源已更新 badge ──
@@ -1604,10 +1580,8 @@
   background: var(--surface);
   color: var(--text-muted);
 }
-.status-badge--failed {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
+// --failed 不在這裡重複宣告：跟 _custom.scss 全域檔案狀態 badge 的
+// --failed（同樣 danger-soft／danger）是同一組顏色，故直接沿用該定義即可。
 .status-badge--archived {
   background: var(--page-bg);
   color: var(--text-faint);

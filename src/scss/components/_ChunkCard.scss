@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-muted);
   gap: 8px;
 
   .material-symbols-outlined {
@@ -33,18 +33,18 @@
 }
 
 .chunk-card {
-  border: 1px solid var(--color-outline, #C3C8BB);
+  border: 1px solid var(--divider);
   border-radius: 10px;
   margin-bottom: 8px;
   overflow: hidden;
   transition: border-color 0.15s ease;
 
   &--expanded {
-    border-color: var(--color-primary, #C8F135);
+    border-color: var(--primary);
     border-width: 2px;
 
     .chunk-card-header {
-      background: var(--color-primary-container, #E8FAA0);
+      background: var(--tag-green-bg);
     }
   }
 }
@@ -54,26 +54,26 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: var(--color-surface-container, #F3F3F0);
+  background: var(--page-bg);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s ease;
 
   &:hover {
-    background: var(--color-primary-container, #E8FAA0);
+    background: var(--tag-green-bg);
   }
 }
 
 .chunk-index {
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-on-surface, #1A1C18);
+  color: var(--text);
   flex-shrink: 0;
 }
 
 .chunk-section {
   font-size: 12px;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-muted);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,21 +82,21 @@
 
 .chunk-token {
   font-size: 11px;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-muted);
   opacity: 0.6;
   flex-shrink: 0;
 }
 
 .chunk-chevron {
   font-size: 18px;
-  color: var(--color-secondary, #5B6342);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .chunk-card-body {
   padding: 14px 16px;
-  border-top: 1px solid var(--color-outline, #C3C8BB);
-  background: var(--color-surface, #FAFAFA);
+  border-top: 1px solid var(--divider);
+  background: var(--surface);
 }
 
 .chunk-body-grid {
@@ -119,22 +119,22 @@
 .chunk-col-label {
   font-size: 10px;
   font-weight: 600;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .chunk-content-text {
   font-size: 12px;
-  color: var(--color-on-surface, #1A1C18);
+  color: var(--text);
   line-height: 1.7;
   margin: 0;
 }
 
 .chunk-gist {
   font-size: 12px;
-  color: var(--color-on-surface-variant, #43483E);
-  background: var(--color-surface-container, #F3F3F0);
+  color: var(--text-muted);
+  background: var(--page-bg);
   border-radius: 6px;
   padding: 8px 10px;
   line-height: 1.6;
@@ -151,13 +151,13 @@
   display: flex;
   gap: 8px;
   font-size: 11px;
-  color: var(--color-on-surface, #1A1C18);
+  color: var(--text);
   line-height: 1.6;
 }
 
 .qa-label {
   font-weight: 600;
-  color: var(--color-secondary, #5B6342);
+  color: var(--text-muted);
   flex-shrink: 0;
   min-width: 20px;
 }
@@ -169,7 +169,7 @@
   flex-wrap: wrap;
   gap: 6px;
   padding-top: 10px;
-  border-top: 1px solid var(--color-outline, #C3C8BB);
+  border-top: 1px solid var(--divider);
 }
 
 .chunk-tags {
@@ -179,8 +179,8 @@
 }
 
 .chunk-tag {
-  background: var(--color-primary-container, #E8FAA0);
-  color: #2A3500;
+  background: var(--tag-green-bg);
+  color: var(--tag-green-text);
   font-size: 10px;
   padding: 2px 7px;
   border-radius: 4px;
@@ -188,7 +188,7 @@
 
 .chunk-citation {
   font-size: 10px;
-  color: var(--color-on-surface-variant, #43483E);
+  color: var(--text-muted);
   opacity: 0.6;
 }
 

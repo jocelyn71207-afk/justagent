@@ -50,6 +50,26 @@
     &.skill-stat--ext     { color: var(--tag-blue-text); }
     &.skill-stat--team    { color: var(--tag-violet-text); }
     &.skill-stat--usage   { color: var(--tag-amber-text); }
+
+    // 唯一需要行動的一格：用實心 pill 徽章（跟 skill-tag 同一套 %badge-shape
+    // 語彙），比純資訊的色點文字更搶眼，才不會埋在安靜的統計列裡沒人注意到；
+    // 顏色用 rust，跟本月觸發次數的 amber、其他三格都不同色系
+    &.skill-stat--pending {
+      @extend %badge-shape;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--tag-rust-bg);
+      color: var(--tag-rust-text);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: filter 0.15s;
+
+      .material-symbols-outlined { font-size: 15px; }
+      b { color: inherit; font-size: 13px; margin-right: 0; }
+
+      &:hover { filter: brightness(0.94); }
+    }
   }
 
   // ── Search ────────────────────────────────────
@@ -67,8 +87,8 @@
     transition: border-color 0.15s, box-shadow 0.15s;
 
     &:focus-within {
-      border-color: $color_main_1;
-      box-shadow: 0 0 0 3px $color_main_5;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-a20);
     }
 
     > .material-symbols-outlined {
@@ -89,33 +109,6 @@
     }
   }
 
-  // ── Upstream banner ───────────────────────────
-
-  .upstream-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: rgba($color-warning-amber, 0.08);
-    border: 1px solid rgba($color-warning-amber, 0.25);
-    border-radius: 10px;
-    margin-bottom: 12px;
-    font-size: 13.5px;
-
-    span {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; }
-    }
-
-    .upstream-banner-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-  }
-
   // ── Tabs ──────────────────────────────────────
 
   .skill-sections {
@@ -124,58 +117,10 @@
     gap: 20px;
   }
 
-  .skill-tabs {
-    display: flex;
-    gap: 4px;
-    border-bottom: 1px solid var(--divider-a50);
-  }
-
-  .skill-tab {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 6px 12px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text-faint);
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: color 0.15s, border-color 0.15s;
-
-    .material-symbols-outlined { font-size: 18px; }
-
-    & + .skill-tab { margin-left: 18px; }
-
-    &:hover { color: var(--text); }
-
-    &.is-active {
-      color: $color_main_1;
-      border-bottom-color: $color_main_1;
-
-      .skill-tab-count {
-        background: $color_main_4;
-        border-color: $color_main_3;
-        color: $color_main_1;
-      }
-    }
-
-    &--review.has-pending {
-      color: $color-warning-amber;
-
-      .skill-tab-count {
-        background: $color-warning-bg;
-        border-color: $color-warning-border;
-        color: $color-warning-amber;
-      }
-
-      &.is-active {
-        color: $color-warning-amber;
-        border-bottom-color: $color-warning-amber;
-      }
-    }
+  // 「我的技能」與「管理區」是完全分開的兩個頁面，不共用 tab bar 樣式，
+  // 靠 banner 按鈕（進入管理區）與下面的返回按鈕（離開管理區）互相切換
+  .skill-back-btn {
+    margin-bottom: 16px;
   }
 
   .skill-tab-count {
@@ -281,6 +226,13 @@
   // ── 我的技能 list ──────────────────────────────
   // 跟 Library 瀏覽 Modal、管理區的 Library 現有技能管理同一套卡片式
   // 目錄語言（格狀磚塊），整個技能管理頁不管在哪個分頁都是一致的瀏覽體驗
+
+  .my-skills-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
 
   .my-skills-list {
     display: grid;

@@ -53,6 +53,36 @@ const wordFileTypes = [
 // file type 應該也是 block type 的定義, 實際還要同步於後端的定義
 export type FileType = 'IMAGE' | 'MD' | 'HTML' | 'TXT' | 'PDF' | 'EXCEL' | 'CHART' | 'PPT' | 'WORD' | 'OTHER';
 
+// 檔案類型圖示：全站共用的「色塊 tile + material icon」語言（畫布區塊、專案檔案清單、
+// 共用資源庫都吃這一份，不要各自重複定義），不用外部 SVG 那種折角+漸層邊框+
+// 內建假文字/假內文線的通用素材圖——那種畫法在卡片放大看很廉價，縮到列表小圖示時
+// 內建文字更是完全糊掉、讀不出字，本質上是「圖示大小跟語意脫節」的問題。
+// 顏色刻意讓最常見的四種格式（PDF/PPT/Excel/Word）互相盡量不撞色——
+// rust/rose 這兩個暖色系 token 放在一起太像，PPT 改用 amber 才跟 PDF 的 rose 分得開
+const FILE_TYPE_META: Record<string, { icon: string; color: string; label: string }> = {
+  PDF:   { icon: 'picture_as_pdf', color: 'rose',    label: 'PDF 文件' },
+  PPT:   { icon: 'slideshow',      color: 'amber',   label: 'PowerPoint 簡報' },
+  EXCEL: { icon: 'table_chart',    color: 'green',   label: 'Excel 表格' },
+  WORD:  { icon: 'description',    color: 'blue',    label: 'Word 文件' },
+  HTML:  { icon: 'code',           color: 'violet',  label: 'HTML 檔案' },
+  MD:    { icon: 'article',        color: 'teal',    label: 'Markdown 文件' },
+  TXT:   { icon: 'draft',          color: 'neutral', label: '純文字檔' },
+  CHART: { icon: 'bar_chart',      color: 'rust',    label: '圖表檔案' },
+  JSON:  { icon: 'data_object',    color: 'violet',  label: 'JSON 檔案' },
+  OTHER: { icon: 'question_mark',  color: 'slate',   label: '未知的檔案類型' },
+};
+// 副檔名/常見別名對到上面定義好的類型，避免呼叫端各自傳 'XLSX'、'DOCX' 之類的
+// 副檔名字串卻查不到對照，掉進 OTHER 的灰色問號圖示
+const FILE_TYPE_ALIAS: Record<string, string> = {
+  XLSX: 'EXCEL', XLS: 'EXCEL',
+  DOCX: 'WORD', DOC: 'WORD',
+  PPTX: 'PPT',
+};
+function fileTypeMeta(fileType: string) {
+  const key = fileType.toUpperCase();
+  return FILE_TYPE_META[FILE_TYPE_ALIAS[key] ?? key] ?? FILE_TYPE_META.OTHER;
+}
+
 // 格式化檔案大小的函式，將檔案大小轉換為適當的單位（B、KB、MB、GB）
 const formatFileSize = (size: number): string => {
   if (typeof size !== 'number' || isNaN(size)) return '';
@@ -142,4 +172,7 @@ export {
   getFileMimeType,
   validateUploadFiles,
   acceptedFileExtensions,
+
+  FILE_TYPE_META,
+  fileTypeMeta,
 };

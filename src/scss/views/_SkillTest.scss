@@ -5,7 +5,10 @@
   .skill-test-layout {
     display: grid;
     grid-template-columns: 240px 1fr;
-    height: calc(100vh - 60px);
+    // 扣掉 .views-page 上下 padding（36+36）與新增的 page-banner 實際佔用高度
+    // （含底下 24px margin），加了頁面標題/麵包屑後這個值要跟著調整，
+    // 不然版面會比可視高度多出一截，讓整個頁面多一層外層捲軸
+    height: calc(100vh - 172px);
     overflow: hidden;
   }
 
@@ -50,14 +53,17 @@
       }
     }
 
+    // 跟技能管理（SkillTile／SkillDetailDrawer 的 icon--system/enterprise/team）
+    // 同一套配色：系統＝藍、企業＝品牌 teal、團隊＝紫，不要各頁各用一套顏色
     .skill-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
 
-      &.dot--sys  { background: #818cf8; }
-      &.dot--ext  { background: #f59e0b; }
+      &.dot--system     { background: var(--tag-blue-text); }
+      &.dot--enterprise { background: $color_main_1; }
+      &.dot--team       { background: var(--tag-violet-text); }
     }
 
     .si-name {
@@ -128,8 +134,8 @@
     .version-current-tag {
       font-size: 9px;
       font-weight: 700;
-      background: $color_main_5;
-      color: $color_main_1;
+      background: var(--tag-teal-bg);
+      color: var(--tag-teal-text);
       padding: 1px 5px;
       border-radius: 4px;
       flex-shrink: 0;
@@ -146,15 +152,12 @@
     }
 
     .section-badge {
-      display: inline-flex;
-      padding: 3px 10px;
-      border-radius: 6px;
+      @extend %badge-shape;
       font-size: 10.5px;
-      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
 
-      &--mine    { background: $color_main_5; color: $color_main_2; }
+      &--mine    { background: var(--tag-teal-bg); color: var(--tag-teal-text); }
       &--library { background: var(--divider-a50); color: var(--text-muted); }
     }
 
@@ -168,9 +171,9 @@
       border-left: 3px solid transparent;
       margin-left: 3px;
 
-      &--system     { border-left-color: var(--primary); }
-      &--enterprise { border-left-color: var(--tag-blue-text); }
-      &--team       { border-left-color: var(--tag-amber-text); }
+      &--system     { border-left-color: var(--tag-blue-text); }
+      &--enterprise { border-left-color: $color_main_1; }
+      &--team       { border-left-color: var(--tag-violet-text); }
     }
   }
 
@@ -253,27 +256,8 @@
     p { font-size: 14px; }
   }
 
-  .skill-tag {
-    font-size: 11px;
-    padding: 2px 7px;
-    border-radius: 5px;
-    font-weight: 500;
-
-    &.tag--version {
-      background: var(--page-bg);
-      color: var(--text-muted);
-    }
-
-    &.tag--sys {
-      background: $color-badge-ai-bg;
-      color: $color-badge-ai-text;
-    }
-
-    &.tag--ext {
-      background: $color-badge-hot-bg;
-      color: $color-badge-hot-text;
-    }
-  }
+  // .skill-tag 本身不再於此重複宣告：形狀與顏色一律吃 _SkillCard.scss 的
+  // canonical 版本，避免同一個 class 在不同畫面呈現不同顏色/大小。
 
 }
 

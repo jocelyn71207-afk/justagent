@@ -33,14 +33,20 @@ export function useBreadcrumb() {
     // to `{}` when accessed via useRoute()/router.getRoutes() from a plain .ts composable —
     // plain `tsc` type-checks this correctly, confirming it's a checker bug, not a type error.
     // The explicit annotation sidesteps the buggy inference path without changing behavior.
-    const { title, parentName, useCompanyName } = route.meta as {
+    const { title, parentName, parentLabel, useCompanyName } = route.meta as {
       title?: string
       parentName?: string
+      parentLabel?: string
       useCompanyName?: boolean
     }
 
     if (useCompanyName) {
       result.push({ label: rootStore.nowMenuTreeCompanyName })
+    }
+
+    if (parentLabel) {
+      // 純文字的上層標籤（例如 side-menu 群組名稱），不是實際路由，不能連結
+      result.push({ label: parentLabel })
     }
 
     if (route.query.teamName) {

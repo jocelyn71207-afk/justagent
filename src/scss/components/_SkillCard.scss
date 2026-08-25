@@ -163,38 +163,27 @@
 }
 
 // ── Tag chips ─────────────────────────────────────────
+// 顏色一律取 --tag-* 分類色 token，跟 dh-icon／src-icon 既有的
+// system=blue／enterprise=green／team=violet／personal=slate 配色慣例對齊，
+// 同一個「範圍層級」不管在圖示還是文字 badge 上都同一個顏色。
 .skill-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
+  @extend %badge-shape;
   flex-shrink: 0;
 
-  &.tag--sys     { background: $color_main_4; color: $color_main_2; }
-  &.tag--ext     { background: $color-badge-hot-bg; color: $color-badge-hot-text; }
-  &.tag--version { background: var(--page-bg); color: var(--text-muted); border: 1px solid var(--divider-a50); }
-  &.tag--update    { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
-  &.tag--reviewing { background: $color-warning-bg; color: $color-warning-text; border: 1px solid $color-warning-border; }
+  &.tag--sys       { background: var(--tag-blue-bg);   color: var(--tag-blue-text); }
+  &.tag--ext       { background: var(--tag-slate-bg);  color: var(--tag-slate-text); }
+  &.tag--version   { background: var(--page-bg); color: var(--text-muted); border: 1px solid var(--divider-a50); }
+  &.tag--update    { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
+  &.tag--reviewing { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
   &.tag--draft     { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
-  &.tag--available   { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-  &.tag--has-library { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-  &.tag--personal { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
-  &.tag--enterprise {
-    background: $color_main_5;
-    color: $color_main_1;
-    border: 1px solid $color_main_4;
-  }
-  &.tag--team {
-    background: rgba($color-warning-amber, 0.1);
-    color: $color-warning-amber;
-    border: 1px solid rgba($color-warning-amber, 0.3);
-  }
+  &.tag--available   { background: var(--tag-green-bg); color: var(--tag-green-text); }
+  &.tag--has-library { background: var(--tag-blue-bg);  color: var(--tag-blue-text); }
+  &.tag--personal    { background: var(--tag-slate-bg);  color: var(--tag-slate-text); }
+  &.tag--enterprise  { background: var(--tag-green-bg);  color: var(--tag-green-text); }
+  &.tag--team        { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
   &.tag--upstream  {
-    background: rgba($color-warning-amber, 0.12);
-    color: $color-warning-amber;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
     gap: 3px;
     .material-symbols-outlined { font-size: 12px; }
   }
@@ -209,13 +198,13 @@
     padding: 2px 6px;
     color: var(--text-faint);
     border-color: var(--divider-a50);
-    &:hover { color: $color_main_1; border-color: $color_main_3; }
+    &:hover { color: var(--primary); border-color: var(--accent); }
     .material-symbols-outlined { font-size: 14px; }
   }
 
   &.btn--danger-ghost {
-    color: $color-danger;
-    border-color: rgba($color-danger, 0.28);
-    &:hover { background: rgba($color-danger, 0.06); }
+    color: var(--danger);
+    border-color: var(--danger-soft);
+    &:hover { background: var(--danger-soft); }
   }
 }

@@ -434,8 +434,8 @@
       border-radius: 999px;
       padding: 3px 10px;
 
-      &.status-active  { background: var(--accent-soft); color: var(--primary-hover); }
-      &.status-review  { background: rgba(207,138,31,0.12); color: var(--warning); }
+      &.status-active  { background: var(--accent-soft);  color: var(--primary-hover); }
+      &.status-review  { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
       &.status-done    { background: var(--page-bg); color: var(--text-muted); }
       &.status-pending { background: var(--sidebar-hover); color: var(--text-muted); }
     }

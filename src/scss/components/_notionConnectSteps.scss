@@ -4,11 +4,11 @@
   gap: 14px;
 
   &__tip, &__info {
-    background: var(--color-primary-light, #f0f4ff);
+    background: var(--hint);
     border-radius: 6px;
     padding: 8px 12px;
     font-size: 12px;
-    color: var(--color-primary, #3b5bdb);
+    color: var(--primary);
   }
 
   &__field {
@@ -20,50 +20,50 @@
   &__label {
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--text);
   }
 
   &__required {
-    color: var(--color-danger, #fa5252);
+    color: var(--danger);
   }
 
   &__input, &__select {
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--divider);
     border-radius: 6px;
     padding: 7px 10px;
     font-size: 13px;
     width: 100%;
     box-sizing: border-box;
-    color: var(--color-text-primary);
-    background: var(--color-bg);
+    color: var(--text);
+    background: var(--surface);
 
     &:focus {
       outline: none;
-      border-color: var(--color-primary, #3b5bdb);
+      border-color: var(--primary);
     }
   }
 
   &__hint {
     font-size: 11px;
-    color: var(--color-text-secondary);
+    color: var(--text-muted);
     margin: 0;
   }
 
   &__desc {
     font-size: 12px;
-    color: var(--color-text-secondary);
+    color: var(--text-muted);
     margin: 0;
   }
 
   &__test-btn {
     align-self: flex-start;
     padding: 7px 16px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--divider);
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
-    background: var(--color-bg);
-    color: var(--color-text-primary);
+    background: var(--surface);
+    color: var(--text);
 
     &:disabled {
       opacity: .5;
@@ -73,16 +73,16 @@
 
   &__success {
     font-size: 12px;
-    color: var(--color-success, #28a745);
-    background: var(--color-success-light, #d4edda);
+    color: var(--success);
+    background: var(--hint);
     border-radius: 6px;
     padding: 8px 12px;
   }
 
   &__error {
     font-size: 12px;
-    color: var(--color-danger, #fa5252);
-    background: var(--color-danger-light, #fff0f0);
+    color: var(--danger);
+    background: var(--danger-soft);
     border-radius: 6px;
     padding: 8px 12px;
   }
@@ -106,14 +106,14 @@
   }
 
   &__arrow {
-    color: var(--color-text-secondary);
+    color: var(--text-muted);
     text-align: center;
   }
 
   &__fixed {
     font-size: 12px;
-    color: var(--color-success, #28a745);
-    background: var(--color-success-light, #d4edda);
+    color: var(--success);
+    background: var(--hint);
     border-radius: 4px;
     padding: 5px 8px;
   }
@@ -126,17 +126,17 @@
   &__schedule-btn {
     flex: 1;
     padding: 7px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--divider);
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
-    background: var(--color-bg);
-    color: var(--color-text-primary);
+    background: var(--surface);
+    color: var(--text);
 
     &--active {
-      border-color: var(--color-primary, #3b5bdb);
-      background: var(--color-primary-light, #f0f4ff);
-      color: var(--color-primary, #3b5bdb);
+      border-color: var(--primary);
+      background: var(--hint);
+      color: var(--primary);
       font-weight: 600;
     }
   }

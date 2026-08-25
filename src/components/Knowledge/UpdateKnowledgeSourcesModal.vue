@@ -27,7 +27,7 @@
               </button>
             </div>
           </div>
-          <button class="custom-btn" style="font-size:12px;" @click="showResourcePicker = true">
+          <button class="custom-btn custom-btn--sm" @click="showResourcePicker = true">
             <i class="material-symbols-outlined fs-14">folder_open</i>
             勾選檔案來源
           </button>
