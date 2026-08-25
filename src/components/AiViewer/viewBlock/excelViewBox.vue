@@ -17,9 +17,6 @@
   import { ref, onMounted } from 'vue';
   import { storeToRefs } from 'pinia'
   import { useAiviewerStore } from '@/stores/AiViewerStore';
-  import excelIconParh from '@/assets/fileTypeIcon/excel.png';
-
-  const excelIcon = ref(excelIconParh);
 
   const props = defineProps({
     isFullView: {

@@ -29,7 +29,7 @@
     align-items: center;
     gap: 10px;
     h3 { font-size: 16px; font-weight: 600; }
-    .cm-icon--danger { color: #dc2626; font-size: 22px; }
+    .cm-icon--danger { color: var(--danger); font-size: 22px; }
   }
 
   .cm-body {
@@ -48,10 +48,10 @@
   }
 
   .cm-btn--danger {
-    background: #dc2626 !important;
-    border-color: #dc2626 !important;
-    color: #fff !important;
-    &:hover { background: #b91c1c !important; border-color: #b91c1c !important; }
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    color: var(--primary-fg) !important;
+    &:hover { filter: brightness(0.88); }
   }
 }
 

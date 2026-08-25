@@ -6,6 +6,9 @@ declare module 'vue-router' {
   interface RouteMeta {
     title?: string
     parentName?: string
+    // 麵包屑的非連結上層標籤（例如 side-menu 的群組名稱，本身不是可導覽的頁面），
+    // 跟 parentName（會連到實際路由）不同，純粹補一層文字
+    parentLabel?: string
     useCompanyName?: boolean
     hideMenuTree?: boolean
   }
@@ -111,7 +114,7 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/Skills',
         name: 'SkillManagement',
         component: () => import('@/views/SkillManagement.vue'),
-        meta: { title: '技能管理' },
+        meta: { title: '技能管理', parentLabel: 'AI 技能' },
       },
       {
         path: '/view/SkillTest',

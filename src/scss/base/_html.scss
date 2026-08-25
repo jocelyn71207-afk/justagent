@@ -78,7 +78,7 @@ a {
     box-shadow: 0 0 0 2px rgba(0,160,120,0.15);
   }
   &.error {
-    border-color: $color_red_2;
+    border-color: var(--danger);
   }
   &:disabled {
     @include disabled();
@@ -96,15 +96,15 @@ a {
     border: 0;
     box-shadow: inset 0 0 0 1px var(--divider); /* 內部陰影模擬內邊框 */
     &:hover {
-      box-shadow: inset 0 0 0 1px $color_main_3;
+      box-shadow: inset 0 0 0 1px var(--accent);
       &::-webkit-slider-thumb {
-        border-color: $color_main_3;
+        border-color: var(--accent);
       }
     }
     &:focus {
-      box-shadow: inset 0 0 0 1px $color_main_2;
+      box-shadow: inset 0 0 0 1px var(--primary-hover);
       &::-webkit-slider-thumb {
-        border-color: $color_main_2;
+        border-color: var(--primary-hover);
       }
     }
 
@@ -162,15 +162,15 @@ select.custom-select {
   vertical-align: bottom;
 
   &:hover {
-    border-color: $color_main_3;
+    border-color: var(--accent);
   }
   &:focus {
-    border-color: $color_main_2;
+    border-color: var(--primary-hover);
     outline: none;
     box-shadow: none;
   }
   &.error {
-    border-color: $color_red_1;
+    border-color: var(--danger);
   }
   &:disabled {
     @include disabled();
@@ -205,10 +205,10 @@ select.custom-select {
   @include no-scroll-bar();
   @include use-scroll-bar(var(--scrollbar));
   &:hover {
-    border-color: $color_main_3;
+    border-color: var(--accent);
   }
   &:focus {
-    border-color: $color_main_2;
+    border-color: var(--primary-hover);
     outline: none;
     box-shadow: none;
   }
@@ -216,7 +216,7 @@ select.custom-select {
     @include disabled();
   }
   &.error {
-    border-color: $color_red_1;
+    border-color: var(--danger);
   }
   &.no-resize {
     resize: none;
@@ -242,7 +242,7 @@ select.custom-select {
     &:checked {
       & + span::before {
         content: $checkedContent; // 借用 iconscout 的字體
-        color: $color_main_1;
+        color: var(--primary);
       }
     }
     &:disabled {

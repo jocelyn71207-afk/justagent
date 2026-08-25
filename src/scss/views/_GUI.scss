@@ -47,4 +47,17 @@
     width: 100px;
     height: 100px;
   }
+
+  // 色票展示：色塊跟文字分開，不會有淺色底配淺色字看不清楚的問題
+  // （舊版 .lookThemeMode 是文字直接寫在色塊裡面，遇到淺色 token 就會看不清楚）
+  .gui-swatch {
+    width: 108px;
+  }
+
+  .gui-swatch-box {
+    width: 108px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-a50);
+  }
 }

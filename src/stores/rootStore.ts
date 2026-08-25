@@ -13,13 +13,16 @@ export const useRootStore = defineStore('rootStore', () => {
 
   const projectListMode = ref<'list' | 'card'>('card'); // 專案列表的顯示模式
 
-  const nowMenuTreeCompanyId = ref(''); // 主選單目前選擇的公司 ID
+  // 主選單目前選擇的企業，預設選第一間，跟 testGroups 預設選第一個團隊的邏輯一致
+  const nowMenuTreeCompanyId = ref('ugg');
   const nowMenuTreeCompanyName = ref<string>('UGG')
 
-  // 使用者可切換的企業清單, 之後會改成從後端拿資料——即使目前只有一間，
-  // 資料結構仍比照 testGroups 做成清單，UI（企業切換器）才有真正的資料可以列
+  // 使用者可切換的企業清單, 之後會改成從後端拿資料——先放兩間才能讓「企業→
+  // 只看得到該企業的團隊」這條篩選邏輯有真實情境可以驗證，不是接了一個永遠只有
+  // 一個選項、實際上測不出效果的假開關
   const companyList = ref([
     { id: 'ugg', name: 'UGG' },
+    { id: 'orangeheart', name: '橙心' },
   ]);
 
   const isShowBuserModal = ref(false); // 是否顯示 Buser Modal
@@ -40,20 +43,36 @@ export const useRootStore = defineStore('rootStore', () => {
   }
 
   // 測試 menutree 用的團隊列表, 之後會改成從後端拿資料
-  const testGroups = ref([
+  interface MenuTreeTeam {
+    id: string;
+    name: string;
+    companyId: string; // 所屬企業，側邊選單的團隊切換器只會列出目前選定企業底下的團隊
+    isSkillOpen: boolean; // 桌機/手機共用：「技能管理」群組的展開/收合
+    isResourceOpen: boolean; // 桌機/手機共用：「共享資源庫」群組的展開/收合
+  }
+  const testGroups = ref<MenuTreeTeam[]>([
     {
       id: 'testTeam1',
       name: 'UGG電子商務',
-      isOpen: false,
+      companyId: 'ugg',
       isSkillOpen: false,
+      isResourceOpen: false,
     },
     {
       id: 'testTeam2',
       name: 'UGG實體門市',
-      isOpen: false,
+      companyId: 'ugg',
       isSkillOpen: false,
+      isResourceOpen: false,
+    },
+    {
+      id: 'testTeam3',
+      name: '橙心門市',
+      companyId: 'orangeheart',
+      isSkillOpen: false,
+      isResourceOpen: false,
     }
-  ]) as any;
+  ]);
 
   return {
     isShowBatchUpload,

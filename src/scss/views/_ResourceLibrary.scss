@@ -18,50 +18,19 @@
     min-width: 200px;
   }
 
-  // ── 檔案狀態 badge（Wise 配色覆蓋）──────────────────────────────
-  .status-badge {
-    font-weight: 600;
-    border-radius: 9999px;
-
-    &--stored {
-      background: var(--hint);
-      color: var(--primary-hover);
-    }
-
-    &--saved {
-      background: var(--hint);
-      color: var(--primary-hover);
-    }
-  }
+  // ── 檔案狀態／處理方式 badge：形狀＋顏色皆由 _custom.scss 的
+  //    %badge-shape ＋ .status-badge／.process-type-badge 全域規則提供，
+  //    這裡不再覆寫（避免跟 AppBatchUpload 等其他消費者的顏色分岔）──────
 
   // ── 已轉為知識 badge ──────────────────────────────────────────
   .knowledge-badge {
-    display: inline-block;
+    @extend %badge-shape;
+    display: inline-flex;
     margin-left: 6px;
     padding: 1px 7px;
-    border-radius: 9999px;
     font-size: 11px;
-    font-weight: 600;
     background: var(--primary-a12);
     color: var(--success);
     vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  // ── 處理方式 badge（Wise 配色覆蓋）──────────────────────────────
-  .process-type-badge {
-    border-radius: 9999px;
-    font-weight: 600;
-
-    &.badge--ai {
-      background: var(--hint);
-      color: var(--primary-hover);
-    }
-
-    &.badge--raw {
-      background: var(--page-bg);
-      color: var(--text-muted);
-      border: 1px solid var(--divider);
-    }
   }
 }

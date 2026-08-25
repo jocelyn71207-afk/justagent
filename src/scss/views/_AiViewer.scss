@@ -14,35 +14,30 @@
   align-items: center;
   gap: 10px;
   padding: 0 14px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--divider);
+  background: transparent; // 不做背景色塊/分隔線，讓身分識別列直接浮在畫布上
   font-family: $font-family;
   @include user-select-none;
+  // 透明區域讓滑鼠事件穿透到下方畫布，避免整條 44px 高的隱形列擋住畫布卡片的點擊/拖曳範圍
+  pointer-events: none;
+  > * {
+    pointer-events: auto;
+  }
 }
 
-.AiViewer-topbar-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--primary-fg);
-  background: var(--primary);
+// 頂部列 logo：取代原本的頭像圓圈，點擊回首頁（合併原 home 圖示的功能）
+.AiViewer-topbar-logo {
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  cursor: default;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
-.AiViewer-topbar-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--divider);
-  flex-shrink: 0;
-}
-
-.AiViewer-topbar-home,
 .AiViewer-topbar-more {
   width: 26px;
   height: 26px;
@@ -53,6 +48,7 @@
   color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
+  font-size: 17px;
   transition: background 0.15s, color 0.15s;
 
   &:hover {
@@ -60,8 +56,27 @@
     color: var(--primary-hover);
   }
 }
-.AiViewer-topbar-home { font-size: 19px; }
-.AiViewer-topbar-more { font-size: 17px; }
+
+// 專案名稱 + 對話標題疊成兩行：專案名稱目前是靜態佔位文字（見 AiViewer.vue
+// 的 topbarProjectName），日後接上真實專案資料只需要換掉那個 ref
+.AiViewer-topbar-titles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.AiViewer-topbar-project {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
 
 .AiViewer-topbar-title {
   font-size: 13.5px;
@@ -83,41 +98,42 @@
   margin-top: 4px;
 }
 
+
 .AiViewer {
   padding: 0 !important;
   position: fixed; // 避免平板的小鍵盤出現時下方的白白區塊
-  top: $header-AiViewer-height; // 頂部工具列常駐，畫布從工具列下方開始
+  top: 0; // 畫布佔滿整個視窗，頂部識別列改為透明浮貼在畫布上（不再另外保留一段留白）
   // position: relative;
-  // background-color: var(--page-bg);
   overflow: hidden;
   // 使用 CSS Grid 佈局
   display: grid;
   //grid-template-columns: auto 4px 1fr 4px auto; // 左側box | 左拖曳條 | 中間自適應 | 右拖曳條 | 右側box (由js給予)
   grid-template-rows: 1fr; // 單行佈局
   //grid-template-areas: "left-panel left-resizer center-area right-resizer right-panel";
-  //height: calc(100vh - #{$header-AiViewer-height}); // 全螢幕高度
   gap: 0; // 無間距
-  height: calc(100dvh - #{$header-AiViewer-height}); // dvh = dynamic viewport height
+  height: 100dvh; // dvh = dynamic viewport height，畫布佔滿全高
   width: 100%;
   overflow: hidden;
+  // 點點定位網格畫在這一層（原本畫在 .center-box，只覆蓋畫布那個 grid 欄位，
+  // 右側懸浮卡片周圍露出的留白會看到一塊沒有網格的純色——這裡改成整個視窗都鋪滿網格，
+  // 讓卡片看起來是真的浮在畫布上，不是浮在一塊獨立的灰底色塊上）
+  // 兩層點點：96px 間距的大點做定位參考，24px 間距的小點做細部對齊
+  background-color: var(--page-bg);
+  background-image:
+    radial-gradient(rgba($black, 0.16) 1.5px, transparent 1.6px),
+    radial-gradient(rgba($black, 0.09) 1px, transparent 1.1px);
+  background-size: 96px 96px, 24px 24px; // js 會覆蓋此值（見 centerBoxStyle）
+  background-position: 0 0;
 
   // 中間主要區塊
   .center-box {
+    background-color: transparent; // 格線背景已經移到 .AiViewer，這裡保持透明讓格線透出來
     border: 2px solid transparent; // 避免背景圓點點在多選模式下跳動
-    background-color: var(--page-bg);
     position: relative;
     overflow: hidden;
     clip-path: inset(0); // 讓 position:fixed 的子層也被裁切，防止畫布塊拖出邊界蓋住右側對話欄
     min-height: 100%;
     // border: 1px solid red; // 開發測試用
-    // 細十字格線背景（大格 96px / 小格 24px，js 會依縮放比例動態調整 background-size）
-    background-image:
-      repeating-linear-gradient(rgba($black, 0.055) 0px, transparent 1px),
-      repeating-linear-gradient(90deg, rgba($black, 0.055) 0px, transparent 1px),
-      repeating-linear-gradient(rgba($black, 0.025) 0px, transparent 1px),
-      repeating-linear-gradient(90deg, rgba($black, 0.025) 0px, transparent 1px);
-    background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px; // js 會覆蓋此值
-    background-position: 0 0;
 
     // 包著每一個小區塊的容器
     .scaleBox {
@@ -219,7 +235,6 @@
     @include no-scroll-bar();
     position: relative;
     background-color: var(--surface);
-    border-right: 1px solid var(--divider);
     overflow: auto;
     // padding-top: 50px;
     box-sizing: border-box;
@@ -240,8 +255,17 @@
       box-shadow: 0 2px 8px rgba($grey-shadow, 0.1);
     }
   }
+  // 左側是除錯/屬性面板，貼齊畫布維持原本的分隔線樣式
+  .AiViewerLeftBox {
+    border-right: 1px solid var(--divider);
+  }
   .AiViewerRightBox {
     position: relative;
+    // 懸浮卡片：跟視窗上/右/下三邊留白，四角圓角＋陰影，貼近參考圖的浮動感
+    margin: 12px 12px 12px 0;
+    border: 1px solid var(--divider);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
     display: grid;
     grid-template-rows: 56px 1fr auto auto;
     gap: 0;
@@ -397,7 +421,7 @@
       padding: 12px;
       // box-shadow: 0 1px 12px rgba(var(--shadow),0.3);
       // box-shadow: 0 1px 12px rgba(var(--shadow),0.2);
-      border-radius: 12px;
+      border-radius: 16px;
       z-index: 1;
       // 進入快速罐頭任務模式的特殊樣式
       &.enterCannedTask {
@@ -414,14 +438,14 @@
         border: 0;
         color: var(--text);
         padding: 0;
-        background-color: transparent;
+        background-color: var(--surface);
         // padding: 5px;
         border-radius: 40px;
         > i {
           font-size: 24px;
         }
         &:hover {
-          background-color: var(--surface);
+          background-color: var(--sidebar-hover-a20);
         }
       }
 
@@ -857,8 +881,8 @@
     filter: blur(2px);
     opacity: 0.7;
   }
-  &.AiViewr-ctrl-box.size-ctrl-box,
   &.AiViewr-ctrl-box.right-ctrl-box,
+  &.AiViewr-ctrl-box.zoom-ctrl-box,
   .ctrl-box,
   .handle,
   &.StageMap {
@@ -970,9 +994,15 @@
 
   // 左右介面開合按鈕
   &.right-ctrl-box {
+    top: 10px; // 跟縮放膠囊貼齊上方，不用底層預設的 55px
     right: 60px; // js 給值
-    padding: 10px 5px;
+    padding: 7px 4px;
     cursor: pointer;
+    .ctrl-btn {
+      width: 20px;
+      height: 20px;
+      font-size: 18px;
+    }
     span {
       display: flex;
       align-items: center;
@@ -981,35 +1011,32 @@
   }
 
 
-  // 主場景尺寸比例控制小介面
-  &.size-ctrl-box {
+  // 主場景尺寸比例控制小介面：獨立懸浮膠囊，與頂部識別列分開
+  &.zoom-ctrl-box {
+    top: 10px; // 跟收合對話鈕貼齊上方，不用底層預設的 55px
     z-index: 4;
-    padding: 6px;
+    padding: 4px;
     display: flex;
     align-items: center;
     @include user-select-none;
 
     .ctrl-btn {
       color: var(--text-a80);
-      font-size: 22px;
-      width: 36px;
-      height: 36px;
+      font-size: 18px;
+      width: 28px;
+      height: 28px;
       margin: 0 2px;
     }
 
-    // TODO... 是情況移除
-    .resetPosition {
-      border: 0;
-    }
     .percent {
-      width: 50px;
-      height: 36px;
-      margin: 0 5px;
+      width: 42px;
+      height: 28px;
+      margin: 0 3px;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 12.5px;
       font-weight: 600;
       color: var(--primary);
       border-radius: 6px;
@@ -1017,13 +1044,6 @@
       &:hover {
         background-color: var(--sidebar-hover-a20);
       }
-    }
-    .slice {
-      border-left: 1px solid var(--divider);
-      height: 26px;
-      width: 1px;
-      margin: 0 6px;
-      display: none; // TODO... 有指針了所以先隱藏起來
     }
 
     // 更多尺寸選單
@@ -1034,28 +1054,47 @@
     }
   }
 
-  // 主功能小介面
-  &.project-fn-box {
-    left: calc(50% - 220px); // js 給值
-    //min-width: 220px; // js 給值
+  // 左下角狀態列：小地圖開關
+  &.status-bar-box {
+    left: 10px;
+    right: auto;
     top: auto;
     bottom: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: var(--surface);
-    transition:
-      left 0.2s ease-in-out,
-      width 0.2s ease-in-out;
+    padding: 5px 8px;
+
     .ctrl-btn {
       color: var(--text-a80);
-      font-size: 22px;
-      width: 36px;
-      height: 36px;
-      margin: 5px 3px;
+      font-size: 17px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  // 主功能小介面：改放左側直向 rail（幫未來的畫筆/文字/圖形等繪圖工具預留同一塊區域）
+  &.project-fn-box {
+    left: 10px;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--surface);
+    .ctrl-btn {
+      color: var(--text-a80);
+      font-size: 18px;
+      width: 28px;
+      height: 28px;
+      margin: 3px 0;
     }
     .fn-btn-box {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       > i.active {
@@ -1064,15 +1103,19 @@
     }
     .multi-choice-btn-box {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-left: 1px solid var(--divider);
-      margin-left: 10px;
-      padding-left: 10px;
+      border-left: none;
+      border-top: 1px solid var(--divider);
+      margin-left: 0;
+      margin-top: 10px;
+      padding-left: 0;
+      padding-top: 10px;
       .count-box {
         position: absolute;
-        left: 10px;
-        top: 6px;
+        left: 6px;
+        top: -8px;
         font-size: 11px;
         z-index: 1;
         background-color: var(--page-bg);
@@ -1082,24 +1125,15 @@
     }
   }
 
-  // 當畫布空間太小時
+  // 當畫布空間（高度）太小時，直向 rail 改用垂直捲動，而不是原本橫向工具列的水平捲動
   &.smailleScreen {
-    // &.size-ctrl-box {
-    //   top: calc($header-AiViewer-height + 60px);
-    //   right: auto !important;
-    //   left: 10px;
-    // }
     &.project-fn-box {
-      // left: 10px !important;
-      // max-width: 300px; //
-      overflow-x: auto;
+      max-height: calc(100dvh - 100px);
+      overflow-y: auto;
+      overflow-x: visible;
       justify-content: start;
       @include no-scroll-bar();
       @include use-scroll-bar(var(--scrollbar-a50));
-      // .fn-btn-box {
-      // }
-      // .multi-choice-btn-box {
-      // }
     }
   }
 }
@@ -1237,10 +1271,12 @@
       position: relative;
       width: 20px;
       height: 20px;
-      background-color: $white;
+      background-color: var(--surface); // 原本寫死 $white，深色模式下會是一顆突兀的白點
+      box-shadow: var(--shadow-sm);
       left: -7px;
       top: -7px;
       z-index: 1;
+      transition: border-color 0.15s, background-color 0.15s;
       > * {
         display: none;
       }
@@ -1250,7 +1286,7 @@
   // 改變套件的虛線邊框顏色
   &.vue-drag-resize-rotate {
     border-color: transparent;
-    border-radius: 20px;
+    border-radius: 12px; // 與 AiViewerContentBox／header／content 統一，避免四層圓角對不齊
   }
 }
 // 被 VueDragResize 套件包起來 (實際內容區塊)
@@ -1260,56 +1296,58 @@
   height: 100%;
   padding: 0px;
   background: var(--surface-a70);
-  border: 1px solid var(--primary-a20);
+  border: 1px solid var(--divider); // 預設用中性邊框，選取時才用主色（見 .isActive／.isMultiActive）
   border-radius: 12px;
+  transition: border-color 0.15s;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow:
-    0 4px 20px var(--primary-a08),
-    0 1px 4px rgba(var(--shadow), 0.06),
-    0 0 0 1px var(--primary-a08);
-  // box-shadow: 0 2px 8px rgba(var(--shadow),0.2);
+  box-shadow: var(--shadow-md); // 改用系統既有的陰影 token，跟其他浮動元件一致
   display: flex;
   flex-direction: column;
 
   // 小區塊控制介面
+  // 跟其他懸浮控制項（左側工具 rail、縮放膠囊）同一套毛玻璃膠囊語彙，
+  // 原本是方角、無 hover 反饋的陽春白盒，這裡統一起來
   .ctrl-box {
     transform-origin: left top;
     position: absolute;
     left: calc(100% + 10px);
     top: calc(0% + 10px);
     z-index: 0;
-    background-color: var(--page-bg);
-    padding: 0px;
-    border-radius: $radius;
-    border: 1px solid var(--divider);
-    // border-left: 0;
-    box-shadow: 0px 0px 5px rgba(var(--shadow),0.2);
+    background: var(--surface-a90);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 4px;
+    border-radius: 24px;
+    border: 1px solid var(--primary-a20);
+    box-shadow: var(--shadow-md);
     color: var(--text);
     user-select: none;
 
     .ctrl-btn {
-      // margin-top: 5px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
-      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      font-size: 19px;
+      border-radius: 50%;
       cursor: pointer;
-      // &:first-child {
-      //   // margin-top: 0px;
-      // }
-      // &:last-child {
-      //   // margin-bottom: 5px;
-      // }
+      transition: background 0.15s, color 0.15s;
+
+      &:hover {
+        background: var(--primary-a08);
+        color: var(--primary-hover);
+      }
     }
 
-    .remove-btn {
+    .remove-btn:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
     }
 
     hr {
-      margin: 0;
+      margin: 4px 8px;
       border: none;
       border-top: 1px solid var(--divider);
     }
@@ -1319,13 +1357,11 @@
   .content-header-box {
     position: relative;
     border-bottom: 1px solid var(--divider-a50);
-    padding: 7px 12px;
+    padding: 10px 14px;
     background-color: var(--surface-a90);
-    background-size: 6px 6px; // 點點間距
-    background-position: 0 0;
     color: var(--text-muted);
     font-family: $font-family;
-    border-radius: 20px 20px 0 0;
+    border-radius: 12px 12px 0 0; // 與卡片本體 12px 對齊
     cursor: move;
     @include user-select-none;
     > div {
@@ -1365,7 +1401,7 @@
     // padding: 10px;
     position: relative;
     cursor: default;
-    border-radius: 0 0 18px 18px; // 提性要配合父層調整且跟border也有關係
+    border-radius: 0 0 12px 12px; // 與卡片本體 12px 對齊，避免跟 header 圓角不一致
     overflow: hidden;
     width: 100%;
     flex: 1;
@@ -1378,7 +1414,7 @@
     &.for-PPT,
     &.for-WORD,
     &.for-OTHER {
-      padding: 15px 10px 10px 10px;
+      padding: 18px 14px 14px 14px;
     }
 
     // 這幾個內容區塊內部通用樣式
@@ -1407,53 +1443,37 @@
     }
   }
 
-  // 便條紙小提示 icon
+  // 便條紙小提示 icon：改成單純的圓形徽章，取代原本的 45deg 旋轉菱形＋緞帶缺角
   .comment-btn {
     position: absolute;
     right: 10px;
-    top: 18px;
+    top: 10px;
     z-index: 1;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     background-color: var(--page-bg);
-    border: 2px solid var(--divider);
-    border-radius: 22px;
+    border: 1.5px solid var(--divider);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform-origin: right top;
-    transform: rotate(45deg);
     font-family: $font-family;
     cursor: pointer;
-    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
     @include user-select-none;
-    // 小三角形（隱藏於圓形內）
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: -4px;
-      left: calc(50% - 6px);
-      transform: rotate(-45deg);
-      width: 12px;
-      height: 12px;
-      background-color: var(--page-bg);
-      border-left: 2px solid var(--divider);
-      border-bottom: 2px solid var(--divider);
+
+    &:hover {
+      transform: scale(1.1);
     }
+
     span {
-      position: relative;
       font-size: 9px;
       font-weight: 900;
-      z-index: 2;
-      transform: rotate(-45deg);
       color: $color_grey_1;
     }
     &.has-comment {
       border-color: $color-main-1;
-      &::after {
-        border-left-color: $color-main-1;
-        border-bottom-color: $color-main-1;
-      }
+      background-color: var(--hint);
       span {
         color: var(--primary-hover);
       }
@@ -1530,9 +1550,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  img {
-    max-width: 45px;
+  // 跟共用資源庫同一份 file-icon-tile，這裡的父層是置中的 flex 容器（非固定尺寸格子），
+  // 需要另外給 tile 一個明確尺寸，不能沿用預設的 width/height:100%
+  .file-icon-tile {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
     margin-top: 15px;
+  }
+  .file-type-icon {
+    font-size: 32px;
   }
   > div {
     font-size: 13px;
@@ -1615,9 +1642,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  img {
-    max-width: 45px;
+  // 跟共用資源庫同一份 file-icon-tile，理由同 .ppfViewBox
+  .file-icon-tile {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
     margin-top: 15px;
+  }
+  .file-type-icon {
+    font-size: 32px;
   }
   > div {
     font-size: 13px;
@@ -1861,12 +1894,15 @@
   border-radius: 12px;
   flex-shrink: 0;
 
-  img.file-icon {
-    object-fit: cover;
+  .file-icon-tile {
     width: 32px;
     height: 32px;
     border-radius: $radius;
     margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .file-type-icon {
+    font-size: 18px;
   }
   .noFile-icon {
     font-size: 28px;
@@ -2036,9 +2072,9 @@
     width: 32px;
     height: 32px;
     border-radius: 6px;
-    object-fit: cover;
     flex-shrink: 0;
   }
+  .tc-file-icon .file-type-icon { font-size: 17px; }
 
   .tc-file-info {
     flex: 1;
@@ -2196,9 +2232,9 @@
     width: 32px;
     height: 32px;
     border-radius: 6px;
-    object-fit: cover;
     flex-shrink: 0;
   }
+  .tc-dl-icon .file-type-icon { font-size: 17px; }
 
   .tc-dl-info {
     flex: 1;
@@ -2257,9 +2293,9 @@
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 
   &:hover {
-    background-color: rgba($color-main-1, 0.08);
-    border-color: rgba($color-main-1, 0.35);
-    color: $color-main-1;
+    background-color: var(--primary-a08);
+    border-color: var(--primary-a40);
+    color: var(--primary);
   }
 }
 
@@ -3128,16 +3164,19 @@
     flex-shrink: 0;
   }
   .conv1-transl-sd {
-    width: 22px;
-    height: 5px;
+    width: 26px;
+    height: 6px;
     border-radius: 3px;
     background: var(--divider);
-    transition: background 0.2s;
+    transition: background 0.2s, box-shadow 0.2s;
     &--done { background: var(--accent); }
-    &--active { background: var(--primary); }
+    &--active {
+      background: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-a12); // 呼應畫布卡片選取時的光暈語彙
+    }
   }
   .conv1-transl-sl {
-    width: 5px;
+    width: 6px;
     height: 1px;
     background: var(--divider);
   }
@@ -3151,14 +3190,15 @@
     justify-content: center;
     gap: 4px;
     padding: 20px 12px;
-    border-radius: 8px;
-    border: 1.5px dashed var(--divider);
+    border-radius: 10px;
+    border: 1px dashed var(--divider);
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     margin-bottom: 8px;
     &:hover {
       border-color: var(--primary);
       background: var(--accent-soft);
+      box-shadow: var(--shadow-sm);
     }
   }
   .conv1-transl-upload-zone-icon { font-size: 28px !important; color: var(--text-muted); }
@@ -3170,18 +3210,30 @@
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
-    border-radius: 8px;
-    border: 1.5px solid var(--divider);
+    border-radius: 10px;
+    border: 1px solid var(--divider);
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     margin-bottom: 8px;
-    &:hover { border-color: var(--primary); }
+    &:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
     &--selected {
       border-color: var(--primary);
       background: var(--accent-soft);
+      box-shadow: 0 0 0 3px var(--primary-a12);
     }
   }
-  .conv1-transl-file-icon { font-size: 22px; flex-shrink: 0; }
+  // 跟共用資源庫同一份 file-icon-tile，取代原本寫死的 📊 emoji。
+  // 這裡的卡片選中時背景會變 --accent-soft（淡綠），如果 tile 也用同一組
+  // tag 色塊底色（同樣是淡綠系），兩層淡色疊在一起會糊成一片、失去圖示的邊界，
+  // 所以在這個位置改用中性底＋細邊框，讓 tile 不管卡片是否選中都維持清楚的輪廓
+  .conv1-transl-file-card .file-icon-tile {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+  }
+  .conv1-transl-file-card .file-type-icon { font-size: 18px; }
   .conv1-transl-file-info { flex: 1; min-width: 0; }
   .conv1-transl-file-name {
     font-size: 11px;
@@ -3210,15 +3262,16 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    padding: 7px 9px;
-    border-radius: 7px;
-    border: 1.5px solid var(--divider);
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--divider);
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    &:hover { border-color: var(--primary); }
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    &:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
     &--selected {
       border-color: var(--primary);
       background: var(--accent-soft);
+      box-shadow: 0 0 0 3px var(--primary-a12);
     }
   }
   .conv1-transl-radio {
@@ -3249,16 +3302,17 @@
   .conv1-transl-col-input {
     width: 100%;
     box-sizing: border-box;
-    padding: 7px 10px;
-    border: 1.5px solid var(--divider);
-    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--divider);
+    border-radius: 10px;
     background: var(--page-bg);
     color: var(--text);
     font-size: 11px;
     outline: none;
     margin-top: 4px;
+    transition: border-color 0.15s, box-shadow 0.15s;
     &::placeholder { color: var(--text-muted); }
-    &:focus { border-color: var(--primary); }
+    &:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-a12); }
   }
 
   // Step 3: 語言 chip grid
@@ -3268,16 +3322,17 @@
     gap: 6px;
   }
   .conv1-transl-lang-chip {
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1.5px solid var(--divider);
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--divider);
     cursor: pointer;
     text-align: center;
-    transition: border-color 0.15s, background 0.15s;
-    &:hover { border-color: var(--primary); }
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    &:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
     &--selected {
       border-color: var(--primary);
       background: var(--accent-soft);
+      box-shadow: 0 0 0 3px var(--primary-a12);
     }
   }
   .conv1-transl-lang-flag { font-size: 18px; margin-bottom: 3px; }
@@ -3309,9 +3364,10 @@
   align-items: flex-start;
   gap: 8px;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--divider);
+  box-shadow: var(--shadow-sm);
 }
 .tc-pending-icon { font-size: 20px; }
 .tc-pending-text { font-size: 12px; color: var(--text-muted); }
@@ -3359,8 +3415,8 @@
   background: linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 100%);
   border-radius: 12px;
   margin-bottom: 6px;
-  border: 1px solid var(--primary);
-  border-opacity: 0.3;
+  border: 1px solid var(--primary-a40); // 改用半透明 token，取代原本無效的 border-opacity 寫法
+  box-shadow: var(--shadow-sm);
 
   button {
     width: auto !important;
@@ -3434,47 +3490,154 @@
 }
 
 // conv1 空白開始狀態全螢幕遮罩
+// 跟著 .AiViewerRightBox 這張懸浮卡片走：用 absolute + inset:0 貼合父層邊界，
+// 讓 overflow:hidden／border-radius 自動裁出跟真正對話面板一樣的浮動卡片外形，
+// 畫布留在卡片外面繼續可見（不再用 fixed 蓋滿整個視窗）
 .conv1-empty-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 999;
-  background-color: var(--page-bg);
-  background-image:
-    repeating-linear-gradient(rgba(var(--shadow), 0.055) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba(var(--shadow), 0.055) 0px, transparent 1px),
-    repeating-linear-gradient(rgba(var(--shadow), 0.025) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba(var(--shadow), 0.025) 0px, transparent 1px);
-  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  background-color: var(--surface);
   display: flex;
-  align-items: center;
+  align-items: stretch; // 讓 content 撐滿卡片高度，輸入框才能貼齊底部
   justify-content: center;
+  overflow-y: auto;
+  @include no-scroll-bar();
   pointer-events: all;
 }
 
 .conv1-empty-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 20px;
   width: 100%;
-  max-width: 640px;
-  padding: 0 24px;
+  min-height: 100%;
+  padding: 32px 20px 24px;
   box-sizing: border-box;
 }
 
+.conv1-empty-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.conv1-empty-logo {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 4px;
+}
+
 .conv1-empty-title {
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 21px;
+  font-weight: 700;
   color: var(--text);
+  text-wrap: balance;
+}
+
+.conv1-empty-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+// 建議提示卡列表：點擊會把對應 prompt 帶入輸入框，由使用者自己按送出——
+// 不是點了就假裝 AI 已經處理完，這裡只做「幫你把話打好」這件事
+.conv1-suggest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.conv1-suggest-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 16px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--primary-a40);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.conv1-suggest-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.conv1-suggest-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.conv1-suggest-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.conv1-suggest-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  > i { font-size: 26px; }
+
+  // 沿用專案既有的標籤色票，不另外寫死顏色
+  &.tag-teal   { background: var(--tag-teal-bg);   color: var(--tag-teal-text); }
+  &.tag-blue   { background: var(--tag-blue-bg);   color: var(--tag-blue-text); }
+  &.tag-amber  { background: var(--tag-amber-bg);  color: var(--tag-amber-text); }
+  &.tag-violet { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
+  &.tag-green  { background: var(--tag-green-bg);  color: var(--tag-green-text); }
+  &.tag-rust   { background: var(--tag-rust-bg);   color: var(--tag-rust-text); }
+}
+
+.conv1-suggest-refresh {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  > i { font-size: 15px; }
+
+  &:hover { color: var(--primary-hover); }
 }
 
 .conv1-empty-input-box {
   width: 100%;
+  margin-top: auto; // 把輸入框推到 .conv1-empty-content 這個直向 flex 的最底部
   background: var(--surface);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 16px;
   box-sizing: border-box;
-  box-shadow: 0 2px 12px rgba(var(--shadow), 0.06);
+  box-shadow: 0 4px 20px rgba(var(--shadow), 0.08);
 }
 
 .conv1-empty-textarea {
@@ -3512,11 +3675,18 @@
   border: 0;
   color: var(--text);
   padding: 0;
-  background: transparent;
+  background: var(--page-bg);
   border-radius: 40px;
   cursor: pointer;
   > i { font-size: 22px; }
-  &:hover { background: var(--page-bg); }
+  &:hover { background: var(--sidebar-hover-a20); }
+}
+
+// 送出鈕：實心底色，與附件/提及等次要按鈕拉出視覺主次
+.conv1-empty-input-box .conv1-empty-send-btn {
+  background: var(--primary);
+  color: var(--primary-fg);
+  &:hover { background: var(--primary-hover); }
 }
 
 // Pills inside input row
@@ -3969,29 +4139,28 @@
   transition: opacity 0.2s;
 }
 
-// ── 十字格線背景（.center-box / .conv1-empty-overlay 共用）：
+// ── 點點定位網格背景（畫在 .AiViewer 外層容器，鋪滿整個視窗，見上方定義）：
 //    深色模式覆蓋需依實際套用的主題（手動切換的 [data-theme] 優先），而非僅依 OS 偏好判斷，
-//    否則手動主題與 OS 偏好不一致時，格線會消失或顯示錯誤顏色 ──
-@mixin aiviewer-crosshatch-grid-dark {
+//    否則手動主題與 OS 偏好不一致時，點點會消失或顯示錯誤顏色 ──
+// 注意: .conv1-empty-overlay 現在是貼合右側懸浮卡片的普通卡片背景（見上方定義），
+// 不再需要網格紋理，已從這個 mixin 的套用對象移除
+@mixin aiviewer-dot-grid-dark {
   background-image:
-    repeating-linear-gradient(rgba($white, 0.04) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba($white, 0.04) 0px, transparent 1px),
-    repeating-linear-gradient(rgba($white, 0.018) 0px, transparent 1px),
-    repeating-linear-gradient(90deg, rgba($white, 0.018) 0px, transparent 1px);
+    radial-gradient(rgba($white, 0.22) 1.5px, transparent 1.6px),
+    radial-gradient(rgba($white, 0.12) 1px, transparent 1.1px);
 }
 
 [data-theme="dark"] {
-  .AiViewer .center-box,
-  .conv1-empty-overlay {
-    @include aiviewer-crosshatch-grid-dark;
+  // 點點網格背景畫在 .AiViewer 本身（見上方定義），深色模式的網格覆蓋也要跟著改這一層
+  .AiViewer {
+    @include aiviewer-dot-grid-dark;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    .AiViewer .center-box,
-    .conv1-empty-overlay {
-      @include aiviewer-crosshatch-grid-dark;
+    .AiViewer {
+      @include aiviewer-dot-grid-dark;
     }
   }
 }

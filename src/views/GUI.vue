@@ -86,154 +86,146 @@
       </div>
 
       <div class="mb-3">
-        <h3>觀看色彩計畫</h3>
-        <div :class="['lookColor', `bgc-main-${n}`] " v-for="n in 6" :key="'color-main'+n">.{{ `bgc-main-${n}` }}
-          <div class="pt-1" v-if="n === 1">#16a34a; <br> 產品主色</div>
-          <div class="pt-1" v-if="n === 2">#15803d;</div>
-          <div class="pt-1" v-if="n === 3">#22c55e;</div>
-          <div class="pt-1" v-if="n === 4">#bbf7d0;</div>
-          <div class="pt-1" v-if="n === 5">#dcfce7;</div>
-          <div class="pt-1" v-if="n === 6">#f0fdf4;</div>
-        </div> <br>
-
-        <div :class="['lookColor', `bgc-grey-${n}`] " v-for="n in 2" :key="'color-grey'+n">.{{ `bgc-grey-${n}` }}
-          <div class="pt-1" v-if="n === 1">#8b90a0</div>
-          <div class="pt-1" v-if="n === 2">#9fabba</div>
-        </div> <br>
-
-        <div :class="['lookColor', `bgc-green-${n}`] " v-for="n in 1" :key="'color-green'+n">.{{ `bgc-green-${n}` }}
-          <div class="pt-1" v-if="n === 1">#02C300</div>
-        </div> <br>
-
-        <div :class="['lookColor', `bgc-blue-${n}`] " v-for="n in 1" :key="'color-blue'+n">.{{ `bgc-blue-${n}` }}
-          <div class="pt-1" v-if="n === 1">#1877F2</div>
-        </div> <br>
-
-        <div :class="['lookColor', `bgc-red-${n}`] " v-for="n in 2" :key="'color-red'+n">.{{ `bgc-red-${n}` }}
-          <div class="pt-1" v-if="n === 1">#dd4b39</div>
-          <div class="pt-1" v-if="n === 2">#dd4839</div>
-        </div> <br>
-
-        <div :class="['lookColor', `bgc-yellow-${n}`] " v-for="n in 1" :key="'color-yellow'+n">.{{ `bgc-yellow-${n}` }}
-          <div class="pt-1" v-if="n === 1">#fcfdcf</div>
+        <h3>觀看色彩計畫（Bootstrap 風格 .bgc-*／.fc-* 工具 class，非主要 token 系統）</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          這組是舊式、每個顏色寫死一個 class 的工具集，跟下面「深淺主題」用的 CSS 變數是兩套並存的東西。
+          <code>grey-1</code>／<code>red-1</code> 因為全站還有 25＋ 處在用（大多是次要文字／必填標記），已經改接
+          <code>var(--text-muted)</code>／<code>var(--danger)</code>，深色模式會正確變色；其餘只剩這個展示頁在用，
+          或本身就是 LINE／Facebook 品牌色（<code>green-1</code>／<code>blue-1</code>），刻意維持寫死。
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <div v-for="c in legacyColorSwatches" :key="c.cls" class="gui-swatch">
+            <div class="gui-swatch-box" :class="c.cls"></div>
+            <div class="fs-12 mt-1">.{{ c.cls }}</div>
+            <div class="fs-11" style="color: var(--text-faint);">{{ c.note }}</div>
+          </div>
         </div>
-
       </div>
 
       <div class="mb-3">
-        <h3>觀看深淺主題定義</h3>
-        <h5 class="mt-2">主背景色</h5>
-        <div style="background-color: #aac5d6;">
-          <div class="lookThemeMode" style="background-color: var(--color-background);">--color-background</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha90);">--color-background-alpha90</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha80);">--color-background-alpha80</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha70);">--color-background-alpha70</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha60);">--color-background-alpha60</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha50);">--color-background-alpha50</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha40);">--color-background-alpha40</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha30);">--color-background-alpha30</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha20);">--color-background-alpha20</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-alpha10);">--color-background-alpha10</div>
+        <h3>觀看深淺主題定義（現行 base/_theme.scss token）</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          這裡才是實際在用的配色系統。舊版這區展示的是 --color-background／--color-border／--color-text 這組變數，
+          但專案重新命名成下面這些 token 之後這區沒有跟著更新，導致每個色塊全部顯示同一片灰藍色（因為那些變數根本不存在）——
+          這次順便重寫，改成展示真正還在用的 token，也把色塊本身跟色塊底下的文字分開，不會再有淺色底配淺色字看不清楚的問題。
+        </p>
+        <div v-for="group in themeTokenGroups" :key="group.title" class="mb-3">
+          <h5 class="mt-2">{{ group.title }}</h5>
+          <div class="d-flex flex-wrap gap-3">
+            <div v-for="t in group.tokens" :key="t" class="gui-swatch">
+              <div class="gui-swatch-box" :style="{ background: `var(${t})` }"></div>
+              <div class="fs-11 mt-1" style="color: var(--text-muted);">{{ t }}</div>
+            </div>
+          </div>
         </div>
-
-        <h5 class="mt-2">次背景色-1</h5>
-        <div style="background-color: #aac5d6;">
-          <div class="lookThemeMode" style="background-color: var(--color-background-1);">--color-background-1</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha90);">--color-background-1-alpha90</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha80);">--color-background-1-alpha80</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha70);">--color-background-1-alpha70</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha60);">--color-background-1-alpha60</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha50);">--color-background-1-alpha50</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha40);">--color-background-1-alpha40</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha30);">--color-background-1-alpha30</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha20);">--color-background-1-alpha20</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-1-alpha10);">--color-background-1-alpha10</div>
-        </div>
-
-        <h5 class="mt-2">次背景色-2</h5>
-        <div style="background-color: #aac5d6;">
-          <div class="lookThemeMode" style="background-color: var(--color-background-2);">--color-background-2</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha90);">--color-background-2-alpha90</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha80);">--color-background-2-alpha80</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha70);">--color-background-2-alpha70</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha60);">--color-background-2-alpha60</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha50);">--color-background-2-alpha50</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha40);">--color-background-2-alpha40</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha30);">--color-background-2-alpha30</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha20);">--color-background-2-alpha20</div>
-          <div class="lookThemeMode" style="background-color: var(--color-background-2-alpha10);">--color-background-2-alpha10</div>
-        </div>
-
-        <h5 class="mt-2">主線條顏色</h5>
-        <div style="background-color: #aac5d6;">
-          <div class="lookThemeMode" style="background-color: var(--color-border);">--color-border</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha90);">--color-border-alpha90</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha80);">--color-border-alpha80</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha70);">--color-border-alpha70</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha60);">--color-border-alpha60</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha50);">--color-border-alpha50</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha40);">--color-border-alpha40</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha30);">--color-border-alpha30</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha20);">--color-border-alpha20</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-alpha10);">--color-border-alpha10</div>
-        </div>
-
-        <h5 class="mt-2">次線條顏色-1</h5>
-        <div style="background-color: #aac5d6;">
-          <div class="lookThemeMode" style="background-color: var(--color-border-1);">--color-border-1</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha90);">--color-border-1-alpha90</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha80);">--color-border-1-alpha80</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha70);">--color-border-1-alpha70</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha60);">--color-border-1-alpha60</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha50);">--color-border-1-alpha50</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha40);">--color-border-1-alpha40</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha30);">--color-border-1-alpha30</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha20);">--color-border-1-alpha20</div>
-          <div class="lookThemeMode" style="background-color: var(--color-border-1-alpha10);">--color-border-1-alpha10</div>
-        </div>
-
-        <h5 class="mt-2">標題文字顏色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-heading);">--color-heading</div>
-
-        <h5 class="mt-2">文字顏色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-text);">--color-text</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha90);">--color-text-alpha90</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha80);">--color-text-alpha80</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha70);">--color-text-alpha70</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha60);">--color-text-alpha60</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha50);">--color-text-alpha50</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha40);">--color-text-alpha40</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha30);">--color-text-alpha30</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha20);">--color-text-alpha20</div>
-        <div class="lookThemeMode" style="background-color: var(--color-text-alpha10);">--color-text-alpha10</div>
-
-        <h5 class="mt-2">連結文字顏色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-link-text);">--color-link-text</div>
-        <div class="lookThemeMode" style="background-color: var(--color-link-text-active);">--color-link-text-active</div>
-
-        <h5 class="mt-2">陰影顏色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-shadow);">--color-shadow</div>
-
-        <h5 class="mt-2">scrollbar 顏色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-scrollbar);">--color-scrollbar</div>
-        <div class="lookThemeMode" style="background-color: var(--color-scrollbar-alpha50);">--color-scrollbar-alpha50</div>
-
-        <h5 class="mt-2">對話紀錄背景色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-userSay-record);">--color-userSay-record</div>
-
-        <h5 class="mt-2">頁籤 active 背景色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-tab-active-bg);">--color-tab-active-bg</div>
-
-        <h5 class="mt-2">switch active 背景色</h5>
-        <div class="lookThemeMode" style="background-color: var(--color-switch-active-bg);">--color-switch-active-bg</div>
       </div>
 
       <div class="mb-3">
-        <h3>觀看 button 樣式</h3>
+        <h3>觀看 Badge / Tag 樣式（統一後）</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          全部 badge 現在共用同一份形狀（pill、padding 2px 9px、12px/600），顏色只吃
+          base/_theme.scss 的 --tag-violet/blue/amber/teal/green/rust/rose/slate 系列 token，
+          切換瀏覽器/系統的深色模式即可檢查這裡的顏色是否正常變化。
+        </p>
+
+        <h5 class="mt-2">技能標籤 .skill-tag（技能管理／技能詳情／SkillTest 共用）</h5>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+          <span class="skill-tag tag--sys">系統技能</span>
+          <span class="skill-tag tag--ext">擴充技能</span>
+          <span class="skill-tag tag--version">v1.2.0</span>
+          <span class="skill-tag tag--update">有更新</span>
+          <span class="skill-tag tag--reviewing">審核中</span>
+          <span class="skill-tag tag--draft">草稿</span>
+          <span class="skill-tag tag--available">已上架</span>
+          <span class="skill-tag tag--has-library">已建知識庫</span>
+          <span class="skill-tag tag--personal">個人</span>
+          <span class="skill-tag tag--enterprise">企業技能</span>
+          <span class="skill-tag tag--team">團隊技能</span>
+          <span class="skill-tag tag--upstream">
+            <i class="material-symbols-outlined">arrow_upward</i>採用上游變更
+          </span>
+        </div>
+
+        <h5 class="mt-3">分類色 .tag-badge（8 色相 token 全覽，目前尚無畫面使用，供未來新元件挑色）</h5>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+          <span class="tag-badge tag-badge--violet">violet</span>
+          <span class="tag-badge tag-badge--blue">blue</span>
+          <span class="tag-badge tag-badge--amber">amber</span>
+          <span class="tag-badge tag-badge--teal">teal</span>
+          <span class="tag-badge tag-badge--green">green</span>
+          <span class="tag-badge tag-badge--rust">rust</span>
+          <span class="tag-badge tag-badge--rose">rose</span>
+          <span class="tag-badge tag-badge--slate">slate</span>
+        </div>
+
+        <h5 class="mt-3">檔案處理 .status-badge ／ .process-type-badge（知識庫／共用檔案管理）</h5>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+          <span class="status-badge status-badge--uploading">上傳中</span>
+          <span class="status-badge status-badge--parsing">解析中</span>
+          <span class="status-badge status-badge--stored">已儲存</span>
+          <span class="status-badge status-badge--saved">已存檔</span>
+          <span class="status-badge status-badge--failed">失敗</span>
+          <span class="process-type-badge badge--ai">AI 來源</span>
+          <span class="process-type-badge badge--raw">原始上傳</span>
+        </div>
+
+        <h5 class="mt-3">知識庫項目狀態 .status-badge--*（KnowledgeBase 專屬 10 態）</h5>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+          <span class="status-badge status-badge--active">已發布</span>
+          <span class="status-badge status-badge--processing">處理中</span>
+          <span class="status-badge status-badge--reviewing">審核中</span>
+          <span class="status-badge status-badge--needs_update">需更新</span>
+          <span class="status-badge status-badge--pending">待處理</span>
+          <span class="status-badge status-badge--failed">失敗</span>
+          <span class="status-badge status-badge--archived">已封存</span>
+          <span class="status-badge status-badge--draft">草稿</span>
+          <span class="status-badge status-badge--history">歷史版</span>
+          <span class="status-badge status-badge--rejected">已退回</span>
+        </div>
+        <p class="fs-11 mb-2" style="color: var(--text-faint);">
+          * 這一排「審核中／草稿」跟上面技能標籤的顏色不同，是刻意保留——知識庫自己有 10 種狀態，
+          硬套技能管理那套配色反而會讓「審核中」跟「需更新」撞成同色，不是漏改。
+        </p>
+
+        <h5 class="mt-3">已轉為知識 .knowledge-badge（僅 ResourceLibrary 範圍內生效，這裡用外層 class 模擬）</h5>
+        <div class="ResourceLibrary d-flex flex-wrap gap-2 align-items-center mb-2">
+          <span class="knowledge-badge">已轉為知識</span>
+        </div>
+
+        <h5 class="mt-3">版本時間軸狀態 .vt-status-badge ／ 指派 Agent .agent-tag（SkillDetailDrawer 用，已改為全域宣告）</h5>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+          <span class="vt-status-badge vt-status--active">生效中</span>
+          <span class="vt-status-badge vt-status--reviewing">審核中</span>
+          <span class="vt-status-badge vt-status--history">歷史</span>
+          <span class="vt-status-badge vt-status--draft">草稿</span>
+          <span class="vt-status-badge vt-status--rejected">已退回</span>
+          <span class="agent-tag"><i class="material-symbols-outlined">smart_toy</i>客服助理 Agent</span>
+        </div>
+
+        <h5 class="mt-3">側邊區塊標籤 .section-badge ／ 使用中版本 .version-current-tag（僅 SkillTest 的 .test-sidebar 範圍內生效）</h5>
+        <div class="SkillTest">
+          <div class="test-sidebar" style="background: none; border: none; display: block;">
+            <div class="section-badge-row d-flex flex-wrap gap-2 align-items-center">
+              <span class="section-badge section-badge--mine">我的技能</span>
+              <span class="section-badge section-badge--library">Library 技能</span>
+              <span class="version-current-tag">使用中</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <h3>觀看 button 樣式（hover／error 已改用 token）</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          .custom-btn 的 hover/active 改用 var(--primary-hover)，.error 改用 var(--danger)——
+          之前這兩個狀態是寫死的 $color_main_2／$color_red_2，深色模式下顏色不會變化。
+          custom-main-btn 本身仍刻意保持「企業色，不隨主題變化」，其 .error 用固定常數對齊同一個紅，維持不隨主題變的設計。
+        </p>
         <button class="custom-btn m-1">button</button>
         <button class="custom-btn m-1" disabled>button disabled</button>
         <button class="custom-btn error m-1">button error</button>
         <button class="custom-btn no-border no-bg m-1">button (no border bg)</button>
+        <button class="custom-btn custom-btn--sm m-1">custom-btn--sm</button>
         <br>
         <button class="custom-btn custom-main-btn m-1">custom-main-btn</button>
         <button class="custom-btn custom-main-btn m-1" disabled>custom-main-btn disabled</button>
@@ -255,7 +247,7 @@
       </div>
 
       <div class="mb-3">
-        <h3>觀看 input 樣式</h3>
+        <h3>觀看 input 樣式（focus／error 已跟 select/textarea 對齊同一組 token）</h3>
         <input class="custom-input m-1" type="text" placeholder="input">
         <input class="custom-input m-1" type="text" placeholder="input" value="input readonly" readonly>
         <input class="custom-input m-1" type="text" placeholder="input" value="input disabled" disabled>
@@ -275,6 +267,10 @@
 
       <div class="mb-3">
         <h3>觀看 select 樣式</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          hover/focus 原本用 $color_main_3／$color_main_2（跟 input 的 var(--accent)／var(--primary-hover) 不是同一組），
+          深色模式下 select/textarea 的 focus 顏色會跟 input 不一致——已改成同一組 token，三者現在深色模式下顏色一致。
+        </p>
         <select class="custom-select m-1">
           <option>請選擇</option>
           <option>項目1</option>
@@ -664,6 +660,92 @@
         </div>
       </div>
 
+      <div class="mb-3">
+        <h3>測試 compListCardSwitch 組件</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          用在 AppSearchPage／ProjectListContent／ResourceLibrary 這三個列表頁切換「卡片／列表」檢視。
+        </p>
+        <div class="m-1">
+          <compListCardSwitch
+            v-model="testViewMode"
+            @change="(m: 'list' | 'card') => {
+              console.log('view mode 切換', m);
+            }"
+          />
+          <compListCardSwitch v-model="testViewMode2" :disabled="true" class="ml-2" />
+          <div class="pt-2">testViewMode: {{ testViewMode }}</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <h3>測試 AppSkeleton 組件</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          用在 ReviewDrawer／ProjectListContent／KnowledgeDetail／ResourceLibrary 的資料載入中畫面，三種 type 各自對應列表/卡片/詳情三種版面。
+        </p>
+        <div class="d-flex flex-wrap gap-3 align-items-start m-1">
+          <div style="width: 260px; border: 1px solid var(--divider-a50); border-radius: 8px; padding: 8px;">
+            <div class="fs-11 mb-1" style="color: var(--text-faint);">type="list"</div>
+            <AppSkeleton type="list" />
+          </div>
+          <div style="width: 200px; border: 1px solid var(--divider-a50); border-radius: 8px; padding: 8px;">
+            <div class="fs-11 mb-1" style="color: var(--text-faint);">type="card"</div>
+            <AppSkeleton type="card" />
+          </div>
+          <div style="width: 260px; border: 1px solid var(--divider-a50); border-radius: 8px; padding: 8px;">
+            <div class="fs-11 mb-1" style="color: var(--text-faint);">type="detail"</div>
+            <AppSkeleton type="detail" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <h3>測試 AppErrorState 組件</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          用在 ReviewDrawer／ProjectListContent／KnowledgeDetail／ResourceLibrary 的資料載入失敗畫面，:inline 給嵌在卡片內的較小版面用。
+        </p>
+        <div class="m-1">
+          <AppErrorState message="資料載入失敗，請稍後再試" @retry="() => console.log('retry clicked')" />
+          <AppErrorState message="資料載入失敗（inline 版）" :inline="true" @retry="() => console.log('retry clicked')" />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <h3>測試 ConfirmModal 組件</h3>
+        <p class="fs-13 mb-2" style="color: var(--text-faint);">
+          跟 compModal／popDialog.confirm 是三套不同的確認彈窗實作（目前只有 UpstreamUpdateDrawer 在用這個），
+          帶 variant="danger" 時標題會有警示圖示、確認鈕改用 .cm-btn--danger（已改用 var(--danger) token）。
+        </p>
+        <div class="m-1">
+          <button class="custom-btn" @click="testShowConfirm = true">打開 ConfirmModal（default）</button>
+          <button class="custom-btn ml-1" @click="testShowConfirmDanger = true">打開 ConfirmModal（danger）</button>
+          <ConfirmModal
+            v-model="testShowConfirm"
+            title="確認送出"
+            message="確定要送出這份表單嗎？"
+            @confirm="() => console.log('confirmed')"
+          />
+          <ConfirmModal
+            v-model="testShowConfirmDanger"
+            title="確認永久刪除"
+            message="此操作不可逆，確定要刪除嗎？"
+            confirm-label="刪除"
+            variant="danger"
+            @confirm="() => console.log('confirmed danger')"
+          />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <h3>AppBreadcrumb 組件（只寫說明，不放實際 Demo）</h3>
+        <p class="fs-13" style="color: var(--text-faint);">
+          用在 10 個頁面的頂部麵包屑，沒有 props——完全由目前路由的
+          <code>meta.title</code> / <code>meta.parentName</code> / <code>meta.parentLabel</code> / <code>meta.useCompanyName</code>
+          （加上 <code>route.query.teamName</code>）透過 <code>useBreadcrumb()</code> 這個 composable 算出來，
+          只有一層時就不顯示。因為是路由驅動、不是靠傳參數，這裡放上去也只會顯示 GUI 這個路由自己的麵包屑（通常是空的），
+          沒辦法示範它「真正」的行為，所以只留文字說明；要看實際效果直接去看技能管理／知識庫等頁面最上方即可。
+        </p>
+      </div>
+
     </div>
   </div>
 </template>
@@ -682,6 +764,11 @@ import compTabs from '@/components/compTabs/compTabs.vue';
 import compSwitch from '@/components/compSwitch/compSwitch.vue';
 import compPagination from '@/components/compPagination/compPagination.vue';
 import type { PaginationChangePayload } from '@/components/compPagination/compPagination.vue';
+import compListCardSwitch from '@/components/compListCardSwitch/compListCardSwitch.vue';
+import type { ListCardMode } from '@/components/compListCardSwitch/compListCardSwitch.vue';
+import AppSkeleton from '@/components/AppSkeleton.vue';
+import AppErrorState from '@/components/AppErrorState.vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
 
 const rootStore = useRootStore();
 const { isEnterAppSearchPage } = storeToRefs(rootStore);
@@ -816,6 +903,41 @@ function testPaginationPageChange (pagePayload: PaginationChangePayload) {
   }
 }
 
+
+// 觀看色彩計畫：舊式 .bgc-*／.fc-* 工具 class（見 base/_utils.scss 的 $colors map）
+const legacyColorSwatches = [
+  { cls: 'bgc-main-1', note: '#00A078・產品主色' },
+  { cls: 'bgc-main-2', note: '#007F5F' },
+  { cls: 'bgc-main-3', note: '#00C896' },
+  { cls: 'bgc-main-4', note: '#CFEFE2' },
+  { cls: 'bgc-main-5', note: '#E6F7F0' },
+  { cls: 'bgc-main-6', note: '#F0FAF6' },
+  { cls: 'bgc-grey-1', note: 'var(--text-muted)' },
+  { cls: 'bgc-grey-2', note: '#9FABBA' },
+  { cls: 'bgc-green-1', note: '#02C300・LINE 品牌色' },
+  { cls: 'bgc-blue-1', note: '#1877F2・Facebook 品牌色' },
+  { cls: 'bgc-red-1', note: 'var(--danger)' },
+  { cls: 'bgc-red-2', note: '#DD4839' },
+  { cls: 'bgc-yellow-1', note: '#FCFDCF' },
+];
+
+// 觀看深淺主題定義：base/_theme.scss 現行 token（分組對照原始檔案的區塊）
+const themeTokenGroups = [
+  { title: '品牌色', tokens: ['--primary', '--primary-hover', '--primary-fg', '--accent', '--accent-soft'] },
+  { title: '介面底色', tokens: ['--page-bg', '--surface', '--sidebar-bg', '--sidebar-hover', '--sidebar-active', '--divider'] },
+  { title: '文字色', tokens: ['--text', '--text-muted', '--text-faint', '--sidebar-fg', '--sidebar-muted'] },
+  { title: '語意色', tokens: ['--success', '--warning', '--danger', '--danger-soft', '--hint', '--hint-text'] },
+  { title: '常用透明度階梯（以 primary／divider 為例）', tokens: ['--primary-a08', '--primary-a12', '--primary-a20', '--primary-a40', '--divider-a50', '--divider-a30'] },
+  { title: '其他', tokens: ['--scrollbar', '--color-tab-active-bg', '--color-switch-active-bg'] },
+];
+
+// 測試 compListCardSwitch 組件
+const testViewMode = ref<ListCardMode>('card');
+const testViewMode2 = ref<ListCardMode>('list');
+
+// 測試 ConfirmModal 組件
+const testShowConfirm = ref(false);
+const testShowConfirmDanger = ref(false);
 
 onMounted(() => {
   // httpService.cancelAllRequests(); // 測試取消所有請求

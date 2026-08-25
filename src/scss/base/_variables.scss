@@ -148,23 +148,12 @@ $radius-lg: 16px; // 大容器（Card、Modal、Drawer）
 $radius-sm: 4px;  // 小標籤（Badge、Tag）
 
 // ── Badge / Status 色彩 ──────────────────────────────
-// Process type badge
-$color-badge-ai-bg: rgba(138, 63, 252, 0.10);
-$color-badge-ai-text: #7c3aed;
-$color-badge-raw-bg: rgba(30, 136, 229, 0.10);
-$color-badge-raw-text: #1565c0;
-
-// File status badge
-$color-status-uploading-bg: rgba(30, 136, 229, 0.10);
-$color-status-uploading-text: #1565c0;
-$color-status-parsing-bg: rgba(251, 192, 0, 0.15);
-$color-status-parsing-text: #b07d00;
+// 註：badge/tag 的顏色已於 Phase 1 badge 統一改用 base/_theme.scss 的
+// --tag-* token（見 _custom.scss 的 %badge-shape 與各 .skill-tag 等元件），
+// 這裡只留下還有其他消費者（非 badge 用途）在用的變數。
+// File status badge（僅供 UpstreamUpdateDrawer 的 diff 顯示使用，非 badge）
 $color-status-stored-bg: rgba(2, 195, 0, 0.10);
 $color-status-stored-text: #02a100;
-$color-status-saved-bg: rgba(0, 150, 136, 0.10);
-$color-status-saved-text: #00695c;
-$color-status-failed-bg: rgba(209, 68, 55, 0.10);
-$color-status-failed-text: #c62828;
 
 // Danger / Error
 $color-danger: #D14437;
@@ -176,10 +165,5 @@ $color-explore-accent-hover: #CECBF6;  // Hover 紫
 $color-explore-accent-text: #534AB7;   // 紫色文字
 $color-explore-accent-dark: #3C3489;   // 深紫文字
 
-// Explore agent badge
-$color-badge-new-bg: #CFEFE2;
-$color-badge-new-text: #00A078;
-$color-badge-hot-bg: #FAEEDA;
-$color-badge-hot-text: #854F0B;
-$color-badge-sat-bg: #CFEFE2;
-$color-badge-sat-text: #00A078;
+// Explore agent badge：已改用 --color-wise-badge-hot-bg/text 等 base/_theme.scss
+// 的 CSS token（深色模式才會正確變色），這裡不再重複宣告。

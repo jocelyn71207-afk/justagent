@@ -58,14 +58,23 @@
 
     .material-symbols-outlined { font-size: 22px; }
 
-    &.icon--sys {
-      background: $color_main_1;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba($color_main_1, 0.3);
+    // 跟卡片式目錄（SkillTile／PersonalSkillGroup 的 .tile-icon）同一套配色，
+    // 依 scope 決定顏色、個人技能用中性 slate，同一顆技能在列表跟詳情長相一致
+    &.icon--system {
+      background: var(--tag-blue-bg);
+      color: var(--tag-blue-text);
     }
-    &.icon--ext {
-      background: $color-badge-hot-bg;
-      color: $color-badge-hot-text;
+    &.icon--enterprise {
+      background: linear-gradient(135deg, $color_main_4 0%, $color_main_3 100%);
+      color: $color_main_2;
+    }
+    &.icon--team {
+      background: var(--tag-violet-bg);
+      color: var(--tag-violet-text);
+    }
+    &.icon--personal {
+      background: var(--tag-slate-bg);
+      color: var(--tag-slate-text);
     }
   }
 
@@ -210,6 +219,32 @@
     font-size: 12px;
     padding: 5px 14px;
     white-space: nowrap;
+  }
+
+  // ── 有版本待審核：跟 .drawer-metrics 一樣做滿版的提示條，不用卡片式
+  //    圓角，才不會像側欄裡的小提示，跟版號同一套「審核中」警示色語彙 ──
+  .pending-review-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    background: $color-warning-bg;
+    border-bottom: 1px solid $color-warning-border;
+    flex-shrink: 0;
+
+    .custom-btn { flex-shrink: 0; font-size: 12px; padding: 4px 12px; }
+  }
+
+  .pending-review-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: $color-warning-text;
+
+    .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; flex-shrink: 0; }
+    strong { font-weight: 700; }
   }
 
   // ── Body：雙欄——左邊主內容（這個技能在做什麼），右邊中繼資料側欄
@@ -366,33 +401,6 @@
   .section-empty-hint {
     color: var(--text-faint);
     font-size: 12.5px;
-  }
-
-  // ── Upstream update banner ────────────────────
-
-  .upstream-update-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    background: $color-warning-bg;
-    border: 1px solid $color-warning-border;
-    border-radius: 10px;
-    padding: 10px 14px;
-
-    .upstream-banner-text {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: $color-warning-text;
-      line-height: 1.4;
-
-      .material-symbols-outlined { font-size: 18px; color: $color-warning-amber; flex-shrink: 0; }
-      strong { font-weight: 700; }
-    }
-
-    .custom-btn { flex-shrink: 0; font-size: 12px; padding: 4px 12px; }
   }
 
   .personal-lib-update-banner {
@@ -586,25 +594,14 @@
   }
 
   // ── Agents ────────────────────────────────────
+  // .agent-tag 本身移到檔案最下方、.SkillDetailDrawer 之外宣告（見
+  // 「跟 .SkillDetailDrawer 無關的獨立 badge 元件」段落）：它是獨立命名的
+  // 實體 chip，不該綁死在 drawer 的 position:fixed 全屏容器裡才能顯示顏色。
 
   .agent-tag-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
-
-  .agent-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    background: $color_main_4;
-    color: $color_main_2;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-
-    .material-symbols-outlined { font-size: 14px; }
   }
 
   .agent-empty {
@@ -723,6 +720,7 @@
 
     &.vt-dot--active    { background: $color_main_1; box-shadow: 0 0 0 3px $color_main_4; }
     &.vt-dot--reviewing { background: $color-warning-amber; box-shadow: 0 0 0 3px var(--tag-amber-bg); }
+    &.vt-dot--approved  { background: var(--tag-blue-text); box-shadow: 0 0 0 3px var(--tag-blue-bg); }
     &.vt-dot--history   { background: var(--text-faint); }
     &.vt-dot--draft     { background: var(--divider-a50); border: 2px solid var(--text-faint); }
     &.vt-dot--rejected  { background: $color-danger; }
@@ -744,18 +742,7 @@
     color: var(--text);
   }
 
-  .vt-status-badge {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 10px;
-
-    &.vt-status--active    { background: $color_main_4; color: $color_main_2; }
-    &.vt-status--reviewing { background: $color-warning-bg; color: $color-warning-text; }
-    &.vt-status--history   { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
-    &.vt-status--draft     { background: var(--page-bg); color: var(--text-muted); }
-    &.vt-status--rejected  { background: rgba($color-danger, 0.08); color: $color-danger; }
-  }
+  // .vt-status-badge 本身移到檔案最下方、.SkillDetailDrawer 之外宣告，理由同 .agent-tag。
 
   .vt-date {
     font-size: 11px;
@@ -899,6 +886,38 @@
       .material-symbols-outlined { font-size: 16px; }
     }
   }
+}
+
+// ── 跟 .SkillDetailDrawer 無關的獨立 badge 元件 ──────────────────────
+// 拉到 drawer 的 position:fixed 容器之外宣告：它們是獨立命名的 chip，
+// 不該只有在 drawer 開著的時候才能正確上色（例如 GUI.vue 的樣式總覽）。
+
+// 尺寸比一般 badge 大一號（含 icon 的可辨識實體 chip），故不套用
+// %badge-shape，只把顏色改用分類色 token。
+.agent-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: var(--tag-teal-bg);
+  color: var(--tag-teal-text);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+
+  .material-symbols-outlined { font-size: 14px; }
+}
+
+.vt-status-badge {
+  @extend %badge-shape;
+  font-size: 10px;
+
+  &.vt-status--active    { background: var(--tag-green-bg); color: var(--tag-green-text); }
+  &.vt-status--reviewing { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
+  &.vt-status--approved  { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
+  &.vt-status--history   { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
+  &.vt-status--draft     { background: var(--page-bg); color: var(--text-muted); }
+  &.vt-status--rejected  { background: var(--danger-soft); color: var(--danger); }
 }
 
 // ── Confirm dialog ────────────────────────────────

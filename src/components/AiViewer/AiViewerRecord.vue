@@ -22,7 +22,9 @@
         <!-- 翻譯確認卡片（使用者訊息） -->
         <div class="translation-confirm-card" v-if="props.source.cardType === 'translationConfirm' && props.source.confirmed">
           <div class="tc-file-row">
-            <img class="tc-file-icon" :src="excelIcon" alt="xlsx">
+            <div class="tc-file-icon file-icon-tile" :class="`file-icon-tile--${fileTypeMeta('EXCEL').color}`">
+              <i class="material-symbols-outlined file-type-icon">{{ fileTypeMeta('EXCEL').icon }}</i>
+            </div>
             <div class="tc-file-info">
               <div class="tc-file-name">{{ props.source.file }}</div>
               <div class="tc-file-meta">XLSX · {{ formatFileSize(props.source.fileSize) }}</div>
@@ -58,7 +60,9 @@
           <div v-html="displayMsg"></div>
           <div class="tc-download-list">
             <div class="tc-download-item" v-for="file in props.source.files" :key="file.name">
-              <img class="tc-dl-icon" :src="getFileIcon(file.type)" :alt="file.type">
+              <div class="tc-dl-icon file-icon-tile" :class="`file-icon-tile--${fileTypeMeta(file.type).color}`">
+                <i class="material-symbols-outlined file-type-icon">{{ fileTypeMeta(file.type).icon }}</i>
+              </div>
               <div class="tc-dl-info">
                 <div class="tc-dl-name">{{ file.name }}</div>
                 <div class="tc-dl-meta">{{ file.type }} · {{ formatFileSize(file.size) }}</div>
@@ -131,12 +135,7 @@
 
 <script lang="ts" setup>
 import { ref, watchEffect, inject } from 'vue'
-import { formatFileSize } from '@/utils/file'
-import excelIcon from '@/assets/fileTypeIcon/excel.svg'
-import txtIcon from '@/assets/fileTypeIcon/txt.svg'
-import htmlIcon from '@/assets/fileTypeIcon/html.svg'
-import pdfIcon from '@/assets/fileTypeIcon/pdf.svg'
-import jsonIcon from '@/assets/fileTypeIcon/json.svg'
+import { formatFileSize, fileTypeMeta } from '@/utils/file'
 import ThinkingChainCard from '@/components/AiViewer/ThinkingChainCard.vue'
 
 interface KnowledgeSource {
@@ -164,15 +163,4 @@ watchEffect(() => {
   displayMsg.value = highlightKnowledgeMentions(props.source.msg)
 })
 
-function getFileIcon(type: string): string {
-  const map: Record<string, string> = {
-    XLSX: excelIcon,
-    EXCEL: excelIcon,
-    TXT: txtIcon,
-    JSON: jsonIcon,
-    HTML: htmlIcon,
-    PDF: pdfIcon,
-  }
-  return map[type] ?? excelIcon
-}
 </script>

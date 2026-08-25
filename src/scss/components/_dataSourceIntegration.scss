@@ -7,17 +7,17 @@
   &__section-label {
     font-size: 11px;
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: .5px;
     margin-bottom: 8px;
   }
 
   &__card {
-    border: 1.5px solid var(--color-border);
+    border: 1.5px solid var(--divider);
     border-radius: 10px;
     padding: 14px;
-    background: var(--color-bg);
+    background: var(--surface);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -27,7 +27,7 @@
   &__card-icon {
     width: 36px;
     height: 36px;
-    background: var(--color-bg-secondary);
+    background: var(--page-bg);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -45,12 +45,12 @@
   &__card-name {
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--text);
   }
 
   &__card-meta {
     font-size: 11px;
-    color: var(--color-text-secondary);
+    color: var(--text-muted);
     margin-top: 3px;
   }
 
@@ -63,12 +63,12 @@
 
   &__btn {
     padding: 5px 12px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--divider);
     border-radius: 6px;
     font-size: 12px;
     cursor: pointer;
-    background: var(--color-bg);
-    color: var(--color-text-primary);
+    background: var(--surface);
+    color: var(--text);
 
     &:disabled {
       opacity: .5;
@@ -88,7 +88,7 @@
     &-track {
       position: absolute;
       inset: 0;
-      background: var(--color-border);
+      background: var(--divider);
       border-radius: 10px;
       transition: background .2s;
 
@@ -106,7 +106,7 @@
     }
 
     input:checked + &-track {
-      background: var(--color-primary, #3b5bdb);
+      background: var(--primary);
 
       &::after {
         transform: translateX(16px);
@@ -121,7 +121,7 @@
   }
 
   &__available-item {
-    border: 1px dashed var(--color-border);
+    border: 1px dashed var(--divider);
     border-radius: 10px;
     padding: 16px 12px;
     text-align: center;
@@ -129,7 +129,7 @@
     transition: border-color .15s;
 
     &:hover:not(&--disabled) {
-      border-color: var(--color-primary, #3b5bdb);
+      border-color: var(--primary);
     }
 
     &--disabled {
@@ -147,19 +147,19 @@
   &__available-name {
     font-size: 12px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--text);
   }
 
   &__available-action {
     font-size: 11px;
-    color: var(--color-primary, #3b5bdb);
+    color: var(--primary);
     margin-top: 4px;
   }
 
   .datasource-integration__available-item--disabled &__available-action {
-    color: var(--color-text-secondary);
+    color: var(--text-muted);
   }
 }
 
-.text-success { color: var(--color-success, #28a745); }
-.text-danger  { color: var(--color-danger, #fa5252); }
+.text-success { color: var(--success); }
+.text-danger  { color: var(--danger); }

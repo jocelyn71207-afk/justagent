@@ -60,17 +60,19 @@
 
   <!-- 固定頂部工具列：使用者身分／專案識別＋專案層級選單常駐在最上方，
        畫布操作（縮放/上傳/資源庫/搜尋/旅程等）維持懸浮在畫布上，不收進這裡 -->
-  <div class="AiViewer-topbar" v-show="!conv1IsEmpty"
+  <div class="AiViewer-topbar"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
 
-    <div class="AiViewer-topbar-avatar" v-tooltip="'Lucas'">L</div>
-    <div class="AiViewer-topbar-divider"></div>
+    <img class="AiViewer-topbar-logo" src="@/assets/logo.svg" alt="JustAgent" v-tooltip="'回首頁'"
+      @click="goHome" />
 
-    <i class="material-symbols-outlined material-fill AiViewer-topbar-home" v-tooltip="'回首頁'"
-      @click="goHome">home</i>
-
-    <span class="AiViewer-topbar-title" v-tooltip.bottom="topbarProjectTitle">{{ topbarProjectTitle }}</span>
+    <!-- 專案名稱／對話標題：專案名稱目前是靜態佔位文字（app 尚未有專案資料來源），
+         之後若接上真實專案系統，換掉 topbarProjectName 這個 ref 即可 -->
+    <div class="AiViewer-topbar-titles">
+      <span class="AiViewer-topbar-project" v-tooltip.bottom="topbarProjectName">{{ topbarProjectName }}</span>
+      <span class="AiViewer-topbar-title" v-tooltip.bottom="topbarProjectTitle">{{ topbarProjectTitle }}</span>
+    </div>
 
     <i class="material-symbols-outlined AiViewer-topbar-more" v-tooltip="'more'"
       @click="isOpenProjMoreOptions = !isOpenProjMoreOptions">keyboard_arrow_down</i>
@@ -112,9 +114,25 @@
     </div>
   </div>
 
+  <!-- 主場景尺寸比例控制小介面：獨立懸浮膠囊，與頂部識別列刻意分開，貼近參考圖的浮動感 -->
+  <div :class="['AiViewr-ctrl-box zoom-ctrl-box', { 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
+    :style="{
+      right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? (ctrlRightGap + 50) + 'px' : '60px',
+    }"
+    @wheel="stopWhellZoomEvent($event)"
+    @touchmove="stopTouchpadZoomEvent($event)">
+    <i class="material-symbols-outlined ctrl-btn" @click="changeMainScalc(-0.2)">remove</i>
+    <div class="percent" @click="isOpenMoreSizeBox = !isOpenMoreSizeBox">{{ Math.ceil(centerContentScale * 100) }}%</div>
+    <i class="material-symbols-outlined ctrl-btn" @click="changeMainScalc(0.2)">add</i>
+
+    <!-- 更多尺寸選單 -->
+    <div class="more-size-box next-option-box" ref="moreSizeBox" v-show="isOpenMoreSizeBox">
+      <div class="option-item" @click="resetMainScalc()">縮放至 100%</div>
+    </div>
+  </div>
+
   <!-- 左右區塊顯示控制按鈕 -->
   <div :class="['AiViewr-ctrl-box right-ctrl-box', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
-    v-show="!conv1IsEmpty"
     :style="{
       right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? ctrlRightGap + 'px' : '10px',
     }"
@@ -131,11 +149,9 @@
     <i class="material-symbols-outlined ctrl-btn" v-if="isShowRightFrame">dock_to_left</i>
   </div>
 
-  <!-- 主功能小介面 -->
+  <!-- 主功能小介面：改放左側直向 rail，為未來畫筆/文字/圖形等繪圖工具預留同一個區域 -->
   <div ref="projectFnBox"
     :class="['AiViewr-ctrl-box project-fn-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
-    :style="projectFnBoxStyle"
-    v-show="!conv1IsEmpty"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
     <!-- 常態功能按鈕 -->
@@ -212,31 +228,16 @@
     </div>
   </div>
 
-  <!-- 主場景尺寸比例控制小介面 -->
-  <div :class="['AiViewr-ctrl-box size-ctrl-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
-    v-show="!conv1IsEmpty"
-    :style="{
-      right: (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView) ? (ctrlRightGap + 50) + 'px' : '60px',
-    }"
+  <!-- 左下角狀態列：小地圖開關 -->
+  <div class="AiViewr-ctrl-box status-bar-box"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
-    <i class="material-symbols-outlined ctrl-btn" @click="changeMainScalc(-0.2)">remove</i>
-    <div class="percent" @click="isOpenMoreSizeBox = !isOpenMoreSizeBox">{{ Math.ceil(centerContentScale * 100) }}%</div>
-    <i class="material-symbols-outlined ctrl-btn" @click="changeMainScalc(0.2)">add</i>
-    <!-- <div class="ctrl-btn" @click="resetMainScalc()"><i class="material-symbols-outlined">view_real_size</i></div> -->
-    <!-- <div class="ctrl-btn resetPosition" @click="resetMainPosition()">
-      <i class="uil uil-map-pin fs-24"></i>
-    </div> -->
-
-    <!-- 更多尺寸選單 -->
-    <div class="more-size-box next-option-box" ref="moreSizeBox" v-show="isOpenMoreSizeBox">
-      <div class="option-item" @click="resetMainScalc()">縮放至 100%</div>
-    </div>
-
+    <i :class="['material-symbols-outlined', 'ctrl-btn', { active: useMap }]" v-tooltip.top="useMap ? '關閉小地圖' : '開啟小地圖'"
+      @click="useMap = !useMap">map</i>
   </div>
 
   <!-- ● 主要界面區 -->
-  <div :class="['AiViewer', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]" :style="AiViewerStyle">
+  <div :class="['AiViewer', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]" :style="[AiViewerStyle, centerBoxStyle]">
     <!-- 左區塊 -->
     <AiViewerLeftBox v-show="isShowLeftFrame" :leftWidth="leftWidth" />
     <div :class="['AiViewer-frame-resizer', {'in-multi-choice-mode': isMultiChoiceAiViewerMode }]" v-if="isShowLeftFrame"
@@ -246,7 +247,6 @@
 
     <!-- 主要內容區 -->
     <div :class="['center-box']"
-      :style="centerBoxStyle"
       :ref="'centerBox'">
       <!-- 原點座標圖  TODO... 視情況移除 -->
       <!-- <i class="uil uil-map-pin center-origin" v-if="false" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
@@ -302,7 +302,7 @@
       ref="AiViewerRightResizerDOM"
       @mousedown="onLRMouseStart('right', $event)"
       @touchstart="onLRTouchStart('right', $event)"
-      v-show="!conv1IsEmpty && (isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
+      v-show="isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView"
     ></div>
     <AiViewerRightBox v-show="(isShowRightFrame || isShowCommentListView || isShowBlockListView || isShowFileListView)"
       ref="aiViewerRightBoxRef"
@@ -485,7 +485,7 @@ import popDialog from "@/services/popDialog";
 window.pdfjsLib.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}/libs/pdf.worker.min.js`;
 
 const aiviewerStore = useAiviewerStore();
-const { isTouchDevice, isShowCommentListView, isShowBlockListView, isShowFileListView, conv1IsEmpty } = storeToRefs(aiviewerStore);
+const { isTouchDevice, isShowCommentListView, isShowBlockListView, isShowFileListView } = storeToRefs(aiviewerStore);
 const { resetAiViewerState } = aiviewerStore;
 const router = useRouter();
 
@@ -609,6 +609,7 @@ const { mainStage } = storeToRefs(aiviewerStore);
 const centerBox = ref<HTMLElement | null>(null);
 const scaleBox = ref<HTMLElement | null>(null);
 const ctrlRightGap = ref(420); // 主場景控制小介面與瀏覽器右邊的距離
+const rightPanelFloatMargin = 12; // AiViewerRightBox 懸浮卡片與視窗右邊界的留白（需對應 scss 的 margin-right）
 const centerContentScale = ref(1.0); // 中間區塊內容縮放比例 (mainStage 的 scale)
 const centerContentX = ref(0); // 中間區塊內容 X 座標 (mainStage 的 x)
 const centerContentY = ref(0); // 中間區塊內容 Y 座標 (mainStage 的 x)
@@ -629,6 +630,9 @@ const isOpenProjectSettingModal = ref(false); // 是否開啟專案設定 Modal
 // 才不會兩邊各自顯示不同的名稱）
 const aiViewerRightBoxRef = ref<InstanceType<typeof AiViewerRightBox> | null>(null);
 const topbarProjectTitle = computed(() => aiViewerRightBoxRef.value?.currentConversationTitle ?? '');
+// 專案名稱：目前 app 沒有真實的專案資料來源（路由沒有 projectId，store 也沒有對應欄位），
+// 先放靜態佔位文字，日後接上真實專案系統時把這個 ref 換成對應的 computed 即可
+const topbarProjectName = ref('未命名專案');
 
 // 回首頁
 function goHome(): void {
@@ -656,13 +660,14 @@ const AiViewerStyle = computed(() => {
     gridTemplateColumns: columns.join(" "),
   };
 });
-// 中間區塊樣式
+// 點點定位網格的縮放比例：網格圖案本身畫在 .AiViewer 這個外層容器上（見樣板），
+// 讓網格延伸到整個視窗（含右側懸浮卡片周圍的留白），不再只侷限於 .center-box 那個 grid 欄位
 const centerBoxStyle = computed(() => {
-  // 細十字格線雙層縮放（大格 96px / 小格 24px，隨畫布 scale 同步）
+  // 點點網格雙層縮放（大點 96px 間距 / 小點 24px 間距，隨畫布 scale 同步）
   const small = 24 * centerContentScale.value;
   const large = 96 * centerContentScale.value;
   return {
-    backgroundSize: `${large}px ${large}px, ${large}px ${large}px, ${small}px ${small}px, ${small}px ${small}px`,
+    backgroundSize: `${large}px ${large}px, ${small}px ${small}px`,
   };
 });
 // 包著每一個小區塊的容器 樣式
@@ -871,7 +876,7 @@ function handleLRMoveResize (clientX: number): void {
   }
 
   // 調整主場景控制小介面位置
-  ctrlRightGap.value = rightWidth.value + 10;
+  ctrlRightGap.value = rightWidth.value + rightPanelFloatMargin + 10;
 }
 
 // 左右區塊:結束拖曳
@@ -915,7 +920,7 @@ function checkRightSize (callback: (() => void) | null = null): void {
   });
 
   // 調整主場景控制小介面位置
-  ctrlRightGap.value = rightWidth.value + 10;
+  ctrlRightGap.value = rightWidth.value + rightPanelFloatMargin + 10;
 
   if (callback) {
     callback();
@@ -1780,6 +1785,9 @@ onUnmounted(() => {
 
 
 // 專案主功能小介面 DOM 元素
+// 注意: project-fn-box 改成左側直向固定位置後，這裡算出來的 projectFnBoxStyle
+// 已經不再綁定到樣板上（改用純 CSS 定位），先保留這段計算避免動到下面呼叫它的其他流程，
+// 之後確定沒有地方需要再一併清掉。
 const projectFnBox = ref<HTMLElement | null>(null);
 const projectFnBoxStyle = ref<any>({});
 const calcProjectFnBoxTimer: any = ref(null);

@@ -14,14 +14,42 @@ describe('skillStore', () => {
       expect(versions.length).toBeGreaterThan(0)
     })
 
-    it('approveSkillVersion 將版本設為 active，前一 active 設為 history', () => {
+    it('approveSkillVersion 只核發版號、將版本設為 approved（待啟用），不會自動變成 active', () => {
       const store = useSkillStore()
       const reviewing = store.getSkillVersions('ext-cs-return-001').find(v => v.status === 'reviewing')
       expect(reviewing).toBeDefined()
+      const otherStatusesBefore = store.getSkillVersions('ext-cs-return-001')
+        .filter(v => v.id !== reviewing!.id)
+        .map(v => v.status)
+
       store.approveSkillVersion('ext-cs-return-001', reviewing!.id)
+
       const versions = store.getSkillVersions('ext-cs-return-001')
-      expect(versions.find(v => v.id === reviewing!.id)!.status).toBe('active')
-      expect(versions.filter(v => v.status === 'active').length).toBe(1)
+      expect(versions.find(v => v.id === reviewing!.id)!.status).toBe('approved')
+      expect(versions.filter(v => v.status === 'active').length).toBe(0)
+      // 其他版本的狀態不受影響（審核通過不會去動任何現有生效版本）
+      const otherStatusesAfter = versions.filter(v => v.id !== reviewing!.id).map(v => v.status)
+      expect(otherStatusesAfter).toEqual(otherStatusesBefore)
+    })
+
+    it('setLibraryActiveVersion 才會真的切換生效版本、同步技能內容，並把前一個 active 設為 history', () => {
+      const store = useSkillStore()
+      // team-marketing-001：v1.0.0 history、v1.1.0 active
+      const before = store.getSkillVersions('team-marketing-001')
+      const target = before.find(v => v.status === 'history')!
+      const previousActive = before.find(v => v.status === 'active')!
+      expect(target).toBeDefined()
+      expect(previousActive).toBeDefined()
+
+      store.setLibraryActiveVersion('team-marketing-001', target.id)
+
+      const after = store.getSkillVersions('team-marketing-001')
+      expect(after.find(v => v.id === target.id)!.status).toBe('active')
+      expect(after.find(v => v.id === previousActive.id)!.status).toBe('history')
+
+      const skill = store.findSkill('team-marketing-001')!
+      expect(skill.version).toBe(target.versionTag)
+      expect(skill.description).toBe(target.description)
     })
 
     it('rejectSkillVersion 將版本設為 rejected', () => {

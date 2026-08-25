@@ -227,6 +227,7 @@ import UpdateKnowledgeSourcesModal from '@/components/Knowledge/UpdateKnowledgeS
 import AppSkeleton from '@/components/AppSkeleton.vue';
 import AppErrorState from '@/components/AppErrorState.vue';
 import { useApiCall } from '@/composables/useApiCall';
+import { fileTypeMeta } from '@/utils/file';
 
 const resourceStore = useResourceStore();
 
@@ -300,28 +301,6 @@ function onPaginationChange(payload: PaginationChangePayload) {
 
 function isImageType(fileType: string) {
   return fileType.toUpperCase() === 'IMAGE';
-}
-
-// 檔案類型圖示：改用跟全站一致的「色塊 tile + material icon」語言，
-// 不再用外部 SVG 那種折角+漸層邊框+內建假文字/假內文線的通用素材圖，
-// 那種畫法在卡片放大看很廉價，縮到列表小圖示時內建文字更是完全糊掉、
-// 讀不出字——本質上是同一個「圖示大小跟語意脫節」的問題
-// 顏色刻意讓最常見的四種格式（PDF/PPT/Excel/Word）互相盡量不撞色——
-// rust/rose 這兩個暖色系 token 放在一起太像，PPT 改用 amber 才跟
-// PDF 的 rose 分得開
-const FILE_TYPE_META: Record<string, { icon: string; color: string; label: string }> = {
-  PDF:   { icon: 'picture_as_pdf', color: 'rose',    label: 'PDF 文件' },
-  PPT:   { icon: 'slideshow',      color: 'amber',   label: 'PowerPoint 簡報' },
-  EXCEL: { icon: 'table_chart',    color: 'green',   label: 'Excel 表格' },
-  WORD:  { icon: 'description',    color: 'blue',    label: 'Word 文件' },
-  HTML:  { icon: 'code',           color: 'violet',  label: 'HTML 檔案' },
-  MD:    { icon: 'article',        color: 'teal',    label: 'Markdown 文件' },
-  TXT:   { icon: 'draft',          color: 'neutral', label: '純文字檔' },
-  CHART: { icon: 'bar_chart',      color: 'rust',    label: '圖表檔案' },
-  OTHER: { icon: 'question_mark',  color: 'neutral', label: '未知的檔案類型' },
-};
-function fileTypeMeta(fileType: string) {
-  return FILE_TYPE_META[fileType.toUpperCase()] ?? FILE_TYPE_META.OTHER;
 }
 
 function formatDate(dateStr: string) {

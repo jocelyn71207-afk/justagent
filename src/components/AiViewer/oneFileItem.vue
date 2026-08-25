@@ -1,6 +1,8 @@
 <template>
   <div class="oneFileItem">
-    <img class="file-icon" :src="fileIcon" alt="file icon">
+    <div class="file-icon-tile" :class="`file-icon-tile--${meta.color}`">
+      <i class="material-symbols-outlined file-type-icon">{{ meta.icon }}</i>
+    </div>
     <div class="file-info-box">
       <div class="file-name" v-tooltip="props.fileInfo.name">{{ props.fileInfo.name }}</div>
       <div class="file-size">{{ props.fileInfo.fileType }}．{{ formatFileSize(props.fileInfo.size) }}
@@ -25,7 +27,7 @@
   import { ref, onMounted, computed } from 'vue';
   import { storeToRefs } from "pinia";
   import { useAiviewerStore } from "@/stores/AiViewerStore";
-  import { formatFileSize } from '@/utils/file';
+  import { formatFileSize, fileTypeMeta } from '@/utils/file';
   import {initClickOutsideListener } from "@/utils/utils";
   import popDialog from '@/services/popDialog';
 
@@ -38,15 +40,13 @@
   }>();
 
   const aiviewerStore = useAiviewerStore();
-  const { aiViewerBlocks, useIconFileTypes } = storeToRefs(aiviewerStore);
+  const { aiViewerBlocks } = storeToRefs(aiviewerStore);
 
   const showMoreOptions = ref(false);
   const moreOptionsBox = ref<HTMLElement | null>(null);
 
-  // 取得檔案圖示
-  const fileIcon = computed(() => {
-    return useIconFileTypes.value[props.fileInfo.fileType] || useIconFileTypes.value['OTHER'];
-  });
+  // 取得檔案圖示：跟共用資源庫同一份 file-icon-tile 語言
+  const meta = computed(() => fileTypeMeta(props.fileInfo.fileType));
 
   // 是否已加到畫布 (依據檔名判斷)
   const isAddedToCanvas = computed(() => {

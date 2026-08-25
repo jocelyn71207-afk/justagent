@@ -10,7 +10,6 @@
 
     <div class="tile-name">
       {{ skill.name }}
-      <span class="skill-tag tag--version">v{{ skill.version }}</span>
       <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
     </div>
     <div v-if="skill.description" class="tile-desc">{{ skill.description }}</div>

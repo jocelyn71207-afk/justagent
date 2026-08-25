@@ -197,23 +197,14 @@
   }
 }
 
-// 企業入口彈出清單：貼著 rail 上「企業」圖示右側展開，跟團隊入口同一種模式
+// 企業／團隊合併入口彈出清單：貼著 rail 上「企業」圖示右側展開。企業／團隊
+// 曾經是兩顆分開的 rail 圖示、兩份清單，合併後只剩這一份，用巢狀結構同時
+// 呈現「有哪些企業」跟「每間企業底下有哪些團隊」
 .company-rail-list {
   top: 67px;
   width: 200px;
+  max-height: 400px;
   padding: 6px;
-  max-height: 320px;
-  overflow-y: auto;
-  @include use-scroll-bar(var(--scrollbar-a50));
-}
-
-// 團隊入口彈出清單：貼著 rail 上「團隊」圖示右側展開（跟 .search-popover 同一種
-// 貼右側模式，不是 .team-switch-list 那種貼切換器正下方展開）
-.team-rail-list {
-  top: 251px;
-  width: 200px;
-  padding: 6px;
-  max-height: 320px;
   overflow-y: auto;
   @include use-scroll-bar(var(--scrollbar-a50));
 }
@@ -359,6 +350,17 @@
   }
 }
 
+// popover 標題：讓使用者一打開就知道這份清單的範疇是「企業」還是「團隊」，
+// 不用只靠 rail 上兩個外觀相似的圖示去猜
+.rail-popover-label {
+  padding: 4px 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
 .team-switch-dot {
   width: 20px;
   height: 20px;
@@ -371,6 +373,27 @@
   font-size: 10px;
   font-weight: 800;
   user-select: none;
+
+  // 企業代表唯一、整體的範疇，用實心圓區隔於團隊清單一貫的圓角方塊——
+  // 方塊代表「並列的多個單位」，圓形代表「你所屬的那一個整體」
+  &--company { border-radius: 999px; }
+}
+
+// 企業／團隊合併成一個 popover：每間企業底下巢狀列出所屬團隊，用縮排＋左側
+// 引導線呈現「屬於」的關係，跟 .side-panel-sub 的階層視覺語彙一致
+.rail-popover-sub {
+  padding: 2px 0 4px 10px;
+  margin: 0 0 4px 16px;
+  border-left: 1px solid var(--divider-a50);
+}
+
+.team-switch-item--company {
+  font-weight: 600;
+}
+
+.team-switch-item--sub {
+  font-size: 12.5px;
+  color: var(--sidebar-muted);
 }
 
 .team-switch-name {
@@ -575,28 +598,8 @@
       &.mobile-sub { padding-left: 44px; font-size: 13px; }
     }
 
-    .mobile-team-block { margin-top: 6px; }
-
-    .mobile-team-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      color: var(--text);
-      cursor: pointer;
-      user-select: none;
-
-      &:hover { background: var(--sidebar-hover); }
-
-      .mobile-team-arrow { margin-left: auto; font-size: 18px; color: var(--text-muted); }
-    }
-
-    .mobile-team-dot {
-      width: 24px; height: 24px; border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 11px; font-weight: 800; flex-shrink: 0;
-    }
+    // 團隊切換器／群組／子項目直接沿用桌機 side-panel 那套類別（.side-panel-switcher、
+    // .side-panel-item、.side-panel-group、.side-panel-sub），這裡只補手機專屬的間距
+    .mobile-team-switcher { margin-top: 6px; }
   }
 }

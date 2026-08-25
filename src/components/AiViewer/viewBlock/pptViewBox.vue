@@ -1,16 +1,18 @@
 <template>
   <div class="ppfViewBox">
-    <img :src="pptIcon" alt="PPT Icon"/>
+    <div class="file-icon-tile" :class="`file-icon-tile--${meta.color}`">
+      <i class="material-symbols-outlined file-type-icon">{{ meta.icon }}</i>
+    </div>
     <div>{{ 'TODO...這邊之後呈現檔案名稱或檔案url.' }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Powerpoint 預覽元件 (暫時只顯示圖示)
-import { ref } from 'vue';
-import pptIconPath from '@/assets/fileTypeIcon/ppt.png';
+// Powerpoint 預覽元件 (暫時只顯示圖示)：跟共用資源庫同一份 file-icon-tile 語言，
+// 不再用 fileTypeIcon/ppt.png 那組舊的素材圖
+import { fileTypeMeta } from '@/utils/file';
 
-const pptIcon = ref(pptIconPath);
+const meta = fileTypeMeta('PPT');
 
 const props = defineProps({
   id: {

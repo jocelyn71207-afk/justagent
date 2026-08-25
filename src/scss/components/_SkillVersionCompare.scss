@@ -198,6 +198,7 @@
 
     &--active   { background: var(--accent-soft); color: var(--primary-hover); }
     &--reviewing { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
+    &--approved  { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
     &--history   { background: var(--page-bg); color: var(--text-faint); border: 1px solid var(--divider-a50); }
     &--draft     { background: var(--page-bg); color: var(--text-muted); }
     &--rejected  { background: rgba(var(--diff-removed-rgb), 0.08); color: var(--danger); }

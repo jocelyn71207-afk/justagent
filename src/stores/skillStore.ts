@@ -17,7 +17,7 @@ export interface UsageScenario {
   description: string
 }
 
-export type SkillVersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
+export type SkillVersionStatus = 'draft' | 'reviewing' | 'approved' | 'active' | 'history' | 'rejected'
 
 export interface SkillReviewRecord {
   action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN'
@@ -201,6 +201,7 @@ const MOCK_SKILLS: Skill[] = [
     usageCount: 0,
     testPassRate: 0.96,
     avgLatencyMs: 280,
+    instructions: '你是一個專業的客服助理，負責處理客戶的訂單查詢、退換貨、付款方式等常見問題。回覆時語氣親切且專業，優先比對知識庫給出準確答案。遇到情緒激動或複雜投訴時，主動轉接人工客服。支援繁體中文、簡體中文、英文回覆。',
     capabilities: [
       { name: '問題分類', description: '依使用者訊息語意自動分類問題類型，如退貨、查詢、投訴等。' },
       { name: 'FAQ 查詢', description: '比對知識庫快速回覆常見問題，支援模糊比對與同義詞展開。' },
@@ -272,6 +273,10 @@ const MOCK_SKILLS: Skill[] = [
         capabilities: [
           { name: '訂單狀態查詢', description: '根據訂單編號查詢目前處理狀態與物流資訊。' },
           { name: '退貨資格判斷', description: '依設定的退貨規則自動判斷是否符合退貨條件並給出建議。' },
+        ],
+        usageScenarios: [
+          { title: '標準退貨申請', description: '客戶詢問退貨資格，AI 自動查詢購買日期並比對 30 天退貨政策，直接給出可否退貨的判斷與後續申請步驟。' },
+          { title: '超保固期彈性處理', description: '客戶反映商品瑕疵但已超過標準退貨期限，AI 依規則判斷是否符合「主管特批」或 VIP 延長優惠期，並引導後續申請流程。' },
         ],
         assignedAgents: ['客服中心助理'],
         upstreamConflicts: [
@@ -350,6 +355,16 @@ const MOCK_SKILLS: Skill[] = [
     usageCount: 0,
     testPassRate: 0.91,
     avgLatencyMs: 450,
+    instructions: '你是文件摘要助理，負責解析使用者上傳的長篇文件，提取重點與關鍵字，並依需求輸出條列式、段落式或 JSON 結構化摘要。優先保留原文的關鍵數據與結論，避免遺漏重要決策資訊。',
+    files: [
+      {
+        id: 'sf-sys-doc-001-1',
+        fileName: '摘要輸出格式規範.md',
+        fileSize: 2048,
+        fileType: 'MD',
+        uploadedAt: '2026-05-20T02:00:00Z',
+      },
+    ],
     capabilities: [
       { name: '長文摘要', description: '自動提取文件重點，生成條列式或段落式摘要。' },
       { name: '多格式支援', description: '解析 PDF、Word、Markdown 等常見格式，保留段落結構。' },
@@ -367,6 +382,30 @@ const MOCK_SKILLS: Skill[] = [
       { name: '提取關鍵字', input: '請從這份產品規格文件中提取 5 個最重要的關鍵字。' },
       { name: '結構化輸出', input: '請將這篇文章摘要成 JSON 格式，包含標題、重點列表與結論。' },
     ],
+    versions: [
+      {
+        id: 'v-doc-001-v14',
+        versionTag: '1.4.0',
+        status: 'history',
+        name: '文件摘要生成',
+        description: '自動摘要長文件，支援 PDF / Word',
+        instructions: '你是文件摘要助理，負責解析使用者上傳的長篇文件，提取重點並輸出條列式摘要。',
+        createdAt: '2026-03-10T09:00:00Z',
+        createdBy: '平台團隊',
+        updateNote: '初始版本',
+      },
+      {
+        id: 'v-doc-001-v15',
+        versionTag: '1.5.0',
+        status: 'active',
+        name: '文件摘要生成',
+        description: '自動摘要長文件，支援 PDF / Word / Markdown',
+        instructions: '你是文件摘要助理，負責解析使用者上傳的長篇文件，提取重點與關鍵字，並依需求輸出條列式、段落式或 JSON 結構化摘要。優先保留原文的關鍵數據與結論，避免遺漏重要決策資訊。',
+        createdAt: '2026-05-20T09:00:00Z',
+        createdBy: '平台團隊',
+        updateNote: '新增 Markdown 格式支援與關鍵字提取能力',
+      },
+    ] satisfies SkillVersion[],
   },
   {
     id: 'sys-meeting-001',
@@ -380,6 +419,7 @@ const MOCK_SKILLS: Skill[] = [
     usageCount: 0,
     testPassRate: 0.88,
     avgLatencyMs: 520,
+    instructions: '你是會議記錄助理，負責將會議錄音轉換為逐字稿，並自動生成結構化摘要，包含重點決策與 action items。輸出時明確標示每個待辦事項的負責人與預計完成日期。',
     capabilities: [
       { name: '語音轉文字', description: '將會議錄音檔轉換為帶時間戳記的完整文字逐字稿。' },
       { name: '摘要生成', description: '提取會議重點、關鍵決策與討論結論，生成結構化摘要。' },
@@ -396,6 +436,30 @@ const MOCK_SKILLS: Skill[] = [
       { name: '整理 Action Items', input: '今天的會議提到 John 要在週五前完成 API 文件，Lisa 負責 QA 測試計畫，請列出 action items。' },
       { name: '生成摘要', input: '請根據以下討論內容生成一份簡短的會議摘要：本次會議討論了新功能的技術方案...' },
     ],
+    versions: [
+      {
+        id: 'v-meeting-001-v21',
+        versionTag: '2.1.0',
+        status: 'history',
+        name: '會議摘要',
+        description: '會議錄音轉文字並生成摘要',
+        instructions: '你是會議記錄助理，負責將會議錄音轉換為逐字稿，並生成摘要。',
+        createdAt: '2026-04-15T09:00:00Z',
+        createdBy: '平台團隊',
+        updateNote: '初始版本',
+      },
+      {
+        id: 'v-meeting-001-v22',
+        versionTag: '2.2.0',
+        status: 'active',
+        name: '會議摘要',
+        description: '會議錄音轉文字並生成摘要與 action items',
+        instructions: '你是會議記錄助理，負責將會議錄音轉換為逐字稿，並自動生成結構化摘要，包含重點決策與 action items。輸出時明確標示每個待辦事項的負責人與預計完成日期。',
+        createdAt: '2026-06-05T09:00:00Z',
+        createdBy: '平台團隊',
+        updateNote: '新增 Action Items 自動識別功能',
+      },
+    ] satisfies SkillVersion[],
     children: [
       {
         id: 'ext-meeting-eng-001',
@@ -414,15 +478,33 @@ const MOCK_SKILLS: Skill[] = [
         forkSourceId: 'sys-meeting-001',
         forkSourceVersion: '2.1.0',
         upstreamUpdateStatus: 'update_available' as const,
+        instructions: '你是工程團隊的會議記錄助理，負責將站立會議與架構討論的錄音轉換為摘要，並自動將識別出的 action items 建立為 Jira Issue，同時保留技術決策記錄與相關 PR 連結。',
         capabilities: [
           { name: 'Jira 整合', description: '自動將識別出的 action items 建立為 Jira Issue 並指派負責人。' },
           { name: '工程格式輸出', description: '以工程團隊慣用格式輸出摘要，包含技術決策記錄與 PR 連結。' },
+        ],
+        usageScenarios: [
+          { title: '站立會議自動建票', description: '每日站立會議結束後，AI 自動識別出的待辦事項直接建立為 Jira Issue 並指派負責人，工程師不用再手動謄寫。' },
+          { title: '架構決策留存記錄', description: '架構討論會議結束後，AI 自動整理成 ADR 格式並附上相關 PR 連結，方便日後回溯決策脈絡。' },
         ],
         assignedAgents: ['工程助理'],
         testCases: [
           { name: 'Jira 建票', input: '請將以下 action item 建立 Jira Issue：「後端 API 效能優化，負責人 Kevin，截止日 2024/12/20」' },
           { name: '工程決策記錄', input: '本次架構討論決定採用微服務方案，請整理成 ADR（架構決策記錄）格式。' },
         ],
+        versions: [
+          {
+            id: 'v-meeting-eng-1.2',
+            versionTag: '1.2.0',
+            status: 'active',
+            name: '會議摘要 (工程版)',
+            description: '工程會議格式，自動標記 action items 至 Jira',
+            instructions: '你是工程團隊的會議記錄助理，負責將站立會議與架構討論的錄音轉換為摘要，並自動將識別出的 action items 建立為 Jira Issue，同時保留技術決策記錄與相關 PR 連結。',
+            createdAt: '2026-06-01T09:00:00Z',
+            createdBy: 'jocelyn.tseng',
+            updateNote: '新增 Jira 自動建票功能',
+          },
+        ] satisfies SkillVersion[],
       },
     ],
   },
@@ -441,9 +523,22 @@ const MOCK_SKILLS: Skill[] = [
     avgLatencyMs: 120,
     instructions: '你是 ERP 庫存查詢助理。\n根據 SKU 查詢各倉庫即時庫存量。\n\n支援功能：\n- 指定倉庫查詢\n- 多倉庫匯總\n- 低於安全存量自動標示',
     triggerHint: '庫存、SKU、倉庫、庫存查詢',
+    files: [
+      {
+        id: 'sf-ext-erp-001-1',
+        fileName: '安全存量門檻表.xlsx',
+        fileSize: 15360,
+        fileType: 'EXCEL',
+        uploadedAt: '2026-05-10T02:00:00Z',
+      },
+    ],
     capabilities: [
       { name: '即時庫存查詢', description: '根據產品 ID 或 SKU 查詢各倉庫即時庫存量與安全存量狀態。' },
       { name: '多倉庫整合', description: '整合多個倉庫資料來源，提供統一查詢介面與匯總報表。' },
+    ],
+    usageScenarios: [
+      { title: '客服即時回覆庫存', description: '客服人員在對話中直接查詢指定 SKU 的各倉庫庫存量，不用切換到 ERP 系統畫面，加快客戶回覆速度。' },
+      { title: '低庫存自動預警', description: '倉儲管理人員每日巡檢時，AI 自動掃描並列出低於安全存量的品項清單，提前安排補貨作業。' },
     ],
     assignedAgents: ['業務分析助理', '倉儲管理助理'],
     testCases: [
@@ -569,6 +664,11 @@ const MOCK_SKILLS: Skill[] = [
       { name: '多平台文案生成', description: '針對不同社群平台生成適合的文案格式與字數。' },
       { name: 'CTA 最佳化', description: '根據活動目標建議最佳行動呼籲文案。' },
     ],
+    usageScenarios: [
+      { title: '活動上線前趕文案', description: '行銷同仁在活動上線前一天才拿到主題，AI 依目標受眾與品牌調性直接生成三平台貼文與 EDM 標題，省去逐字發想的時間。' },
+      { title: 'A/B 測試素材準備', description: '需要同時準備多組 CTA 文案做成效測試，AI 一次生成多個版本供行銷團隊挑選與比較。' },
+    ],
+    assignedAgents: ['行銷企劃助理'],
     versions: [
       {
         id: 'v-mkt-1.0',
@@ -664,6 +764,13 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
+    capabilities: [
+      { name: '資料整合', description: '彙整本週會議記錄與任務清單，去除重複與過時資訊。' },
+      { name: '週報格式輸出', description: '依範本格式輸出結構化週報摘要，段落與條列比例固定。' },
+    ],
+    usageScenarios: [
+      { title: '週五下班前產出草稿', description: '每週五下班前，根據本週會議記錄與任務清單自動整理出週報草稿，使用者只需微調用詞即可送出。' },
+    ],
     files: [
       {
         id: 'sf-personal-001-1',
@@ -708,6 +815,13 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是客服品質評估助理，分析客服對話品質。',
+    capabilities: [
+      { name: '多輪對話分析', description: '分析完整對話脈絡，而非單一回合，評估整體服務品質。' },
+      { name: '情緒辨識', description: '識別對話中客戶的情緒起伏，標記高風險或不滿意的對話。' },
+    ],
+    usageScenarios: [
+      { title: '每日客服品質抽查', description: '主管每日抽查數則客服對話，AI 自動評分並標記需要人工複核的對話。' },
+    ],
   },
   {
     id: 'personal-004',
@@ -735,6 +849,13 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是合約審核助理，負責擷取合約中的關鍵條款並評估潛在法律風險。請以條列方式輸出摘要，並標示高風險條款。',
+    capabilities: [
+      { name: '關鍵條款擷取', description: '自動識別保密、違約、終止等常見合約條款並摘要重點。' },
+      { name: '風險等級標示', description: '依條款內容判斷風險等級，高風險條款會額外標示提醒。' },
+    ],
+    usageScenarios: [
+      { title: '合約初審快速篩查', description: '法務人員收到新合約時，先由 AI 快速標出高風險條款，縮短逐條人工閱讀的時間。' },
+    ],
   },
   {
     id: 'personal-005',
@@ -762,6 +883,13 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是會議記錄助理，根據逐字稿整理結構化會議記錄，包含主題、決議、行動項目與負責人。',
+    capabilities: [
+      { name: '多發言人識別', description: '區分不同發言人的內容，避免會議記錄混淆發言歸屬。' },
+      { name: '行動項目配對', description: '自動將識別出的行動項目配對負責人與預計完成時間。' },
+    ],
+    usageScenarios: [
+      { title: '多人會議記錄整理', description: '5 人以下的會議結束後，AI 自動區分發言人並整理成結構化記錄，減少會後手動謄寫的時間。' },
+    ],
   },
   {
     id: 'personal-006',
@@ -784,6 +912,13 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是產品 FAQ 助理，根據內部文件與常見問題資料庫回答用戶問題，無法回答時請引導至人工客服。',
+    capabilities: [
+      { name: 'FAQ 比對回覆', description: '比對常見問題資料庫，快速回覆用戶提出的產品相關問題。' },
+      { name: '無法回答時導流', description: '判斷問題超出資料庫涵蓋範圍時，主動引導轉接人工客服。' },
+    ],
+    usageScenarios: [
+      { title: '產品頁面即時問答', description: '用戶在產品頁面提出規格或使用方式的問題，AI 直接比對 FAQ 資料庫給出回覆，不用等人工客服上線。' },
+    ],
   },
   {
     id: 'personal-003',
@@ -803,6 +938,13 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是 ERP 報表助理，整合多系統數據生成週期性報表。',
+    capabilities: [
+      { name: '多系統資料彙整', description: '整合 ERP 不同模組的數據來源，統一格式輸出。' },
+      { name: '週期性報表產出', description: '依設定週期（週/月）自動產出報表，不需手動觸發。' },
+    ],
+    usageScenarios: [
+      { title: '月底報表自動彙整', description: '每月底自動彙整銷售、庫存、財務等模組數據，產出主管需要的週期性報表初稿。' },
+    ],
   },
 ]
 
@@ -1173,21 +1315,13 @@ export const useSkillStore = defineStore('skillStore', () => {
     const version = skill.versions.find(v => v.id === versionId)
     if (!version || version.status !== 'reviewing') return
 
-    for (const v of skill.versions) {
-      if (v.status === 'active') v.status = 'history'
-    }
-    version.status = 'active'
+    // 審核通過只核發版號、狀態轉為「待啟用」，不會自動取代現有生效版本；
+    // 要實際上線，管理者還要在版本歷史手動按「設為使用中」（setLibraryActiveVersion）
+    version.status = 'approved'
     version.reviewedBy = 'jocelyn.tseng'
     version.reviewedAt = new Date().toISOString()
     if (!version.reviewHistory) version.reviewHistory = []
     version.reviewHistory.push({ action: 'APPROVED', by: 'jocelyn.tseng', time: new Date().toISOString() })
-
-    skill.version = version.versionTag
-    skill.name = version.name
-    skill.description = version.description
-    if (version.instructions !== undefined) skill.instructions = version.instructions
-    if (version.triggerHint !== undefined) skill.triggerHint = version.triggerHint
-    if (version.capabilities !== undefined) skill.capabilities = version.capabilities
   }
 
   function rejectSkillVersion(skillId: string, versionId: string, feedback: string): void {
@@ -1271,7 +1405,14 @@ export const useSkillStore = defineStore('skillStore', () => {
       if (v.id === versionId) v.status = 'active'
       else if (v.status === 'active') v.status = 'history'
     })
+    // 不管是從「待啟用」第一次上線，還是從「歷史」回滾，這裡才是真正
+    // 讓技能內容生效的地方（審核通過那一步只核發版號，不會動到這些欄位）
     target.version = ver.versionTag
+    target.name = ver.name
+    target.description = ver.description
+    if (ver.instructions !== undefined) target.instructions = ver.instructions
+    if (ver.triggerHint !== undefined) target.triggerHint = ver.triggerHint
+    if (ver.capabilities !== undefined) target.capabilities = ver.capabilities
   }
 
   function deletePersonalSkill(id: string): void {

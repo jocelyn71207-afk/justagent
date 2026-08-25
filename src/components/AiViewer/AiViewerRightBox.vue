@@ -8,7 +8,29 @@
     <div class="conv1-empty-overlay" v-if="currentConversationId === 'conv1' && conv1Msgs.length === 0"
       @click.stop @wheel.stop @touchmove.stop>
       <div class="conv1-empty-content">
-        <div class="conv1-empty-title">我可以幫你什麼呢？</div>
+        <div class="conv1-empty-header">
+          <img class="conv1-empty-logo" src="@/assets/logo.svg" alt="JustAgent" />
+          <div class="conv1-empty-title">Hi，我是你的AI工作助理</div>
+          <div class="conv1-empty-subtitle">文件、數據、報告，讓我們開始今天的工作吧！</div>
+        </div>
+
+        <div class="conv1-suggest-list">
+          <button class="conv1-suggest-card" v-for="item in conv1VisibleSuggestions" :key="item.title"
+            @click="useConv1Suggestion(item.prompt)">
+            <div class="conv1-suggest-text">
+              <div class="conv1-suggest-title">{{ item.title }}</div>
+              <div class="conv1-suggest-desc">{{ item.desc }}</div>
+            </div>
+            <div :class="['conv1-suggest-thumb', item.tag]">
+              <i class="material-symbols-outlined">{{ item.icon }}</i>
+            </div>
+          </button>
+        </div>
+
+        <button class="conv1-suggest-refresh" @click="cycleConv1Suggestions">
+          <i class="material-symbols-outlined">autorenew</i> 切換
+        </button>
+
         <div class="conv1-empty-input-box">
           <textarea
             class="conv1-empty-textarea"
@@ -395,8 +417,9 @@
           </div>
           <div v-else>
             <div class="oneFileItem" v-for="(f, i) in conv3UploadedFiles" :key="'conv3-file-' + i" style="margin-bottom:6px">
-              <img class="file-icon" :src="useIconFileTypes[f.type]" v-if="useIconFileTypes[f.type]" />
-              <span class="noFile-icon" v-else><i class="material-symbols-outlined">draft</i></span>
+              <div class="file-icon-tile" :class="`file-icon-tile--${fileTypeMeta(f.type).color}`">
+                <i class="material-symbols-outlined file-type-icon">{{ fileTypeMeta(f.type).icon }}</i>
+              </div>
               <div class="file-info-box">
                 <div class="file-name">{{ f.name }}</div>
                 <div class="file-size">{{ f.type }}．{{ formatFileSize(f.size) }}</div>
@@ -463,10 +486,10 @@
 
             <!-- 可以預覽用 -->
             <img class="file-icon" :src="item.preview" v-if="item.preview"/>
-            <!-- 不可預覽用 icon 表示 -->
-            <span class="noFile-icon" v-else>
-              <i class="material-symbols-outlined">draft</i>
-            </span>
+            <!-- 不可預覽用檔案類型色塊 tile 表示，跟共用資源庫同一套 -->
+            <div class="file-icon-tile" :class="`file-icon-tile--${fileTypeMeta(item.fileType).color}`" v-else>
+              <i class="material-symbols-outlined file-type-icon">{{ fileTypeMeta(item.fileType).icon }}</i>
+            </div>
 
             <div class="file-info-box">
               <div class="file-name">{{ item.file.name }}</div>
@@ -478,12 +501,10 @@
           <div :class="['oneFileItem accessory-item isAgainFile', { 'show-delete-btn': isTouchDevice }]" v-for="(item, i) in userInputModal.aiFiles" :key="'aiFiles-item' + i">
             <!-- 如果 block type 是圖片 -->
             <img class="file-icon" :src="item.data.fileUrl" v-if="item.blockType === 'IMAGE'"/>
-            <!-- 在規範內的 block type 使用定義好的 icon  -->
-            <img :src="useIconFileTypes[item.blockType]" v-else-if="item.blockType && useIconFileTypes[item.blockType]"/>
-            <!-- 不在定義好的 block type -->
-            <span class="noFile-icon" v-else>
-              <i class="material-symbols-outlined">draft</i>
-            </span>
+            <!-- 其他 block type 用檔案類型色塊 tile，跟共用資源庫同一套 -->
+            <div class="file-icon-tile" :class="`file-icon-tile--${fileTypeMeta(item.blockType).color}`" v-else>
+              <i class="material-symbols-outlined file-type-icon">{{ fileTypeMeta(item.blockType).icon }}</i>
+            </div>
             <i class="material-symbols-outlined delete-btn" @click="userInputModal.aiFiles.splice(i, 1)">close_small</i>
           </div>
         </div>
@@ -569,7 +590,9 @@
               </div>
               <!-- 已選擇：顯示檔案卡片 -->
               <div v-else class="conv1-transl-file-card conv1-transl-file-card--selected" @click.stop>
-                <span class="conv1-transl-file-icon">📊</span>
+                <div class="file-icon-tile" :class="`file-icon-tile--${fileTypeMeta('EXCEL').color}`">
+                  <i class="material-symbols-outlined file-type-icon">{{ fileTypeMeta('EXCEL').icon }}</i>
+                </div>
                 <div class="conv1-transl-file-info">
                   <div class="conv1-transl-file-name">{{ conv1TranslFile }}</div>
                   <div class="conv1-transl-file-meta">XLSX · 2.7 MB · 已上傳</div>
@@ -798,8 +821,13 @@ import commentListArea from '@/components/AiViewer/commentListArea.vue';
 import fileListArea from '@/components/AiViewer/fileListArea.vue';
 import blockListArea from '@/components/AiViewer/blockListArea.vue';
 import popDialog from '@/services/popDialog';
-import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions } from '@/utils/file';
-import htmlIcon from '@/assets/fileTypeIcon/html.png';
+import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions, fileTypeMeta } from '@/utils/file';
+
+// 對話訊息裡用純字串拼出來的 HTML 報告檔案圖示：跟共用資源庫同一套 file-icon-tile，
+// 取代舊的 fileTypeIcon/html.png（這裡是塞進 v-html 的原始字串，不是 Vue 樣板，
+// 所以先算好 class/icon 再字串內插，不能用 :class 綁定）
+const htmlFileMeta = fileTypeMeta('HTML');
+const HTML_FILE_ICON_HTML = `<div class="file-icon-tile file-icon-tile--${htmlFileMeta.color}"><i class="material-symbols-outlined file-type-icon">${htmlFileMeta.icon}</i></div>`;
 
 interface KnowledgeSource {
   knowledgeId: string
@@ -1056,8 +1084,6 @@ function insertKnowledgeRef(item: { title: string }) {
 const supportedFileTypes = aiviewerStore.supportedFileTypes;
 // 圖檔類型參考
 const supportedImgFileTypes = aiviewerStore.supportedImgFileTypes;
-// 檔案類型對應的圖示
-const useIconFileTypes = aiviewerStore.useIconFileTypes;
 
 // 使用者選擇檔案 (注意這邊不會是ai產生的檔案,檔案來源: 使用者本地端上傳, 已上傳到專案資料夾路徑, 共享資料夾內的檔案路夾)
 function handleAccessoryFileSelect(event: Event) {
@@ -1082,12 +1108,12 @@ function handleAccessoryFileSelect(event: Event) {
     console.log('fileType >>> ', fileType);
     console.log('blockType >>> ', blockType);
 
-    // 本地端非圖片類型不建立預覽 URL, 使用 icon 表示
+    // 本地端非圖片類型不建立預覽 URL，樣板改用 fileTypeMeta 的色塊 tile 表示
     if (supportedImgFileTypes.indexOf(fileType) === -1) {
       userInputModal.value.userUploadFiles.push({
         file: file,
         fileType: blockType,
-        preview: useIconFileTypes[fileType] || null
+        preview: null
       });
       return;
     }
@@ -1271,6 +1297,29 @@ watch(
   { immediate: true }
 );
 const conv1OverlayInput = ref('');
+
+// ── 歡迎畫面的建議提示卡：對應 AiViewer 實際會處理的文件/數據類型，
+//    點擊直接把 prompt 帶入輸入框（由使用者按下送出，不是自動觸發假的 AI 回覆）；
+//    共 6 組，「切換」每次從剩下的裡面換一批 3 組上來 ──
+const CONV1_SUGGESTIONS = [
+  { icon: 'monitoring', tag: 'tag-teal', title: '銷售數據分析報告', desc: '上傳銷售數據，幫你抓出趨勢與異常', prompt: '請幫我分析這份銷售數據，找出趨勢與異常。' },
+  { icon: 'translate', tag: 'tag-blue', title: '文件格式互譯', desc: '支援 Excel、PPT、Word 等格式互譯', prompt: '請幫我把這份文件翻譯成英文，格式維持不變。' },
+  { icon: 'campaign', tag: 'tag-amber', title: '行銷活動成效報告', desc: '彙整促銷數據，自動生成圖表與結論', prompt: '請幫我整理最近的行銷活動成效，並生成圖表。' },
+  { icon: 'summarize', tag: 'tag-violet', title: '會議記錄整理', desc: '貼上逐字稿，整理成條列式重點', prompt: '請幫我把這份會議逐字稿整理成條列重點。' },
+  { icon: 'school', tag: 'tag-green', title: '教育訓練教材彙整', desc: '把多份簡報整理成教材大綱', prompt: '請幫我把這幾份簡報彙整成一份教育訓練教材大綱。' },
+  { icon: 'verified', tag: 'tag-rust', title: '簽核流程設計方案', desc: '協助撰寫技術規格與流程文件', prompt: '請幫我撰寫一份簽核流程的技術規格文件。' },
+];
+const conv1SuggestOffset = ref(0);
+const conv1VisibleSuggestions = computed(() => {
+  const n = CONV1_SUGGESTIONS.length;
+  return [0, 1, 2].map((i) => CONV1_SUGGESTIONS[(conv1SuggestOffset.value + i) % n]);
+});
+function cycleConv1Suggestions() {
+  conv1SuggestOffset.value = (conv1SuggestOffset.value + 3) % CONV1_SUGGESTIONS.length;
+}
+function useConv1Suggestion(prompt: string) {
+  conv1OverlayInput.value = prompt;
+}
 
 function submitConv1Overlay() {
   const msg = conv1OverlayInput.value.trim();
@@ -2485,7 +2534,7 @@ function conv2ShowReport() {
   } catch (e) { /* canvas may not be initialized in this context */ }
   c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。' });
   c2Push({ finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">competitor_analysis_report.html</div>
     <div class="file-size">HTML · 1.95 KB · 已加到畫布</div>
@@ -2624,7 +2673,7 @@ function conv4InitFlow() {
       c4Push({
         finishResponse: true,
         msg: `✅ 已完成上個月（6月）產品銷售報告，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">2026年6月產品銷售報告.html</div>
     <div class="file-size">HTML · 5.8 KB · 已加到畫布</div>
@@ -2709,7 +2758,7 @@ function conv3ShowResult(dimNames: string) {
   c3Push({
     finishResponse: true,
     msg: `<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">TEVA_特徵貼標報告.html</div>
     <div class="file-size">HTML · 7.9 KB · 已加到畫布</div>
@@ -2759,7 +2808,7 @@ function conv3ReviseTagging() {
       c3Push({
         finishResponse: true,
         msg: `已修正：TEV-AW26-011（Original Universal Premier）因命名與 TEV-AW26-002（Original Universal）相近，先前合併時誤套用了 002 的材質規格，已重新比對原廠規格表更正為頭層牛皮材質，材質維度分佈也同步由 10 種組合修正為 11 種組合。修正版報告已加入畫布。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">TEVA_特徵貼標報告（修正版）.html</div>
     <div class="file-size">HTML · 9.1 KB · 已加到畫布</div>
@@ -2928,7 +2977,7 @@ function conv5InitFlow() {
       c5Push({
         finishResponse: true,
         msg: `📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。庫存資料已加入畫布，可直接查看。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">Teva 商品庫存即時資料.html</div>
     <div class="file-size">HTML · 4.1 KB · 已加到畫布</div>
@@ -2957,7 +3006,7 @@ function conv5InitFlow() {
           c5Push({
             finishResponse: true,
             msg: `✅ 已完成 Teva 換季促銷方案，主打商品鎖定 6 月銷售亮眼的 Original Universal，並依 Gorpcore／機能穿搭趨勢規劃社群與雜誌曝光。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">Teva 2026 換季促銷方案.html</div>
     <div class="file-size">HTML · 9.9 KB · 已加到畫布</div>
@@ -3027,7 +3076,7 @@ function conv5ReviseStrategy() {
       c5Push({
         finishResponse: true,
         msg: `已修正：Original Universal 現貨僅剩 18 件，不適合作為大量曝光的主打商品，已改由庫存充足（320 件）、同樣熱銷的 Hurricane XLT2 接手主打，60% 廣告預算同步轉移；Original Universal 改包裝為「限量珍藏款」，用低庫存做稀缺感話題操作，風險評估表也已同步更新。修正版報告已加入畫布。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">Teva 2026 換季促銷方案（修正版）.html</div>
     <div class="file-size">HTML · 13.3 KB · 已加到畫布</div>
@@ -3167,7 +3216,7 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
       c6Push({
         finishResponse: true,
         msg: `✅ 已完成「通路銷售深度分析報告」，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">通路銷售深度分析報告.html</div>
     <div class="file-size">HTML · 已加到畫布</div>
@@ -3206,7 +3255,7 @@ function conv6RunStrategyDeepResearch() {
     c6Push({
       finishResponse: true,
       msg: `✅ 已完成「行銷策略與風險評估報告」：Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢已存入外部市場趨勢庫，並生成優化關鍵字；再透過 RAG 綜合這些外部資料與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，產出對應的行銷策略建議與風險評估。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
-  <img class="file-icon" src="${htmlIcon}" />
+  ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">行銷策略與風險評估報告.html</div>
     <div class="file-size">HTML · 已加到畫布</div>

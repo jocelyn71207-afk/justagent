@@ -74,7 +74,7 @@
         <div class="api-test-box">
           <div class="api-test-header">
             <span class="api-test-title">API 回傳預覽</span>
-            <button class="custom-btn custom-main-btn" style="font-size:11px;padding:4px 12px;" @click="testApi" :disabled="isTesting">
+            <button class="custom-btn custom-main-btn custom-btn--sm" @click="testApi" :disabled="isTesting">
               <i class="material-symbols-outlined" :class="{ 'spin': isTesting }">{{ isTesting ? 'sync' : 'play_arrow' }}</i>
               {{ isTesting ? '測試中...' : '測試 API' }}
             </button>

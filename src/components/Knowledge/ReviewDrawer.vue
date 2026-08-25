@@ -42,7 +42,7 @@
                 <span class="version-badge" :class="{ major: version.versionNumber.endsWith('.0') }">
                   {{ version.versionNumber }}
                 </span>
-                <span class="status-badge status-badge--REVIEWING">
+                <span class="status-badge status-badge--reviewing">
                   <i class="material-symbols-outlined">pending_actions</i>
                   審核中
                 </span>

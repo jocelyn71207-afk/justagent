@@ -238,61 +238,63 @@
   }
 }
 
-// ── 檔案處理方式 badge（共用於 AppBatchUpload、ResourceLibrary）──
-.process-type-badge {
+// ── Phase 1：badge/tag 共用形狀（圓角、padding、字級一致，取代各元件各自
+//    宣告一份 shape，是造成技能管理／知識庫 badge 長相不一樣的主因之一）──────
+%badge-shape {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 20px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 9999px;
   white-space: nowrap;
-  font-weight: 500;
+}
+
+// ── 檔案處理方式 badge（共用於 AppBatchUpload、ResourceLibrary）──
+.process-type-badge {
+  @extend %badge-shape;
+  gap: 3px;
 
   i {
     font-size: 14px;
   }
 
+  // 沿用分類色 token：AI 來源＝紫、原始上傳＝藍
   &.badge--ai {
-    background: $color-badge-ai-bg;
-    color: $color-badge-ai-text;
+    background: var(--tag-violet-bg);
+    color: var(--tag-violet-text);
   }
 
   &.badge--raw {
-    background: $color-badge-raw-bg;
-    color: $color-badge-raw-text;
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
   }
 }
 
 // ── 檔案狀態 badge ──
 .status-badge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  white-space: nowrap;
-  font-weight: 500;
+  @extend %badge-shape;
 
   &--uploading {
-    background: $color-status-uploading-bg;
-    color: $color-status-uploading-text;
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
   }
   &--parsing {
-    background: $color-status-parsing-bg;
-    color: $color-status-parsing-text;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
   }
   &--stored {
-    background: $color-status-stored-bg;
-    color: $color-status-stored-text;
+    background: var(--tag-green-bg);
+    color: var(--tag-green-text);
   }
   &--saved {
-    background: $color-status-saved-bg;
-    color: $color-status-saved-text;
+    background: var(--tag-teal-bg);
+    color: var(--tag-teal-text);
   }
   &--failed {
-    background: $color-status-failed-bg;
-    color: $color-status-failed-text;
+    background: var(--danger-soft);
+    color: var(--danger);
   }
 }
 
@@ -329,19 +331,16 @@
 
 // ── Phase 0：分類 Badge（接到分類色 token，取代各頁各自寫死的 badge 顏色）───
 .tag-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: $font-label;
-  font-weight: 600;
-  padding: 2px 9px;
-  border-radius: 9999px;
-  white-space: nowrap;
+  @extend %badge-shape;
 
   &--violet { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
   &--blue   { background: var(--tag-blue-bg);   color: var(--tag-blue-text); }
   &--amber  { background: var(--tag-amber-bg);  color: var(--tag-amber-text); }
   &--teal   { background: var(--tag-teal-bg);   color: var(--tag-teal-text); }
+  &--green  { background: var(--tag-green-bg);  color: var(--tag-green-text); }
+  &--rust   { background: var(--tag-rust-bg);   color: var(--tag-rust-text); }
+  &--rose   { background: var(--tag-rose-bg);   color: var(--tag-rose-text); }
+  &--slate  { background: var(--tag-slate-bg);  color: var(--tag-slate-text); }
 }
 
 // ── Phase 2：活潑感互動系統（進場 stagger + hover 彈性回饋 + 不規則圓角）─────

@@ -8,13 +8,13 @@
           <!-- ── Header ─────────────────────────────── -->
           <div class="drawer-head">
             <div class="dh-skill">
-              <div :class="['dh-icon', skill.type === 'extension' ? 'icon--ext' : 'icon--sys']">
+              <div :class="['dh-icon', iconScopeClass]">
                 <i class="material-symbols-outlined">{{ iconName }}</i>
               </div>
               <div class="dh-title">
                 <div class="dh-name">{{ skill.name }}</div>
                 <div class="dh-badges">
-                  <span class="skill-tag tag--version">v{{ skill.version }}</span>
+                  <span v-if="!isPersonal" class="skill-tag tag--version">v{{ skill.version }}</span>
                   <span :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']">
                     <span class="dh-status-dot"></span>
                     {{ skill.isEnabled ? '啟用中' : '已停用' }}
@@ -24,7 +24,7 @@
             </div>
             <div class="dh-actions">
               <template v-if="!isPersonal">
-                <button class="custom-btn dh-btn" @click="emit('edit', skill!)">
+                <button v-if="manageable" class="custom-btn dh-btn" @click="emit('edit', skill!)">
                   <i class="material-symbols-outlined">edit</i>編輯
                 </button>
                 <button class="custom-btn dh-btn" @click="emit('test', skill!)">
@@ -62,6 +62,22 @@
             </div>
           </div>
 
+          <!-- 有版本待審核：原本只有捲到版本歷史才看得到，容易被忽略，
+               放在統計數據上方、一打開就看得到 -->
+          <div v-if="!isPersonal && reviewingVersion" class="pending-review-banner">
+            <div class="pending-review-text">
+              <i class="material-symbols-outlined">pending_actions</i>
+              新版本 <strong>v{{ reviewingVersion.versionTag }}</strong> 正在等待審核
+            </div>
+            <button
+              v-if="manageable"
+              class="custom-btn"
+              @click="emit('review', skill!.id, reviewingVersion.id)"
+            >
+              <i class="material-symbols-outlined">rate_review</i>開始審核
+            </button>
+          </div>
+
           <!-- ── Metrics bar ────────────────────────── -->
           <!-- 只顯示本月使用次數，不放測試通過率/平均延遲。只有一格時
                不套用「多格平分寬度」的排版，改成靠左的緊湊區塊＋
@@ -89,15 +105,6 @@
           <div class="drawer-body">
 
             <div class="drawer-body-main">
-
-              <!-- Upstream update banner -->
-              <div v-if="upstreamVersion" class="upstream-update-banner">
-                <div class="upstream-banner-text">
-                  <i class="material-symbols-outlined">upgrade</i>
-                  上游系統技能已更新至 <strong>v{{ upstreamVersion }}</strong>
-                </div>
-                <button class="custom-btn" @click="emit('openUpstreamUpdate', skill!)">查看更新</button>
-              </div>
 
               <!-- 個人技能目前狀態：可能包含審核退回原因，屬於需要立刻
                    看到的內容，不放進側欄 -->
@@ -145,10 +152,11 @@
                 </div>
               </div>
 
-              <!-- 技能指令 -->
-              <div v-if="skill.instructions" class="drawer-section">
+              <!-- 技能指令：固定區塊，沒有指令內容時顯示提示文字 -->
+              <div class="drawer-section">
                 <div class="section-label">技能指令</div>
-                <div class="instructions-block">{{ skill.instructions }}</div>
+                <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
+                <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
               </div>
 
               <!-- 附加檔案 -->
@@ -186,26 +194,29 @@
                 </template>
               </div>
 
-              <!-- 覆蓋能力 -->
-              <div v-if="skill.capabilities?.length" class="drawer-section">
+              <!-- 覆蓋能力：固定區塊，沒有拆解出能力項目時退回顯示技能描述 -->
+              <div class="drawer-section">
                 <div class="section-label">覆蓋能力</div>
-                <div class="capability-grid">
-                  <div
-                    v-for="cap in skill.capabilities"
-                    :key="cap.name"
-                    class="capability-card"
-                  >
-                    <div class="cap-name">{{ cap.name }}</div>
-                    <div class="cap-desc">{{ cap.description }}</div>
+                <template v-if="skill.capabilities?.length">
+                  <div class="capability-grid">
+                    <div
+                      v-for="cap in skill.capabilities"
+                      :key="cap.name"
+                      class="capability-card"
+                    >
+                      <div class="cap-name">{{ cap.name }}</div>
+                      <div class="cap-desc">{{ cap.description }}</div>
+                    </div>
                   </div>
-                </div>
-                <div class="skill-summary">{{ skill.description }}</div>
+                  <div class="skill-summary">{{ skill.description }}</div>
+                </template>
+                <p v-else class="section-empty-hint">尚未拆解覆蓋能力項目</p>
               </div>
 
-              <!-- 實際使用情境 -->
-              <div v-if="skill.usageScenarios?.length" class="drawer-section">
+              <!-- 實際使用情境：固定區塊，沒有記錄使用情境時顯示提示文字 -->
+              <div class="drawer-section">
                 <div class="section-label">實際使用情境</div>
-                <div class="scenario-list">
+                <div v-if="skill.usageScenarios?.length" class="scenario-list">
                   <div
                     v-for="(sc, i) in skill.usageScenarios"
                     :key="sc.title"
@@ -218,6 +229,7 @@
                     </div>
                   </div>
                 </div>
+                <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
               </div>
 
               <!-- 演化上下文 -->
@@ -242,8 +254,9 @@
 
             <div class="drawer-body-side">
 
-              <!-- 來源關係 -->
-              <div class="drawer-section">
+              <!-- 來源關係：企業技能是全公司唯一一份的正式發佈技能，沒有「延伸自
+                   誰／自建」這種個人層級的血緣關係可看，顯示反而是雜訊 -->
+              <div v-if="skill.scope !== 'enterprise'" class="drawer-section">
                 <div class="section-label">來源關係</div>
                 <div class="lineage-row">
                   <template v-if="lineageSourceName">
@@ -307,15 +320,17 @@
                 </div>
               </div>
 
-              <!-- 版本歷史 -->
-              <div v-if="skill.versions?.length" class="drawer-section">
+              <!-- 版本歷史：固定區塊，但只有 Library 技能才有版本概念，
+                   個人技能沒有這個區塊（不是資料剛好是空的，是本來就不該顯示） -->
+              <div v-if="!isPersonal" class="drawer-section">
                 <div class="section-label">版本歷史</div>
-                <div class="vt-list">
+                <div v-if="skill.versions?.length" class="vt-list">
                   <div v-for="(ver, i) in sortedVersions" :key="ver.id" class="vt-item">
                     <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
                     <div class="vt-body">
                       <div class="vt-header">
-                        <span class="vt-version-tag">v{{ ver.versionTag }}</span>
+                        <!-- 版號是審核通過才正式核發，審核中的版本還沒有版號 -->
+                        <span v-if="ver.status !== 'reviewing'" class="vt-version-tag">v{{ ver.versionTag }}</span>
                         <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
                           {{ versionStatusLabel(ver.status) }}
                         </span>
@@ -323,8 +338,11 @@
                       </div>
                       <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
                       <div class="vt-actions">
+                        <!-- 「待啟用」（剛審核通過，還沒上線）或「歷史」（曾經生效、
+                             後來被取代）才能設為使用中；審核中／草稿／退回都還沒
+                             通過審核，不能直接上線 -->
                         <button
-                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                          v-if="props.manageable && !isPersonal && (ver.status === 'approved' || ver.status === 'history')"
                           class="custom-btn vt-activate-btn"
                           @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
                         >
@@ -348,6 +366,7 @@
                     </div>
                   </div>
                 </div>
+                <p v-else class="section-empty-hint">尚無版本歷史</p>
               </div>
 
               <!-- 操作記錄 -->
@@ -490,14 +509,28 @@ const personalStatusClass = computed(() => {
   return 'tag--available'
 })
 
-const iconName = computed(() =>
-  props.skill?.type === 'extension' ? 'extension' : 'psychology'
-)
+// 圖示跟卡片式目錄（SkillTile／PersonalSkillGroup）統一：用 scope 決定顏色、
+// 個人技能用 person 圖示，其餘一律 psychology，不再依 type（system/extension）
+// 另外分一套配色，避免同一顆技能在列表卡片跟詳情抽屜長得不一樣
+const iconName = computed(() => (isPersonal.value ? 'person' : 'psychology'))
+
+const iconScopeClass = computed(() => {
+  if (isPersonal.value) return 'icon--personal'
+  if (props.skill?.scope === 'enterprise') return 'icon--enterprise'
+  if (props.skill?.scope === 'team') return 'icon--team'
+  return 'icon--system'
+})
 
 const sortedVersions = computed(() => {
   if (!props.skill?.versions) return []
   return [...props.skill.versions].reverse()
 })
+
+// 有沒有一個「審核中」的新版本（Library 技能既有版本之外又送了新版本審核，
+// 跟個人技能自己送審 Library 是兩回事，個人技能不會有這個狀態）
+const reviewingVersion = computed(() =>
+  props.skill?.versions?.find(v => v.status === 'reviewing')
+)
 
 const lineageSource = computed(() => {
   const s = props.skill
@@ -567,7 +600,7 @@ function formatAuditDate(iso: string): string {
 
 function versionStatusLabel(status: SkillVersionStatus): string {
   const map: Record<SkillVersionStatus, string> = {
-    draft: '草稿', reviewing: '審核中', active: '生效中', history: '歷史', rejected: '已退回',
+    draft: '草稿', reviewing: '審核中', approved: '待啟用', active: '生效中', history: '歷史', rejected: '已退回',
   }
   return map[status] ?? status
 }

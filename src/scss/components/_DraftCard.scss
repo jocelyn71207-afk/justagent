@@ -132,11 +132,11 @@
     .material-symbols-outlined { font-size: 14px; }
 
     &--submit {
-      background: $color_main_4;
-      color: $color_main_2;
-      border-color: $color_main_3;
+      background: var(--accent-soft);
+      color: var(--primary-hover);
+      border-color: var(--accent);
 
-      &:hover { background: $color_main_3; }
+      &:hover { background: var(--accent); }
       &:disabled {
         opacity: 0.4;
         cursor: not-allowed;
@@ -145,10 +145,10 @@
     }
 
     &--delete {
-      color: $color-danger;
-      border-color: rgba($color-danger, 0.25);
+      color: var(--danger);
+      border-color: var(--danger-soft);
       padding: 3px 7px;
-      &:hover { background: rgba($color-danger, 0.06); }
+      &:hover { background: var(--danger-soft); }
     }
   }
 }
