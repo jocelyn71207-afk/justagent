@@ -1720,6 +1720,13 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return k?.versions.find(v => v.id === versionId);
   };
 
+  // 統一寫入活動紀錄的入口：所有 action（送審／核准／退回／撤回／發佈／切換）
+  // 都透過這個函式追加，不直接操作 k.activityLog，確保欄位一致、id 一律自動產生。
+  function pushActivity(k: KnowledgeItem, entry: Omit<ActivityRecord, 'id'>) {
+    if (!k.activityLog) k.activityLog = []
+    k.activityLog.push({ id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, ...entry })
+  }
+
   // 建立新草稿 (基於已發布版本)
   const createDraftFromPublished = (knowledgeId: string, type: 'MINOR' | 'MAJOR', updateNote: string) => {
     const k = getKnowledgeById(knowledgeId);
@@ -1766,18 +1773,23 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     if (!k) return;
     const v = k.versions.find(ver => ver.id === versionId);
     if (v && (v.status === 'draft' || v.status === 'rejected')) {
+      const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
       v.status = 'reviewing';
       v.reviewNote = note;
       v.reviewHistory = [
         ...(v.reviewHistory ?? []),
-        {
-          action: 'SUBMITTED',
-          by: reviewerId,
-          time: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          note,
-        },
+        { action: 'SUBMITTED', by: reviewerId, time: now, note },
       ];
       k.status = 'reviewing';
+
+      pushActivity(k, {
+        action: 'SUBMITTED',
+        by: reviewerId,
+        time: now,
+        versionId: v.id,
+        versionNumber: v.versionNumber,
+        note,
+      });
     }
   };
 
