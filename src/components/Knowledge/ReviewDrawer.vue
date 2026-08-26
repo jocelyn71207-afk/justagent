@@ -39,13 +39,11 @@
             <div>
               <div class="fs-16 fw-700">{{ knowledge.title }}</div>
               <div class="d-flex align-items-center gap-2 mt-1">
-                <span class="version-badge" :class="{ major: version.versionNumber.endsWith('.0') }">
-                  {{ version.versionNumber }}
-                </span>
                 <span class="status-badge status-badge--reviewing">
                   <i class="material-symbols-outlined">pending_actions</i>
                   審核中
                 </span>
+                <span class="fc-grey-1 fs-12">審核通過後才會正式取得版本號</span>
               </div>
             </div>
           </div>

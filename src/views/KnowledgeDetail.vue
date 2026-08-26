@@ -8,7 +8,7 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">{{ activeVer?.title ?? knowledge.title }}</div>
+          <div class="banner-title">{{ viewedVer?.title ?? knowledge.title }}</div>
         </div>
       </div>
 
@@ -41,6 +41,15 @@
               <i class="material-symbols-outlined">rate_review</i>開始審核
             </button>
           </template>
+          <template v-else-if="knowledge.status === 'approved'">
+            <span class="d-flex align-items-center gap-1 fc-grey-1 fs-13 mr-2">
+              <i class="material-symbols-outlined fs-16">task_alt</i>
+              已核准，待發佈
+            </span>
+            <button class="custom-btn custom-main-btn ml-2" @click="handlePublish">
+              <i class="material-symbols-outlined">rocket_launch</i>立即發佈
+            </button>
+          </template>
           <template v-else-if="knowledge.status === 'processing'">
             <span class="d-flex align-items-center gap-1 fc-grey-1 fs-13">
               <i class="material-symbols-outlined fs-16">sync</i>
@@ -64,6 +73,20 @@
             </span>
           </template>
         </div>
+      </div>
+
+      <!-- 正在檢視非目前版本的提示列 -->
+      <div v-if="isViewingOtherVersion" class="viewing-other-version-banner">
+        <i class="material-symbols-outlined">visibility</i>
+        <span>
+          您正在檢視
+          <strong v-if="hasEarnedVersionNumber(viewedVer?.status)">{{ viewedVer?.versionNumber }}</strong>
+          <strong v-else>{{ viewedVer?.title }}</strong>
+          （{{ statusLabelMap[viewedVer?.status ?? ''] }}）的內容，非目前版本。
+        </span>
+        <button class="custom-btn fs-12 py-1 px-2 viewing-banner-back-btn" @click="backToCurrentVersion">
+          <i class="material-symbols-outlined fs-14">undo</i>返回目前版本
+        </button>
       </div>
 
       <!-- 導覽列 + 主內容 + metadata 抽屜 -->
@@ -96,7 +119,7 @@
 
             <div class="content-preview">
               <div class="article-meta">
-                <span class="fc-grey-1 fs-14">{{ activeVer?.summary || '（無摘要）' }}</span>
+                <span class="fc-grey-1 fs-14">{{ viewedVer?.summary || '（無摘要）' }}</span>
               </div>
               <div class="article-body">
                 <div class="markdown-body" v-html="renderedContent"></div>
@@ -113,7 +136,7 @@
               <div
                 v-for="(ver, idx) in [...knowledge.versions].reverse()"
                 :key="ver.id"
-                class="version-timeline-item lively-card"
+                :class="['version-timeline-item', 'lively-card', { 'is-viewing': ver.id === viewedVer?.id }]"
               >
                 <div class="version-timeline-node">
                   <div :class="['node-dot', { 'is-active': ver.status === 'active' }]"></div>
@@ -122,20 +145,44 @@
                 <div class="version-timeline-body">
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <div class="d-flex gap-2 align-items-center">
-                      <span class="fw-600 fs-14">{{ ver.versionNumber }}</span>
+                      <span class="fw-600 fs-14">{{ hasEarnedVersionNumber(ver.status) ? ver.versionNumber : '—' }}</span>
                       <span :class="['status-badge', `status-badge--${ver.status}`]">{{ statusLabelMap[ver.status] }}</span>
                       <span v-if="ver.versionType" class="tag-chip">{{ ver.versionType }}</span>
+                      <span v-if="ver.status === 'active'" class="current-version-tag">
+                        <i class="material-symbols-outlined fs-13">check_circle</i>目前版本
+                      </span>
                     </div>
                     <span class="fc-grey-1 fs-13">{{ ver.lastUpdateTime }}</span>
                   </div>
                   <div class="fc-grey-1 fs-13">{{ ver.updateNote }} ・ {{ ver.lastUpdateBy }}</div>
-                  <div v-if="ver.status === 'history'" class="d-flex gap-2 mt-2">
-                    <button class="custom-btn fs-12 py-1 px-2" @click="openRestore(ver.id)">
-                      <i class="material-symbols-outlined fs-14">restore</i>還原為草稿
+                  <div v-if="ver.reviewedBy" class="d-flex align-items-center gap-1 fc-grey-1 fs-13">
+                    <i class="material-symbols-outlined fs-13">task_alt</i>
+                    {{ ver.reviewedBy }} 於 {{ ver.reviewedTime }} 核准
+                  </div>
+                  <div class="d-flex gap-2 mt-2">
+                    <button
+                      v-if="ver.id !== viewedVer?.id"
+                      class="custom-btn fs-12 py-1 px-2"
+                      @click="viewVersion(ver.id)"
+                    >
+                      <i class="material-symbols-outlined fs-14">visibility</i>檢視此版本
                     </button>
-                    <button class="custom-btn fs-12 py-1 px-2" @click="openCompare(ver.id)">
-                      <i class="material-symbols-outlined fs-14">compare</i>與目前版比較
-                    </button>
+                    <template v-if="ver.status === 'history'">
+                      <button class="custom-btn fs-12 py-1 px-2" @click="handleSwitchVersion(ver.id)">
+                        <i class="material-symbols-outlined fs-14">sync_alt</i>切換當前版本
+                      </button>
+                      <button class="custom-btn fs-12 py-1 px-2" @click="openCompare(ver.id)">
+                        <i class="material-symbols-outlined fs-14">compare</i>與目前版比較
+                      </button>
+                    </template>
+                    <template v-if="ver.status === 'approved'">
+                      <button class="custom-btn fs-12 py-1 px-2" @click="openCompare(ver.id)">
+                        <i class="material-symbols-outlined fs-14">compare</i>與目前版比較
+                      </button>
+                      <button class="custom-btn custom-main-btn fs-12 py-1 px-2" @click="handlePublish">
+                        <i class="material-symbols-outlined fs-14">rocket_launch</i>立即發佈
+                      </button>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -145,7 +192,7 @@
           <!-- Tab 3: 分段預覽 -->
           <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'chunks' }]">
             <ChunkPreviewTab
-              :chunks="activeVer?.chunks ?? []"
+              :chunks="viewedVer?.chunks ?? []"
               :source-type="knowledge.sourceType"
             />
           </div>
@@ -153,7 +200,7 @@
           <!-- Tab 4: 轉換結果 -->
           <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'conversion' }]">
             <ConversionLogTab
-              :conversion-log="activeVer?.conversionLog ?? []"
+              :conversion-log="viewedVer?.conversionLog ?? []"
               :status="knowledge.status"
             />
           </div>
@@ -166,25 +213,36 @@
           <div class="sidebar-section">
             <div class="sidebar-section-title">版本資訊</div>
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-              <span class="version-badge" :class="{ major: activeVer?.versionNumber?.endsWith('.0') }">
-                {{ activeVer?.versionNumber }}
+              <span
+                class="version-badge"
+                :class="{ major: hasEarnedVersionNumber(viewedVer?.status) && viewedVer?.versionNumber?.endsWith('.0') }"
+              >
+                {{ hasEarnedVersionNumber(viewedVer?.status) ? viewedVer?.versionNumber : '—' }}
               </span>
-              <span :class="['status-badge', `status-badge--${activeVer?.status}`]">
-                {{ statusLabelMap[activeVer?.status ?? ''] }}
+              <span :class="['status-badge', `status-badge--${viewedVer?.status}`]">
+                {{ statusLabelMap[viewedVer?.status ?? ''] }}
               </span>
-              <span v-if="activeVer?.versionType" class="tag-chip">{{ activeVer.versionType }}</span>
+              <span v-if="viewedVer?.versionType" class="tag-chip">{{ viewedVer.versionType }}</span>
             </div>
             <div class="sidebar-row">
               <span class="sidebar-label">更新人</span>
-              <span>{{ activeVer?.lastUpdateBy }}</span>
+              <span>{{ viewedVer?.lastUpdateBy }}</span>
             </div>
             <div class="sidebar-row">
               <span class="sidebar-label">更新時間</span>
-              <span>{{ activeVer?.lastUpdateTime }}</span>
+              <span>{{ viewedVer?.lastUpdateTime }}</span>
             </div>
-            <div v-if="activeVer?.updateNote" class="sidebar-row sidebar-row--top">
+            <div v-if="viewedVer?.updateNote" class="sidebar-row sidebar-row--top">
               <span class="sidebar-label">說明</span>
-              <span class="fc-grey-1">{{ activeVer.updateNote }}</span>
+              <span class="fc-grey-1">{{ viewedVer.updateNote }}</span>
+            </div>
+            <div v-if="viewedVer?.reviewedBy" class="sidebar-row">
+              <span class="sidebar-label">核准人</span>
+              <span>{{ viewedVer.reviewedBy }}</span>
+            </div>
+            <div v-if="viewedVer?.reviewedTime" class="sidebar-row">
+              <span class="sidebar-label">核准時間</span>
+              <span>{{ viewedVer.reviewedTime }}</span>
             </div>
           </div>
 
@@ -200,14 +258,14 @@
               <span class="sidebar-label">標籤</span>
               <div class="d-flex flex-wrap gap-1">
                 <span
-                  v-for="tag in activeVer?.tags"
+                  v-for="tag in viewedVer?.tags"
                   :key="tag"
-                  :class="['tag-chip', { 'tag-chip--system': activeVer?.systemTags?.includes(tag) }]"
+                  :class="['tag-chip', { 'tag-chip--system': viewedVer?.systemTags?.includes(tag) }]"
                 >
-                  <i v-if="activeVer?.systemTags?.includes(tag)" class="material-symbols-outlined fs-11 mr-1">smart_toy</i>
+                  <i v-if="viewedVer?.systemTags?.includes(tag)" class="material-symbols-outlined fs-11 mr-1">smart_toy</i>
                   {{ tag }}
                 </span>
-                <span v-if="!activeVer?.tags?.length" class="fc-grey-1 fs-13">無標籤</span>
+                <span v-if="!viewedVer?.tags?.length" class="fc-grey-1 fs-13">無標籤</span>
               </div>
             </div>
           </div>
@@ -242,9 +300,9 @@
           <!-- 來源附件 -->
           <div class="sidebar-section">
             <div class="sidebar-section-title">來源附件</div>
-            <div v-if="activeVer?.sourceFiles?.length" class="d-flex flex-column gap-2">
+            <div v-if="viewedVer?.sourceFiles?.length" class="d-flex flex-column gap-2">
               <div
-                v-for="f in activeVer.sourceFiles"
+                v-for="f in viewedVer.sourceFiles"
                 :key="f.fileId"
                 class="sidebar-file-item"
               >
@@ -274,13 +332,6 @@
     <!-- 建立新版本 Modal -->
     <CreateVersionModal v-model="isCreateVersionOpen" @confirm="handleCreateVersion" />
 
-    <!-- 還原舊版 Modal -->
-    <RestoreVersionModal
-      v-model="isRestoreOpen"
-      :versionNumber="restoreTargetNum"
-      @confirm="confirmRestore"
-    />
-
     <!-- 版本差異比較 Modal -->
     <VersionCompareModal
       v-model="isCompareOpen"
@@ -308,7 +359,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import 'github-markdown-css/github-markdown.css'
-import { useKnowledgeStore } from '@/stores/knowledgeStore'
+import { useKnowledgeStore, hasEarnedVersionNumber } from '@/stores/knowledgeStore'
 import { useResourceStore } from '@/stores/resourceStore'
 import { useBreadcrumb } from '@/composables/useBreadcrumb'
 import { useApiCall } from '@/composables/useApiCall'
@@ -316,7 +367,6 @@ import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import AppSkeleton from '@/components/AppSkeleton.vue'
 import AppErrorState from '@/components/AppErrorState.vue'
 import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue'
-import RestoreVersionModal from '@/components/Knowledge/RestoreVersionModal.vue'
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue'
 import FilePreviewModal from '@/components/Knowledge/FilePreviewModal.vue'
@@ -350,11 +400,32 @@ const {
 
 const knowledge = computed(() => knowledgeData.value ?? null)
 
+// 系統認定的「目前版本」：已發布中的版本，若無已發布版本則退回最後一筆（如剛送審、尚未曾發布過）
 const activeVer = computed(() => {
   if (!knowledge.value) return null
   return knowledge.value.versions.find(v => v.status === 'active')
     ?? knowledge.value.versions[knowledge.value.versions.length - 1]
 })
+
+// 使用者於「版本歷程」點選「檢視」時，暫時切換要瀏覽的版本；未選擇時預設顯示目前版本
+const viewingVersionId = ref<string | null>(null)
+const viewedVer = computed(() => {
+  if (!knowledge.value) return null
+  if (viewingVersionId.value) {
+    return knowledge.value.versions.find(v => v.id === viewingVersionId.value) ?? activeVer.value
+  }
+  return activeVer.value
+})
+const isViewingOtherVersion = computed(() => viewedVer.value?.id !== activeVer.value?.id)
+
+function viewVersion(versionId: string) {
+  viewingVersionId.value = versionId
+  activeTabKey.value = 'overview'
+}
+function backToCurrentVersion() {
+  viewingVersionId.value = null
+}
+watch(() => props.id, () => { viewingVersionId.value = null })
 
 const draftVersion = computed(() =>
   knowledge.value?.versions.find(v => v.status === 'draft' || v.status === 'rejected') ?? null
@@ -362,16 +433,16 @@ const draftVersion = computed(() =>
 
 // Pipeline 審核狀態：reviewing 但沒有 reviewHistory（尚未人工送審）
 const isPipelineReview = computed(() =>
-  activeVer.value?.status === 'reviewing' &&
-  (!activeVer.value?.reviewHistory || activeVer.value.reviewHistory.length === 0)
+  viewedVer.value?.status === 'reviewing' &&
+  (!viewedVer.value?.reviewHistory || viewedVer.value.reviewHistory.length === 0)
 )
 
 const renderedContent = computed(() => {
-  const c = activeVer.value?.content
+  const c = viewedVer.value?.content
   if (c) return md.render(c)
 
   // 內容為空時，若有 chunk gist，改為顯示 AI 摘要摘要列表
-  const chunks = activeVer.value?.chunks ?? []
+  const chunks = viewedVer.value?.chunks ?? []
   const hasGist = chunks.some(ch => ch.gist)
   if (hasGist) {
     const items = chunks
@@ -396,11 +467,11 @@ const isMetadataOpen = ref(true)
 
 // ── Breadcrumb ──
 const { setDynamic } = useBreadcrumb()
-watch(activeVer, (val) => { if (val?.title) setDynamic(val.title) }, { immediate: true })
+watch(viewedVer, (val) => { if (val?.title) setDynamic(val.title) }, { immediate: true })
 
 // ── Status maps ──
 const statusLabelMap: Record<string, string> = {
-  active: '已發布', processing: '處理中', reviewing: '審核中',
+  active: '已發布', processing: '處理中', reviewing: '審核中', approved: '已核准・待發佈',
   needs_update: '需更新', pending: '待處理', failed: '失敗',
   archived: '已封存', draft: '草稿', history: '歷史版本', rejected: '已退回',
 }
@@ -438,6 +509,16 @@ function handleWithdraw() {
   })
 }
 
+// ── 發佈已核准版本 ──
+function handlePublish() {
+  const v = knowledge.value?.versions.find(ver => ver.status === 'approved')
+  if (!v) return
+  popDialog.confirm(`確定要將 ${v.versionNumber} 發佈上線嗎？發佈後將取代目前的正式版本。`, () => {
+    knowledgeStore.publishApprovedVersion(props.id, v.id)
+    popDialog.toast('已發佈上線', 2000)
+  })
+}
+
 // ── 重新觸發 Pipeline ──
 function handleRetriggerPipeline() {
   knowledgeStore.retriggerPipeline(props.id)
@@ -450,26 +531,15 @@ const reviewVersionId = computed(
   () => knowledge.value?.versions.find(v => v.status === 'reviewing')?.id ?? ''
 )
 
-// ── 還原舊版 ──
-const isRestoreOpen = ref(false)
-const restoreTargetNum = ref('')
-const restoreTargetId = ref('')
-
-function openRestore(versionId: string) {
+// ── 切換當前版本（歷史版本曾經正式發布過，直接重新生效，不需再走草稿／審核）──
+function handleSwitchVersion(versionId: string) {
   const v = knowledge.value?.versions.find(ver => ver.id === versionId)
   if (!v) return
-  restoreTargetNum.value = v.versionNumber
-  restoreTargetId.value = versionId
-  isRestoreOpen.value = true
-}
-
-function confirmRestore(note: string) {
-  const newDraftId = knowledgeStore.restoreToDraft(props.id, restoreTargetId.value, note)
-  if (newDraftId) {
-    isRestoreOpen.value = false
-    router.push({ name: 'KnowledgeEditor', params: { knowledgeId: props.id, versionId: newDraftId } })
-      .then(() => popDialog.alert('已建立還原草稿，請繼續編輯。'))
-  }
+  popDialog.confirm(`確定要切換回 ${v.versionNumber} 嗎？切換後將立即取代目前的正式版本。`, () => {
+    knowledgeStore.switchToVersion(props.id, versionId)
+    viewingVersionId.value = null
+    popDialog.toast(`已切換為 ${v.versionNumber}`, 2000)
+  })
 }
 
 // ── 版本比較 ──

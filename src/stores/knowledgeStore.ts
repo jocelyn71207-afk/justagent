@@ -5,12 +5,20 @@ export type ItemStatus =
   | 'pending'
   | 'processing'
   | 'reviewing'
+  | 'approved'
   | 'active'
   | 'needs_update'
   | 'failed'
   | 'archived'
 
-export type VersionStatus = 'draft' | 'reviewing' | 'active' | 'history' | 'rejected'
+// approved：已通過審核，但尚未實際發佈（等待人工按下「立即發佈」，才會轉為 active）
+export type VersionStatus = 'draft' | 'reviewing' | 'approved' | 'active' | 'history' | 'rejected'
+
+// 版號只在「審核通過」之後才算定案並對外顯示；draft／reviewing／rejected 都還沒定案，
+// 畫面上一律不秀版號（即使內部 versionNumber 欄位早已算好，用來給送審／比較等內部邏輯使用）。
+export function hasEarnedVersionNumber(status: VersionStatus | undefined | null): boolean {
+  return status === 'approved' || status === 'active' || status === 'history'
+}
 export type VersionType = 'MAJOR' | 'MINOR'
 export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
 export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA' | 'SHAREPOINT' | 'NOTION'
@@ -323,24 +331,443 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       lastUpdateBy: 'Rita',
       versions: [
         {
+          id: 'k2-v1.0',
+          knowledgeId: 'k2',
+          versionNumber: 'v1.0',
+          versionType: null,
+          status: 'history',
+          title: '後台角色權限說明',
+          summary: '建立後台管理系統角色與權限的基礎規範',
+          content: `# 後台角色權限說明
+
+## 一、角色定義
+
+後台管理系統初期規劃三種基礎角色，依職務範圍分派存取權限。
+
+| 角色 | 說明 | 可存取模組 |
+|------|------|-----------|
+| 超級管理員 | 系統所有功能之完整存取權限，含帳號與角色管理 | 全部模組 |
+| 編輯者 | 可建立與編輯商品、知識庫等內容，無法變更系統設定 | 商品管理、知識庫、內容管理 |
+| 檢視者 | 僅可檢視資料，無任何編輯或刪除權限 | 全部模組（唯讀） |
+
+## 二、權限矩陣
+
+| 功能模組 | 超級管理員 | 編輯者 | 檢視者 |
+|---------|:---------:|:------:|:------:|
+| 帳號與角色管理 | ✅ | ❌ | ❌ |
+| 商品管理 | ✅ | ✅ | 👁️ |
+| 知識庫管理 | ✅ | ✅ | 👁️ |
+| 系統設定 | ✅ | ❌ | ❌ |
+| 操作紀錄查詢 | ✅ | ❌ | 👁️ |
+
+> **備註**：角色權限僅區分「模組」層級，尚未支援欄位或資料列層級的細粒度控管。`,
+          tags: ['權限'],
+          systemTags: ['系統文件'],
+          lastUpdateBy: 'Admin',
+          lastUpdateTime: '2025-03-10 09:00',
+          updateNote: '初始建立，定義三種基礎角色與存取權限',
+          sourceFiles: [],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、角色定義',
+              content: '初版角色權限說明，定義超級管理員、編輯者、檢視者三種基礎角色，並以模組層級劃分存取範圍。',
+              tokenCount: 214,
+              sourceType: 'text',
+              gist: '說明後台系統初期規劃的三種基礎角色與各自可存取的模組範圍。',
+              qaPairs: ['後台一開始有哪些角色？', '編輯者可以存取哪些模組？'],
+              taxonomyTags: ['系統文件/權限管理/角色定義'],
+              citationCount: 2,
+            },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 1,
+          reviewNote: '首次建立後台角色權限規範，請審核後發佈。',
+          reviewedBy: 'Ethan',
+          reviewedTime: '2025-03-10 09:20',
+          reviewHistory: [
+            {
+              action: 'SUBMITTED',
+              by: 'Admin',
+              time: '2025-03-10 09:00',
+              note: '首次建立後台角色權限規範，請審核後發佈。',
+            },
+            {
+              action: 'APPROVED',
+              by: 'Ethan',
+              time: '2025-03-10 09:20',
+              note: '角色範圍清楚，同意發佈。',
+            },
+          ],
+        },
+        {
+          id: 'k2-v1.1',
+          knowledgeId: 'k2',
+          versionNumber: 'v1.1',
+          versionType: 'MINOR',
+          status: 'active',
+          title: '後台角色權限說明',
+          summary: '新增客服角色，補充工單中心相關權限規範',
+          content: `# 後台角色權限說明
+
+## 一、角色定義
+
+因客服團隊需協助處理工單與查詢知識庫，新增「客服」角色，現共四種基礎角色。
+
+| 角色 | 說明 | 可存取模組 |
+|------|------|-----------|
+| 超級管理員 | 系統所有功能之完整存取權限，含帳號與角色管理 | 全部模組 |
+| 編輯者 | 可建立與編輯商品、知識庫等內容，無法變更系統設定 | 商品管理、知識庫、內容管理 |
+| 客服 | 可處理工單、查詢知識庫，無編輯內容權限 | 工單中心、知識庫（唯讀） |
+| 檢視者 | 僅可檢視資料，無任何編輯或刪除權限 | 全部模組（唯讀） |
+
+## 二、權限矩陣
+
+| 功能模組 | 超級管理員 | 編輯者 | 客服 | 檢視者 |
+|---------|:---------:|:------:|:----:|:------:|
+| 帳號與角色管理 | ✅ | ❌ | ❌ | ❌ |
+| 商品管理 | ✅ | ✅ | ❌ | 👁️ |
+| 知識庫管理 | ✅ | ✅ | 👁️ | 👁️ |
+| 工單中心 | ✅ | ❌ | ✅ | 👁️ |
+| 系統設定 | ✅ | ❌ | ❌ | ❌ |
+| 操作紀錄查詢 | ✅ | ❌ | ❌ | 👁️ |
+
+## 三、異動說明
+
+- 新增「客服」角色，開放工單中心完整操作權限，並開放知識庫唯讀查詢，以利處理客戶問題。
+- 編輯者角色存取範圍不變。
+
+> ⚠️ 本版角色權限仍以「模組」為最小控管單位，尚未支援資料列（如特定商品分類、特定客戶群）層級的權限隔離，此限制將於下一次大改版處理。`,
+          tags: ['權限'],
+          systemTags: ['系統文件'],
+          lastUpdateBy: 'Rita',
+          lastUpdateTime: '2025-11-20 16:40',
+          updateNote: '新增客服角色，補充工單中心權限規範',
+          sourceFiles: [],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、角色定義',
+              content: '新增「客服」角色，可處理工單、查詢知識庫，但無編輯內容權限，後台角色由三種擴增為四種。',
+              tokenCount: 236,
+              sourceType: 'text',
+              gist: '說明新增客服角色的原因與其可存取的模組範圍。',
+              qaPairs: ['客服角色可以做什麼？', '為什麼要新增客服角色？'],
+              taxonomyTags: ['系統文件/權限管理/角色定義'],
+              citationCount: 4,
+            },
+            {
+              index: 2,
+              sectionPath: '三、異動說明',
+              content: '本次異動開放客服角色完整操作工單中心，並唯讀查詢知識庫；權限仍以模組層級控管，尚未支援資料列層級隔離。',
+              tokenCount: 198,
+              sourceType: 'text',
+              gist: '列出本次版本異動的具體內容與尚未支援的權限限制。',
+              qaPairs: ['這次更新了什麼？', '目前權限控管的限制是什麼？'],
+              taxonomyTags: ['系統文件/權限管理/版本異動'],
+              citationCount: 1,
+            },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 2,
+          reviewNote: '新增客服角色，補充工單中心權限規範，請審核後發佈以取代 v1.0。',
+          reviewedBy: 'Ethan',
+          reviewedTime: '2025-11-21 09:10',
+          reviewHistory: [
+            {
+              action: 'SUBMITTED',
+              by: 'Rita',
+              time: '2025-11-20 16:40',
+              note: '新增客服角色，補充工單中心權限規範，請審核後發佈以取代 v1.0。',
+            },
+            {
+              action: 'APPROVED',
+              by: 'Ethan',
+              time: '2025-11-21 09:10',
+              note: '客服角色範圍合理，同意發佈。',
+            },
+          ],
+        },
+        {
+          id: 'k2-v1.2',
+          knowledgeId: 'k2',
+          versionNumber: 'v1.2',
+          versionType: 'MINOR',
+          status: 'approved',
+          title: '後台角色權限說明',
+          summary: '修正客服角色權限描述用語，避免誤解為可發佈內容',
+          content: `# 後台角色權限說明
+
+## 一、角色定義
+
+因客服團隊需協助處理工單與查詢知識庫，新增「客服」角色，現共四種基礎角色。
+
+| 角色 | 說明 | 可存取模組 |
+|------|------|-----------|
+| 超級管理員 | 系統所有功能之完整存取權限，含帳號與角色管理 | 全部模組 |
+| 編輯者 | 可建立與編輯商品、知識庫等內容，無法變更系統設定 | 商品管理、知識庫、內容管理 |
+| 客服 | 可處理工單、查詢知識庫（唯讀），不可編輯或發佈任何內容 | 工單中心、知識庫（唯讀） |
+| 檢視者 | 僅可檢視資料，無任何編輯或刪除權限 | 全部模組（唯讀） |
+
+## 二、權限矩陣
+
+| 功能模組 | 超級管理員 | 編輯者 | 客服 | 檢視者 |
+|---------|:---------:|:------:|:----:|:------:|
+| 帳號與角色管理 | ✅ | ❌ | ❌ | ❌ |
+| 商品管理 | ✅ | ✅ | ❌ | 👁️ |
+| 知識庫管理 | ✅ | ✅ | 👁️ | 👁️ |
+| 工單中心 | ✅ | ❌ | ✅ | 👁️ |
+| 系統設定 | ✅ | ❌ | ❌ | ❌ |
+| 操作紀錄查詢 | ✅ | ❌ | ❌ | 👁️ |
+
+## 三、異動說明（v1.2 修訂）
+
+- 修正「客服」角色說明用語：原「無編輯內容權限」易被誤解為僅限制編輯、仍可發佈，故修訂為「不可編輯或發佈任何內容」，語意更精確。
+- 其餘角色定義與權限矩陣內容不變。
+
+> ⚠️ 本版角色權限仍以「模組」為最小控管單位，尚未支援資料列（如特定商品分類、特定客戶群）層級的權限隔離，此限制將於下一次大改版（見 v2.0）處理。`,
+          tags: ['權限'],
+          systemTags: ['系統文件'],
+          lastUpdateBy: 'Rita',
+          lastUpdateTime: '2026-03-18 10:20',
+          updateNote: '修正客服角色權限描述用語，避免誤解為可發佈內容',
+          sourceFiles: [],
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '三、異動說明（v1.2 修訂）',
+              content: '修正客服角色說明用語，將「無編輯內容權限」改為「不可編輯或發佈任何內容」，避免誤解客服仍可發佈內容。',
+              tokenCount: 176,
+              sourceType: 'text',
+              gist: '說明本次小改版修正的用詞，釐清客服角色確實無法發佈任何內容。',
+              qaPairs: ['客服角色可以發佈內容嗎？', '這次修訂了什麼？'],
+              taxonomyTags: ['系統文件/權限管理/版本異動'],
+              citationCount: 1,
+            },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 1,
+          reviewNote: '僅修正客服角色描述用語，未變動任何權限範圍，送審確認語意修正是否恰當。',
+          reviewedBy: 'Ethan',
+          reviewedTime: '2026-03-19 09:40',
+          reviewHistory: [
+            {
+              action: 'SUBMITTED',
+              by: 'Rita',
+              time: '2026-03-18 10:20',
+              note: '僅修正客服角色描述用語，未變動任何權限範圍，送審確認語意修正是否恰當。',
+            },
+            {
+              action: 'APPROVED',
+              by: 'Ethan',
+              time: '2026-03-19 09:40',
+              note: '用語修正合理，同意發佈。',
+            },
+          ],
+        },
+        {
           id: 'k2-v2.0',
           knowledgeId: 'k2',
           versionNumber: 'v2.0',
           versionType: 'MAJOR',
           status: 'reviewing',
           title: '後台角色權限說明 (新版)',
-          summary: '重構權限體系後的說明文件',
-          content: '這是一份關於新版權限體系的詳細說明...',
+          summary: '重構權限體系後的說明文件，改採 6 角色制與模組／功能／資料三層級權限模型，並提供舊角色遷移對應表',
+          content: `# 後台角色權限說明（新版）
+
+> **文件版本**：v2.0｜**狀態**：審核中｜**適用範圍**：後台管理系統全模組
+> 本次為權限體系的大版本重構，將取代 v1.x 沿用超過一年的三／四角色制，改採更細緻的角色與三層級權限模型。
+
+---
+
+## 一、重構背景
+
+隨著後台功能模組持續擴增（工單中心、知識庫、行銷活動、報表中心等），舊版僅以「超級管理員 / 編輯者 / 客服 / 檢視者」四種角色劃分權限，已無法滿足下列需求：
+
+- 部分角色需要「可編輯但不可發佈」的審核流程（例如知識庫版本需經人工審核才能上線）。
+- 客服與行銷團隊的存取範圍經常重疊卻無法個別授權。
+- 缺乏操作留痕與角色異動的稽核紀錄。
+
+## 二、新版角色列表
+
+| 角色 | 角色代碼 | 說明 |
+|------|---------|------|
+| 超級管理員 | \`SUPER_ADMIN\` | 系統所有功能之完整存取權限，唯一可管理角色與權限設定者 |
+| 系統管理員 | \`SYS_ADMIN\` | 可管理帳號、API 來源、系統設定，無法變更角色權限本身 |
+| 內容編輯 | \`CONTENT_EDITOR\` | 可建立/編輯商品、知識庫草稿，需送審後才可發佈 |
+| 審核員 | \`REVIEWER\` | 可審核並發佈知識庫、商品內容變更，無建立權限 |
+| 客服人員 | \`SUPPORT\` | 可處理工單、查詢知識庫（唯讀），無內容編輯權限 |
+| 唯讀訪客 | \`VIEWER\` | 僅可檢視經發佈之資料，無任何操作權限 |
+
+## 三、三層級權限模型
+
+新版改採「模組 → 功能 → 資料」三層級控管，取代舊版單一模組層級的粗略劃分：
+
+1. **模組層級**：可否進入該模組（例如「知識庫管理」）。
+2. **功能層級**：模組內個別功能的存取（例如「建立版本」「核准發佈」「刪除條目」需分別授權）。
+3. **資料層級**：依分類、來源或建立者限制可視範圍（例如客服僅能查看「客服知識」分類）。
+
+### 權限矩陣（模組 × 角色）
+
+| 功能模組 | 超級管理員 | 系統管理員 | 內容編輯 | 審核員 | 客服人員 | 唯讀訪客 |
+|---------|:---------:|:---------:|:-------:|:------:|:-------:|:-------:|
+| 帳號與角色管理 | ✅ | 👁️ | ❌ | ❌ | ❌ | ❌ |
+| 商品管理（建立/編輯） | ✅ | ❌ | ✅ | ❌ | ❌ | 👁️ |
+| 知識庫（建立草稿） | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| 知識庫（審核發佈） | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| 知識庫（唯讀查詢） | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 工單中心 | ✅ | 👁️ | ❌ | ❌ | ✅ | ❌ |
+| 系統設定 | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| 操作紀錄查詢 | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+符號說明：✅ 完整存取｜👁️ 唯讀｜❌ 無權限
+
+## 四、舊角色對應表（遷移指引）
+
+既有帳號將依下表規則自動對應至新角色，遷移完成後舊角色定義即失效：
+
+| 舊角色（v1.x） | 對應新角色 | 備註 |
+|---------------|-----------|------|
+| 超級管理員 | 超級管理員 | 無變動 |
+| 編輯者 | 內容編輯 | 新增「送審」流程，不再可直接發佈 |
+| 客服 | 客服人員 | 權限範圍不變 |
+| 檢視者 | 唯讀訪客 | 無變動 |
+
+> ⚠️ **重大變更**：舊版「編輯者」可直接發佈內容，新版「內容編輯」僅能建立草稿並送審，發佈權限收斂至「審核員」與「超級管理員」。此變更將影響 12 位既有編輯者帳號，需於上線前完成教育訓練與流程公告。
+
+## 五、稽核與留痕
+
+新版強制要求下列操作寫入稽核紀錄，供合規查詢：
+
+- 角色指派與異動（由誰在何時指派給誰）
+- 知識庫版本的送審／核准／退回紀錄
+- 高風險操作（刪除、批次匯出）需二次確認並留痕
+
+## 六、上線排程
+
+| 階段 | 內容 | 預計時間 |
+|------|------|---------|
+| 審核 | 權限文件與角色矩陣人工審核 | 2026-04-01 ～ 2026-04-10 |
+| 灰度 | 於系統管理員與審核員角色先行上線驗證 | 2026-04-11 ～ 2026-04-18 |
+| 全量 | 全體帳號遷移至新角色體系，舊角色下線 | 2026-04-20 |`,
           tags: ['權限', '安全'],
           systemTags: ['系統文件'],
           lastUpdateBy: 'Rita',
           lastUpdateTime: '2026-04-01 11:00',
-          updateNote: '大版本升級，移除舊有角色',
+          updateNote: '大版本升級，改採 6 角色制與三層級權限模型，移除舊有角色定義',
           sourceFiles: [],
-          chunks: [],
-          embeddingModel: null,
-          embeddingDimension: null,
-          embeddingCount: 0,
+          chunks: [
+            {
+              index: 1,
+              sectionPath: '一、重構背景',
+              content: '舊版四角色制無法滿足細緻審核流程、重疊權限與稽核留痕需求，因此進行 v2.0 重構。',
+              tokenCount: 268,
+              sourceType: 'text',
+              gist: '說明本次權限體系重構的三大背景原因：缺乏送審流程、角色權限重疊、缺乏稽核留痕。',
+              qaPairs: ['為什麼要重構角色權限？', '舊版權限制度有哪些問題？', '新版要解決什麼痛點？'],
+              taxonomyTags: ['系統文件/權限管理/重構背景'],
+              citationCount: 3,
+            },
+            {
+              index: 2,
+              sectionPath: '二、新版角色列表',
+              content: '新版共 6 種角色：超級管理員、系統管理員、內容編輯、審核員、客服人員、唯讀訪客，各角色代碼與說明如上表。',
+              tokenCount: 312,
+              sourceType: 'text',
+              gist: '列出新版 6 種角色的代碼與職責範圍，取代舊版四角色制。',
+              qaPairs: ['新版有哪些角色？', '審核員可以做什麼？', '內容編輯和審核員的差別是什麼？', '客服人員的權限範圍？'],
+              taxonomyTags: ['系統文件/權限管理/角色定義'],
+              citationCount: 8,
+            },
+            {
+              index: 3,
+              sectionPath: '三、三層級權限模型',
+              content: '新版採「模組→功能→資料」三層級控管，並提供模組 × 角色權限矩陣，取代舊版單一模組層級劃分。',
+              tokenCount: 401,
+              sourceType: 'text',
+              gist: '說明三層級權限模型的設計，並附上完整的模組 × 角色權限矩陣表。',
+              qaPairs: ['什麼是三層級權限模型？', '功能層級和資料層級的差別？', '審核員能否建立知識庫草稿？', '客服人員能查詢知識庫嗎？'],
+              taxonomyTags: ['系統文件/權限管理/權限模型'],
+              citationCount: 15,
+            },
+            {
+              index: 4,
+              sectionPath: '四、舊角色對應表（遷移指引）',
+              content: '舊角色將自動對應至新角色：編輯者→內容編輯（新增送審流程）、客服→客服人員、檢視者→唯讀訪客、超級管理員不變。',
+              tokenCount: 287,
+              sourceType: 'text',
+              gist: '提供新舊角色對應規則，並提醒編輯者角色將新增送審流程，影響既有 12 位帳號。',
+              qaPairs: ['舊的編輯者帳號會變成什麼角色？', '新角色遷移後編輯者還能直接發佈內容嗎？', '有多少既有帳號受影響？'],
+              taxonomyTags: ['系統文件/權限管理/遷移指引'],
+              citationCount: 6,
+            },
+            {
+              index: 5,
+              sectionPath: '六、上線排程',
+              content: '上線分三階段：審核（4/1-4/10）、灰度驗證（4/11-4/18）、全量（4/20），全體帳號將於全量階段遷移至新角色體系。',
+              tokenCount: 198,
+              sourceType: 'text',
+              gist: '列出審核、灰度、全量三階段的上線時程規劃。',
+              qaPairs: ['新版權限什麼時候正式上線？', '灰度驗證階段是哪些角色先行？', '舊角色什麼時候下線？'],
+              taxonomyTags: ['系統文件/權限管理/上線排程'],
+              citationCount: 2,
+            },
+          ],
+          embeddingModel: 'text-embedding-3-large',
+          embeddingDimension: 3072,
+          embeddingCount: 5,
+          reviewNote: '已完成新版角色權限重構文件撰寫，權限矩陣與舊角色遷移對應表皆已確認，請審核後發佈以取代 v1.1 現行版本。',
+          reviewHistory: [
+            {
+              action: 'SUBMITTED',
+              by: 'Rita',
+              time: '2026-04-01 11:00',
+              note: '已完成新版角色權限重構文件撰寫，權限矩陣與舊角色遷移對應表皆已確認，請審核後發佈以取代 v1.1 現行版本。',
+            },
+          ],
+          conversionLog: [
+            {
+              stage: 'chunking',
+              status: 'success',
+              startedAt: '2026-04-01 10:58',
+              durationMs: 2600,
+              detail: {
+                strategy: 'Section-aware',
+                chunkCount: 5,
+                avgTokens: 293,
+                imageCount: 0,
+                tableCount: 4,
+                sourceFormat: 'MANUAL',
+              },
+            },
+            {
+              stage: 'embedding',
+              status: 'success',
+              startedAt: '2026-04-01 10:58',
+              durationMs: 6100,
+              detail: {
+                model: 'text-embedding-3-large',
+                dimension: 3072,
+                denseCount: 5,
+                sparseCount: 5,
+                batchSize: 16,
+              },
+            },
+            {
+              stage: 'indexing',
+              status: 'success',
+              startedAt: '2026-04-01 10:59',
+              durationMs: 210,
+              detail: {
+                collection: 'knowledge_chunks',
+                pointCount: 5,
+                indexType: 'HNSW',
+              },
+            },
+          ],
         },
       ],
     },
@@ -1392,6 +1819,59 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       }
     }
 
+    k.lastUpdateBy = 'Current User';
+
+    if (k.sourceType === 'MANUAL') {
+      k.status = 'processing'
+      setTimeout(() => {
+        k.status = 'active'
+        k.lastUpdateTime = new Date().toISOString().replace('T', ' ').slice(0, 16)
+      }, 2000)
+    } else {
+      k.status = 'active'
+      k.lastUpdateTime = now
+    }
+  };
+
+  // 直接切換為指定的歷史版本：這個版本先前已經正式發布過、通過審核，
+  // 不需要再走一次草稿／審核流程，直接讓它重新生效即可。
+  // 沿用它原本的版號（不建立新版本），跟「還原為草稿」是兩種不同的操作。
+  const switchToVersion = (knowledgeId: string, versionId: string) => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    const v = k.versions.find(ver => ver.id === versionId);
+    if (!v || v.status !== 'history') return;
+
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    for (const ver of k.versions) {
+      if (ver.status === 'active') ver.status = 'history';
+    }
+    v.status = 'active';
+    k.status = 'active';
+    k.lastUpdateTime = now;
+    k.lastUpdateBy = 'Current User';
+  };
+
+  // 發佈已核准版本：approved → active。與 approveVersion 分開，
+  // 讓「審核通過」與「正式上線」可以是兩個獨立時間點（例如核准後排定時間再發佈）。
+  const publishApprovedVersion = (knowledgeId: string, versionId: string) => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    const v = k.versions.find(ver => ver.id === versionId);
+    if (!v || v.status !== 'approved') return;
+
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    // 目前上線中的版本轉為歷史版本
+    for (const ver of k.versions) {
+      if (ver.status === 'active') ver.status = 'history';
+    }
+
+    v.status = 'active';
+
+    k.lastUpdateBy = 'Current User';
+
     if (k.sourceType === 'MANUAL') {
       k.status = 'processing'
       setTimeout(() => {
@@ -2183,6 +2663,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     submitForReview,
     restoreToDraft,
     approveVersion,
+    publishApprovedVersion,
+    switchToVersion,
     rejectVersion,
     withdrawReview,
     markFileStale,
