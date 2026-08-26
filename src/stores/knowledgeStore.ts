@@ -1937,6 +1937,15 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     ];
 
     k.status = 'pending';
+
+    pushActivity(k, {
+      action: 'REJECTED',
+      by: 'Current User',
+      time: now,
+      versionId: v.id,
+      versionNumber: v.versionNumber,
+      note: feedback,
+    });
   };
 
   const withdrawReview = (knowledgeId: string, versionId: string) => {
@@ -1954,6 +1963,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     ];
 
     k.status = 'pending';
+
+    pushActivity(k, {
+      action: 'WITHDRAWN',
+      by: 'Current User',
+      time: now,
+      versionId: v.id,
+      versionNumber: v.versionNumber,
+    });
   };
 
   // 從共用檔案建立新的知識條目草稿（支援多個來源檔案）

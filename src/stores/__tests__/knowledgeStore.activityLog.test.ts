@@ -27,4 +27,39 @@ describe('knowledgeStore — activityLog', () => {
       expect(entry.id).toBeTruthy()
     })
   })
+
+  describe('rejectVersion 寫入 activityLog', () => {
+    it('退回後，activityLog 新增一筆 REJECTED 紀錄，帶 note', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const versionId = item.versions.find(v => v.versionNumber === 'v2.0')!.id
+
+      store.rejectVersion('k2', versionId, '權限矩陣有誤，請修正後重新送審')
+
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      const entry = log[log.length - 1]
+      expect(entry.action).toBe('REJECTED')
+      expect(entry.by).toBe('Current User')
+      expect(entry.versionId).toBe(versionId)
+      expect(entry.versionNumber).toBe('v2.0')
+      expect(entry.note).toBe('權限矩陣有誤，請修正後重新送審')
+    })
+  })
+
+  describe('withdrawReview 寫入 activityLog', () => {
+    it('撤回審核後，activityLog 新增一筆 WITHDRAWN 紀錄', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const versionId = item.versions.find(v => v.versionNumber === 'v2.0')!.id
+
+      store.withdrawReview('k2', versionId)
+
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      const entry = log[log.length - 1]
+      expect(entry.action).toBe('WITHDRAWN')
+      expect(entry.by).toBe('Current User')
+      expect(entry.versionId).toBe(versionId)
+      expect(entry.versionNumber).toBe('v2.0')
+    })
+  })
 })
