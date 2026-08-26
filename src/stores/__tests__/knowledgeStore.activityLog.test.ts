@@ -62,4 +62,24 @@ describe('knowledgeStore — activityLog', () => {
       expect(entry.versionNumber).toBe('v2.0')
     })
   })
+
+  describe('approveVersion（一步到位）寫入 activityLog', () => {
+    it('核准並發布後，activityLog 依序新增 APPROVED 與 PUBLISHED 兩筆紀錄，同一時間戳', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const versionId = item.versions.find(v => v.versionNumber === 'v2.0')!.id
+
+      store.approveVersion('k2', versionId)
+
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      const last2 = log.slice(-2)
+      expect(last2.map(e => e.action)).toEqual(['APPROVED', 'PUBLISHED'])
+      last2.forEach(entry => {
+        expect(entry.by).toBe('Current User')
+        expect(entry.versionId).toBe(versionId)
+        expect(entry.versionNumber).toBe('v2.0')
+      })
+      expect(last2[0].time).toBe(last2[1].time)
+    })
+  })
 })

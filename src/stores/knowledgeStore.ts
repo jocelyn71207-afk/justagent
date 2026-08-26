@@ -1848,6 +1848,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       { action: 'APPROVED', by: 'Current User', time: now },
     ];
 
+    pushActivity(k, { action: 'APPROVED', by: 'Current User', time: now, versionId: v.id, versionNumber: v.versionNumber });
+    pushActivity(k, { action: 'PUBLISHED', by: 'Current User', time: now, versionId: v.id, versionNumber: v.versionNumber });
+
     if (syncMembership) {
       const added = [...newFileIds].filter(id => !prevFileIds.has(id));
       const removed = [...prevFileIds].filter(id => !newFileIds.has(id));
