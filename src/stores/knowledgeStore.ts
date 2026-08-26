@@ -19,6 +19,30 @@ export type VersionStatus = 'draft' | 'reviewing' | 'approved' | 'active' | 'his
 export function hasEarnedVersionNumber(status: VersionStatus | undefined | null): boolean {
   return status === 'approved' || status === 'active' || status === 'history'
 }
+
+// 知識庫條目層級的完整活動紀錄：送審／核准／退回／撤回／發佈／切換版本，
+// 取代原本掛在每個版本自己身上的 reviewHistory——這幾種動作（尤其發佈、切換）
+// 本質上常常牽涉兩個版本，掛在單一版本自己身上沒有自然的歸屬。
+export type ActivityAction =
+  | 'SUBMITTED'   // 送審
+  | 'APPROVED'    // 核准
+  | 'REJECTED'    // 退回
+  | 'WITHDRAWN'   // 撤回審核
+  | 'PUBLISHED'   // 正式發佈上線
+  | 'SWITCHED'    // 切換回某個歷史版本
+
+export interface ActivityRecord {
+  id: string
+  action: ActivityAction
+  by: string
+  time: string
+  versionId: string             // 這筆事件主要對應哪個版本
+  versionNumber: string         // 當時的版號快照，版本以後有異動也不影響這筆歷史紀錄
+  note?: string
+  replacedVersionId?: string    // 只有 SWITCHED 會用到：被換下去的是哪一版
+  replacedVersionNumber?: string
+}
+
 export type VersionType = 'MAJOR' | 'MINOR'
 export type PipelineStage = 'chunking' | 'embedding' | 'indexing'
 export type SourceType = 'FILE' | 'API' | 'MANUAL' | 'JUSTKA' | 'SHAREPOINT' | 'NOTION'
@@ -230,6 +254,7 @@ export interface KnowledgeItem {
   lastUpdateBy: string
   integrationSourceId?: string
   notionPageId?: string
+  activityLog?: ActivityRecord[]
 }
 
 export const useKnowledgeStore = defineStore('knowledge', () => {
