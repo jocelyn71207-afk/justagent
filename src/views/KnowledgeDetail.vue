@@ -189,7 +189,30 @@
             </div>
           </div>
 
-          <!-- Tab 3: 分段預覽 -->
+          <!-- Tab 3: 活動紀錄 -->
+          <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'activity' }]">
+            <div v-if="!knowledge.activityLog?.length" class="fc-grey-1 fs-13">尚無活動紀錄</div>
+            <div v-else class="activity-timeline lively-stagger">
+              <div
+                v-for="entry in [...knowledge.activityLog].reverse()"
+                :key="entry.id"
+                class="activity-timeline-item lively-card"
+              >
+                <div :class="['activity-icon', `activity-icon--${entry.action.toLowerCase()}`]">
+                  <i class="material-symbols-outlined">{{ activityIconMap[entry.action] }}</i>
+                </div>
+                <div class="activity-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>{{ entry.by }}</strong> {{ activityLabel(entry) }}</span>
+                    <span class="fc-grey-1 fs-13">{{ entry.time }}</span>
+                  </div>
+                  <div v-if="entry.note" class="fc-grey-1 fs-13">{{ entry.note }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 4: 分段預覽 -->
           <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'chunks' }]">
             <ChunkPreviewTab
               :chunks="viewedVer?.chunks ?? []"
@@ -197,7 +220,7 @@
             />
           </div>
 
-          <!-- Tab 4: 轉換結果 -->
+          <!-- Tab 5: 轉換結果 -->
           <div :class="['detail-tab-panel', { 'is-active': activeTabKey === 'conversion' }]">
             <ConversionLogTab
               :conversion-log="viewedVer?.conversionLog ?? []"
@@ -360,6 +383,7 @@ import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import 'github-markdown-css/github-markdown.css'
 import { useKnowledgeStore, hasEarnedVersionNumber } from '@/stores/knowledgeStore'
+import type { ActivityAction, ActivityRecord } from '@/stores/knowledgeStore'
 import { useResourceStore } from '@/stores/resourceStore'
 import { useBreadcrumb } from '@/composables/useBreadcrumb'
 import { useApiCall } from '@/composables/useApiCall'
@@ -462,6 +486,7 @@ const renderedContent = computed(() => {
 const tabs = [
   { key: 'overview', label: '概覽', icon: 'description' },
   { key: 'history', label: '版本歷程', icon: 'history' },
+  { key: 'activity', label: '活動紀錄', icon: 'timeline' },
   { key: 'chunks', label: '分段預覽', icon: 'view_agenda' },
   { key: 'conversion', label: '轉換結果', icon: 'sync_alt' },
 ]
@@ -477,6 +502,31 @@ const statusLabelMap: Record<string, string> = {
   active: '已發布', processing: '處理中', reviewing: '審核中', approved: '已核准・待發佈',
   needs_update: '需更新', pending: '待處理', failed: '失敗',
   archived: '已封存', draft: '草稿', history: '歷史版本', rejected: '已退回',
+}
+
+const activityIconMap: Record<ActivityAction, string> = {
+  SUBMITTED: 'send',
+  APPROVED: 'task_alt',
+  REJECTED: 'cancel',
+  WITHDRAWN: 'undo',
+  PUBLISHED: 'rocket_launch',
+  SWITCHED: 'sync_alt',
+}
+
+const activityActionLabelMap: Record<ActivityAction, string> = {
+  SUBMITTED: '送審',
+  APPROVED: '核准',
+  REJECTED: '退回',
+  WITHDRAWN: '撤回審核',
+  PUBLISHED: '發佈上線',
+  SWITCHED: '切換版本',
+}
+
+function activityLabel(entry: ActivityRecord): string {
+  if (entry.action === 'SWITCHED' && entry.replacedVersionNumber) {
+    return `將目前版本從 ${entry.replacedVersionNumber} 切換為 ${entry.versionNumber}`
+  }
+  return `${activityActionLabelMap[entry.action]} ${entry.versionNumber}`
 }
 
 const pipelineStageLabelMap: Record<string, string> = {

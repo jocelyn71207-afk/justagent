@@ -62,3 +62,47 @@ describe('KnowledgeDetail — isPipelineReview 改讀 activityLog', () => {
     expect(wrapper.find('.pipeline-review-banner').exists()).toBe(true)
   })
 })
+
+describe('KnowledgeDetail — 活動紀錄分頁', () => {
+  it('導覽列有「活動紀錄」項目，插在版本歷程跟分段預覽中間', async () => {
+    const wrapper = await mountDetail('k2')
+    const labels = wrapper.findAll('.detail-nav-item').map(i => i.find('span').text())
+    expect(labels).toEqual(['概覽', '版本歷程', '活動紀錄', '分段預覽', '轉換結果'])
+  })
+
+  it('點擊活動紀錄分頁，依時間新到舊顯示注入的紀錄', async () => {
+    setActivePinia(createPinia())
+    const store = useKnowledgeStore()
+    const item = store.getKnowledgeById('k4')!
+    const versionId = item.versions[0].id // k4-v1.3
+    item.activityLog = [
+      { id: 'a1', action: 'SUBMITTED', by: 'Alice', time: '2026-01-01 09:00', versionId, versionNumber: 'v1.3', note: '測試送審' },
+      { id: 'a2', action: 'APPROVED', by: 'Bob', time: '2026-01-02 09:00', versionId, versionNumber: 'v1.3' },
+    ]
+
+    const wrapper = mount(KnowledgeDetail, {
+      props: { id: 'k4' },
+      global: { plugins: [newRouter()], stubs: STUBS },
+    })
+    await flushPromises()
+    await new Promise(resolve => setTimeout(resolve, 600))
+
+    const tabBtn = wrapper.findAll('.detail-nav-item').find(i => i.text().includes('活動紀錄'))
+    await tabBtn!.trigger('click')
+
+    const items = wrapper.findAll('.activity-timeline-item')
+    expect(items.length).toBe(2)
+    // 新到舊：後 push 的 APPROVED 排最上面
+    expect(items[0].text()).toContain('核准')
+    expect(items[0].text()).toContain('v1.3')
+    expect(items[1].text()).toContain('送審')
+    expect(items[1].text()).toContain('測試送審')
+  })
+
+  it('活動紀錄為空時顯示「尚無活動紀錄」', async () => {
+    const wrapper = await mountDetail('k3') // k3 從未有任何審核動作，mock data 沒有 activityLog 欄位
+    const tabBtn = wrapper.findAll('.detail-nav-item').find(i => i.text().includes('活動紀錄'))
+    await tabBtn!.trigger('click')
+    expect(wrapper.text()).toContain('尚無活動紀錄')
+  })
+})

@@ -298,6 +298,43 @@
 
   .version-timeline-body { flex: 1; }
 
+  // 活動紀錄時間軸（純事件流，不分版本卡片）
+  .activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .activity-timeline-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--divider);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  .activity-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 16px; }
+
+    &--submitted { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
+    &--approved  { background: var(--accent-soft); color: var(--success); }
+    &--published { background: var(--accent-soft); color: var(--success); }
+    &--rejected  { background: var(--danger-soft); color: var(--danger); }
+    &--withdrawn { background: var(--tag-slate-bg); color: var(--tag-slate-text); }
+    &--switched  { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
+  }
+
+  .activity-body { flex: 1; }
+
   // Chunk 卡片（分段預覽 Tab）
   .chunk-card {
     background: var(--surface);

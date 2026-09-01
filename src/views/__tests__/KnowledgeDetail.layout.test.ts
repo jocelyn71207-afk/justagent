@@ -23,11 +23,11 @@ async function mountDetail() {
 }
 
 describe('KnowledgeDetail 導覽列改版', () => {
-  it('左側導覽列渲染 4 個項目，文字依序為概覽/版本歷程/分段預覽/轉換結果', async () => {
+  it('左側導覽列渲染 5 個項目，文字依序為概覽/版本歷程/活動紀錄/分段預覽/轉換結果', async () => {
     const wrapper = await mountDetail()
     const items = wrapper.findAll('.detail-nav-item')
-    expect(items.length).toBe(4)
-    expect(items.map(i => i.find('span').text())).toEqual(['概覽', '版本歷程', '分段預覽', '轉換結果'])
+    expect(items.length).toBe(5)
+    expect(items.map(i => i.find('span').text())).toEqual(['概覽', '版本歷程', '活動紀錄', '分段預覽', '轉換結果'])
   })
 
   it('點擊「版本歷程」導覽項目後，對應分頁內容變成可見', async () => {
