@@ -46,7 +46,7 @@
               <i class="material-symbols-outlined fs-16">task_alt</i>
               已核准，待發佈
             </span>
-            <button class="custom-btn custom-main-btn ml-2" @click="handlePublish">
+            <button class="custom-btn custom-main-btn ml-2" @click="handlePublish()">
               <i class="material-symbols-outlined">rocket_launch</i>立即發佈
             </button>
           </template>
@@ -179,7 +179,7 @@
                       <button class="custom-btn fs-12 py-1 px-2" @click="openCompare(ver.id)">
                         <i class="material-symbols-outlined fs-14">compare</i>與目前版比較
                       </button>
-                      <button class="custom-btn custom-main-btn fs-12 py-1 px-2" @click="handlePublish">
+                      <button class="custom-btn custom-main-btn fs-12 py-1 px-2" @click="handlePublish(ver.id)">
                         <i class="material-symbols-outlined fs-14">rocket_launch</i>立即發佈
                       </button>
                     </template>
@@ -563,8 +563,10 @@ function handleWithdraw() {
 }
 
 // ── 發佈已核准版本 ──
-function handlePublish() {
-  const v = knowledge.value?.versions.find(ver => ver.status === 'approved')
+function handlePublish(versionId?: string) {
+  const v = versionId
+    ? knowledge.value?.versions.find(ver => ver.id === versionId)
+    : (viewedVer.value?.status === 'approved' ? viewedVer.value : knowledge.value?.versions.find(ver => ver.status === 'approved'))
   if (!v) return
   popDialog.confirm(`確定要將 ${v.versionNumber} 發佈上線嗎？發佈後將取代目前的正式版本。`, () => {
     knowledgeStore.publishApprovedVersion(props.id, v.id)
