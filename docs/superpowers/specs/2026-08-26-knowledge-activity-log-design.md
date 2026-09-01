@@ -210,7 +210,7 @@ const isPipelineReview = computed(() => {
 | v1.2 | `SUBMITTED`（Rita, 2026-03-18 10:20）→ `APPROVED`（Ethan, 2026-03-19 09:40）——沒有 `PUBLISHED`，對應現在「已核准・待發佈」的狀態 |
 | v2.0 | `SUBMITTED`（Rita, 2026-04-01 11:00）——還在審核中，只有這一筆 |
 
-共 7 筆紀錄，時間軸連貫，涵蓋 `SUBMITTED`／`APPROVED`／`PUBLISHED` 三種型態。`SWITCHED` 不預先埋假資料，讓使用者實際按下「切換當前版本」時才自然產生第一筆真實紀錄。
+共 9 筆紀錄，時間軸連貫，涵蓋 `SUBMITTED`／`APPROVED`／`PUBLISHED` 三種型態。`SWITCHED` 不預先埋假資料，讓使用者實際按下「切換當前版本」時才自然產生第一筆真實紀錄。
 
 ### 其他 13 筆項目
 
