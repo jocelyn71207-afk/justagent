@@ -446,7 +446,7 @@ function reviewingVersion(item: KnowledgeItem) {
 }
 
 function approvedVersion(item: KnowledgeItem) {
-  return item.versions.find(v => v.status === 'approved')
+  return [...item.versions].reverse().find(v => v.status === 'approved')
 }
 
 function handleBatchArchive() {
@@ -546,7 +546,7 @@ function handleWithdraw(item: KnowledgeItem) {
 
 // ── 發佈已核准版本 ──
 function handlePublish(item: KnowledgeItem) {
-  const v = item.versions.find(ver => ver.status === 'approved')
+  const v = approvedVersion(item)
   if (!v) return
   popDialog.confirm(`確定要將 ${v.versionNumber} 發佈上線嗎？發佈後將取代目前的正式版本。`, () => {
     knowledgeStore.publishApprovedVersion(item.id, v.id)

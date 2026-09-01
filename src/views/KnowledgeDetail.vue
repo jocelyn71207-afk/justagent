@@ -566,7 +566,7 @@ function handleWithdraw() {
 function handlePublish(versionId?: string) {
   const v = versionId
     ? knowledge.value?.versions.find(ver => ver.id === versionId)
-    : (viewedVer.value?.status === 'approved' ? viewedVer.value : knowledge.value?.versions.find(ver => ver.status === 'approved'))
+    : (viewedVer.value?.status === 'approved' ? viewedVer.value : [...(knowledge.value?.versions ?? [])].reverse().find(ver => ver.status === 'approved'))
   if (!v) return
   popDialog.confirm(`確定要將 ${v.versionNumber} 發佈上線嗎？發佈後將取代目前的正式版本。`, () => {
     knowledgeStore.publishApprovedVersion(props.id, v.id)
