@@ -871,7 +871,7 @@ git commit -m "feat(knowledge): wire publishApprovedVersion and switchToVersion 
 
 - [ ] **Step 1：新增失敗的測試**
 
-新建 `src/views/__tests__/KnowledgeDetail.activityLog.test.ts`：
+新建 `src/views/__tests__/KnowledgeDetail.activityLog.test.ts`。注意：`mountDetail` helper 內部會自己呼叫 `setActivePinia(createPinia())` 建立全新的 store 實例，所以「先攔到 store、改資料、再掛載元件」這種測試**不能**透過 `mountDetail` helper 做（helper 建立的是另一個全新實例，先前的資料異動不會反映到元件實際掛載時讀到的 store 上）——這類測試要比照 `KnowledgeDetail.tokens.test.ts` 裡 `mountDetailWithPipelineError` 的寫法，自己依序呼叫 `setActivePinia` → `useKnowledgeStore()` → 改資料 → `mount(...)`，全部用同一個 store 實例：
 
 ```ts
 import { describe, it, expect } from 'vitest'
@@ -881,15 +881,18 @@ import { createRouter, createWebHistory } from 'vue-router'
 import KnowledgeDetail from '../KnowledgeDetail.vue'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 
+const STUBS = { AppSkeleton: true, AppErrorState: true, AppBreadcrumb: true, CreateVersionModal: true, VersionCompareModal: true, ReviewDrawer: true, FilePreviewModal: true, ChunkPreviewTab: true, ConversionLogTab: true }
+
+function newRouter() {
+  return createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
+}
+
+// 簡單案例：不需要在掛載前改資料，直接用既有 mock data
 async function mountDetail(knowledgeId: string) {
   setActivePinia(createPinia())
-  const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
   const wrapper = mount(KnowledgeDetail, {
     props: { id: knowledgeId },
-    global: {
-      plugins: [router],
-      stubs: { AppSkeleton: true, AppErrorState: true, AppBreadcrumb: true, CreateVersionModal: true, VersionCompareModal: true, ReviewDrawer: true, FilePreviewModal: true, ChunkPreviewTab: true, ConversionLogTab: true },
-    },
+    global: { plugins: [newRouter()], stubs: STUBS },
   })
   await flushPromises()
   await new Promise(resolve => setTimeout(resolve, 600))
@@ -903,12 +906,20 @@ describe('KnowledgeDetail — isPipelineReview 改讀 activityLog', () => {
   })
 
   it('reviewing 但完全沒有活動紀錄時，顯示 Pipeline 提示 banner', async () => {
+    // 先建 pinia、取得 store、直接改資料，再用同一個 store 實例掛載元件
+    setActivePinia(createPinia())
     const store = useKnowledgeStore()
     const item = store.getKnowledgeById('k3')! // k3 的 v1.0 目前是 draft，先手動改成 reviewing 但不寫活動紀錄
     item.versions[0].status = 'reviewing'
     item.activityLog = []
 
-    const wrapper = await mountDetail('k3')
+    const wrapper = mount(KnowledgeDetail, {
+      props: { id: 'k3' },
+      global: { plugins: [newRouter()], stubs: STUBS },
+    })
+    await flushPromises()
+    await new Promise(resolve => setTimeout(resolve, 600))
+
     expect(wrapper.find('.pipeline-review-banner').exists()).toBe(true)
   })
 })
@@ -919,7 +930,7 @@ describe('KnowledgeDetail — isPipelineReview 改讀 activityLog', () => {
 - [ ] **Step 2：跑測試，確認第二個案例失敗**
 
 Run: `npx vitest run src/views/__tests__/KnowledgeDetail.activityLog.test.ts`
-Expected: 第一個 PASS（因為 `isPipelineReview` 現在還是讀 `reviewHistory`，k2 的 v2.0 mock data 剛好也還留著 `reviewHistory` 且非空，巧合通過）；第二個 FAIL（k3 手動清空的是 `activityLog` 不是 `reviewHistory`，`reviewHistory` 仍是 `undefined`，讓 banner 邏輯照舊判斷「沒送審過」→ 顯示 banner，這跟預期一致，但這個 PASS 是巧合而非真正驗證到新邏輯——所以緊接著 Step 3 改完程式碼後要重新確認兩個測試都是「因為讀新資料」而通過）
+Expected: 第一個 PASS（因為 `isPipelineReview` 現在還是讀 `reviewHistory`，k2 的 v2.0 mock data 剛好也還留著 `reviewHistory` 且非空，巧合通過）；第二個 FAIL——k3 被改成 `status: 'reviewing'` 且 `activityLog: []`，但 `isPipelineReview` 現在還是讀 `reviewHistory`（仍是 `undefined`），舊邏輯 `!reviewHistory || reviewHistory.length === 0` 剛好也會判斷「沒送審過」而顯示 banner，理論上會 PASS——如果這裡意外 PASS，代表這個案例目前還無法把新舊邏輯的差異逼出來，先跳過这一步的嚴格 FAIL 要求，直接進 Step 3 改完程式碼後在 Step 4 用「兩個測試都要為了正確原因通過」來把關即可，不需要在这一步卡住。
 
 - [ ] **Step 3：`isPipelineReview` 改讀 `activityLog`**
 
@@ -982,7 +993,7 @@ git commit -m "refactor(knowledge): re-point isPipelineReview to read activityLo
 
 - [ ] **Step 1：新增失敗的測試**
 
-在 `KnowledgeDetail.activityLog.test.ts` 新增：
+在 `KnowledgeDetail.activityLog.test.ts` 新增。注意：k2 的 mock data 要到 Task 10 才會被填入完整的 `activityLog`（這個任務執行的當下 k2 還沒有），所以這裡驗證「時間軸正確渲染多筆紀錄、新到舊排序」不能依賴 k2 的真實 mock data，改成用 k4（信用卡申辦資格說明，`k4-v1.3` 版本）手動注入兩筆測試用的 `activityLog`，比照 Task 7 Step 1 第二個測試已經驗證過的「先改資料、再用同一個 store 實例掛載」寫法：
 
 ```ts
 describe('KnowledgeDetail — 活動紀錄分頁', () => {
@@ -992,20 +1003,37 @@ describe('KnowledgeDetail — 活動紀錄分頁', () => {
     expect(labels).toEqual(['概覽', '版本歷程', '活動紀錄', '分段預覽', '轉換結果'])
   })
 
-  it('點擊活動紀錄分頁，依時間新到舊顯示 k2 mock data 的 7 筆紀錄', async () => {
-    const wrapper = await mountDetail('k2')
+  it('點擊活動紀錄分頁，依時間新到舊顯示注入的紀錄', async () => {
+    setActivePinia(createPinia())
+    const store = useKnowledgeStore()
+    const item = store.getKnowledgeById('k4')!
+    const versionId = item.versions[0].id // k4-v1.3
+    item.activityLog = [
+      { id: 'a1', action: 'SUBMITTED', by: 'Alice', time: '2026-01-01 09:00', versionId, versionNumber: 'v1.3', note: '測試送審' },
+      { id: 'a2', action: 'APPROVED', by: 'Bob', time: '2026-01-02 09:00', versionId, versionNumber: 'v1.3' },
+    ]
+
+    const wrapper = mount(KnowledgeDetail, {
+      props: { id: 'k4' },
+      global: { plugins: [newRouter()], stubs: STUBS },
+    })
+    await flushPromises()
+    await new Promise(resolve => setTimeout(resolve, 600))
+
     const tabBtn = wrapper.findAll('.detail-nav-item').find(i => i.text().includes('活動紀錄'))
     await tabBtn!.trigger('click')
 
     const items = wrapper.findAll('.activity-timeline-item')
-    expect(items.length).toBe(7)
-    // 最新一筆是 v2.0 的 SUBMITTED（k2 mock data 裡最後送審的動作）
-    expect(items[0].text()).toContain('送審')
-    expect(items[0].text()).toContain('v2.0')
+    expect(items.length).toBe(2)
+    // 新到舊：後 push 的 APPROVED 排最上面
+    expect(items[0].text()).toContain('核准')
+    expect(items[0].text()).toContain('v1.3')
+    expect(items[1].text()).toContain('送審')
+    expect(items[1].text()).toContain('測試送審')
   })
 
   it('活動紀錄為空時顯示「尚無活動紀錄」', async () => {
-    const wrapper = await mountDetail('k3') // k3 從未有任何審核動作
+    const wrapper = await mountDetail('k3') // k3 從未有任何審核動作，mock data 沒有 activityLog 欄位
     const tabBtn = wrapper.findAll('.detail-nav-item').find(i => i.text().includes('活動紀錄'))
     await tabBtn!.trigger('click')
     expect(wrapper.text()).toContain('尚無活動紀錄')
@@ -1583,24 +1611,42 @@ git commit -m "feat(knowledge): add 僅核准（待發佈） button to ReviewDra
 
 上面 Step 2 的改法是在 `activityLog: [...]` 後面「保留」原本的 `versions: [` 那一行（原文只有一行 `versions: [`，改完後應該還是只有一行，不是兩行）。實際編輯時要小心：改的內容是「在 `lastUpdateBy: 'Rita',` 後面插入 `activityLog: [...],` 這一整段，`versions: [` 那一行維持原樣不動」，不是「取代」`versions: [`。
 
-- [ ] **Step 3：型別檢查與 lint**
+- [ ] **Step 3：新增驗證遷移結果的測試**
+
+在 `src/stores/__tests__/knowledgeStore.activityLog.test.ts` 新增（這個測試檔在 Task 2 已經建立，這裡是延續新增一個 `describe` 區塊，不是新建檔案）：
+
+```ts
+  describe('k2 mock data 遷移結果', () => {
+    it('剛從 mock data 載入時（尚未呼叫任何 action），k2.activityLog 有 9 筆紀錄，依序涵蓋四個版本的完整歷程', () => {
+      const store = useKnowledgeStore()
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      expect(log.length).toBe(9)
+      expect(log.map(e => e.action)).toEqual([
+        'SUBMITTED', 'APPROVED', 'PUBLISHED', // v1.0
+        'SUBMITTED', 'APPROVED', 'PUBLISHED', // v1.1
+        'SUBMITTED', 'APPROVED',              // v1.2（尚未發佈，對應目前「已核准・待發佈」狀態）
+        'SUBMITTED',                          // v2.0（還在審核中）
+      ])
+      expect(log[log.length - 1].versionNumber).toBe('v2.0')
+      expect(log[log.length - 1].by).toBe('Rita')
+    })
+  })
+```
+
+- [ ] **Step 4：型別檢查、lint、跑這個測試確認通過**
 
 Run:
 ```bash
 npx vue-tsc --noEmit -p tsconfig.json
 npx eslint src/stores/knowledgeStore.ts
+npx vitest run src/stores/__tests__/knowledgeStore.activityLog.test.ts
 ```
-Expected: 兩者皆無輸出
-
-- [ ] **Step 4：跑活動紀錄相關測試，確認 k2 的資料符合 Task 8 寫的「7 筆」斷言**
-
-Run: `npx vitest run src/views/__tests__/KnowledgeDetail.activityLog.test.ts src/stores/__tests__/knowledgeStore.activityLog.test.ts`
-Expected: 全數 PASS——注意 Task 2-6 的單元測試會呼叫 `store.submitForReview`／`store.approveVersion` 等 action 對 k2 的 `v2.0`／`v1.2` 動態再寫入新紀錄，這些測試各自獨立 `beforeEach` 重建 store，不會互相污染，但要確認「7 筆」這個斷言（Task 8 Step 1）指的是**尚未被任何測試呼叫過 action 之前**、剛從 mock data 載入的初始狀態，跟 Task 2-6 測試檔各自獨立的 store 實例不衝突。
+Expected: 型別檢查與 lint 皆無輸出；`knowledgeStore.activityLog.test.ts` 全數 PASS（累積到這個任務應該有 9 個測試：Task 2-6 累積的 8 個 + 這裡新增的 1 個）
 
 - [ ] **Step 5：既有測試回歸**
 
-Run: `npx vitest run src/stores/__tests__/knowledgeStore.multiFileSources.test.ts src/views/__tests__/KnowledgeDetail.tokens.test.ts src/views/__tests__/KnowledgeDetail.layout.test.ts`
-Expected: 全數 PASS
+Run: `npx vitest run src/stores/__tests__/knowledgeStore.multiFileSources.test.ts src/views/__tests__/KnowledgeDetail.tokens.test.ts src/views/__tests__/KnowledgeDetail.layout.test.ts src/views/__tests__/KnowledgeDetail.activityLog.test.ts`
+Expected: 全數 PASS（`KnowledgeDetail.activityLog.test.ts` 裡驗證分頁渲染的測試用的是 k4 手動注入的資料，不受 k2 遷移影響，見 Task 8 Step 1）
 
 - [ ] **Step 6：Commit**
 
@@ -1831,7 +1877,7 @@ Expected: 三者皆無錯誤（lint 允許跟本次改動無關的既有錯誤�
 
 確認 dev server 正在跑（`http://localhost:8088/justagent/`），用 Playwright 對同一個 SPA session（用站內導覽點擊，不要用 `page.goto()` 換頁，避免 Pinia store 狀態被重置）依序驗證：
 
-1. 進入 k2 詳情頁，點「活動紀錄」分頁，確認顯示 7 筆紀錄，時間新到舊排序正確（第一筆是 v2.0 送審）。
+1. 進入 k2 詳情頁，點「活動紀錄」分頁，確認顯示 9 筆紀錄，時間新到舊排序正確（第一筆是 v2.0 送審）。
 2. 點「開始審核」，抽屜裡點「僅核准（待發佈）」→ 確認 toast「v2.0 已核准，待發佈」、頁面頂部出現「已核准，待發佈」＋「立即發佈」、「活動紀錄」分頁多一筆 APPROVED（v2.0）。
 3. 在「版本歷程」分頁對 v2.0 按「立即發佈」→ 確認「活動紀錄」多一筆 PUBLISHED（v2.0）。
 4. 對某個歷史版本按「切換當前版本」→ 確認「活動紀錄」多一筆內容是「將目前版本從 A 切換為 B」的 SWITCHED 紀錄。
