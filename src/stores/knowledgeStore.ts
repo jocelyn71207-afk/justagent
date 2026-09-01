@@ -1924,6 +1924,26 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     }
   };
 
+  // 核准但先不發佈：reviewing → approved。這是目前系統裡唯一能讓版本停在
+  // 「已核准・待發佈」狀態的互動路徑（之前這個狀態只存在於手寫的展示資料）。
+  // item 狀態一併設為 approved，觸發既有的「已核准，待發佈」頭部 UI 與「立即發佈」按鈕。
+  const approveVersionPending = (knowledgeId: string, versionId: string) => {
+    const k = getKnowledgeById(knowledgeId);
+    if (!k) return;
+    const v = k.versions.find(ver => ver.id === versionId);
+    if (!v || v.status !== 'reviewing') return;
+
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    v.status = 'approved';
+    v.reviewedBy = 'Current User';
+    v.reviewedTime = now;
+
+    k.status = 'approved';
+    k.lastUpdateBy = 'Current User';
+
+    pushActivity(k, { action: 'APPROVED', by: 'Current User', time: now, versionId: v.id, versionNumber: v.versionNumber });
+  };
+
   const rejectVersion = (knowledgeId: string, versionId: string, feedback?: string) => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
@@ -2720,6 +2740,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     submitForReview,
     restoreToDraft,
     approveVersion,
+    approveVersionPending,
     publishApprovedVersion,
     switchToVersion,
     rejectVersion,

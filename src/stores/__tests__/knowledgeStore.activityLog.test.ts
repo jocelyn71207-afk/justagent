@@ -82,4 +82,40 @@ describe('knowledgeStore — activityLog', () => {
       expect(last2[0].time).toBe(last2[1].time)
     })
   })
+
+  describe('approveVersionPending（新）', () => {
+    it('核准但不發布：版本狀態變 approved、item 狀態變 approved、寫入一筆 APPROVED（不寫 PUBLISHED）', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const versionId = item.versions.find(v => v.versionNumber === 'v2.0')!.id
+
+      store.approveVersionPending('k2', versionId)
+
+      const updated = store.getKnowledgeById('k2')!
+      const version = updated.versions.find(v => v.id === versionId)!
+      expect(version.status).toBe('approved')
+      expect(version.reviewedBy).toBe('Current User')
+      expect(version.reviewedTime).toBeTruthy()
+      expect(updated.status).toBe('approved')
+
+      const log = updated.activityLog ?? []
+      const last = log[log.length - 1]
+      expect(last.action).toBe('APPROVED')
+      expect(last.versionId).toBe(versionId)
+      expect(log.some(e => e.action === 'PUBLISHED' && e.versionId === versionId)).toBe(false)
+    })
+
+    it('版本狀態不是 reviewing 時，不做任何事', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const activeVersionId = item.versions.find(v => v.status === 'active')!.id
+      const beforeLogLength = (item.activityLog ?? []).length
+
+      store.approveVersionPending('k2', activeVersionId)
+
+      const updated = store.getKnowledgeById('k2')!
+      expect(updated.versions.find(v => v.id === activeVersionId)!.status).toBe('active')
+      expect((updated.activityLog ?? []).length).toBe(beforeLogLength)
+    })
+  })
 })
