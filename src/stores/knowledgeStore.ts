@@ -795,6 +795,17 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           ],
         },
       ],
+      activityLog: [
+        {
+          id: 'act-k2-submitted',
+          action: 'SUBMITTED',
+          by: 'Rita',
+          time: '2026-04-01 11:00',
+          versionId: 'k2-v2.0',
+          versionNumber: 'v2.0',
+          note: '已完成新版角色權限重構文件撰寫，權限矩陣與舊角色遷移對應表皆已確認，請審核後發佈以取代 v1.1 現行版本。',
+        },
+      ],
     },
     {
       id: 'k3',

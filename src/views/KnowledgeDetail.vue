@@ -431,11 +431,14 @@ const draftVersion = computed(() =>
   knowledge.value?.versions.find(v => v.status === 'draft' || v.status === 'rejected') ?? null
 )
 
-// Pipeline 審核狀態：reviewing 但沒有 reviewHistory（尚未人工送審）
-const isPipelineReview = computed(() =>
-  viewedVer.value?.status === 'reviewing' &&
-  (!viewedVer.value?.reviewHistory || viewedVer.value.reviewHistory.length === 0)
-)
+// Pipeline 審核狀態：reviewing 但 activityLog 裡沒有這個版本的 SUBMITTED 紀錄（尚未人工送審）
+const isPipelineReview = computed(() => {
+  if (viewedVer.value?.status !== 'reviewing') return false
+  const hasSubmitRecord = knowledge.value?.activityLog?.some(
+    e => e.action === 'SUBMITTED' && e.versionId === viewedVer.value?.id
+  )
+  return !hasSubmitRecord
+})
 
 const renderedContent = computed(() => {
   const c = viewedVer.value?.content
