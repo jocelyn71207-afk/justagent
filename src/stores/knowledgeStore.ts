@@ -1883,6 +1883,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     if (!v || v.status !== 'history') return;
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    const previouslyActive = k.versions.find(ver => ver.status === 'active');
 
     for (const ver of k.versions) {
       if (ver.status === 'active') ver.status = 'history';
@@ -1891,6 +1892,16 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     k.status = 'active';
     k.lastUpdateTime = now;
     k.lastUpdateBy = 'Current User';
+
+    pushActivity(k, {
+      action: 'SWITCHED',
+      by: 'Current User',
+      time: now,
+      versionId: v.id,
+      versionNumber: v.versionNumber,
+      replacedVersionId: previouslyActive?.id,
+      replacedVersionNumber: previouslyActive?.versionNumber,
+    });
   };
 
   // 發佈已核准版本：approved → active。與 approveVersion 分開，
@@ -1911,6 +1922,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     v.status = 'active';
 
     k.lastUpdateBy = 'Current User';
+
+    pushActivity(k, { action: 'PUBLISHED', by: 'Current User', time: now, versionId: v.id, versionNumber: v.versionNumber });
 
     if (k.sourceType === 'MANUAL') {
       k.status = 'processing'

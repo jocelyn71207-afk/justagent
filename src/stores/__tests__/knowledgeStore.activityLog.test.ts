@@ -118,4 +118,41 @@ describe('knowledgeStore — activityLog', () => {
       expect((updated.activityLog ?? []).length).toBe(beforeLogLength)
     })
   })
+
+  describe('publishApprovedVersion 寫入 activityLog', () => {
+    it('發佈已核准版本後，activityLog 新增一筆 PUBLISHED 紀錄', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const versionId = item.versions.find(v => v.versionNumber === 'v1.2')!.id // mock data 裡已經是 approved
+
+      store.publishApprovedVersion('k2', versionId)
+
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      const entry = log[log.length - 1]
+      expect(entry.action).toBe('PUBLISHED')
+      expect(entry.by).toBe('Current User')
+      expect(entry.versionId).toBe(versionId)
+      expect(entry.versionNumber).toBe('v1.2')
+    })
+  })
+
+  describe('switchToVersion 寫入 activityLog', () => {
+    it('切換回歷史版本後，activityLog 新增一筆 SWITCHED 紀錄，帶 replacedVersionId/replacedVersionNumber', () => {
+      const store = useKnowledgeStore()
+      const item = store.getKnowledgeById('k2')!
+      const targetVersion = item.versions.find(v => v.versionNumber === 'v1.0')! // mock data 裡是 history
+      const previouslyActive = item.versions.find(v => v.status === 'active')!
+
+      store.switchToVersion('k2', targetVersion.id)
+
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      const entry = log[log.length - 1]
+      expect(entry.action).toBe('SWITCHED')
+      expect(entry.by).toBe('Current User')
+      expect(entry.versionId).toBe(targetVersion.id)
+      expect(entry.versionNumber).toBe('v1.0')
+      expect(entry.replacedVersionId).toBe(previouslyActive.id)
+      expect(entry.replacedVersionNumber).toBe(previouslyActive.versionNumber)
+    })
+  })
 })
