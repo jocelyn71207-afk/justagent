@@ -155,4 +155,20 @@ describe('knowledgeStore — activityLog', () => {
       expect(entry.replacedVersionNumber).toBe(previouslyActive.versionNumber)
     })
   })
+
+  describe('k2 mock data 遷移結果', () => {
+    it('剛從 mock data 載入時（尚未呼叫任何 action），k2.activityLog 有 9 筆紀錄，依序涵蓋四個版本的完整歷程', () => {
+      const store = useKnowledgeStore()
+      const log = store.getKnowledgeById('k2')!.activityLog ?? []
+      expect(log.length).toBe(9)
+      expect(log.map(e => e.action)).toEqual([
+        'SUBMITTED', 'APPROVED', 'PUBLISHED', // v1.0
+        'SUBMITTED', 'APPROVED', 'PUBLISHED', // v1.1
+        'SUBMITTED', 'APPROVED',              // v1.2（尚未發佈，對應目前「已核准・待發佈」狀態）
+        'SUBMITTED',                          // v2.0（還在審核中）
+      ])
+      expect(log[log.length - 1].versionNumber).toBe('v2.0')
+      expect(log[log.length - 1].by).toBe('Rita')
+    })
+  })
 })

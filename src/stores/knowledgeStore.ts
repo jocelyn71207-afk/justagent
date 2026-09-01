@@ -354,6 +354,17 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       apiSourceName: null,
       lastUpdateTime: '2026-04-01 11:00',
       lastUpdateBy: 'Rita',
+      activityLog: [
+        { id: 'k2-act-1', action: 'SUBMITTED', by: 'Admin', time: '2025-03-10 09:00', versionId: 'k2-v1.0', versionNumber: 'v1.0', note: '首次建立後台角色權限規範，請審核後發佈。' },
+        { id: 'k2-act-2', action: 'APPROVED', by: 'Ethan', time: '2025-03-10 09:20', versionId: 'k2-v1.0', versionNumber: 'v1.0', note: '角色範圍清楚，同意發佈。' },
+        { id: 'k2-act-3', action: 'PUBLISHED', by: 'Ethan', time: '2025-03-10 09:20', versionId: 'k2-v1.0', versionNumber: 'v1.0' },
+        { id: 'k2-act-4', action: 'SUBMITTED', by: 'Rita', time: '2025-11-20 16:40', versionId: 'k2-v1.1', versionNumber: 'v1.1', note: '新增客服角色，補充工單中心權限規範，請審核後發佈以取代 v1.0。' },
+        { id: 'k2-act-5', action: 'APPROVED', by: 'Ethan', time: '2025-11-21 09:10', versionId: 'k2-v1.1', versionNumber: 'v1.1', note: '客服角色範圍合理，同意發佈。' },
+        { id: 'k2-act-6', action: 'PUBLISHED', by: 'Ethan', time: '2025-11-21 09:10', versionId: 'k2-v1.1', versionNumber: 'v1.1' },
+        { id: 'k2-act-7', action: 'SUBMITTED', by: 'Rita', time: '2026-03-18 10:20', versionId: 'k2-v1.2', versionNumber: 'v1.2', note: '僅修正客服角色描述用語，未變動任何權限範圍，送審確認語意修正是否恰當。' },
+        { id: 'k2-act-8', action: 'APPROVED', by: 'Ethan', time: '2026-03-19 09:40', versionId: 'k2-v1.2', versionNumber: 'v1.2', note: '用語修正合理，同意發佈。' },
+        { id: 'k2-act-9', action: 'SUBMITTED', by: 'Rita', time: '2026-04-01 11:00', versionId: 'k2-v2.0', versionNumber: 'v2.0', note: '已完成新版角色權限重構文件撰寫，權限矩陣與舊角色遷移對應表皆已確認，請審核後發佈以取代 v1.1 現行版本。' },
+      ],
       versions: [
         {
           id: 'k2-v1.0',
@@ -411,20 +422,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           reviewNote: '首次建立後台角色權限規範，請審核後發佈。',
           reviewedBy: 'Ethan',
           reviewedTime: '2025-03-10 09:20',
-          reviewHistory: [
-            {
-              action: 'SUBMITTED',
-              by: 'Admin',
-              time: '2025-03-10 09:00',
-              note: '首次建立後台角色權限規範，請審核後發佈。',
-            },
-            {
-              action: 'APPROVED',
-              by: 'Ethan',
-              time: '2025-03-10 09:20',
-              note: '角色範圍清楚，同意發佈。',
-            },
-          ],
         },
         {
           id: 'k2-v1.1',
@@ -500,20 +497,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           reviewNote: '新增客服角色，補充工單中心權限規範，請審核後發佈以取代 v1.0。',
           reviewedBy: 'Ethan',
           reviewedTime: '2025-11-21 09:10',
-          reviewHistory: [
-            {
-              action: 'SUBMITTED',
-              by: 'Rita',
-              time: '2025-11-20 16:40',
-              note: '新增客服角色，補充工單中心權限規範，請審核後發佈以取代 v1.0。',
-            },
-            {
-              action: 'APPROVED',
-              by: 'Ethan',
-              time: '2025-11-21 09:10',
-              note: '客服角色範圍合理，同意發佈。',
-            },
-          ],
         },
         {
           id: 'k2-v1.2',
@@ -578,20 +561,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           reviewNote: '僅修正客服角色描述用語，未變動任何權限範圍，送審確認語意修正是否恰當。',
           reviewedBy: 'Ethan',
           reviewedTime: '2026-03-19 09:40',
-          reviewHistory: [
-            {
-              action: 'SUBMITTED',
-              by: 'Rita',
-              time: '2026-03-18 10:20',
-              note: '僅修正客服角色描述用語，未變動任何權限範圍，送審確認語意修正是否恰當。',
-            },
-            {
-              action: 'APPROVED',
-              by: 'Ethan',
-              time: '2026-03-19 09:40',
-              note: '用語修正合理，同意發佈。',
-            },
-          ],
         },
         {
           id: 'k2-v2.0',
@@ -745,14 +714,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
           embeddingDimension: 3072,
           embeddingCount: 5,
           reviewNote: '已完成新版角色權限重構文件撰寫，權限矩陣與舊角色遷移對應表皆已確認，請審核後發佈以取代 v1.1 現行版本。',
-          reviewHistory: [
-            {
-              action: 'SUBMITTED',
-              by: 'Rita',
-              time: '2026-04-01 11:00',
-              note: '已完成新版角色權限重構文件撰寫，權限矩陣與舊角色遷移對應表皆已確認，請審核後發佈以取代 v1.1 現行版本。',
-            },
-          ],
           conversionLog: [
             {
               stage: 'chunking',
