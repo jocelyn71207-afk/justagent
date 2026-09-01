@@ -21,7 +21,7 @@ export function hasEarnedVersionNumber(status: VersionStatus | undefined | null)
 }
 
 // 知識庫條目層級的完整活動紀錄：送審／核准／退回／撤回／發佈／切換版本，
-// 取代原本掛在每個版本自己身上的 reviewHistory——這幾種動作（尤其發佈、切換）
+// 取代原本掛在每個版本自己身上的審核紀錄機制——這幾種動作（尤其發佈、切換）
 // 本質上常常牽涉兩個版本，掛在單一版本自己身上沒有自然的歸屬。
 export type ActivityAction =
   | 'SUBMITTED'   // 送審
@@ -86,13 +86,6 @@ export interface SourceFileRef {
   fileId: string
   fileName: string
   linkedVersion: number
-}
-
-export interface ReviewRecord {
-  action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN'
-  by: string
-  time: string
-  note?: string
 }
 
 export interface ChunkingConfig {
@@ -231,7 +224,6 @@ export interface KnowledgeVersion {
   reviewedBy?: string
   reviewedTime?: string
   reviewFeedback?: string
-  reviewHistory?: ReviewRecord[]
   conversionLog?: ConversionStep[]
 }
 
@@ -1737,10 +1729,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
       v.status = 'reviewing';
       v.reviewNote = note;
-      v.reviewHistory = [
-        ...(v.reviewHistory ?? []),
-        { action: 'SUBMITTED', by: reviewerId, time: now, note },
-      ];
       k.status = 'reviewing';
 
       pushActivity(k, {
@@ -1804,10 +1792,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     v.status = 'active';
     v.reviewedBy = 'Current User';
     v.reviewedTime = now;
-    v.reviewHistory = [
-      ...(v.reviewHistory ?? []),
-      { action: 'APPROVED', by: 'Current User', time: now },
-    ];
 
     pushActivity(k, { action: 'APPROVED', by: 'Current User', time: now, versionId: v.id, versionNumber: v.versionNumber });
     pushActivity(k, { action: 'PUBLISHED', by: 'Current User', time: now, versionId: v.id, versionNumber: v.versionNumber });
@@ -1928,10 +1912,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
     v.status = 'rejected';
     v.reviewFeedback = feedback;
-    v.reviewHistory = [
-      ...(v.reviewHistory ?? []),
-      { action: 'REJECTED', by: 'Current User', time: now, note: feedback },
-    ];
 
     k.status = 'pending';
 
@@ -1954,10 +1934,6 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
     v.status = 'draft';
-    v.reviewHistory = [
-      ...(v.reviewHistory ?? []),
-      { action: 'WITHDRAWN', by: 'Current User', time: now },
-    ];
 
     k.status = 'pending';
 
