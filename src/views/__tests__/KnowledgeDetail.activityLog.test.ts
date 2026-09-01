@@ -25,7 +25,22 @@ async function mountDetail(knowledgeId: string) {
 
 describe('KnowledgeDetail — isPipelineReview 改讀 activityLog', () => {
   it('有 SUBMITTED 活動紀錄的 reviewing 版本，不顯示 Pipeline 提示 banner', async () => {
-    const wrapper = await mountDetail('k2') // k2 的 v2.0 是 reviewing，且 mock data 裡有對應的 SUBMITTED 活動紀錄
+    // 先建 pinia、取得 store、直接改資料，再用同一個 store 實例掛載元件
+    setActivePinia(createPinia())
+    const store = useKnowledgeStore()
+    const item = store.getKnowledgeById('k2')!
+    const v2 = item.versions.find(v => v.versionNumber === 'v2.0')!
+    item.activityLog = [
+      { id: 'test-act-1', action: 'SUBMITTED', by: 'Rita', time: '2026-04-01 11:00', versionId: v2.id, versionNumber: 'v2.0' },
+    ]
+
+    const wrapper = mount(KnowledgeDetail, {
+      props: { id: 'k2' },
+      global: { plugins: [newRouter()], stubs: STUBS },
+    })
+    await flushPromises()
+    await new Promise(resolve => setTimeout(resolve, 600))
+
     expect(wrapper.find('.pipeline-review-banner').exists()).toBe(false)
   })
 
