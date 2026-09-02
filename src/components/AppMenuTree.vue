@@ -98,7 +98,7 @@
       <div class="rail-spacer"></div>
 
       <div class="rail-bottom">
-        <RouterLink to="/view/CompanyTeamSettings" class="rail-btn" :class="{ active: route.path === '/view/CompanyTeamSettings' }" v-tooltip.right="'企業/團隊設定'">
+        <RouterLink to="/view/CompanyTeamSettings" class="rail-btn" :class="{ active: route.path === '/view/CompanyTeamSettings' }" v-tooltip.right="'企業設定'">
           <i class="material-symbols-outlined">settings</i>
         </RouterLink>
 
@@ -110,21 +110,31 @@
 
     <!-- 常駐選單面板：顯示「目前選中團隊」的導覽項目，不隨滑鼠移開而消失；
          切換團隊時內容淡入淡出，避免整塊文字瞬間跳掉 -->
-    <div class="side-panel" v-if="showTeamPanel">
+    <div class="side-panel" :class="{ 'is-collapsed': isSidePanelCollapsed }" v-if="showTeamPanel">
       <!-- 團隊切換：放在常駐面板最上方，點擊展開團隊清單；不再長在側邊
-           圖示條上——圖示條留給真正「全域」的單元 -->
+           圖示條上——圖示條留給真正「全域」的單元。收合按鈕跟切換器並排同一
+           列；收合後這一列不保留團隊圖示/名稱，只留收合按鈕本身 -->
       <div class="side-panel-switcher" ref="teamSwitcherBtn"
         :class="{ 'is-open': isTeamSwitcherOpen }"
         role="button" tabindex="0" :aria-expanded="isTeamSwitcherOpen"
-        @click="isTeamSwitcherOpen = !isTeamSwitcherOpen"
-        @keydown.enter.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
-        @keydown.space.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen">
-        <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam!.name) }}</span>
-        <span class="side-panel-switcher-name">{{ selectedTeam!.name }}</span>
-        <i class="material-symbols-outlined side-panel-switcher-caret">unfold_more</i>
+        @click="!isSidePanelCollapsed && (isTeamSwitcherOpen = !isTeamSwitcherOpen)"
+        @keydown.enter.prevent="!isSidePanelCollapsed && (isTeamSwitcherOpen = !isTeamSwitcherOpen)"
+        @keydown.space.prevent="!isSidePanelCollapsed && (isTeamSwitcherOpen = !isTeamSwitcherOpen)">
+        <template v-if="!isSidePanelCollapsed">
+          <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam!.name) }}</span>
+          <span class="side-panel-switcher-name">{{ selectedTeam!.name }}</span>
+          <i class="material-symbols-outlined side-panel-switcher-caret">unfold_more</i>
+        </template>
+
+        <button type="button" class="side-panel-collapse-toggle"
+          v-tooltip.right="isSidePanelCollapsed ? '展開側邊選單' : '收合側邊選單'"
+          :aria-label="isSidePanelCollapsed ? '展開側邊選單' : '收合側邊選單'"
+          @click.stop="toggleSidePanelCollapsed">
+          <i class="material-symbols-outlined">{{ isSidePanelCollapsed ? 'dock_to_right' : 'dock_to_left' }}</i>
+        </button>
 
         <Transition name="rail-expand">
-          <div class="rail-popover team-switch-list" v-show="isTeamSwitcherOpen">
+          <div class="rail-popover team-switch-list" v-show="isTeamSwitcherOpen && !isSidePanelCollapsed">
             <div class="team-switch-item" v-for="(item, i) in companyTeams" :key="'switch' + item.id"
               :class="{ active: item.id === selectedTeamId }"
               @click.stop="switchTeam(item.id)">
@@ -141,61 +151,92 @@
     <Transition name="panel-fade" mode="out-in">
     <div :key="selectedTeamId ?? ''">
       <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam!.id }">
-        <i class="material-symbols-outlined">folder</i>團隊專案
+        class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam!.id }"
+        v-tooltip.right="isSidePanelCollapsed ? '團隊專案' : null">
+        <i class="material-symbols-outlined">folder</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">團隊專案</span>
       </RouterLink>
 
-      <!-- 技能管理：第二層，展開才看到子項目 -->
-      <div class="side-panel-item side-panel-group"
-        role="button" tabindex="0"
-        :aria-expanded="selectedTeam!.isSkillOpen"
-        :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
-        @click="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
-        @keydown.enter.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
-        @keydown.space.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen">
-        <i class="material-symbols-outlined">psychology</i>AI 技能
-        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam!.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
-      </div>
-      <div class="side-panel-sub" v-show="selectedTeam!.isSkillOpen">
-        <RouterLink to="/view/Skills"
-          class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
-          <i class="material-symbols-outlined">auto_awesome</i>技能管理
-        </RouterLink>
-        <RouterLink to="/view/SkillTest"
-          class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
-          <i class="material-symbols-outlined">science</i>技能測試沙盒
-        </RouterLink>
+      <!-- 技能管理：第二層，展開才看到子項目；收合後改用滑鼠移入/focus 彈出的浮層 -->
+      <div class="side-panel-nav-group"
+        @mouseenter="openGroupFlyout('skill')" @mouseleave="closeGroupFlyout('skill')"
+        @focusin="openGroupFlyout('skill')" @focusout="closeGroupFlyout('skill')">
+        <div class="side-panel-item side-panel-group"
+          role="button" tabindex="0"
+          :aria-expanded="selectedTeam!.isSkillOpen"
+          :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
+          @click="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
+          @keydown.enter.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
+          @keydown.space.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen">
+          <i class="material-symbols-outlined">psychology</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">AI 技能</span>
+          <i class="material-symbols-outlined side-panel-caret" v-if="!isSidePanelCollapsed">{{ selectedTeam!.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+        </div>
+        <div class="side-panel-sub" v-show="!isSidePanelCollapsed && selectedTeam!.isSkillOpen">
+          <RouterLink to="/view/Skills"
+            class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
+            <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
+          </RouterLink>
+          <RouterLink to="/view/SkillTest"
+            class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
+            <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
+          </RouterLink>
+        </div>
+        <div class="rail-popover side-panel-flyout" v-show="isSidePanelCollapsed && openFlyoutGroup === 'skill'">
+          <div class="rail-popover-label">AI 技能</div>
+          <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
+            <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
+          </RouterLink>
+          <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
+            <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
+          </RouterLink>
+        </div>
       </div>
 
-      <!-- 共享資源庫：第二層，展開才看到子項目 -->
-      <div class="side-panel-item side-panel-group"
-        role="button" tabindex="0"
-        :aria-expanded="selectedTeam!.isResourceOpen"
-        :class="{ active: route.path === '/view/ResourceLibrary' || route.path === '/view/KnowledgeBase' }"
-        @click="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen"
-        @keydown.enter.prevent="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen"
-        @keydown.space.prevent="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen">
-        <i class="material-symbols-outlined">cloud</i>共享資源庫
-        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam!.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
-      </div>
-      <div class="side-panel-sub" v-show="selectedTeam!.isResourceOpen">
-        <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-          class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam!.id }">
-          <i class="material-symbols-outlined">folder_open</i>共用檔案管理
-        </RouterLink>
-        <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-          class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam!.id }">
-          <i class="material-symbols-outlined">menu_book</i>知識庫管理
-        </RouterLink>
+      <!-- 共享資源庫：第二層，展開才看到子項目；收合後改用滑鼠移入/focus 彈出的浮層 -->
+      <div class="side-panel-nav-group"
+        @mouseenter="openGroupFlyout('resource')" @mouseleave="closeGroupFlyout('resource')"
+        @focusin="openGroupFlyout('resource')" @focusout="closeGroupFlyout('resource')">
+        <div class="side-panel-item side-panel-group"
+          role="button" tabindex="0"
+          :aria-expanded="selectedTeam!.isResourceOpen"
+          :class="{ active: route.path === '/view/ResourceLibrary' || route.path === '/view/KnowledgeBase' }"
+          @click="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen"
+          @keydown.enter.prevent="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen"
+          @keydown.space.prevent="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen">
+          <i class="material-symbols-outlined">cloud</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">共享資源庫</span>
+          <i class="material-symbols-outlined side-panel-caret" v-if="!isSidePanelCollapsed">{{ selectedTeam!.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+        </div>
+        <div class="side-panel-sub" v-show="!isSidePanelCollapsed && selectedTeam!.isResourceOpen">
+          <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
+            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam!.id }">
+            <i class="material-symbols-outlined">folder_open</i><span class="side-panel-item-label">共用檔案管理</span>
+          </RouterLink>
+          <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
+            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam!.id }">
+            <i class="material-symbols-outlined">menu_book</i><span class="side-panel-item-label">知識庫管理</span>
+          </RouterLink>
+        </div>
+        <div class="rail-popover side-panel-flyout" v-show="isSidePanelCollapsed && openFlyoutGroup === 'resource'">
+          <div class="rail-popover-label">共享資源庫</div>
+          <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
+            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam!.id }">
+            <i class="material-symbols-outlined">folder_open</i><span class="side-panel-item-label">共用檔案管理</span>
+          </RouterLink>
+          <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
+            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam!.id }">
+            <i class="material-symbols-outlined">menu_book</i><span class="side-panel-item-label">知識庫管理</span>
+          </RouterLink>
+        </div>
       </div>
 
       <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam!.id }">
-        <i class="material-symbols-outlined">lock_person</i>權限管理
+        class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam!.id }"
+        v-tooltip.right="isSidePanelCollapsed ? '權限管理' : null">
+        <i class="material-symbols-outlined">lock_person</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">權限管理</span>
       </RouterLink>
       <RouterLink :to="{ path: '/view/ProjectTrashCans', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam!.id }">
-        <i class="material-symbols-outlined">auto_delete</i>專案垃圾桶
+        class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam!.id }"
+        v-tooltip.right="isSidePanelCollapsed ? '專案垃圾桶' : null">
+        <i class="material-symbols-outlined">auto_delete</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">專案垃圾桶</span>
       </RouterLink>
     </div>
     </Transition>
@@ -225,7 +266,7 @@
       <i class="material-symbols-outlined">lightbulb</i>探索
     </RouterLink>
     <RouterLink to="/view/CompanyTeamSettings" class="mobile-item" @click="closeMobileMenu">
-      <i class="material-symbols-outlined">settings</i>企業/團隊設定
+      <i class="material-symbols-outlined">settings</i>企業設定
     </RouterLink>
 
     <!-- 團隊區塊：跟桌機版共用同一套「切換器＋常駐面板」模型，不再是手機獨有的
@@ -373,6 +414,25 @@ function switchTeam(id: string) {
   }
   // 其餘頁面（技能清單／技能測試沙盒）直接讀 store 的 selectedTeamId，不吃
   // URL query，畫面會自動反映新選的團隊，不用額外導覽
+}
+
+// 側邊選單第二層（team side-panel）是否收合成迷你圖示條：純畫面狀態、不記憶，
+// 每次重新整理／換頁都預設展開（手機版不需要，手機本來就是關閉即收起的抽屜）
+const isSidePanelCollapsed = ref(false);
+function toggleSidePanelCollapsed() {
+  isSidePanelCollapsed.value = !isSidePanelCollapsed.value;
+  openFlyoutGroup.value = null;
+}
+
+// 收合後「AI 技能」「共享資源庫」改用滑鼠移入/鍵盤 focus 彈出的浮層瀏覽子
+// 項目，跟展開狀態下的 isSkillOpen/isResourceOpen（內縮清單開合狀態）分開
+// 記錄——收合再展開不會動到後者，子群組原本的開合狀態原樣保留
+const openFlyoutGroup = ref<'skill' | 'resource' | null>(null);
+function openGroupFlyout(key: 'skill' | 'resource') {
+  if (isSidePanelCollapsed.value) openFlyoutGroup.value = key;
+}
+function closeGroupFlyout(key: 'skill' | 'resource') {
+  if (openFlyoutGroup.value === key) openFlyoutGroup.value = null;
 }
 
 // Rail 上企業／團隊合併的入口：常駐圖示，不用先點頭像才找得到企業切換

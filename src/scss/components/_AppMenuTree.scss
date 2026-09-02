@@ -236,7 +236,53 @@
   border-right: 1px solid var(--divider);
   padding: 20px 10px;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width $menutransition ease, padding $menutransition ease;
   @include use-scroll-bar(var(--scrollbar-a50));
+
+  // 收合成迷你圖示條，跟 rail 同寬——兩條圖示條並排視覺上不會忽寬忽窄
+  &.is-collapsed {
+    width: $railWidth;
+    padding: 20px 8px;
+  }
+}
+
+// 收合按鈕跟團隊切換器並排同一列，不是浮動把手也不是另外自成一列
+.side-panel-collapse-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+
+  i { font-size: 17px; }
+
+  &:hover { background: var(--sidebar-hover); color: var(--text); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+.side-panel.is-collapsed .side-panel-switcher {
+  justify-content: center;
+}
+.side-panel.is-collapsed .side-panel-collapse-toggle {
+  margin-left: 0;
+}
+
+// 收合後所有導覽項目置中顯示圖示（文字用 v-if 移除，不是 CSS 藏起來）
+.side-panel.is-collapsed .side-panel-item {
+  justify-content: center;
+  padding: 9px 0;
+}
+
+// 群組（AI 技能／共享資源庫）的容器：收合後靠這個當 .rail-popover flyout 的定位基準
+.side-panel-nav-group {
+  position: relative;
 }
 
 .side-panel-title {

@@ -149,9 +149,10 @@
     <i class="material-symbols-outlined ctrl-btn" v-if="isShowRightFrame">dock_to_left</i>
   </div>
 
-  <!-- 主功能小介面：改放左側直向 rail，為未來畫筆/文字/圖形等繪圖工具預留同一個區域 -->
+  <!-- 主功能小介面：移回畫布下方置中懸浮 -->
   <div ref="projectFnBox"
     :class="['AiViewr-ctrl-box project-fn-box', { smailleScreen: centerViewWidth <= 500, 'in-multi-choice-mode': isMultiChoiceAiViewerMode }]"
+    :style="projectFnBoxStyle"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
     <!-- 常態功能按鈕 -->
@@ -1784,10 +1785,7 @@ onUnmounted(() => {
 });
 
 
-// 專案主功能小介面 DOM 元素
-// 注意: project-fn-box 改成左側直向固定位置後，這裡算出來的 projectFnBoxStyle
-// 已經不再綁定到樣板上（改用純 CSS 定位），先保留這段計算避免動到下面呼叫它的其他流程，
-// 之後確定沒有地方需要再一併清掉。
+// 專案主功能小介面 DOM 元素：移回畫布下方置中，重新綁回樣板的 :style
 const projectFnBox = ref<HTMLElement | null>(null);
 const projectFnBoxStyle = ref<any>({});
 const calcProjectFnBoxTimer: any = ref(null);
