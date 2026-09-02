@@ -1553,6 +1553,10 @@
       flex: 0 0 auto;
     }
 
+    &__approve-pending {
+      flex: 1;
+    }
+
     &__approve {
       flex: 1;
     }
@@ -1572,13 +1576,18 @@
   background: var(--tag-blue-bg);
   color: var(--tag-blue-text);
 }
+.status-badge--approved {
+  background: var(--tag-teal-bg);
+  color: var(--tag-teal-text);
+}
 .status-badge--needs_update {
   background: var(--tag-amber-bg);
   color: var(--tag-amber-text);
 }
 .status-badge--pending {
-  background: var(--surface);
-  color: var(--text-muted);
+  // 跟 --history 同一個問題：--surface 在淺色主題下等於卡片背景色，等於沒有 badge。
+  background: var(--tag-slate-bg);
+  color: var(--tag-slate-text);
 }
 // --failed 不在這裡重複宣告：跟 _custom.scss 全域檔案狀態 badge 的
 // --failed（同樣 danger-soft／danger）是同一組顏色，故直接沿用該定義即可。
@@ -1593,8 +1602,10 @@
   color: var(--tag-amber-text);
 }
 .status-badge--history {
-  background: var(--surface);
-  color: var(--text-muted);
+  // 原本用 --surface 當底色，在淺色主題下跟卡片背景同色（#FFFFFF），
+  // 視覺上完全看不出是個 badge，改用有實際對比的中性灰 tag 色。
+  background: var(--tag-slate-bg);
+  color: var(--tag-slate-text);
 }
 .status-badge--rejected {
   background: var(--danger-soft);

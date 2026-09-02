@@ -33,7 +33,7 @@
               <span class="compare-selector-label">舊版本</span>
               <select class="custom-input compare-select" v-model="selectedV1Id">
                 <option v-for="v in knowledge.versions" :key="v.id" :value="v.id">
-                  {{ v.versionNumber }} — {{ statusLabelMap[v.status] }}
+                  {{ versionLabel(v) }} — {{ statusLabelMap[v.status] }}
                 </option>
               </select>
             </div>
@@ -42,7 +42,7 @@
               <span class="compare-selector-label">新版本</span>
               <select class="custom-input compare-select" v-model="selectedV2Id">
                 <option v-for="v in knowledge.versions" :key="v.id" :value="v.id">
-                  {{ v.versionNumber }} — {{ statusLabelMap[v.status] }}
+                  {{ versionLabel(v) }} — {{ statusLabelMap[v.status] }}
                 </option>
               </select>
             </div>
@@ -55,7 +55,7 @@
             <div class="diff-column">
               <h6>
                 <span class="d-flex align-items-center gap-2">
-                  <span class="version-badge" :class="{ major: v1.versionNumber.endsWith('.0') }">{{ v1.versionNumber }}</span>
+                  <span class="version-badge" :class="{ major: hasEarnedVersionNumber(v1.status) && v1.versionNumber.endsWith('.0') }">{{ versionLabel(v1) }}</span>
                   舊版本
                 </span>
                 <span :class="['status-badge', `status-badge--${v1.status}`]">{{ statusLabelMap[v1.status] }}</span>
@@ -88,7 +88,7 @@
             <div class="diff-column">
               <h6>
                 <span class="d-flex align-items-center gap-2">
-                  <span class="version-badge" :class="{ major: v2.versionNumber.endsWith('.0') }">{{ v2.versionNumber }}</span>
+                  <span class="version-badge" :class="{ major: hasEarnedVersionNumber(v2.status) && v2.versionNumber.endsWith('.0') }">{{ versionLabel(v2) }}</span>
                   新版本
                 </span>
                 <span :class="['status-badge', `status-badge--${v2.status}`]">{{ statusLabelMap[v2.status] }}</span>
@@ -132,7 +132,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useKnowledgeStore } from '@/stores/knowledgeStore';
+import { useKnowledgeStore, hasEarnedVersionNumber } from '@/stores/knowledgeStore';
+import type { KnowledgeVersion } from '@/stores/knowledgeStore';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -171,8 +172,15 @@ const tagsChanged = computed(() => {
 const statusLabelMap: Record<string, string> = {
   active:    '正式發布',
   reviewing: '審核中',
+  approved:  '已核准・待發佈',
   draft:     '草稿版本',
   history:   '歷史紀錄',
   rejected:  '已退回',
 };
+
+// 版號只在審核通過後才定案，審核中／草稿版本一律不顯示版號
+function versionLabel(v: KnowledgeVersion | null | undefined): string {
+  if (!v) return '—';
+  return hasEarnedVersionNumber(v.status) ? v.versionNumber : '—';
+}
 </script>

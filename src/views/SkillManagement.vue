@@ -404,6 +404,29 @@
             </div>
 
             <div class="dsd-note">
+              <label class="dsd-note-label">版本名稱</label>
+              <div class="dsd-version-name-row">
+                <input
+                  v-model="submitVersionName"
+                  class="custom-input"
+                  maxlength="40"
+                  placeholder="簡短描述這個版本，例如「VIP 退貨優惠更新」"
+                  @keydown.enter="submitVersionName.trim() && confirmSubmitSkill()"
+                />
+                <button
+                  type="button"
+                  class="custom-btn dsd-ai-suggest-btn"
+                  :disabled="suggestingVersionName"
+                  title="AI 建議命名（會參考你填的說明，可自行修改）"
+                  @click="suggestVersionNameNow"
+                >
+                  <i class="material-symbols-outlined">{{ suggestingVersionName ? 'progress_activity' : 'auto_awesome' }}</i>
+                  AI 建議
+                </button>
+              </div>
+            </div>
+
+            <div class="dsd-note">
               <label class="dsd-note-label">說明（選填）</label>
               <textarea
                 v-model="submitNote"
@@ -417,7 +440,11 @@
 
             <div class="dsd-footer">
               <button class="custom-btn" @click="submitConfirmSkill = null">取消</button>
-              <button class="custom-btn custom-main-btn" @click="confirmSubmitSkill">
+              <button
+                class="custom-btn custom-main-btn"
+                :disabled="!submitVersionName.trim()"
+                @click="confirmSubmitSkill"
+              >
                 <i class="material-symbols-outlined">send</i>送出審核
               </button>
             </div>
@@ -525,6 +552,8 @@ const submitScope = ref<'enterprise' | 'team'>('enterprise')
 const submitTeamLocked = ref(false)
 const submitTeamName = ref('')
 const submitNote = ref('')
+const submitVersionName = ref('')
+const suggestingVersionName = ref(false)
 
 // 送審 dialog 的團隊選單：彙整目前 Library 團隊技能與其他個人技能已填寫過的團隊名稱
 const knownTeamNames = computed(() => {
@@ -621,19 +650,39 @@ function handlePersonalSubmit(skill: Skill) {
   submitScope.value = teamAlreadyPublished ? 'enterprise' : (skill.targetScope ?? 'enterprise')
   submitTeamName.value = skill.targetTeamName ?? knownTeamNames.value[0] ?? ''
   submitNote.value = ''
+  submitVersionName.value = ''
+  // 開啟 dialog 就先給一個 AI 建議草稿（此時說明通常還沒填，用泛用建議打底），
+  // 使用者填完說明後可以再按「AI 建議」重新生成一次更貼近內容的名稱
+  suggestVersionNameNow()
+}
+
+async function suggestVersionNameNow() {
+  if (!submitConfirmSkill.value) return
+  suggestingVersionName.value = true
+  try {
+    submitVersionName.value = await store.suggestVersionName(
+      submitConfirmSkill.value.id,
+      submitNote.value,
+      submitMode.value
+    )
+  } finally {
+    suggestingVersionName.value = false
+  }
 }
 
 function confirmSubmitSkill() {
-  if (!submitConfirmSkill.value) return
+  if (!submitConfirmSkill.value || !submitVersionName.value.trim()) return
   store.submitPersonalSkill(
     submitConfirmSkill.value.id,
     submitMode.value,
     submitNote.value,
+    submitVersionName.value.trim(),
     submitScope.value,
     submitScope.value === 'team' ? submitTeamName.value : undefined
   )
   submitConfirmSkill.value = null
   submitNote.value = ''
+  submitVersionName.value = ''
 }
 
 function handlePersonalDelete(skill: Skill) {

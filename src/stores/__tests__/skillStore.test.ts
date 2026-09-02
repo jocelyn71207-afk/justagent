@@ -21,12 +21,14 @@ describe('skillStore', () => {
       const otherStatusesBefore = store.getSkillVersions('ext-cs-return-001')
         .filter(v => v.id !== reviewing!.id)
         .map(v => v.status)
+      const activeCountBefore = otherStatusesBefore.filter(s => s === 'active').length
 
       store.approveSkillVersion('ext-cs-return-001', reviewing!.id)
 
       const versions = store.getSkillVersions('ext-cs-return-001')
       expect(versions.find(v => v.id === reviewing!.id)!.status).toBe('approved')
-      expect(versions.filter(v => v.status === 'active').length).toBe(0)
+      // 核准新版號不會多出一個 active，也不會把既有生效版本動掉
+      expect(versions.filter(v => v.status === 'active').length).toBe(activeCountBefore)
       // 其他版本的狀態不受影響（審核通過不會去動任何現有生效版本）
       const otherStatusesAfter = versions.filter(v => v.id !== reviewing!.id).map(v => v.status)
       expect(otherStatusesAfter).toEqual(otherStatusesBefore)
@@ -155,6 +157,16 @@ describe('skillStore', () => {
       store.detachFromUpstream(target!.id)
       expect(store.findSkill(target!.id)!.auditLog?.some(r => r.action === 'UPSTREAM_DETACHED')).toBe(true)
     })
+
+    it('setLibraryActiveVersion 寫入 VERSION_ACTIVATED，並記錄切到的版本名稱', () => {
+      const store = useSkillStore()
+      // team-marketing-001：v1.0.0 history、v1.1.0 active
+      const target = store.getSkillVersions('team-marketing-001').find(v => v.status === 'history')!
+      store.setLibraryActiveVersion('team-marketing-001', target.id)
+      const rec = store.findSkill('team-marketing-001')!.auditLog?.find(r => r.action === 'VERSION_ACTIVATED')
+      expect(rec).toBeDefined()
+      expect(rec!.detail).toBe(target.versionName)
+    })
   })
 
   describe('測試歷史', () => {
@@ -192,7 +204,7 @@ describe('skillStore', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]
       expect(skill.personalStatus).toBe('available')
-      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明')
+      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本')
       expect(store.myPersonalSkills[0].personalStatus).toBe('reviewing')
       expect(store.myPersonalSkills[0].submitNote).toBe('測試說明')
       expect(store.myPersonalSkills[0].submitMode).toBe('new_skill')
@@ -200,7 +212,40 @@ describe('skillStore', () => {
 
     it('submitPersonalSkill 對不存在 id 不報錯', () => {
       const store = useSkillStore()
-      expect(() => store.submitPersonalSkill('nonexistent', 'new_skill', '')).not.toThrow()
+      expect(() => store.submitPersonalSkill('nonexistent', 'new_skill', '', '測試版本')).not.toThrow()
+    })
+
+    it('submitPersonalSkill 在 version_update 模式下，會在來源 Library 技能新增一筆 reviewing 版本，帶著使用者命名的版本名稱', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.derivedFrom)
+      expect(skill).toBeDefined()
+      const before = store.getSkillVersions(skill!.derivedFrom!).length
+
+      store.submitPersonalSkill(skill!.id, 'version_update', '改動說明', 'VIP 退貨優惠更新')
+
+      const versions = store.getSkillVersions(skill!.derivedFrom!)
+      expect(versions.length).toBe(before + 1)
+      const newVersion = versions.find(v => v.status === 'reviewing' && v.versionName === 'VIP 退貨優惠更新')
+      expect(newVersion).toBeDefined()
+      // 版本歷史顯示的是名稱，版號只是內部序號，不要求特定格式
+      expect(newVersion!.versionTag).toBeTruthy()
+    })
+
+    it('suggestVersionName 有說明文字時，摘要成短標題（優先參考使用者已填的內容）', async () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills[0]
+      const name = await store.suggestVersionName(skill.id, '新增超保固期彈性處理，VIP 客戶延長退貨期', 'version_update')
+      expect(name.length).toBeGreaterThan(0)
+      expect(name.length).toBeLessThanOrEqual(17) // 16 字 + 省略號
+    })
+
+    it('suggestVersionName 沒有說明文字時，退回用技能名稱＋送審模式給泛用建議', async () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills[0]
+      const nameUpdate = await store.suggestVersionName(skill.id, '', 'version_update')
+      expect(nameUpdate).toContain('功能更新')
+      const nameNew = await store.suggestVersionName(skill.id, '   ', 'new_skill')
+      expect(nameNew).toContain('首次發布')
     })
 
     it('deletePersonalSkill 從列表中移除', () => {
@@ -360,7 +405,7 @@ describe('skillStore', () => {
       const store = useSkillStore()
       const p002 = store.myPersonalSkills.find(s => s.id === 'personal-002')!
       const p001 = store.myPersonalSkills.find(s => s.id === 'personal-001')!
-      expect(p002.hasLibraryUpdate).toBe(true) // derivedFromVersion 2.4.0 != sys-cs-001 目前 2.5.0
+      expect(p002.hasLibraryUpdate).toBe(true) // derivedFromVersion 2.3.0 != sys-cs-001 目前 2.4.0
       expect(p001.hasLibraryUpdate).toBe(false) // derivedFromVersion 2.2.0 == sys-meeting-001 目前 2.2.0
     })
 
@@ -465,7 +510,7 @@ describe('skillStore', () => {
     it('updateSkill 對 reviewing 狀態的個人技能不會意外改動 personalStatus', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]
-      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明')
+      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本')
       expect(store.findSkill(skill.id)?.personalStatus).toBe('reviewing')
       store.updateSkill(skill.id, {
         name: skill.name!,

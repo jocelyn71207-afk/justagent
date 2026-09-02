@@ -39,13 +39,11 @@
             <div>
               <div class="fs-16 fw-700">{{ knowledge.title }}</div>
               <div class="d-flex align-items-center gap-2 mt-1">
-                <span class="version-badge" :class="{ major: version.versionNumber.endsWith('.0') }">
-                  {{ version.versionNumber }}
-                </span>
                 <span class="status-badge status-badge--reviewing">
                   <i class="material-symbols-outlined">pending_actions</i>
                   審核中
                 </span>
+                <span class="fc-grey-1 fs-12">審核通過後才會正式取得版本號</span>
               </div>
             </div>
           </div>
@@ -108,6 +106,10 @@
           <i class="material-symbols-outlined">undo</i>
           退回
         </button>
+        <button class="custom-btn review-footer__approve-pending" @click="handleApprovePending">
+          <i class="material-symbols-outlined">task_alt</i>
+          僅核准（待發佈）
+        </button>
         <button class="custom-btn custom-main-btn review-footer__approve" @click="handleApprove">
           <i class="material-symbols-outlined">verified</i>
           通過並發布
@@ -145,6 +147,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
   'approved': [];
+  'approvedPending': [];
   'rejected': [];
 }>();
 
@@ -176,6 +179,14 @@ function handleApprove() {
   close();
   emit('approved');
   popDialog.toast(`已發布 ${vNum}`, 2000);
+}
+
+function handleApprovePending() {
+  knowledgeStore.approveVersionPending(props.knowledgeId, props.versionId);
+  const vNum = version.value?.versionNumber ?? '';
+  close();
+  emit('approvedPending');
+  popDialog.toast(`${vNum} 已核准，待發佈`, 2000);
 }
 
 function handleReject() {

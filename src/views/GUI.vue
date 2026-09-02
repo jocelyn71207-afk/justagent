@@ -169,11 +169,12 @@
           <span class="process-type-badge badge--raw">原始上傳</span>
         </div>
 
-        <h5 class="mt-3">知識庫項目狀態 .status-badge--*（KnowledgeBase 專屬 10 態）</h5>
+        <h5 class="mt-3">知識庫項目狀態 .status-badge--*（KnowledgeBase 專屬 11 態）</h5>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
           <span class="status-badge status-badge--active">已發布</span>
           <span class="status-badge status-badge--processing">處理中</span>
           <span class="status-badge status-badge--reviewing">審核中</span>
+          <span class="status-badge status-badge--approved">已核准・待發佈</span>
           <span class="status-badge status-badge--needs_update">需更新</span>
           <span class="status-badge status-badge--pending">待處理</span>
           <span class="status-badge status-badge--failed">失敗</span>

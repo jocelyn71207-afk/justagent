@@ -6,7 +6,7 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">知識內容管理</div>
+          <div class="banner-title">知識庫管理</div>
         </div>
       </div>
 
@@ -149,7 +149,7 @@
                     {{ statusLabelMap[item.status] }}
                   </span>
                 </td>
-                <td class="fc-grey-1 fs-13">{{ activeVersion(item)?.versionNumber ?? '—' }}</td>
+                <td class="fc-grey-1 fs-13">{{ representativeVersionNumber(item) }}</td>
                 <td class="fc-grey-1 fs-13">{{ item.lastUpdateTime }}</td>
                 <td>
                   <div class="ops-menu-wrap" @click.stop>
@@ -179,6 +179,11 @@
                         </div>
                         <div class="option-item" @click="openReview(item); closeOps()">
                           <i class="material-symbols-outlined">rate_review</i>開始審核
+                        </div>
+                      </template>
+                      <template v-if="approvedVersion(item)">
+                        <div class="option-item" @click="handlePublish(item); closeOps()">
+                          <i class="material-symbols-outlined">rocket_launch</i>立即發佈
                         </div>
                       </template>
                       <template v-if="item.status === 'needs_update' || item.status === 'failed'">
@@ -218,15 +223,24 @@
                     </div>
                     <div class="row-detail-field">
                       <dt>本次更新說明</dt>
-                      <dd>{{ activeVersion(item)?.updateNote || '（無）' }}</dd>
+                      <dd>{{ representativeVersion(item)?.updateNote || '（無）' }}</dd>
                     </div>
-                    <div v-if="activeVersion(item)?.tags?.length" class="row-detail-field">
+                    <div v-if="representativeVersion(item)?.tags?.length" class="row-detail-field">
                       <dt>標籤</dt>
-                      <dd>{{ activeVersion(item)!.tags.join('、') }}</dd>
+                      <dd>{{ representativeVersion(item)!.tags.join('、') }}</dd>
                     </div>
                     <div v-if="item.status === 'reviewing' && reviewingVersion(item)?.reviewNote" class="row-detail-field">
                       <dt>送審備註</dt>
                       <dd>{{ reviewingVersion(item)!.reviewNote }}</dd>
+                    </div>
+                    <div v-if="representativeVersion(item)?.reviewedBy" class="row-detail-field">
+                      <dt>核准紀錄</dt>
+                      <dd>
+                        {{ representativeVersion(item)!.versionNumber }} 已由
+                        {{ representativeVersion(item)!.reviewedBy }}
+                        於 {{ representativeVersion(item)!.reviewedTime }} 核准
+                        <template v-if="representativeVersion(item)!.status === 'approved'">，等待發佈上線</template>
+                      </dd>
                     </div>
                     <div v-if="item.status === 'needs_update'" class="row-detail-field">
                       <dt>資料來源</dt>
@@ -301,7 +315,7 @@ import CreateVersionModal from '@/components/Knowledge/CreateVersionModal.vue'
 import ReviewDrawer from '@/components/Knowledge/ReviewDrawer.vue'
 import VersionCompareModal from '@/components/Knowledge/VersionCompareModal.vue'
 import ErrorLogModal from '@/components/Knowledge/ErrorLogModal.vue'
-import { useKnowledgeStore } from '@/stores/knowledgeStore'
+import { useKnowledgeStore, hasEarnedVersionNumber } from '@/stores/knowledgeStore'
 import type { KnowledgeItem } from '@/stores/knowledgeStore'
 import popDialog from '@/services/popDialog'
 
@@ -326,6 +340,7 @@ const statusOptions = [
   { label: '已發布', value: 'active' },
   { label: '處理中', value: 'processing' },
   { label: '審核中', value: 'reviewing' },
+  { label: '已核准・待發佈', value: 'approved' },
   { label: '需更新', value: 'needs_update' },
   { label: '待處理', value: 'pending' },
   { label: '失敗', value: 'failed' },
@@ -370,6 +385,7 @@ const statusLabelMap: Record<string, string> = {
   active: '已發布',
   processing: '處理中',
   reviewing: '審核中',
+  approved: '已核准・待發佈',
   needs_update: '需更新',
   pending: '待處理',
   failed: '失敗',
@@ -383,6 +399,7 @@ const statusIconMap: Record<string, string> = {
   active: 'verified',
   processing: 'sync',
   reviewing: 'pending_actions',
+  approved: 'task_alt',
   needs_update: 'update',
   pending: 'schedule',
   failed: 'error',
@@ -428,6 +445,10 @@ function reviewingVersion(item: KnowledgeItem) {
   return item.versions.find(v => v.status === 'reviewing')
 }
 
+function approvedVersion(item: KnowledgeItem) {
+  return [...item.versions].reverse().find(v => v.status === 'approved')
+}
+
 function handleBatchArchive() {
   popDialog.confirm(`確定要封存 ${selectedIds.value.length} 個條目嗎？`, () => {
     knowledgeStore.batchArchive(selectedIds.value)
@@ -458,6 +479,22 @@ function closeOps() {
 // ── 工具函式 ──
 function activeVersion(item: KnowledgeItem) {
   return item.versions.find(v => v.status === 'active') ?? item.versions[item.versions.length - 1]
+}
+
+// 列表用：依「狀態」欄位對應到真正相關的那個版本，而非永遠顯示目前上線版本。
+// 例如狀態是「審核中」時，版本欄要秀出送審中的版號，而不是目前已發布的版號，
+// 否則同一列的「狀態」跟「版本」兩欄會對不上（審核中卻秀著已發布的版號）。
+function representativeVersion(item: KnowledgeItem) {
+  if (item.status === 'reviewing') return reviewingVersion(item) ?? activeVersion(item)
+  if (item.status === 'approved') return approvedVersion(item) ?? activeVersion(item)
+  return activeVersion(item)
+}
+
+// 版號只在審核通過後才定案，審核中的版本一律顯示「—」，不提前秀出版號
+function representativeVersionNumber(item: KnowledgeItem): string {
+  const v = representativeVersion(item)
+  if (!v || !hasEarnedVersionNumber(v.status)) return '—'
+  return v.versionNumber
 }
 
 function goToDetail(id: string) {
@@ -504,6 +541,16 @@ function handleWithdraw(item: KnowledgeItem) {
   popDialog.confirm('確定要撤回此審核申請嗎？', () => {
     knowledgeStore.withdrawReview(item.id, v.id)
     popDialog.toast('已撤回審核', 2000)
+  })
+}
+
+// ── 發佈已核准版本 ──
+function handlePublish(item: KnowledgeItem) {
+  const v = approvedVersion(item)
+  if (!v) return
+  popDialog.confirm(`確定要將 ${v.versionNumber} 發佈上線嗎？發佈後將取代目前的正式版本。`, () => {
+    knowledgeStore.publishApprovedVersion(item.id, v.id)
+    popDialog.toast('已發佈上線', 2000)
   })
 }
 
