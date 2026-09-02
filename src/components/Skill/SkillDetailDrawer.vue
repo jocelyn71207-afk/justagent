@@ -17,7 +17,12 @@
                   <span v-if="!isPersonal" class="skill-tag tag--version">
                     v{{ skill.version }}<template v-if="activeVersion?.versionName"> · {{ activeVersion.versionName }}</template>
                   </span>
-                  <span :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']">
+                  <!-- 從 Library 技能庫瀏覽進來是唯讀情境，啟用／停用是各團隊自己
+                       導入後的狀態，不是這顆 Library 技能本身的屬性，不該顯示 -->
+                  <span
+                    v-if="!libraryView"
+                    :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']"
+                  >
                     <span class="dh-status-dot"></span>
                     {{ skill.isEnabled ? '啟用中' : '已停用' }}
                   </span>
