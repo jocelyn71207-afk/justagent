@@ -65,8 +65,9 @@
           </div>
 
           <!-- 有版本待審核：原本只有捲到版本歷史才看得到，容易被忽略，
-               放在統計數據上方、一打開就看得到 -->
-          <div v-if="!isPersonal && reviewingVersion" class="pending-review-banner">
+               放在統計數據上方、一打開就看得到。從 Library 技能庫瀏覽進來時
+               是唯讀情境，不需要看到審核流程相關資訊 -->
+          <div v-if="!isPersonal && !libraryView && reviewingVersion" class="pending-review-banner">
             <div class="pending-review-text">
               <i class="material-symbols-outlined">pending_actions</i>
               新版本 <strong>v{{ reviewingVersion.versionTag }}</strong>
@@ -114,8 +115,9 @@
                    技能沒有這個區塊（不是資料剛好是空的，是本來就不該顯示）。
                    放在主欄最前面、不是側欄小空間——這裡有實際能操作的按鈕
                    （設為使用中／開始審核／與目前版本比較），需要比純資訊的區塊
-                   更顯眼、更有空間 -->
-              <div v-if="!isPersonal" class="drawer-section">
+                   更顯眼、更有空間。從 Library 技能庫瀏覽進來時是唯讀情境，
+                   不顯示版本歷史／審核相關操作 -->
+              <div v-if="!isPersonal && !libraryView" class="drawer-section">
                 <div class="section-label">版本歷史</div>
                 <div v-if="skill.versions?.length" class="vt-list">
                   <div v-for="ver in sortedVersions" :key="ver.id" class="vt-item">
@@ -420,6 +422,8 @@ const props = defineProps<{
   skill: Skill | null
   upstreamVersion?: string
   manageable?: boolean
+  // 從 Library 技能庫瀏覽進來（唯讀情境）：不顯示版本歷史、待審核提示區塊
+  libraryView?: boolean
 }>()
 const emit = defineEmits<{
   close: []
