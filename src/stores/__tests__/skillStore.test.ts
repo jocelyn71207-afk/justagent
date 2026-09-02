@@ -120,7 +120,7 @@ describe('skillStore', () => {
       const conflictSkill = store.findSkill('ext-cs-return-001')
       expect(conflictSkill?.upstreamConflicts?.length).toBeGreaterThan(0)
       // It should still have the same forkSourceVersion (not updated)
-      expect(conflictSkill?.forkSourceVersion).toBe('2.4.0')
+      expect(conflictSkill?.forkSourceVersion).toBe('初始客服版')
     })
   })
 
