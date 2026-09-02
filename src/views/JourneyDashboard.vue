@@ -9,7 +9,7 @@
         <div class="jd-title">旅程執行紀錄</div>
         <div class="jd-subtitle">行銷自動化旅程，各用戶進度追蹤</div>
       </div>
-      <button class="custom-btn" @click="router.push('/view/AiViewer')">
+      <button class="custom-btn jd-back-btn" @click="router.push('/view/AiViewer')">
         <i class="material-symbols-outlined">arrow_back</i>
         返回 AiViewer
       </button>
