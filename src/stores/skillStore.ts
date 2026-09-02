@@ -28,7 +28,9 @@ export interface SkillReviewRecord {
 
 export interface SkillVersion {
   id: string
-  versionTag: string
+  // 只有審核通過（approved）以後才核發版號，審核中／已退回的版本還沒有
+  // 版號——畫面上顯示版本名稱（versionName），不能顯示還不存在的版號
+  versionTag?: string
   // 送審時由使用者自己命名，版本歷史顯示這個而不是版號（版號審核通過才有意義，
   // 但名稱送審當下就該看得到，所以獨立於審核狀態）
   versionName?: string
@@ -229,7 +231,7 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-cs-001-v241',
-        versionTag: '2.4.1',
+        // 審核中，還沒核發版號
         versionName: '語氣優化與情緒分析',
         status: 'reviewing' as SkillVersionStatus,
         name: '通用客服機器人',
@@ -328,7 +330,7 @@ const MOCK_SKILLS: Skill[] = [
           },
           {
             id: 'v-cs-return-1.1',
-            versionTag: '1.1.0',
+            // 審核中，還沒核發版號
             versionName: '超保固彈性處理與VIP優惠',
             status: 'reviewing',
             name: '客服機器人 (退貨版)',
@@ -1136,7 +1138,10 @@ export const useSkillStore = defineStore('skillStore', () => {
     const skill = findSkill(skillId)
     if (!skill) return []
     if (skill.versions?.length) {
-      return skill.versions.map(v => ({ versionTag: v.versionTag, isActive: v.status === 'active' }))
+      // 審核中／已退回的版本還沒有版號，不能拿來當測試用的版本選項
+      return skill.versions
+        .filter((v): v is SkillVersion & { versionTag: string } => !!v.versionTag)
+        .map(v => ({ versionTag: v.versionTag, isActive: v.status === 'active' }))
     }
     return [{ versionTag: skill.version, isActive: true }]
   }
@@ -1341,8 +1346,12 @@ export const useSkillStore = defineStore('skillStore', () => {
     const version = skill.versions.find(v => v.id === versionId)
     if (!version || version.status !== 'reviewing') return
 
-    // 審核通過只核發版號、狀態轉為「待啟用」，不會自動取代現有生效版本；
-    // 要實際上線，管理者還要在版本歷史手動按「設為使用中」（setLibraryActiveVersion）
+    // 審核通過才核發版號（送審當下還沒有版號）、狀態轉為「待啟用」，不會
+    // 自動取代現有生效版本；要實際上線，管理者還要在版本歷史手動按
+    // 「設為使用中」（setLibraryActiveVersion）。版號從目前生效版本
+    // （skill.version）往上 bump，不是用送審當下的舊值，避免審核期間
+    // 如果生效版本已經換過，版號跟實際情況對不上
+    version.versionTag = bumpVersionTag(skill.version)
     version.status = 'approved'
     version.reviewedBy = 'jocelyn.tseng'
     version.reviewedAt = new Date().toISOString()
@@ -1398,8 +1407,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     return skill.personalStatus === 'reviewing'
   }
 
-  // 更新版本的版號只是內部追蹤用的序號（bump 前一版的 patch），使用者不會
-  // 在畫面上看到它——版本歷史顯示的是使用者自己命名的 versionName
+  // bump 目前生效版本的 patch 號，審核通過（approveSkillVersion）時呼叫，
+  // 核發給剛通過審核的版本
   function bumpVersionTag(tag: string): string {
     const parts = tag.split('.').map(n => parseInt(n, 10) || 0)
     while (parts.length < 3) parts.push(0)
@@ -1436,7 +1445,7 @@ export const useSkillStore = defineStore('skillStore', () => {
         // 成新到舊），新版本要 push 到最後面，不能 unshift 到最前面
         target.versions.push({
           id: `v-${id}-${Date.now()}`,
-          versionTag: bumpVersionTag(target.version),
+          // 送審當下還沒有版號，要審核通過（approveSkillVersion）才核發
           versionName,
           status: 'reviewing',
           name: skill.name,
@@ -1464,7 +1473,9 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
     if (!target?.versions) return
     const ver = target.versions.find(v => v.id === versionId)
-    if (!ver) return
+    // 只有審核通過（approved）以後的版本才有版號，能被設為使用中的版本
+    // （approved／history）照規則一定已核發版號，這裡是防呆
+    if (!ver || !ver.versionTag) return
     target.versions.forEach(v => {
       if (v.id === versionId) v.status = 'active'
       else if (v.status === 'active') v.status = 'history'

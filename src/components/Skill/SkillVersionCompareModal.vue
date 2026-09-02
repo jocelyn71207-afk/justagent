@@ -14,13 +14,13 @@
           <div class="svc-selectors">
             <select v-model="localV1Id" class="custom-select svc-select">
               <option v-for="v in versions" :key="v.id" :value="v.id">
-                v{{ v.versionTag }}（{{ versionStatusLabel(v.status) }}）
+                {{ versionOptionLabel(v) }}（{{ versionStatusLabel(v.status) }}）
               </option>
             </select>
             <i class="material-symbols-outlined svc-arrow">arrow_forward</i>
             <select v-model="localV2Id" class="custom-select svc-select">
               <option v-for="v in versions" :key="v.id" :value="v.id">
-                v{{ v.versionTag }}（{{ versionStatusLabel(v.status) }}）
+                {{ versionOptionLabel(v) }}（{{ versionStatusLabel(v.status) }}）
               </option>
             </select>
           </div>
@@ -35,7 +35,7 @@
           <div v-if="v1 && v2" class="svc-diff-grid">
             <!-- Old version column -->
             <div class="svc-col">
-              <div class="svc-col-head">v{{ v1.versionTag }}
+              <div class="svc-col-head">{{ versionOptionLabel(v1) }}
                 <span :class="['svc-status', `svc-status--${v1.status}`]">{{ versionStatusLabel(v1.status) }}</span>
               </div>
               <div class="svc-col-body">
@@ -90,7 +90,7 @@
 
             <!-- New version column -->
             <div class="svc-col">
-              <div class="svc-col-head">v{{ v2.versionTag }}
+              <div class="svc-col-head">{{ versionOptionLabel(v2) }}
                 <span :class="['svc-status', `svc-status--${v2.status}`]">{{ versionStatusLabel(v2.status) }}</span>
               </div>
               <div class="svc-col-body">
@@ -154,7 +154,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { SkillVersionStatus } from '@/stores/skillStore'
+import type { SkillVersion, SkillVersionStatus } from '@/stores/skillStore'
 
 const props = defineProps<{
   modelValue: boolean
@@ -174,6 +174,12 @@ watch(() => props.v2Id, v => { localV2Id.value = v })
 const versions = computed(() => store.getSkillVersions(props.skillId))
 const v1 = computed(() => versions.value.find(v => v.id === localV1Id.value))
 const v2 = computed(() => versions.value.find(v => v.id === localV2Id.value))
+
+// 審核中／已退回的版本還沒有版號（審核通過才核發），退回顯示版本名稱
+function versionOptionLabel(ver: SkillVersion): string {
+  if (ver.versionTag) return `v${ver.versionTag}`
+  return ver.versionName || '（未核發版號）'
+}
 
 function versionStatusLabel(status: SkillVersionStatus): string {
   const map: Record<SkillVersionStatus, string> = {

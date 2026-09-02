@@ -227,7 +227,23 @@ describe('skillStore', () => {
       expect(versions.length).toBe(before + 1)
       const newVersion = versions.find(v => v.status === 'reviewing' && v.versionName === 'VIP 退貨優惠更新')
       expect(newVersion).toBeDefined()
-      // 版本歷史顯示的是名稱，版號只是內部序號，不要求特定格式
+      // 送審當下還沒有版號，要審核通過才核發
+      expect(newVersion!.versionTag).toBeUndefined()
+    })
+
+    it('approveSkillVersion 審核通過後才核發版號', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.derivedFrom)
+      expect(skill).toBeDefined()
+
+      store.submitPersonalSkill(skill!.id, 'version_update', '改動說明', 'VIP 退貨優惠更新')
+      const versions = store.getSkillVersions(skill!.derivedFrom!)
+      const newVersion = versions.find(v => v.status === 'reviewing' && v.versionName === 'VIP 退貨優惠更新')
+      expect(newVersion).toBeDefined()
+      expect(newVersion!.versionTag).toBeUndefined()
+
+      store.approveSkillVersion(skill!.derivedFrom!, newVersion!.id)
+      expect(newVersion!.status).toBe('approved')
       expect(newVersion!.versionTag).toBeTruthy()
     })
 
@@ -349,7 +365,8 @@ describe('skillStore', () => {
       const store = useSkillStore()
       const options = store.getVersionOptions('sys-cs-001')
       expect(options).toContainEqual({ versionTag: '2.4.0', isActive: true })
-      expect(options).toContainEqual({ versionTag: '2.4.1', isActive: false })
+      // 2.4.1 是審核中版本，還沒核發版號，不會出現在可測試的版本選項裡
+      expect(options.some(o => o.versionTag === '2.4.1')).toBe(false)
     })
 
     it('getVersionOptions 對不存在的技能回傳空陣列', () => {

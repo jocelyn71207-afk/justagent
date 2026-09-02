@@ -72,9 +72,9 @@
           <div v-if="!isPersonal && !libraryView && !condensed && reviewingVersion" class="pending-review-banner">
             <div class="pending-review-text">
               <i class="material-symbols-outlined">pending_actions</i>
-              新版本 <strong>v{{ reviewingVersion.versionTag }}</strong>
-              <template v-if="reviewingVersion.versionName">「{{ reviewingVersion.versionName }}」</template>
-              正在等待審核
+              新版本
+              <template v-if="reviewingVersion.versionName">「<strong>{{ reviewingVersion.versionName }}</strong>」</template>
+              正在等待審核（審核通過後才會核發版號）
             </div>
             <button
               v-if="manageable"
@@ -129,9 +129,10 @@
                     <div class="vt-body">
                       <div class="vt-header">
                         <!-- 版號＋版本名稱一起顯示，所有狀態（含審核中）都一樣，
-                             跟待審核提示條、審核視窗的顯示方式保持一致 -->
+                             跟待審核提示條、審核視窗的顯示方式保持一致。審核中／
+                             已退回的版本還沒有版號（審核通過才核發），只顯示名稱 -->
                         <span class="vt-version-name">
-                          v{{ ver.versionTag }}<template v-if="ver.versionName"> · {{ ver.versionName }}</template>
+                          <template v-if="ver.versionTag">v{{ ver.versionTag }}<template v-if="ver.versionName"> · </template></template>{{ ver.versionName }}
                         </span>
                         <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
                           {{ versionStatusLabel(ver.status) }}
@@ -148,7 +149,7 @@
                           class="custom-btn vt-activate-btn"
                           @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
                         >
-                          <i class="material-symbols-outlined">check_circle</i>設為使用中
+                          <i class="material-symbols-outlined">check_circle</i>{{ condensed ? '切換版本' : '設為使用中' }}
                         </button>
                         <button
                           v-if="ver.status === 'reviewing'"
