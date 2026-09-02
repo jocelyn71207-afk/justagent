@@ -1072,29 +1072,27 @@
     }
   }
 
-  // 主功能小介面：改放左側直向 rail（幫未來的畫筆/文字/圖形等繪圖工具預留同一塊區域）
+  // 主功能小介面：畫布下方置中懸浮（js 動態算 left，見 projectFnBoxStyle）
   &.project-fn-box {
-    left: 10px;
-    right: auto;
-    top: 50%;
-    bottom: auto;
-    transform: translateY(-50%);
-    padding: 8px 4px;
+    left: calc(50% - 220px); // js 給值
+    top: auto;
+    bottom: 10px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: var(--surface);
+    transition:
+      left 0.2s ease-in-out,
+      width 0.2s ease-in-out;
     .ctrl-btn {
       color: var(--text-a80);
       font-size: 18px;
       width: 28px;
       height: 28px;
-      margin: 3px 0;
+      margin: 5px 3px;
     }
     .fn-btn-box {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       > i.active {
@@ -1103,19 +1101,15 @@
     }
     .multi-choice-btn-box {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-left: none;
-      border-top: 1px solid var(--divider);
-      margin-left: 0;
-      margin-top: 10px;
-      padding-left: 0;
-      padding-top: 10px;
+      border-left: 1px solid var(--divider);
+      margin-left: 10px;
+      padding-left: 10px;
       .count-box {
         position: absolute;
-        left: 6px;
-        top: -8px;
+        left: 10px;
+        top: 6px;
         font-size: 11px;
         z-index: 1;
         background-color: var(--page-bg);
@@ -1125,12 +1119,10 @@
     }
   }
 
-  // 當畫布空間（高度）太小時，直向 rail 改用垂直捲動，而不是原本橫向工具列的水平捲動
+  // 當畫布空間（寬度）太小時，橫向工具列改用水平捲動
   &.smailleScreen {
     &.project-fn-box {
-      max-height: calc(100dvh - 100px);
-      overflow-y: auto;
-      overflow-x: visible;
+      overflow-x: auto;
       justify-content: start;
       @include no-scroll-bar();
       @include use-scroll-bar(var(--scrollbar-a50));
@@ -3612,22 +3604,36 @@
   &.tag-rust   { background: var(--tag-rust-bg);   color: var(--tag-rust-text); }
 }
 
-.conv1-suggest-refresh {
+// 其他選項：收納超出前 3 張常用卡片的其餘建議，展開/收合的下拉選單
+.conv1-suggest-more-wrap {
+  position: relative;
+}
+
+.conv1-suggest-more-btn {
   display: inline-flex;
-  align-self: flex-start;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   background: none;
   border: 0;
-  padding: 0;
+  padding: 4px 2px;
   font-family: inherit;
   font-size: 12.5px;
+  font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
 
-  > i { font-size: 15px; }
+  > i { font-size: 18px; }
 
   &:hover { color: var(--primary-hover); }
+}
+
+// 沿用畫布既有的下拉選單樣式（.AiViewer-next-option-box .option-item），
+// 這裡只補位置：從按鈕正下方展開
+.conv1-suggest-more-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
 }
 
 .conv1-empty-input-box {
