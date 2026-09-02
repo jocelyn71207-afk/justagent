@@ -75,7 +75,7 @@
             <SkillReviewQueue
               v-if="store.pendingReviewSkills.length"
               :skills="store.pendingReviewSkills"
-              @view="detailFromLibrary = false; detailSkillId = $event.id"
+              @view="detailFromLibrary = false; detailFromTemplateManage = false; detailSkillId = $event.id"
               @approve="handleApprove"
               @reject="handleReject"
             />
@@ -106,7 +106,7 @@
                     v-for="skill in filteredEnterpriseSkills"
                     :key="skill.id"
                     :skill="skill"
-                    @click="detailFromLibrary = false; detailSkillId = skill.id"
+                    @click="detailFromLibrary = false; detailFromTemplateManage = true; detailSkillId = skill.id"
                     @test="handleTest"
                     @duplicate="handleDuplicate"
                   />
@@ -134,7 +134,7 @@
                         v-for="skill in group.skills"
                         :key="skill.id"
                         :skill="skill"
-                        @click="detailFromLibrary = false; detailSkillId = skill.id"
+                        @click="detailFromLibrary = false; detailFromTemplateManage = true; detailSkillId = skill.id"
                         @test="handleTest"
                         @duplicate="handleDuplicate"
                       />
@@ -162,7 +162,7 @@
               v-for="skill in pagedSkills"
               :key="skill.id"
               :skill="skill"
-              @manage="detailFromLibrary = false; detailSkillId = $event.id"
+              @manage="detailFromLibrary = false; detailFromTemplateManage = false; detailSkillId = $event.id"
             />
             <!-- 分頁 -->
             <div v-if="totalPages > 1" class="my-skills-pagination">
@@ -195,7 +195,7 @@
     <!-- Library 瀏覽 Modal -->
     <LibraryBrowseModal
       v-model="showLibraryModal"
-      @open-detail="(s) => { showLibraryModal = false; detailFromLibrary = true; detailSkillId = s.id }"
+      @open-detail="(s) => { showLibraryModal = false; detailFromLibrary = true; detailFromTemplateManage = false; detailSkillId = s.id }"
       @test="handleTest"
       @duplicate="handleDuplicate"
     />
@@ -208,6 +208,7 @@
       @test="handleTest"
       :manageable="isManager && activeTab === 'review'"
       :library-view="detailFromLibrary"
+      :condensed="detailFromTemplateManage"
       @toggle="handleToggle"
       @edit="handleEdit"
       @delete="handlePersonalDelete"
@@ -478,6 +479,9 @@ const store = useSkillStore()
 const detailSkillId = ref<string | null>(null)
 // 從 Library 技能庫瀏覽 Modal 點進來的唯讀情境：詳情抽屜不顯示版本歷史／待審核區塊
 const detailFromLibrary = ref(false)
+// 從團隊技能範本管理點進來：詳情抽屜收合技能內容說明、不顯示技能層級附加檔案，
+// 重點是切換版本（跟待審核佇列點進來看的是同一顆抽屜，但目的不同，故分開判斷）
+const detailFromTemplateManage = ref(false)
 const detailSkill = computed<Skill | null>(() => {
   if (!detailSkillId.value) return null
   return store.myPersonalSkills.find(s => s.id === detailSkillId.value)

@@ -313,6 +313,20 @@
 
   }
 
+  // 團隊技能範本管理（condensed）：收合技能內容說明的開關，低調、跟內容區塊
+  // 保持一致的寬度，不用強烈的主色調搶走版本歷史的注意力
+  .drawer-more-info-toggle {
+    align-self: stretch;
+    justify-content: center;
+    gap: 6px;
+    color: var(--text-faint);
+    font-size: 12.5px;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+  }
+
   // ── Instructions block ───────────────────────
 
   .instructions-block {

@@ -215,58 +215,73 @@
                 </div>
               </div>
 
-              <!-- 技能指令：固定區塊，沒有指令內容時顯示提示文字 -->
-              <div class="drawer-section">
-                <div class="section-label">技能指令</div>
-                <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
-                <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
-              </div>
+              <!-- 團隊技能範本管理（condensed）：這裡的重點是切換版本，不是閱讀
+                   技能內容，把技能指令／覆蓋能力／實際使用情境／演化上下文收進
+                   一個預設收合的區塊，避免版本歷史被大量說明文字往下擠 -->
+              <button
+                v-if="condensed"
+                type="button"
+                class="custom-btn drawer-more-info-toggle"
+                @click="showMoreSkillInfo = !showMoreSkillInfo"
+              >
+                <i class="material-symbols-outlined">{{ showMoreSkillInfo ? 'expand_less' : 'expand_more' }}</i>
+                {{ showMoreSkillInfo ? '收合技能資訊' : '顯示更多技能資訊' }}
+              </button>
 
-              <!-- 覆蓋能力：固定區塊，沒有拆解出能力項目時退回顯示技能描述 -->
-              <div class="drawer-section">
-                <div class="section-label">覆蓋能力</div>
-                <template v-if="skill.capabilities?.length">
-                  <div class="capability-grid">
+              <template v-if="!condensed || showMoreSkillInfo">
+                <!-- 技能指令：固定區塊，沒有指令內容時顯示提示文字 -->
+                <div class="drawer-section">
+                  <div class="section-label">技能指令</div>
+                  <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
+                  <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
+                </div>
+
+                <!-- 覆蓋能力：固定區塊，沒有拆解出能力項目時退回顯示技能描述 -->
+                <div class="drawer-section">
+                  <div class="section-label">覆蓋能力</div>
+                  <template v-if="skill.capabilities?.length">
+                    <div class="capability-grid">
+                      <div
+                        v-for="cap in skill.capabilities"
+                        :key="cap.name"
+                        class="capability-card"
+                      >
+                        <div class="cap-name">{{ cap.name }}</div>
+                        <div class="cap-desc">{{ cap.description }}</div>
+                      </div>
+                    </div>
+                    <div class="skill-summary">{{ skill.description }}</div>
+                  </template>
+                  <p v-else class="section-empty-hint">尚未拆解覆蓋能力項目</p>
+                </div>
+
+                <!-- 實際使用情境：固定區塊，沒有記錄使用情境時顯示提示文字 -->
+                <div class="drawer-section">
+                  <div class="section-label">實際使用情境</div>
+                  <div v-if="skill.usageScenarios?.length" class="scenario-list">
                     <div
-                      v-for="cap in skill.capabilities"
-                      :key="cap.name"
-                      class="capability-card"
+                      v-for="(sc, i) in skill.usageScenarios"
+                      :key="sc.title"
+                      class="scenario-item"
                     >
-                      <div class="cap-name">{{ cap.name }}</div>
-                      <div class="cap-desc">{{ cap.description }}</div>
+                      <div class="scenario-num">{{ i + 1 }}</div>
+                      <div class="scenario-body">
+                        <div class="scenario-title">{{ sc.title }}</div>
+                        <div class="scenario-desc">{{ sc.description }}</div>
+                      </div>
                     </div>
                   </div>
-                  <div class="skill-summary">{{ skill.description }}</div>
-                </template>
-                <p v-else class="section-empty-hint">尚未拆解覆蓋能力項目</p>
-              </div>
+                  <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
+                </div>
 
-              <!-- 實際使用情境：固定區塊，沒有記錄使用情境時顯示提示文字 -->
-              <div class="drawer-section">
-                <div class="section-label">實際使用情境</div>
-                <div v-if="skill.usageScenarios?.length" class="scenario-list">
-                  <div
-                    v-for="(sc, i) in skill.usageScenarios"
-                    :key="sc.title"
-                    class="scenario-item"
-                  >
-                    <div class="scenario-num">{{ i + 1 }}</div>
-                    <div class="scenario-body">
-                      <div class="scenario-title">{{ sc.title }}</div>
-                      <div class="scenario-desc">{{ sc.description }}</div>
-                    </div>
+                <!-- 演化上下文 -->
+                <div v-if="skill.evolutionContext" class="drawer-section">
+                  <div class="section-label">
+                    <i class="material-symbols-outlined">auto_awesome</i>演化上下文
                   </div>
+                  <p class="evolution-context">{{ skill.evolutionContext }}</p>
                 </div>
-                <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
-              </div>
-
-              <!-- 演化上下文 -->
-              <div v-if="skill.evolutionContext" class="drawer-section">
-                <div class="section-label">
-                  <i class="material-symbols-outlined">auto_awesome</i>演化上下文
-                </div>
-                <p class="evolution-context">{{ skill.evolutionContext }}</p>
-              </div>
+              </template>
 
               <!-- 危險操作 -->
               <div v-if="isPersonal" class="drawer-danger-zone">
@@ -283,8 +298,10 @@
             <div class="drawer-body-side">
 
               <!-- 附加檔案：唯讀，要改檔案得走「編輯」按鈕進 SkillEditor，
-                   不能在抽屜裡直接單改附加檔案 -->
-              <div class="drawer-section">
+                   不能在抽屜裡直接單改附加檔案。這是技能層級的檔案，不是
+                   逐版本記錄——團隊技能範本管理（condensed）主要在切換版本，
+                   顯示技能層級的檔案容易被誤會成「這一版」的附加檔案，故不顯示 -->
+              <div v-if="!condensed" class="drawer-section">
                 <div class="section-label">附加檔案</div>
                 <div v-if="skill.files?.length" class="attached-file-list">
                   <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
@@ -424,6 +441,9 @@ const props = defineProps<{
   manageable?: boolean
   // 從 Library 技能庫瀏覽進來（唯讀情境）：不顯示版本歷史、待審核提示區塊
   libraryView?: boolean
+  // 從團隊技能範本管理進來：重點是切換版本，收合技能內容說明區塊、
+  // 不顯示技能層級的附加檔案（因為檔案內容實際上是逐版本而非固定的）
+  condensed?: boolean
 }>()
 const emit = defineEmits<{
   close: []
@@ -440,6 +460,7 @@ const emit = defineEmits<{
 const skillStore = useSkillStore()
 const showConfirm = ref(false)
 const showMarkdown = ref(false)
+const showMoreSkillInfo = ref(false)
 const showCompare = ref(false)
 const compareV1Id = ref('')
 const compareV2Id = ref('')
