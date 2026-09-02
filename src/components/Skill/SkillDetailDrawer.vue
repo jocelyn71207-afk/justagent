@@ -66,8 +66,10 @@
 
           <!-- 有版本待審核：原本只有捲到版本歷史才看得到，容易被忽略，
                放在統計數據上方、一打開就看得到。從 Library 技能庫瀏覽進來時
-               是唯讀情境，不需要看到審核流程相關資訊 -->
-          <div v-if="!isPersonal && !libraryView && reviewingVersion" class="pending-review-banner">
+               是唯讀情境，不需要看到審核流程相關資訊；團隊技能範本管理
+               （condensed）版本歷史清單裡每個「審核中」版本自己就有
+               「開始審核」按鈕，不需要再重複一個提示條 -->
+          <div v-if="!isPersonal && !libraryView && !condensed && reviewingVersion" class="pending-review-banner">
             <div class="pending-review-text">
               <i class="material-symbols-outlined">pending_actions</i>
               新版本 <strong>v{{ reviewingVersion.versionTag }}</strong>
@@ -87,9 +89,11 @@
           <!-- 只顯示本月使用次數，不放測試通過率/平均延遲。只有一格時
                不套用「多格平分寬度」的排版，改成靠左的緊湊區塊＋
                justify-content:space-between 把停用按鈕推到最右，
-               不會像之前那樣留下一大塊空白 -->
-          <div class="drawer-metrics">
-            <div class="dm-cell">
+               不會像之前那樣留下一大塊空白。團隊技能範本管理
+               （condensed）不顯示使用次數這類純資訊，只留下啟用／停用
+               這個實際操作，靠右對齊 -->
+          <div :class="['drawer-metrics', { 'drawer-metrics--action-only': condensed }]">
+            <div v-if="!condensed" class="dm-cell">
               <i class="material-symbols-outlined dm-icon dm-icon--bolt">bolt</i>
               <div class="dm-num">{{ formatCount(skill.usageCount) }}</div>
               <div class="dm-lbl">本月使用</div>

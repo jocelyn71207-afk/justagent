@@ -173,6 +173,12 @@
     background: var(--page-bg);
     border-bottom: 1px solid var(--divider-a50);
     flex-shrink: 0;
+
+    // 團隊技能範本管理（condensed）只剩下啟用／停用這個操作，沒有 dm-cell
+    // 可以撐開 space-between，改靠右對齊
+    &.drawer-metrics--action-only {
+      justify-content: flex-end;
+    }
   }
 
   // 只有「本月使用」一格，不套用多格平分寬度那種排版，改成靠左的
