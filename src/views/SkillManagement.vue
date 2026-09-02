@@ -75,7 +75,7 @@
             <SkillReviewQueue
               v-if="store.pendingReviewSkills.length"
               :skills="store.pendingReviewSkills"
-              @view="detailSkillId = $event.id"
+              @view="detailFromLibrary = false; detailSkillId = $event.id"
               @approve="handleApprove"
               @reject="handleReject"
             />
@@ -106,7 +106,7 @@
                     v-for="skill in filteredEnterpriseSkills"
                     :key="skill.id"
                     :skill="skill"
-                    @click="detailSkillId = skill.id"
+                    @click="detailFromLibrary = false; detailSkillId = skill.id"
                     @test="handleTest"
                     @duplicate="handleDuplicate"
                   />
@@ -134,7 +134,7 @@
                         v-for="skill in group.skills"
                         :key="skill.id"
                         :skill="skill"
-                        @click="detailSkillId = skill.id"
+                        @click="detailFromLibrary = false; detailSkillId = skill.id"
                         @test="handleTest"
                         @duplicate="handleDuplicate"
                       />
@@ -162,7 +162,7 @@
               v-for="skill in pagedSkills"
               :key="skill.id"
               :skill="skill"
-              @manage="detailSkillId = $event.id"
+              @manage="detailFromLibrary = false; detailSkillId = $event.id"
             />
             <!-- 分頁 -->
             <div v-if="totalPages > 1" class="my-skills-pagination">
@@ -195,7 +195,7 @@
     <!-- Library 瀏覽 Modal -->
     <LibraryBrowseModal
       v-model="showLibraryModal"
-      @open-detail="(s) => { showLibraryModal = false; detailSkillId = s.id }"
+      @open-detail="(s) => { showLibraryModal = false; detailFromLibrary = true; detailSkillId = s.id }"
       @test="handleTest"
       @duplicate="handleDuplicate"
     />
@@ -207,6 +207,7 @@
       @close="detailSkillId = null"
       @test="handleTest"
       :manageable="isManager && activeTab === 'review'"
+      :library-view="detailFromLibrary"
       @toggle="handleToggle"
       @edit="handleEdit"
       @delete="handlePersonalDelete"
@@ -475,6 +476,8 @@ const router = useRouter()
 const store = useSkillStore()
 
 const detailSkillId = ref<string | null>(null)
+// 從 Library 技能庫瀏覽 Modal 點進來的唯讀情境：詳情抽屜不顯示版本歷史／待審核區塊
+const detailFromLibrary = ref(false)
 const detailSkill = computed<Skill | null>(() => {
   if (!detailSkillId.value) return null
   return store.myPersonalSkills.find(s => s.id === detailSkillId.value)
