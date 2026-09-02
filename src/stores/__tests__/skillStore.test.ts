@@ -14,7 +14,7 @@ describe('skillStore', () => {
       expect(versions.length).toBeGreaterThan(0)
     })
 
-    it('approveSkillVersion 只核發版號、將版本設為 approved（待啟用），不會自動變成 active', () => {
+    it('approveSkillVersion 將版本設為 approved（待啟用），不會自動變成 active', () => {
       const store = useSkillStore()
       const reviewing = store.getSkillVersions('ext-cs-return-001').find(v => v.status === 'reviewing')
       expect(reviewing).toBeDefined()
@@ -50,7 +50,7 @@ describe('skillStore', () => {
       expect(after.find(v => v.id === previousActive.id)!.status).toBe('history')
 
       const skill = store.findSkill('team-marketing-001')!
-      expect(skill.version).toBe(target.versionTag)
+      expect(skill.version).toBe(target.versionName)
       expect(skill.description).toBe(target.description)
     })
 
@@ -227,24 +227,6 @@ describe('skillStore', () => {
       expect(versions.length).toBe(before + 1)
       const newVersion = versions.find(v => v.status === 'reviewing' && v.versionName === 'VIP 退貨優惠更新')
       expect(newVersion).toBeDefined()
-      // 送審當下還沒有版號，要審核通過才核發
-      expect(newVersion!.versionTag).toBeUndefined()
-    })
-
-    it('approveSkillVersion 審核通過後才核發版號', () => {
-      const store = useSkillStore()
-      const skill = store.myPersonalSkills.find(s => s.derivedFrom)
-      expect(skill).toBeDefined()
-
-      store.submitPersonalSkill(skill!.id, 'version_update', '改動說明', 'VIP 退貨優惠更新')
-      const versions = store.getSkillVersions(skill!.derivedFrom!)
-      const newVersion = versions.find(v => v.status === 'reviewing' && v.versionName === 'VIP 退貨優惠更新')
-      expect(newVersion).toBeDefined()
-      expect(newVersion!.versionTag).toBeUndefined()
-
-      store.approveSkillVersion(skill!.derivedFrom!, newVersion!.id)
-      expect(newVersion!.status).toBe('approved')
-      expect(newVersion!.versionTag).toBeTruthy()
     })
 
     it('suggestVersionName 有說明文字時，摘要成短標題（優先參考使用者已填的內容）', async () => {
@@ -357,16 +339,16 @@ describe('skillStore', () => {
   describe('版本測試選擇（SkillTest 沙盒）', () => {
     it('getVersionOptions 對個人技能一律回傳單一項目（不做版控）', () => {
       const store = useSkillStore()
-      expect(store.getVersionOptions('personal-001')).toEqual([{ versionTag: '1.1.0', isActive: true }])
-      expect(store.getVersionOptions('personal-002')).toEqual([{ versionTag: '1.0.0', isActive: true }])
+      expect(store.getVersionOptions('personal-001')).toEqual([{ versionName: '1.1.0', isActive: true }])
+      expect(store.getVersionOptions('personal-002')).toEqual([{ versionName: '1.0.0', isActive: true }])
     })
 
-    it('getVersionOptions 對多版本 Library 技能依 status 判斷使用中版本', () => {
+    it('getVersionOptions 對多版本 Library 技能依 status 判斷使用中版本，版本不用版號區隔一律有名稱可選', () => {
       const store = useSkillStore()
       const options = store.getVersionOptions('sys-cs-001')
-      expect(options).toContainEqual({ versionTag: '2.4.0', isActive: true })
-      // 2.4.1 是審核中版本，還沒核發版號，不會出現在可測試的版本選項裡
-      expect(options.some(o => o.versionTag === '2.4.1')).toBe(false)
+      expect(options).toContainEqual({ versionName: '初始客服版', isActive: true })
+      // 審核中版本也用名稱識別，一樣會出現在可測試的版本選項裡
+      expect(options).toContainEqual({ versionName: '語氣優化與情緒分析', isActive: false })
     })
 
     it('getVersionOptions 對不存在的技能回傳空陣列', () => {
@@ -374,10 +356,10 @@ describe('skillStore', () => {
       expect(store.getVersionOptions('nonexistent')).toEqual([])
     })
 
-    it('setSelectedSkill 未指定 versionTag 時預設使用技能目前版本', () => {
+    it('setSelectedSkill 未指定版本名稱時預設使用技能目前版本', () => {
       const store = useSkillStore()
       store.setSelectedSkill('personal-001')
-      expect(store.selectedVersionTag).toBe('1.1.0')
+      expect(store.selectedVersionName).toBe('1.1.0')
     })
   })
 

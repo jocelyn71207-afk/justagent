@@ -18,8 +18,8 @@
             <template v-if="step === 'options'">
               <!-- 版本資訊 -->
               <div class="version-banner">
-                你的「{{ skill.name }}」基於系統技能 v{{ skill.forkSourceVersion }}。
-                系統技能已更新至 <strong>v{{ upstreamVersion }}</strong>，最新功能可合併。
+                你的「{{ skill.name }}」基於系統技能「{{ skill.forkSourceVersion }}」。
+                系統技能已更新至 <strong>「{{ upstreamVersion }}」</strong>，最新功能可合併。
               </div>
 
               <!-- 變更內容 -->

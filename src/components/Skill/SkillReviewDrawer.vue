@@ -69,8 +69,7 @@
             <div class="srd-section" v-if="prevVersion">
               <button class="custom-btn" @click="showCompare = true">
                 <i class="material-symbols-outlined">difference</i>
-                查看版本差異（<template v-if="prevVersion.versionTag">v{{ prevVersion.versionTag }}</template><template v-if="prevVersion.versionName">「{{ prevVersion.versionName }}」</template>
-                → <template v-if="reviewingVersion.versionName">「{{ reviewingVersion.versionName }}」</template>）
+                查看版本差異（「{{ prevVersion.versionName }}」→「{{ reviewingVersion.versionName }}」）
               </button>
             </div>
 

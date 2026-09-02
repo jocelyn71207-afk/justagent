@@ -15,7 +15,7 @@
                 <div class="dh-name">{{ skill.name }}</div>
                 <div class="dh-badges">
                   <span v-if="!isPersonal" class="skill-tag tag--version">
-                    v{{ skill.version }}<template v-if="activeVersion?.versionName"> · {{ activeVersion.versionName }}</template>
+                    {{ activeVersion?.versionName ?? skill.version }}
                   </span>
                   <!-- 從 Library 技能庫瀏覽進來是唯讀情境，啟用／停用是各團隊自己
                        導入後的狀態，不是這顆 Library 技能本身的屬性，不該顯示 -->
@@ -79,7 +79,7 @@
               <i class="material-symbols-outlined">pending_actions</i>
               新版本
               <template v-if="reviewingVersion.versionName">「<strong>{{ reviewingVersion.versionName }}</strong>」</template>
-              正在等待審核（審核通過後才會核發版號）
+              正在等待審核
             </div>
             <button
               v-if="manageable"
@@ -133,12 +133,10 @@
                     <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
                     <div class="vt-body">
                       <div class="vt-header">
-                        <!-- 版號＋版本名稱一起顯示，所有狀態（含審核中）都一樣，
-                             跟待審核提示條、審核視窗的顯示方式保持一致。審核中／
-                             已退回的版本還沒有版號（審核通過才核發），只顯示名稱 -->
-                        <span class="vt-version-name">
-                          <template v-if="ver.versionTag">v{{ ver.versionTag }}<template v-if="ver.versionName"> · </template></template>{{ ver.versionName }}
-                        </span>
+                        <!-- 版本不用版號區隔，一律顯示版本名稱，所有狀態
+                             （含審核中）都一樣，跟待審核提示條、審核視窗的
+                             顯示方式保持一致 -->
+                        <span class="vt-version-name">{{ ver.versionName }}</span>
                         <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
                           {{ versionStatusLabel(ver.status) }}
                         </span>
@@ -333,7 +331,7 @@
                       <i class="material-symbols-outlined lineage-icon">call_split</i>
                       延伸自「{{ lineageSourceName }}」
                     </span>
-                    <span v-if="lineageSourceVersion" class="skill-tag tag--version">v{{ lineageSourceVersion }}</span>
+                    <span v-if="lineageSourceVersion" class="skill-tag tag--version">{{ lineageSourceVersion }}</span>
                     <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
                   </template>
                   <span v-else class="lineage-text">

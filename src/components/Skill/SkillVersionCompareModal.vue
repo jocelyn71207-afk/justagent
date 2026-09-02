@@ -175,10 +175,8 @@ const versions = computed(() => store.getSkillVersions(props.skillId))
 const v1 = computed(() => versions.value.find(v => v.id === localV1Id.value))
 const v2 = computed(() => versions.value.find(v => v.id === localV2Id.value))
 
-// 審核中／已退回的版本還沒有版號（審核通過才核發），退回顯示版本名稱
 function versionOptionLabel(ver: SkillVersion): string {
-  if (ver.versionTag) return `v${ver.versionTag}`
-  return ver.versionName || '（未核發版號）'
+  return ver.versionName || '（未命名版本）'
 }
 
 function versionStatusLabel(status: SkillVersionStatus): string {

@@ -29,7 +29,7 @@
                 <span class="si-name">{{ skill.name }}</span>
                 <SkillVersionPicker
                   :versions="store.getVersionOptions(skill.id)"
-                  :model-value="displayVersionTag(skill)"
+                  :model-value="displayVersionName(skill)"
                   @update:model-value="v => store.setSelectedSkill(skill.id, v)"
                 />
               </div>
@@ -51,11 +51,11 @@
                   >
                     <span :class="['skill-dot', `dot--${group.key}`]"></span>
                     <span class="si-name">{{ skill.name }}</span>
-                    <span v-if="skill.scope === 'system'" class="version-inline">v{{ displayVersionTag(skill) }}</span>
+                    <span v-if="skill.scope === 'system'" class="version-inline">{{ displayVersionName(skill) }}</span>
                     <SkillVersionPicker
                       v-else
                       :versions="store.getVersionOptions(skill.id)"
-                      :model-value="displayVersionTag(skill)"
+                      :model-value="displayVersionName(skill)"
                       @update:model-value="v => store.setSelectedSkill(skill.id, v)"
                     />
                   </div>
@@ -72,7 +72,7 @@
             <div class="test-panel-head">
               <div class="panel-title">
                 {{ selectedSkill.name }}
-                <span class="skill-tag tag--version">v{{ selectedSkill.version }}</span>
+                <span class="skill-tag tag--version">{{ displayVersionName(selectedSkill) }}</span>
               </div>
               <button class="custom-btn info-toggle-btn" @click="isContextOpen = true">
                 <i class="material-symbols-outlined">info</i>技能資訊
@@ -185,11 +185,11 @@ const aiRatePercent = computed(() => {
   return Math.round((report.passed / report.total) * 100)
 })
 
-function displayVersionTag(skill: Skill): string {
-  if (store.selectedSkillId === skill.id && store.selectedVersionTag) {
-    return store.selectedVersionTag
+function displayVersionName(skill: Skill): string {
+  if (store.selectedSkillId === skill.id && store.selectedVersionName) {
+    return store.selectedVersionName
   }
-  return store.getDefaultVersionTag(skill.id) ?? ''
+  return store.getDefaultVersionName(skill.id) ?? ''
 }
 
 onMounted(() => {

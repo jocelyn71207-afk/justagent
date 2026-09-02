@@ -33,7 +33,7 @@
                   />
                   <div class="bum-info">
                     <span class="bum-name">{{ skill.name }}</span>
-                    <span class="bum-ver">v{{ skill.forkSourceVersion }} → v{{ skill.version }}</span>
+                    <span class="bum-ver">{{ skill.forkSourceVersion }} → {{ skill.version }}</span>
                   </div>
                   <span v-if="skill.upstreamConflicts?.length" class="bum-badge bum-badge--warn">
                     <i class="material-symbols-outlined">warning</i>需確認衝突
