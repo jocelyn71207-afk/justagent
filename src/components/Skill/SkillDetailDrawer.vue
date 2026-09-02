@@ -14,7 +14,9 @@
               <div class="dh-title">
                 <div class="dh-name">{{ skill.name }}</div>
                 <div class="dh-badges">
-                  <span v-if="!isPersonal" class="skill-tag tag--version">v{{ skill.version }}</span>
+                  <span v-if="!isPersonal" class="skill-tag tag--version">
+                    v{{ skill.version }}<template v-if="activeVersion?.versionName"> · {{ activeVersion.versionName }}</template>
+                  </span>
                   <span :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']">
                     <span class="dh-status-dot"></span>
                     {{ skill.isEnabled ? '啟用中' : '已停用' }}
@@ -67,7 +69,9 @@
           <div v-if="!isPersonal && reviewingVersion" class="pending-review-banner">
             <div class="pending-review-text">
               <i class="material-symbols-outlined">pending_actions</i>
-              新版本 <strong>v{{ reviewingVersion.versionTag }}</strong> 正在等待審核
+              新版本 <strong>v{{ reviewingVersion.versionTag }}</strong>
+              <template v-if="reviewingVersion.versionName">「{{ reviewingVersion.versionName }}」</template>
+              正在等待審核
             </div>
             <button
               v-if="manageable"
@@ -105,6 +109,63 @@
           <div class="drawer-body">
 
             <div class="drawer-body-main">
+
+              <!-- 版本歷史：固定區塊，但只有 Library 技能才有版本概念，個人
+                   技能沒有這個區塊（不是資料剛好是空的，是本來就不該顯示）。
+                   放在主欄最前面、不是側欄小空間——這裡有實際能操作的按鈕
+                   （設為使用中／開始審核／與目前版本比較），需要比純資訊的區塊
+                   更顯眼、更有空間 -->
+              <div v-if="!isPersonal" class="drawer-section">
+                <div class="section-label">版本歷史</div>
+                <div v-if="skill.versions?.length" class="vt-list">
+                  <div v-for="ver in sortedVersions" :key="ver.id" class="vt-item">
+                    <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
+                    <div class="vt-body">
+                      <div class="vt-header">
+                        <!-- 版號＋版本名稱一起顯示，所有狀態（含審核中）都一樣，
+                             跟待審核提示條、審核視窗的顯示方式保持一致 -->
+                        <span class="vt-version-name">
+                          v{{ ver.versionTag }}<template v-if="ver.versionName"> · {{ ver.versionName }}</template>
+                        </span>
+                        <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
+                          {{ versionStatusLabel(ver.status) }}
+                        </span>
+                        <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
+                      </div>
+                      <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
+                      <div class="vt-actions">
+                        <!-- 「待啟用」（剛審核通過，還沒上線）或「歷史」（曾經生效、
+                             後來被取代）才能設為使用中；審核中／草稿／退回都還沒
+                             通過審核，不能直接上線 -->
+                        <button
+                          v-if="props.manageable && !isPersonal && (ver.status === 'approved' || ver.status === 'history')"
+                          class="custom-btn vt-activate-btn"
+                          @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
+                        >
+                          <i class="material-symbols-outlined">check_circle</i>設為使用中
+                        </button>
+                        <button
+                          v-if="ver.status === 'reviewing'"
+                          class="custom-btn"
+                          @click="emit('review', skill!.id, ver.id)"
+                        >
+                          <i class="material-symbols-outlined">rate_review</i>開始審核
+                        </button>
+                        <!-- 固定跟目前生效版本比較，不是跟清單中緊接著的前一筆比；
+                             生效版本自己這一列不用跟自己比 -->
+                        <button
+                          v-if="activeVersion && ver.id !== activeVersion.id"
+                          class="custom-btn"
+                          @click="openCompareWithActive(ver)"
+                        >
+                          <i class="material-symbols-outlined">difference</i>與目前版本比較
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p v-else class="section-empty-hint">尚無版本歷史</p>
+              </div>
 
               <!-- 個人技能目前狀態：可能包含審核退回原因，屬於需要立刻
                    看到的內容，不放進側欄 -->
@@ -157,41 +218,6 @@
                 <div class="section-label">技能指令</div>
                 <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
                 <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
-              </div>
-
-              <!-- 附加檔案 -->
-              <div v-if="skill.files?.length || canEditFiles" class="drawer-section">
-                <div class="section-label-row">
-                  <span class="section-label">附加檔案</span>
-                  <button
-                    v-if="canEditFiles && !isEditingFiles"
-                    type="button"
-                    class="section-edit-btn"
-                    aria-label="編輯附加檔案"
-                    @click="startEditFiles"
-                  >
-                    <i class="material-symbols-outlined">edit</i>
-                  </button>
-                </div>
-
-                <template v-if="isEditingFiles">
-                  <SkillFileUpload v-model="editFilesDraft" />
-                  <div class="section-edit-actions">
-                    <button type="button" class="custom-btn" @click="cancelEditFiles">取消</button>
-                    <button type="button" class="custom-btn custom-main-btn" @click="saveEditFiles">儲存</button>
-                  </div>
-                </template>
-
-                <template v-else>
-                  <div v-if="skill.files?.length" class="attached-file-list">
-                    <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
-                      <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
-                      <span class="af-name">{{ f.fileName }}</span>
-                      <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
-                    </div>
-                  </div>
-                  <p v-else class="section-empty-hint">尚未附加檔案</p>
-                </template>
               </div>
 
               <!-- 覆蓋能力：固定區塊，沒有拆解出能力項目時退回顯示技能描述 -->
@@ -254,6 +280,20 @@
 
             <div class="drawer-body-side">
 
+              <!-- 附加檔案：唯讀，要改檔案得走「編輯」按鈕進 SkillEditor，
+                   不能在抽屜裡直接單改附加檔案 -->
+              <div class="drawer-section">
+                <div class="section-label">附加檔案</div>
+                <div v-if="skill.files?.length" class="attached-file-list">
+                  <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
+                    <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
+                    <span class="af-name">{{ f.fileName }}</span>
+                    <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
+                  </div>
+                </div>
+                <p v-else class="section-empty-hint">尚未附加檔案</p>
+              </div>
+
               <!-- 來源關係：企業技能是全公司唯一一份的正式發佈技能，沒有「延伸自
                    誰／自建」這種個人層級的血緣關係可看，顯示反而是雜訊 -->
               <div v-if="skill.scope !== 'enterprise'" class="drawer-section">
@@ -270,11 +310,6 @@
                   <span v-else class="lineage-text">
                     <i class="material-symbols-outlined lineage-icon">edit_note</i>
                     自建
-                  </span>
-                  <span v-if="creationMethodLabel" class="lineage-divider">·</span>
-                  <span v-if="creationMethodLabel" class="lineage-method">
-                    <i class="material-symbols-outlined">{{ skill.creationMethod === 'ai_assisted' ? 'auto_awesome' : 'edit' }}</i>
-                    {{ creationMethodLabel }}
                   </span>
                 </div>
               </div>
@@ -320,55 +355,6 @@
                 </div>
               </div>
 
-              <!-- 版本歷史：固定區塊，但只有 Library 技能才有版本概念，
-                   個人技能沒有這個區塊（不是資料剛好是空的，是本來就不該顯示） -->
-              <div v-if="!isPersonal" class="drawer-section">
-                <div class="section-label">版本歷史</div>
-                <div v-if="skill.versions?.length" class="vt-list">
-                  <div v-for="(ver, i) in sortedVersions" :key="ver.id" class="vt-item">
-                    <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
-                    <div class="vt-body">
-                      <div class="vt-header">
-                        <!-- 版號是審核通過才正式核發，審核中的版本還沒有版號 -->
-                        <span v-if="ver.status !== 'reviewing'" class="vt-version-tag">v{{ ver.versionTag }}</span>
-                        <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
-                          {{ versionStatusLabel(ver.status) }}
-                        </span>
-                        <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
-                      </div>
-                      <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
-                      <div class="vt-actions">
-                        <!-- 「待啟用」（剛審核通過，還沒上線）或「歷史」（曾經生效、
-                             後來被取代）才能設為使用中；審核中／草稿／退回都還沒
-                             通過審核，不能直接上線 -->
-                        <button
-                          v-if="props.manageable && !isPersonal && (ver.status === 'approved' || ver.status === 'history')"
-                          class="custom-btn vt-activate-btn"
-                          @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
-                        >
-                          <i class="material-symbols-outlined">check_circle</i>設為使用中
-                        </button>
-                        <button
-                          v-if="ver.status === 'reviewing'"
-                          class="custom-btn"
-                          @click="emit('review', skill!.id, ver.id)"
-                        >
-                          <i class="material-symbols-outlined">rate_review</i>開始審核
-                        </button>
-                        <button
-                          v-if="i < sortedVersions.length - 1"
-                          class="custom-btn"
-                          @click="openCompare(sortedVersions[i + 1].id, ver.id)"
-                        >
-                          <i class="material-symbols-outlined">difference</i>與前版比較
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <p v-else class="section-empty-hint">尚無版本歷史</p>
-              </div>
-
               <!-- 操作記錄 -->
               <div v-if="auditLog.length" class="drawer-section">
                 <div class="section-label">操作記錄</div>
@@ -376,7 +362,7 @@
                   <div v-for="(rec, i) in auditLog" :key="i" class="audit-item">
                     <div :class="['audit-dot', `audit-dot--${rec.action.toLowerCase()}`]"></div>
                     <div class="audit-body">
-                      <span class="audit-action">{{ auditActionLabel(rec.action) }}</span>
+                      <span class="audit-action">{{ auditActionLabel(rec.action) }}{{ rec.detail ? `：${rec.detail}` : '' }}</span>
                       <span class="audit-meta">· {{ rec.by }} · {{ formatAuditDate(rec.time) }}</span>
                     </div>
                   </div>
@@ -420,12 +406,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import type { Skill, SkillVersionStatus, OperationRecord, SkillFile } from '@/stores/skillStore'
+import { ref, computed } from 'vue'
+import type { Skill, SkillVersion, SkillVersionStatus, OperationRecord } from '@/stores/skillStore'
 import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
-import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import { skillFileIcon } from '@/components/Skill/skillFileUpload'
 import { formatFileSize } from '@/utils/file'
 
@@ -457,47 +442,19 @@ const compareV2Id = ref('')
 
 const isPersonal = computed(() => props.skill?.zone === 'personal')
 
-// ── 附加檔案：抽屜內直接編輯 ──────────────
-const canEditFiles = computed(() => {
-  if (!isPersonal.value) return true
-  return props.skill?.personalStatus !== 'reviewing'
-})
-
-const isEditingFiles = ref(false)
-const editFilesDraft = ref<SkillFile[]>([])
-
-function startEditFiles() {
-  editFilesDraft.value = [...(props.skill?.files ?? [])]
-  isEditingFiles.value = true
-}
-
-function cancelEditFiles() {
-  isEditingFiles.value = false
-}
-
-function saveEditFiles() {
-  if (!props.skill) return
-  skillStore.updateSkillFiles(props.skill.id, editFilesDraft.value)
-  isEditingFiles.value = false
-}
-
-watch(() => props.skill?.id, () => { isEditingFiles.value = false })
-
 const derivedFromName = computed(() => {
   if (!props.skill?.derivedFrom) return ''
   return skillStore.findSkill(props.skill.derivedFrom)?.name ?? props.skill.derivedFrom
 })
 
+// has_library（已核准並發布至 Library）不特別顯示標籤，退回「可使用」——
+// 這只是後台狀態，畫面上不用標出來，personalStatus 本身跟送審層級鎖定
+// 邏輯不受影響
 const personalStatusLabel = computed(() => {
   const s = props.skill
   if (!s) return null
   if (s.personalStatus === 'draft') return '草稿'
   if (s.personalStatus === 'reviewing') return '審核中'
-  if (s.personalStatus === 'has_library') {
-    if (s.targetScope === 'team') return `已有Library版（團隊・${s.targetTeamName ?? '未指定團隊'}）`
-    if (s.targetScope === 'enterprise') return '已有Library版（企業）'
-    return '已有Library版'
-  }
   return '可使用'
 })
 
@@ -505,7 +462,6 @@ const personalStatusClass = computed(() => {
   const s = props.skill?.personalStatus
   if (s === 'draft') return 'tag--draft'
   if (s === 'reviewing') return 'tag--reviewing'
-  if (s === 'has_library') return 'tag--has-library'
   return 'tag--available'
 })
 
@@ -525,6 +481,9 @@ const sortedVersions = computed(() => {
   if (!props.skill?.versions) return []
   return [...props.skill.versions].reverse()
 })
+
+// 目前生效版本：「與目前版本比較」固定跟它比，不是跟清單中緊接著的前一筆比
+const activeVersion = computed(() => props.skill?.versions?.find(v => v.status === 'active'))
 
 // 有沒有一個「審核中」的新版本（Library 技能既有版本之外又送了新版本審核，
 // 跟個人技能自己送審 Library 是兩回事，個人技能不會有這個狀態）
@@ -574,12 +533,6 @@ const lineageSourceScopeClass = computed(() => {
   return ''
 })
 
-const creationMethodLabel = computed(() => {
-  if (props.skill?.creationMethod === 'ai_assisted') return 'AI 協助建立'
-  if (props.skill?.creationMethod === 'manual') return '手動撰寫'
-  return ''
-})
-
 const auditLog = computed(() => (props.skill?.auditLog ?? []).slice(0, 5))
 
 function auditActionLabel(action: OperationRecord['action']): string {
@@ -589,6 +542,7 @@ function auditActionLabel(action: OperationRecord['action']): string {
     UPSTREAM_MERGED: '合併上游更新',
     UPSTREAM_IGNORED: '忽略上游更新',
     UPSTREAM_DETACHED: '永久分離上游',
+    VERSION_ACTIVATED: '切換生效版本',
   }
   return map[action]
 }
@@ -609,6 +563,16 @@ function openCompare(v1Id: string, v2Id: string) {
   compareV1Id.value = v1Id
   compareV2Id.value = v2Id
   showCompare.value = true
+}
+
+// v1 永遠是比較舊的那個版本、v2 是比較新的（SkillVersionCompareModal 用這個
+// 順序決定左邊「舊」欄、右邊「新」欄），所以要依實際時間先後排，不能固定
+// activeVersion 放 v1——如果 ver 是還沒上線的待啟用/審核中版本，它比目前生效版新
+function openCompareWithActive(ver: SkillVersion) {
+  const active = activeVersion.value
+  if (!active) return
+  if (ver.createdAt < active.createdAt) openCompare(ver.id, active.id)
+  else openCompare(active.id, ver.id)
 }
 
 function mockWeeklyData(skill: Skill): number[] {

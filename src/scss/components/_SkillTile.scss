@@ -79,6 +79,9 @@
     min-height: 2.9em;
   }
 
+  // .tile-stats／.tile-meta 這裡的卡片本身不用了（SkillTile 不顯示觸發次數／
+  // 狀態），但 PersonalSkillGroup 沿用同一套 .SkillTile 樣式語言、還在用這幾個
+  // class（我的技能卡片仍要顯示觸發次數與啟用狀態），所以規則留著、不能刪
   .tile-stats {
     display: flex;
     align-items: center;
@@ -106,6 +109,9 @@
   .tile-foot {
     display: flex;
     align-items: center;
+    // space-between 保留給 PersonalSkillGroup 的 .tile-meta 靠左；SkillTile
+    // 自己只剩 .tile-actions 一個子項目，用 margin-left: auto 讓它自己貼右，
+    // 不用整個 tile-foot 都改 flex-end（會連 PersonalSkillGroup 一起推走）
     justify-content: space-between;
     margin-top: auto;
     padding-top: 12px;
@@ -136,5 +142,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-left: auto;
   }
 }

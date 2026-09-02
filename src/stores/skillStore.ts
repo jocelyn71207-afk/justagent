@@ -29,6 +29,9 @@ export interface SkillReviewRecord {
 export interface SkillVersion {
   id: string
   versionTag: string
+  // 送審時由使用者自己命名，版本歷史顯示這個而不是版號（版號審核通過才有意義，
+  // 但名稱送審當下就該看得到，所以獨立於審核狀態）
+  versionName?: string
   status: SkillVersionStatus
   name: string
   description: string
@@ -46,9 +49,11 @@ export interface SkillVersion {
 }
 
 export interface OperationRecord {
-  action: 'ENABLED' | 'DISABLED' | 'UPSTREAM_MERGED' | 'UPSTREAM_IGNORED' | 'UPSTREAM_DETACHED'
+  action: 'ENABLED' | 'DISABLED' | 'UPSTREAM_MERGED' | 'UPSTREAM_IGNORED' | 'UPSTREAM_DETACHED' | 'VERSION_ACTIVATED'
   by: string
   time: string
+  // 切換生效版本時記錄切到哪個版本名稱，操作記錄才看得出換成了什麼
+  detail?: string
 }
 
 export interface ConflictItem {
@@ -196,7 +201,9 @@ const MOCK_SKILLS: Skill[] = [
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
-    version: '2.5.0',
+    // 卡片上的版號要跟 versions[] 裡 status:'active' 那筆一致（2.4.0），
+    // 不能自己寫一個 versions[] 裡根本不存在的號碼
+    version: '2.4.0',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0.96,
@@ -223,6 +230,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-cs-001-v241',
         versionTag: '2.4.1',
+        versionName: '語氣優化與情緒分析',
         status: 'reviewing' as SkillVersionStatus,
         name: '通用客服機器人',
         description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
@@ -237,6 +245,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-cs-001-v240',
         versionTag: '2.4.0',
+        versionName: '初始客服版',
         status: 'active' as SkillVersionStatus,
         name: '通用客服機器人',
         description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
@@ -296,7 +305,11 @@ const MOCK_SKILLS: Skill[] = [
           {
             id: 'v-cs-return-1.0',
             versionTag: '1.0.0',
-            status: 'history',
+            versionName: '初始版本',
+            // 這是目前實際生效的版本（跟卡片上的 v1.0.0、skill.instructions
+            // 等內容一致），要標 active，不是 history——history 是指「曾經
+            // active、後來被別的版本取代」，這筆從沒被取代過
+            status: 'active',
             name: '客服機器人 (退貨版)',
             description: '針對退貨問題，依設定的服務原則回應退貨政策與審核',
             instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 如有疑問轉接人工客服',
@@ -316,6 +329,7 @@ const MOCK_SKILLS: Skill[] = [
           {
             id: 'v-cs-return-1.1',
             versionTag: '1.1.0',
+            versionName: '超保固彈性處理與VIP優惠',
             status: 'reviewing',
             name: '客服機器人 (退貨版)',
             description: '針對退貨問題，依設定的服務原則回應退貨政策與審核，新增超保固期彈性處理',
@@ -386,6 +400,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-doc-001-v14',
         versionTag: '1.4.0',
+        versionName: '初始版本',
         status: 'history',
         name: '文件摘要生成',
         description: '自動摘要長文件，支援 PDF / Word',
@@ -397,6 +412,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-doc-001-v15',
         versionTag: '1.5.0',
+        versionName: 'Markdown支援與關鍵字提取',
         status: 'active',
         name: '文件摘要生成',
         description: '自動摘要長文件，支援 PDF / Word / Markdown',
@@ -440,6 +456,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-meeting-001-v21',
         versionTag: '2.1.0',
+        versionName: '初始版本',
         status: 'history',
         name: '會議摘要',
         description: '會議錄音轉文字並生成摘要',
@@ -451,6 +468,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-meeting-001-v22',
         versionTag: '2.2.0',
+        versionName: 'Action Items自動識別',
         status: 'active',
         name: '會議摘要',
         description: '會議錄音轉文字並生成摘要與 action items',
@@ -496,6 +514,7 @@ const MOCK_SKILLS: Skill[] = [
           {
             id: 'v-meeting-eng-1.2',
             versionTag: '1.2.0',
+            versionName: 'Jira自動建票',
             status: 'active',
             name: '會議摘要 (工程版)',
             description: '工程會議格式，自動標記 action items 至 Jira',
@@ -551,6 +570,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-erp-1.0',
         versionTag: '1.0.0',
+        versionName: '初始版本',
         status: 'history',
         name: 'ERP 庫存查詢',
         description: '根據產品 ID 查詢即時庫存量',
@@ -570,6 +590,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-erp-1.1',
         versionTag: '1.1.0',
+        versionName: '多倉庫整合',
         status: 'active',
         name: 'ERP 庫存查詢',
         description: '根據產品 ID 查詢即時庫存量，支援多個倉庫',
@@ -624,6 +645,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-team-weekly-1.0',
         versionTag: '1.0.0',
+        versionName: '初始版本',
         status: 'active',
         name: '業績週報生成',
         description: '根據本週銷售數據自動整理業績摘要，含商品排行與目標達成率分析',
@@ -673,6 +695,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-mkt-1.0',
         versionTag: '1.0.0',
+        versionName: '初始版本',
         status: 'history',
         name: '行銷文案生成',
         description: '根據活動主題自動生成社群文案',
@@ -683,6 +706,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'v-mkt-1.1',
         versionTag: '1.1.0',
+        versionName: 'EDM主旨行與CTA選項',
         status: 'active',
         name: '行銷文案生成',
         description: '根據活動主題與目標受眾，自動生成社群貼文、EDM 標題與 CTA 文案',
@@ -799,7 +823,9 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     personalStatus: 'reviewing',
     skillName: '通用客服機器人',
     derivedFrom: 'sys-cs-001',
-    derivedFromVersion: '2.4.0',
+    // 早於 sys-cs-001 目前生效版本（2.4.0），用來示範「來源 Library 技能
+    // 後來又出新版」的 hasLibraryUpdate 情境
+    derivedFromVersion: '2.3.0',
     submitMode: 'version_update',
     submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
     targetScope: 'enterprise',
@@ -1372,10 +1398,20 @@ export const useSkillStore = defineStore('skillStore', () => {
     return skill.personalStatus === 'reviewing'
   }
 
+  // 更新版本的版號只是內部追蹤用的序號（bump 前一版的 patch），使用者不會
+  // 在畫面上看到它——版本歷史顯示的是使用者自己命名的 versionName
+  function bumpVersionTag(tag: string): string {
+    const parts = tag.split('.').map(n => parseInt(n, 10) || 0)
+    while (parts.length < 3) parts.push(0)
+    parts[2] += 1
+    return parts.join('.')
+  }
+
   function submitPersonalSkill(
     id: string,
     mode: 'new_skill' | 'version_update',
     note: string,
+    versionName: string,
     targetScope: 'enterprise' | 'team' = 'enterprise',
     targetTeamName?: string
   ): void {
@@ -1387,6 +1423,34 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.targetScope = targetScope
     skill.targetTeamName = targetScope === 'team' ? targetTeamName : undefined
     skill.submittedBy = 'jocelyn.tseng'
+
+    // 更新版本模式：在來源 Library 技能的版本歷史新增一筆「審核中」版本，
+    // 內容是這顆個人技能目前的快照。「建立新技能」模式的技能還不存在於
+    // Library，沒有版本歷史可以掛
+    if (mode === 'version_update' && skill.derivedFrom) {
+      const target = _findAny(skill.derivedFrom)
+      if (target) {
+        target.versions ??= []
+        const now = new Date().toISOString()
+        // versions[] 是按時間由舊到新存放（SkillDetailDrawer 顯示時會 reverse
+        // 成新到舊），新版本要 push 到最後面，不能 unshift 到最前面
+        target.versions.push({
+          id: `v-${id}-${Date.now()}`,
+          versionTag: bumpVersionTag(target.version),
+          versionName,
+          status: 'reviewing',
+          name: skill.name,
+          description: skill.description,
+          instructions: skill.instructions,
+          triggerHint: skill.triggerHint,
+          capabilities: skill.capabilities,
+          createdAt: now,
+          createdBy: skill.submittedBy,
+          updateNote: note,
+          reviewHistory: [{ action: 'SUBMITTED', by: skill.submittedBy!, time: now, note }],
+        })
+      }
+    }
   }
 
   function setLibraryActiveVersion(skillId: string, versionId: string): void {
@@ -1413,6 +1477,15 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (ver.instructions !== undefined) target.instructions = ver.instructions
     if (ver.triggerHint !== undefined) target.triggerHint = ver.triggerHint
     if (ver.capabilities !== undefined) target.capabilities = ver.capabilities
+
+    target.auditLog ??= []
+    target.auditLog.unshift({
+      action: 'VERSION_ACTIVATED',
+      by: '管理員',
+      time: new Date().toISOString(),
+      detail: ver.versionName || `v${ver.versionTag}`,
+    })
+    if (target.auditLog.length > 20) target.auditLog.length = 20
   }
 
   function deletePersonalSkill(id: string): void {
@@ -1665,6 +1738,24 @@ export const useSkillStore = defineStore('skillStore', () => {
     editChatHistory.value = []
   }
 
+  // 送審時的「AI 建議版本名稱」：優先參考使用者已經填的說明文字摘要成短標題，
+  // 沒填說明時退回用技能名稱＋送審模式給一個泛用建議。使用者仍可自行編輯，
+  // 這裡只是預填草稿，不是強制採用
+  async function suggestVersionName(
+    skillId: string,
+    note: string,
+    mode: 'new_skill' | 'version_update'
+  ): Promise<string> {
+    await new Promise(r => setTimeout(r, 600))
+    const skill = findSkill(skillId)
+    const cleaned = note.trim().replace(/[，。！？、\n]+/g, ' ').trim()
+    if (cleaned) {
+      return cleaned.length > 16 ? `${cleaned.slice(0, 16)}…` : cleaned
+    }
+    const baseName = skill?.skillName ?? skill?.name ?? '技能'
+    return mode === 'version_update' ? `${baseName}功能更新` : `${baseName}首次發布`
+  }
+
   async function sendEditChatMessage(skillId: string, message: string): Promise<void> {
     editChatIsRunning.value = true
     editChatHistory.value.push({
@@ -1743,6 +1834,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     deleteDraft,
     submitDraft,
     submitPersonalSkill,
+    suggestVersionName,
     deletePersonalSkill,
     duplicateAsPersonalSkill,
     hasSkillNameConflict,

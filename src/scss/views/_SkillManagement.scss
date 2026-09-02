@@ -508,6 +508,36 @@
     }
   }
 
+  // 版本名稱輸入框＋「AI 建議」按鈕同一列，input 吃掉剩餘寬度
+  .dsd-version-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .custom-input { flex: 1; min-width: 0; }
+  }
+
+  .dsd-ai-suggest-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 12.5px;
+    color: $color_main_1;
+    border-color: $color_main_3;
+
+    .material-symbols-outlined { font-size: 16px; }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+      .material-symbols-outlined { animation: dsd-ai-spin 0.9s linear infinite; }
+    }
+  }
+
+  @keyframes dsd-ai-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
   .dsd-footer {
     display: flex;
     align-items: center;

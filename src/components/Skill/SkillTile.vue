@@ -9,22 +9,11 @@
 
     <div class="tile-name">
       {{ skill.name }}
-      <span class="skill-tag tag--version">v{{ skill.version }}</span>
     </div>
     <div class="tile-scope">{{ scopeLabel }}</div>
     <div v-if="skill.description" class="tile-desc">{{ skill.description }}</div>
 
-    <div class="tile-stats">
-      <span class="sk-stat">
-        <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
-      </span>
-    </div>
-
     <div class="tile-foot">
-      <div class="tile-meta">
-        <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
-        <span class="status-text">{{ skill.isEnabled ? '啟用中' : '已停用' }}</span>
-      </div>
       <div class="tile-actions" @click.stop>
         <button
           class="custom-btn skill-action-btn skill-action-btn--icon"
@@ -55,10 +44,6 @@ const emit = defineEmits<{
   test: [skill: Skill]
   duplicate: [skill: Skill]
 }>()
-
-function formatCount(n: number): string {
-  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
-}
 
 const scopeIconClass = computed(() => {
   if (props.skill.scope === 'enterprise') return 'icon--enterprise'

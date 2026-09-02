@@ -38,22 +38,17 @@ const emit = defineEmits<{
   manage: [skill: Skill]
 }>()
 
+// has_library（已核准並發布至 Library）不顯示標籤——這只是後台狀態，
+// 畫面上不用特別標出來，personalStatus 本身跟送審層級鎖定邏輯不受影響
 const statusLabel = computed(() => {
   if (props.skill.personalStatus === 'draft') return '草稿'
   if (props.skill.personalStatus === 'reviewing') return '審核中'
-  if (props.skill.personalStatus === 'has_library') {
-    const scope = props.skill.targetScope
-    if (scope === 'team') return `已有Library版（團隊・${props.skill.targetTeamName ?? '未指定團隊'}）`
-    if (scope === 'enterprise') return '已有Library版（企業）'
-    return '已有Library版'
-  }
   return null
 })
 
 const statusTagClass = computed(() => {
   if (props.skill.personalStatus === 'draft') return 'tag--draft'
   if (props.skill.personalStatus === 'reviewing') return 'tag--reviewing'
-  if (props.skill.personalStatus === 'has_library') return 'tag--has-library'
   return ''
 })
 
