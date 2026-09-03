@@ -614,19 +614,6 @@
   .audit-action { font-weight: 500; color: var(--text); }
   .audit-meta { color: var(--text-faint); margin-left: 4px; }
 
-  // ── Evolution context ─────────────────────────
-
-  .evolution-context {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin: 0;
-    padding: 10px 14px;
-    background: var(--page-bg);
-    border-radius: 8px;
-    border-left: 3px solid $color_main_3;
-  }
-
   // ── Chart ─────────────────────────────────────
 
   .chart-section-label {

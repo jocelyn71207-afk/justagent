@@ -281,14 +281,6 @@
                   </div>
                   <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
                 </div>
-
-                <!-- 演化上下文 -->
-                <div v-if="skill.evolutionContext" class="drawer-section">
-                  <div class="section-label">
-                    <i class="material-symbols-outlined">auto_awesome</i>演化上下文
-                  </div>
-                  <p class="evolution-context">{{ skill.evolutionContext }}</p>
-                </div>
               </template>
 
               <!-- 危險操作 -->

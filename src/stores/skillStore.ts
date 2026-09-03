@@ -92,7 +92,6 @@ export interface Skill {
   avgLatencyMs: number
   forkSourceId?: string
   forkSourceVersion?: string
-  evolutionContext?: string
   instructions?: string
   triggerHint?: string
   capabilities?: SkillCapability[]
@@ -274,7 +273,6 @@ const MOCK_SKILLS: Skill[] = [
         forkSourceId: 'sys-cs-001',
         forkSourceVersion: '初始客服版',
         upstreamUpdateStatus: 'update_available' as const,
-        evolutionContext: '用戶說：「以後遇到退貨問題，先查詢訂單狀態再根據退貨政策給建議」',
         instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 如有疑問轉接人工客服',
         triggerHint: '退貨、換貨、退款、品質問題',
         capabilities: [
