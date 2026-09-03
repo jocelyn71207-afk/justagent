@@ -103,7 +103,8 @@
               <div class="dm-num">{{ formatCount(skill.usageCount) }}</div>
               <div class="dm-lbl">本月使用</div>
             </div>
-            <div v-if="isPersonal || manageable" class="dm-toggle">
+            <!-- 個人技能審核中不能切換啟用/停用，避免動到正在被審核的內容 -->
+            <div v-if="(isPersonal && skill.personalStatus !== 'reviewing') || manageable" class="dm-toggle">
               <button
                 class="custom-btn dm-toggle-btn btn--danger-ghost"
                 @click="emit('toggle', skill!)"
@@ -246,8 +247,8 @@
                 <p v-else class="section-empty-hint">尚未撰寫技能定義</p>
               </div>
 
-              <!-- 危險操作 -->
-              <div v-if="isPersonal" class="drawer-danger-zone">
+              <!-- 危險操作：審核中不能刪除，避免刪掉一個正在被審核的內容 -->
+              <div v-if="isPersonal && skill.personalStatus !== 'reviewing'" class="drawer-danger-zone">
                 <div class="danger-zone-label">危險操作</div>
                 <button
                   class="custom-btn btn--danger-ghost drawer-delete-btn"
