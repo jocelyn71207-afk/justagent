@@ -22,7 +22,7 @@
                 <div class="srd-skill-name">{{ skill.name }}</div>
                 <div class="srd-meta-row">
                   <span class="skill-tag tag--version">
-                    v{{ reviewingVersion.versionTag }}<template v-if="reviewingVersion.versionName"> · {{ reviewingVersion.versionName }}</template>
+                    {{ reviewingVersion.versionName || '（未命名版本）' }}
                   </span>
                   <span :class="['skill-tag', skill.type === 'system' ? 'tag--sys' : 'tag--ext']">
                     {{ skill.type === 'system' ? '系統技能' : '企業擴充' }}
@@ -46,10 +46,9 @@
               <div class="srd-section-label">版本摘要</div>
               <div class="srd-summary-grid">
                 <div class="srd-summary-item">
-                  <div class="srd-summary-key">版本號</div>
-                  <div class="srd-summary-val">
-                    v{{ reviewingVersion.versionTag }}<template v-if="reviewingVersion.versionName"> · {{ reviewingVersion.versionName }}</template>
-                  </div>
+                  <!-- 審核中還沒有版號（審核通過才核發），這裡只會有版本名稱 -->
+                  <div class="srd-summary-key">版本名稱</div>
+                  <div class="srd-summary-val">{{ reviewingVersion.versionName || '（未命名版本）' }}</div>
                 </div>
                 <div class="srd-summary-item">
                   <div class="srd-summary-key">送審時間</div>
@@ -70,8 +69,7 @@
             <div class="srd-section" v-if="prevVersion">
               <button class="custom-btn" @click="showCompare = true">
                 <i class="material-symbols-outlined">difference</i>
-                查看版本差異（v{{ prevVersion.versionTag }}<template v-if="prevVersion.versionName">「{{ prevVersion.versionName }}」</template>
-                → v{{ reviewingVersion.versionTag }}<template v-if="reviewingVersion.versionName">「{{ reviewingVersion.versionName }}」</template>）
+                查看版本差異（「{{ prevVersion.versionName }}」→「{{ reviewingVersion.versionName }}」）
               </button>
             </div>
 

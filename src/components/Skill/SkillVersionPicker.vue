@@ -1,17 +1,17 @@
 <template>
-  <span v-if="versions.length <= 1" class="version-inline">v{{ versions[0]?.versionTag }}</span>
+  <span v-if="versions.length <= 1" class="version-inline">{{ versions[0]?.versionName }}</span>
   <div v-else class="version-dd" ref="ddRef">
     <button type="button" class="version-dd-btn" ref="btnRef" @click.stop="toggle">
-      v{{ modelValue }} <span class="dd-caret">▾</span>
+      {{ modelValue }} <span class="dd-caret">▾</span>
     </button>
     <div v-show="isOpen" class="version-dd-menu" :style="menuStyle">
       <div
         v-for="v in versions"
-        :key="v.versionTag"
-        :class="['version-dd-item', { 'is-current': v.versionTag === modelValue }]"
-        @click.stop="select(v.versionTag)"
+        :key="v.versionName"
+        :class="['version-dd-item', { 'is-current': v.versionName === modelValue }]"
+        @click.stop="select(v.versionName)"
       >
-        v{{ v.versionTag }}
+        {{ v.versionName }}
         <span v-if="v.isActive" class="version-current-tag">使用中</span>
       </div>
     </div>
@@ -29,11 +29,11 @@ function closeOthers(self: () => void) {
 import { ref, onMounted, onUnmounted } from 'vue'
 
 defineProps<{
-  versions: { versionTag: string; isActive: boolean }[]
+  versions: { versionName: string; isActive: boolean }[]
   modelValue: string
 }>()
 
-const emit = defineEmits<{ 'update:modelValue': [versionTag: string] }>()
+const emit = defineEmits<{ 'update:modelValue': [versionName: string] }>()
 
 const isOpen = ref(false)
 const ddRef = ref<HTMLElement | null>(null)
@@ -60,8 +60,8 @@ function toggle() {
   isOpen.value = true
 }
 
-function select(versionTag: string) {
-  emit('update:modelValue', versionTag)
+function select(versionName: string) {
+  emit('update:modelValue', versionName)
   close()
 }
 

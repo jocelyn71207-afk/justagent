@@ -15,9 +15,14 @@
                 <div class="dh-name">{{ skill.name }}</div>
                 <div class="dh-badges">
                   <span v-if="!isPersonal" class="skill-tag tag--version">
-                    v{{ skill.version }}<template v-if="activeVersion?.versionName"> · {{ activeVersion.versionName }}</template>
+                    {{ activeVersion?.versionName ?? skill.version }}
                   </span>
-                  <span :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']">
+                  <!-- 從 Library 技能庫瀏覽進來是唯讀情境，啟用／停用是各團隊自己
+                       導入後的狀態，不是這顆 Library 技能本身的屬性，不該顯示 -->
+                  <span
+                    v-if="!libraryView"
+                    :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']"
+                  >
                     <span class="dh-status-dot"></span>
                     {{ skill.isEnabled ? '啟用中' : '已停用' }}
                   </span>
@@ -66,12 +71,14 @@
 
           <!-- 有版本待審核：原本只有捲到版本歷史才看得到，容易被忽略，
                放在統計數據上方、一打開就看得到。從 Library 技能庫瀏覽進來時
-               是唯讀情境，不需要看到審核流程相關資訊 -->
-          <div v-if="!isPersonal && !libraryView && reviewingVersion" class="pending-review-banner">
+               是唯讀情境，不需要看到審核流程相關資訊；團隊技能範本管理
+               （condensed）版本歷史清單裡每個「審核中」版本自己就有
+               「開始審核」按鈕，不需要再重複一個提示條 -->
+          <div v-if="!isPersonal && !libraryView && !condensed && reviewingVersion" class="pending-review-banner">
             <div class="pending-review-text">
               <i class="material-symbols-outlined">pending_actions</i>
-              新版本 <strong>v{{ reviewingVersion.versionTag }}</strong>
-              <template v-if="reviewingVersion.versionName">「{{ reviewingVersion.versionName }}」</template>
+              新版本
+              <template v-if="reviewingVersion.versionName">「<strong>{{ reviewingVersion.versionName }}</strong>」</template>
               正在等待審核
             </div>
             <button
@@ -87,9 +94,11 @@
           <!-- 只顯示本月使用次數，不放測試通過率/平均延遲。只有一格時
                不套用「多格平分寬度」的排版，改成靠左的緊湊區塊＋
                justify-content:space-between 把停用按鈕推到最右，
-               不會像之前那樣留下一大塊空白 -->
-          <div class="drawer-metrics">
-            <div class="dm-cell">
+               不會像之前那樣留下一大塊空白。團隊技能範本管理
+               （condensed）不顯示使用次數這類純資訊，只留下啟用／停用
+               這個實際操作，靠右對齊 -->
+          <div :class="['drawer-metrics', { 'drawer-metrics--action-only': condensed }]">
+            <div v-if="!condensed" class="dm-cell">
               <i class="material-symbols-outlined dm-icon dm-icon--bolt">bolt</i>
               <div class="dm-num">{{ formatCount(skill.usageCount) }}</div>
               <div class="dm-lbl">本月使用</div>
@@ -124,11 +133,10 @@
                     <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
                     <div class="vt-body">
                       <div class="vt-header">
-                        <!-- 版號＋版本名稱一起顯示，所有狀態（含審核中）都一樣，
-                             跟待審核提示條、審核視窗的顯示方式保持一致 -->
-                        <span class="vt-version-name">
-                          v{{ ver.versionTag }}<template v-if="ver.versionName"> · {{ ver.versionName }}</template>
-                        </span>
+                        <!-- 版本不用版號區隔，一律顯示版本名稱，所有狀態
+                             （含審核中）都一樣，跟待審核提示條、審核視窗的
+                             顯示方式保持一致 -->
+                        <span class="vt-version-name">{{ ver.versionName }}</span>
                         <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
                           {{ versionStatusLabel(ver.status) }}
                         </span>
@@ -144,7 +152,7 @@
                           class="custom-btn vt-activate-btn"
                           @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
                         >
-                          <i class="material-symbols-outlined">check_circle</i>設為使用中
+                          <i class="material-symbols-outlined">check_circle</i>{{ condensed ? '切換版本' : '設為使用中' }}
                         </button>
                         <button
                           v-if="ver.status === 'reviewing'"
@@ -215,57 +223,27 @@
                 </div>
               </div>
 
-              <!-- 技能指令：固定區塊，沒有指令內容時顯示提示文字 -->
-              <div class="drawer-section">
-                <div class="section-label">技能指令</div>
-                <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
-                <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
-              </div>
+              <!-- 團隊技能範本管理（condensed）：這裡的重點是切換版本，不是閱讀
+                   技能內容，把技能定義收進一個預設收合的區塊，避免版本歷史
+                   被大量說明文字往下擠 -->
+              <button
+                v-if="condensed"
+                type="button"
+                class="custom-btn drawer-more-info-toggle"
+                @click="showMoreSkillInfo = !showMoreSkillInfo"
+              >
+                <i class="material-symbols-outlined">{{ showMoreSkillInfo ? 'expand_less' : 'expand_more' }}</i>
+                {{ showMoreSkillInfo ? '收合技能資訊' : '顯示更多技能資訊' }}
+              </button>
 
-              <!-- 覆蓋能力：固定區塊，沒有拆解出能力項目時退回顯示技能描述 -->
-              <div class="drawer-section">
-                <div class="section-label">覆蓋能力</div>
-                <template v-if="skill.capabilities?.length">
-                  <div class="capability-grid">
-                    <div
-                      v-for="cap in skill.capabilities"
-                      :key="cap.name"
-                      class="capability-card"
-                    >
-                      <div class="cap-name">{{ cap.name }}</div>
-                      <div class="cap-desc">{{ cap.description }}</div>
-                    </div>
-                  </div>
-                  <div class="skill-summary">{{ skill.description }}</div>
-                </template>
-                <p v-else class="section-empty-hint">尚未拆解覆蓋能力項目</p>
-              </div>
-
-              <!-- 實際使用情境：固定區塊，沒有記錄使用情境時顯示提示文字 -->
-              <div class="drawer-section">
-                <div class="section-label">實際使用情境</div>
-                <div v-if="skill.usageScenarios?.length" class="scenario-list">
-                  <div
-                    v-for="(sc, i) in skill.usageScenarios"
-                    :key="sc.title"
-                    class="scenario-item"
-                  >
-                    <div class="scenario-num">{{ i + 1 }}</div>
-                    <div class="scenario-body">
-                      <div class="scenario-title">{{ sc.title }}</div>
-                      <div class="scenario-desc">{{ sc.description }}</div>
-                    </div>
-                  </div>
-                </div>
-                <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
-              </div>
-
-              <!-- 演化上下文 -->
-              <div v-if="skill.evolutionContext" class="drawer-section">
-                <div class="section-label">
-                  <i class="material-symbols-outlined">auto_awesome</i>演化上下文
-                </div>
-                <p class="evolution-context">{{ skill.evolutionContext }}</p>
+              <!-- 技能定義：技能指令／覆蓋能力／實際使用情境本來就是同一份
+                   skill.md 依序組出來的內容（見 buildSkillDefinitionMarkdown），
+                   直接 render 成 markdown——沒有的段落（例如沒有覆蓋能力）
+                   就不會出現，不會有空區塊卡在那邊 -->
+              <div v-if="!condensed || showMoreSkillInfo" class="drawer-section">
+                <div class="section-label">技能定義</div>
+                <div v-if="skillDefinitionHtml" class="markdown-body" v-html="skillDefinitionHtml"></div>
+                <p v-else class="section-empty-hint">尚未撰寫技能定義</p>
               </div>
 
               <!-- 危險操作 -->
@@ -283,8 +261,10 @@
             <div class="drawer-body-side">
 
               <!-- 附加檔案：唯讀，要改檔案得走「編輯」按鈕進 SkillEditor，
-                   不能在抽屜裡直接單改附加檔案 -->
-              <div class="drawer-section">
+                   不能在抽屜裡直接單改附加檔案。這是技能層級的檔案，不是
+                   逐版本記錄——團隊技能範本管理（condensed）主要在切換版本，
+                   顯示技能層級的檔案容易被誤會成「這一版」的附加檔案，故不顯示 -->
+              <div v-if="!condensed" class="drawer-section">
                 <div class="section-label">附加檔案</div>
                 <div v-if="skill.files?.length" class="attached-file-list">
                   <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
@@ -306,7 +286,7 @@
                       <i class="material-symbols-outlined lineage-icon">call_split</i>
                       延伸自「{{ lineageSourceName }}」
                     </span>
-                    <span v-if="lineageSourceVersion" class="skill-tag tag--version">v{{ lineageSourceVersion }}</span>
+                    <span v-if="lineageSourceVersion" class="skill-tag tag--version">{{ lineageSourceVersion }}</span>
                     <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
                   </template>
                   <span v-else class="lineage-text">
@@ -409,12 +389,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import MarkdownIt from 'markdown-it'
+import 'github-markdown-css/github-markdown.css'
 import type { Skill, SkillVersion, SkillVersionStatus, OperationRecord } from '@/stores/skillStore'
 import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
 import { skillFileIcon } from '@/components/Skill/skillFileUpload'
 import { formatFileSize } from '@/utils/file'
+import { buildSkillDefinitionMarkdown } from '@/utils/skillMarkdown'
 
 const CHART_LABELS = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
 
@@ -424,6 +407,9 @@ const props = defineProps<{
   manageable?: boolean
   // 從 Library 技能庫瀏覽進來（唯讀情境）：不顯示版本歷史、待審核提示區塊
   libraryView?: boolean
+  // 從團隊技能範本管理進來：重點是切換版本，收合技能內容說明區塊、
+  // 不顯示技能層級的附加檔案（因為檔案內容實際上是逐版本而非固定的）
+  condensed?: boolean
 }>()
 const emit = defineEmits<{
   close: []
@@ -440,11 +426,22 @@ const emit = defineEmits<{
 const skillStore = useSkillStore()
 const showConfirm = ref(false)
 const showMarkdown = ref(false)
+const showMoreSkillInfo = ref(false)
 const showCompare = ref(false)
 const compareV1Id = ref('')
 const compareV2Id = ref('')
 
+const md = new MarkdownIt({ html: false, breaks: true, linkify: false })
+
 const isPersonal = computed(() => props.skill?.zone === 'personal')
+
+// 技能定義直接 render 成 markdown，跟 skill.md 內容共用同一份組法
+// （buildSkillDefinitionMarkdown），沒有的段落就不會出現
+const skillDefinitionHtml = computed(() => {
+  if (!props.skill) return ''
+  const source = buildSkillDefinitionMarkdown(props.skill)
+  return source ? md.render(source) : ''
+})
 
 const derivedFromName = computed(() => {
   if (!props.skill?.derivedFrom) return ''

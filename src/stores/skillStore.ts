@@ -28,10 +28,9 @@ export interface SkillReviewRecord {
 
 export interface SkillVersion {
   id: string
-  versionTag: string
-  // 送審時由使用者自己命名，版本歷史顯示這個而不是版號（版號審核通過才有意義，
-  // 但名稱送審當下就該看得到，所以獨立於審核狀態）
-  versionName?: string
+  // 版本之間不用版號區隔，一律用使用者送審時自己命名的版本名稱識別，
+  // 所有狀態（含審核中／已退回）都要有
+  versionName: string
   status: SkillVersionStatus
   name: string
   description: string
@@ -93,7 +92,6 @@ export interface Skill {
   avgLatencyMs: number
   forkSourceId?: string
   forkSourceVersion?: string
-  evolutionContext?: string
   instructions?: string
   triggerHint?: string
   capabilities?: SkillCapability[]
@@ -201,9 +199,9 @@ const MOCK_SKILLS: Skill[] = [
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
-    // 卡片上的版號要跟 versions[] 裡 status:'active' 那筆一致（2.4.0），
-    // 不能自己寫一個 versions[] 裡根本不存在的號碼
-    version: '2.4.0',
+    // 這裡要跟 versions[] 裡 status:'active' 那筆的 versionName 一致
+    // （初始客服版），不能自己寫一個 versions[] 裡根本不存在的名稱
+    version: '初始客服版',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0.96,
@@ -229,7 +227,7 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-cs-001-v241',
-        versionTag: '2.4.1',
+        // 審核中，還沒核發版號
         versionName: '語氣優化與情緒分析',
         status: 'reviewing' as SkillVersionStatus,
         name: '通用客服機器人',
@@ -244,7 +242,6 @@ const MOCK_SKILLS: Skill[] = [
       },
       {
         id: 'v-cs-001-v240',
-        versionTag: '2.4.0',
         versionName: '初始客服版',
         status: 'active' as SkillVersionStatus,
         name: '通用客服機器人',
@@ -268,15 +265,14 @@ const MOCK_SKILLS: Skill[] = [
         origin: 'custom_version',
         creationMethod: 'ai_assisted',
         scope: 'enterprise',
-        version: '1.0.0',
+        version: '初始版本',
         isEnabled: true,
         usageCount: 89,
         testPassRate: 0.94,
         avgLatencyMs: 342,
         forkSourceId: 'sys-cs-001',
-        forkSourceVersion: '2.4.0',
+        forkSourceVersion: '初始客服版',
         upstreamUpdateStatus: 'update_available' as const,
-        evolutionContext: '用戶說：「以後遇到退貨問題，先查詢訂單狀態再根據退貨政策給建議」',
         instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 如有疑問轉接人工客服',
         triggerHint: '退貨、換貨、退款、品質問題',
         capabilities: [
@@ -304,7 +300,6 @@ const MOCK_SKILLS: Skill[] = [
         versions: [
           {
             id: 'v-cs-return-1.0',
-            versionTag: '1.0.0',
             versionName: '初始版本',
             // 這是目前實際生效的版本（跟卡片上的 v1.0.0、skill.instructions
             // 等內容一致），要標 active，不是 history——history 是指「曾經
@@ -328,7 +323,7 @@ const MOCK_SKILLS: Skill[] = [
           },
           {
             id: 'v-cs-return-1.1',
-            versionTag: '1.1.0',
+            // 審核中，還沒核發版號
             versionName: '超保固彈性處理與VIP優惠',
             status: 'reviewing',
             name: '客服機器人 (退貨版)',
@@ -364,7 +359,7 @@ const MOCK_SKILLS: Skill[] = [
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
-    version: '1.5.0',
+    version: 'Markdown支援與關鍵字提取',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0.91,
@@ -399,7 +394,6 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-doc-001-v14',
-        versionTag: '1.4.0',
         versionName: '初始版本',
         status: 'history',
         name: '文件摘要生成',
@@ -411,7 +405,6 @@ const MOCK_SKILLS: Skill[] = [
       },
       {
         id: 'v-doc-001-v15',
-        versionTag: '1.5.0',
         versionName: 'Markdown支援與關鍵字提取',
         status: 'active',
         name: '文件摘要生成',
@@ -430,7 +423,7 @@ const MOCK_SKILLS: Skill[] = [
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
-    version: '2.2.0',
+    version: 'Action Items自動識別',
     isEnabled: true,
     usageCount: 0,
     testPassRate: 0.88,
@@ -455,7 +448,6 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-meeting-001-v21',
-        versionTag: '2.1.0',
         versionName: '初始版本',
         status: 'history',
         name: '會議摘要',
@@ -467,7 +459,6 @@ const MOCK_SKILLS: Skill[] = [
       },
       {
         id: 'v-meeting-001-v22',
-        versionTag: '2.2.0',
         versionName: 'Action Items自動識別',
         status: 'active',
         name: '會議摘要',
@@ -488,13 +479,13 @@ const MOCK_SKILLS: Skill[] = [
         creationMethod: 'manual',
         scope: 'team',
         teamName: '工程部',
-        version: '1.2.0',
+        version: 'Jira自動建票',
         isEnabled: true,
         usageCount: 34,
         testPassRate: 0.85,
         avgLatencyMs: 480,
         forkSourceId: 'sys-meeting-001',
-        forkSourceVersion: '2.1.0',
+        forkSourceVersion: '初始版本',
         upstreamUpdateStatus: 'update_available' as const,
         instructions: '你是工程團隊的會議記錄助理，負責將站立會議與架構討論的錄音轉換為摘要，並自動將識別出的 action items 建立為 Jira Issue，同時保留技術決策記錄與相關 PR 連結。',
         capabilities: [
@@ -513,7 +504,6 @@ const MOCK_SKILLS: Skill[] = [
         versions: [
           {
             id: 'v-meeting-eng-1.2',
-            versionTag: '1.2.0',
             versionName: 'Jira自動建票',
             status: 'active',
             name: '會議摘要 (工程版)',
@@ -535,7 +525,7 @@ const MOCK_SKILLS: Skill[] = [
     origin: 'manually_created',
     creationMethod: 'manual',
     scope: 'enterprise',
-    version: '1.1.0',
+    version: '多倉庫整合',
     isEnabled: true,
     usageCount: 156,
     testPassRate: 0.99,
@@ -569,7 +559,6 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-erp-1.0',
-        versionTag: '1.0.0',
         versionName: '初始版本',
         status: 'history',
         name: 'ERP 庫存查詢',
@@ -589,7 +578,6 @@ const MOCK_SKILLS: Skill[] = [
       },
       {
         id: 'v-erp-1.1',
-        versionTag: '1.1.0',
         versionName: '多倉庫整合',
         status: 'active',
         name: 'ERP 庫存查詢',
@@ -620,7 +608,7 @@ const MOCK_SKILLS: Skill[] = [
     creationMethod: 'manual',
     scope: 'team',
     teamName: '業務部',
-    version: '1.0.0',
+    version: '初始版本',
     isEnabled: true,
     usageCount: 28,
     testPassRate: 0.87,
@@ -644,7 +632,6 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-team-weekly-1.0',
-        versionTag: '1.0.0',
         versionName: '初始版本',
         status: 'active',
         name: '業績週報生成',
@@ -675,7 +662,7 @@ const MOCK_SKILLS: Skill[] = [
     creationMethod: 'ai_assisted',
     scope: 'team',
     teamName: '行銷部',
-    version: '1.1.0',
+    version: 'EDM主旨行與CTA選項',
     isEnabled: true,
     usageCount: 52,
     testPassRate: 0.91,
@@ -694,7 +681,6 @@ const MOCK_SKILLS: Skill[] = [
     versions: [
       {
         id: 'v-mkt-1.0',
-        versionTag: '1.0.0',
         versionName: '初始版本',
         status: 'history',
         name: '行銷文案生成',
@@ -705,7 +691,6 @@ const MOCK_SKILLS: Skill[] = [
       },
       {
         id: 'v-mkt-1.1',
-        versionTag: '1.1.0',
         versionName: 'EDM主旨行與CTA選項',
         status: 'active',
         name: '行銷文案生成',
@@ -781,7 +766,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     personalStatus: 'available',
     skillName: '會議摘要',
     derivedFrom: 'sys-meeting-001',
-    derivedFromVersion: '2.2.0',
+    derivedFromVersion: 'Action Items自動識別',
     version: '1.1.0',
     isEnabled: true,
     usageCount: 0,
@@ -823,9 +808,9 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     personalStatus: 'reviewing',
     skillName: '通用客服機器人',
     derivedFrom: 'sys-cs-001',
-    // 早於 sys-cs-001 目前生效版本（2.4.0），用來示範「來源 Library 技能
-    // 後來又出新版」的 hasLibraryUpdate 情境
-    derivedFromVersion: '2.3.0',
+    // 跟 sys-cs-001 目前生效版本（初始客服版）不同名，用來示範「來源
+    // Library 技能後來又出新版」的 hasLibraryUpdate 情境
+    derivedFromVersion: '初始版本',
     submitMode: 'version_update',
     submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
     targetScope: 'enterprise',
@@ -894,7 +879,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     personalStatus: 'reviewing',
     skillName: '會議摘要',
     derivedFrom: 'sys-meeting-001',
-    derivedFromVersion: '2.2.0',
+    derivedFromVersion: 'Action Items自動識別',
     submitMode: 'version_update',
     submitNote: '新增行動項目追蹤欄位，支援多位發言人識別',
     targetScope: 'enterprise',
@@ -1028,7 +1013,7 @@ export const useSkillStore = defineStore('skillStore', () => {
   )
 
   const selectedSkillId = ref<string | null>(null)
-  const selectedVersionTag = ref<string | null>(null)
+  const selectedVersionName = ref<string | null>(null)
   const testConversationHistory = ref<ChatMessage[]>([])
   const testIsRunning = ref(false)
   const aiTestScenarios = ref<AITestScenario[]>([])
@@ -1132,19 +1117,20 @@ export const useSkillStore = defineStore('skillStore', () => {
     return getSkillVersions(skillId).find(v => v.status === 'reviewing')
   }
 
-  function getVersionOptions(skillId: string): { versionTag: string; isActive: boolean }[] {
+  function getVersionOptions(skillId: string): { versionName: string; isActive: boolean }[] {
     const skill = findSkill(skillId)
     if (!skill) return []
     if (skill.versions?.length) {
-      return skill.versions.map(v => ({ versionTag: v.versionTag, isActive: v.status === 'active' }))
+      // 版本不用版號區隔，每個版本一律有名稱（含審核中／已退回），都可以拿來測試
+      return skill.versions.map(v => ({ versionName: v.versionName, isActive: v.status === 'active' }))
     }
-    return [{ versionTag: skill.version, isActive: true }]
+    return [{ versionName: skill.version, isActive: true }]
   }
 
-  function getDefaultVersionTag(skillId: string): string | null {
+  function getDefaultVersionName(skillId: string): string | null {
     const options = getVersionOptions(skillId)
     if (!options.length) return null
-    return options.find(v => v.isActive)?.versionTag ?? options[0].versionTag
+    return options.find(v => v.isActive)?.versionName ?? options[0].versionName
   }
 
   function toggleSkill(id: string): void {
@@ -1206,7 +1192,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       zone: 'personal',
       personalStatus: 'available',
       skillName: data.name,
-      version: '1.0.0',
+      version: '初始版本',
       isEnabled: data.isEnabled,
       usageCount: 0,
       testPassRate: 0,
@@ -1229,7 +1215,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       type: 'extension',
       origin: 'manually_created',
       scope: data.scope ?? 'enterprise',
-      version: '1.0.0',
+      version: '初始版本',
       isEnabled: data.isEnabled,
       usageCount: 0,
       testPassRate: 0,
@@ -1341,8 +1327,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     const version = skill.versions.find(v => v.id === versionId)
     if (!version || version.status !== 'reviewing') return
 
-    // 審核通過只核發版號、狀態轉為「待啟用」，不會自動取代現有生效版本；
-    // 要實際上線，管理者還要在版本歷史手動按「設為使用中」（setLibraryActiveVersion）
+    // 審核通過只是狀態轉為「待啟用」，不會自動取代現有生效版本；要實際
+    // 上線，管理者還要在版本歷史手動按「設為使用中」（setLibraryActiveVersion）
     version.status = 'approved'
     version.reviewedBy = 'jocelyn.tseng'
     version.reviewedAt = new Date().toISOString()
@@ -1398,15 +1384,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     return skill.personalStatus === 'reviewing'
   }
 
-  // 更新版本的版號只是內部追蹤用的序號（bump 前一版的 patch），使用者不會
-  // 在畫面上看到它——版本歷史顯示的是使用者自己命名的 versionName
-  function bumpVersionTag(tag: string): string {
-    const parts = tag.split('.').map(n => parseInt(n, 10) || 0)
-    while (parts.length < 3) parts.push(0)
-    parts[2] += 1
-    return parts.join('.')
-  }
-
   function submitPersonalSkill(
     id: string,
     mode: 'new_skill' | 'version_update',
@@ -1436,7 +1413,6 @@ export const useSkillStore = defineStore('skillStore', () => {
         // 成新到舊），新版本要 push 到最後面，不能 unshift 到最前面
         target.versions.push({
           id: `v-${id}-${Date.now()}`,
-          versionTag: bumpVersionTag(target.version),
           versionName,
           status: 'reviewing',
           name: skill.name,
@@ -1470,8 +1446,8 @@ export const useSkillStore = defineStore('skillStore', () => {
       else if (v.status === 'active') v.status = 'history'
     })
     // 不管是從「待啟用」第一次上線，還是從「歷史」回滾，這裡才是真正
-    // 讓技能內容生效的地方（審核通過那一步只核發版號，不會動到這些欄位）
-    target.version = ver.versionTag
+    // 讓技能內容生效的地方（審核通過那一步不會動到這些欄位）
+    target.version = ver.versionName
     target.name = ver.name
     target.description = ver.description
     if (ver.instructions !== undefined) target.instructions = ver.instructions
@@ -1483,7 +1459,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       action: 'VERSION_ACTIVATED',
       by: '管理員',
       time: new Date().toISOString(),
-      detail: ver.versionName || `v${ver.versionTag}`,
+      detail: ver.versionName,
     })
     if (target.auditLog.length > 20) target.auditLog.length = 20
   }
@@ -1613,9 +1589,9 @@ export const useSkillStore = defineStore('skillStore', () => {
       .reverse()
   }
 
-  function setSelectedSkill(id: string, versionTag?: string): void {
+  function setSelectedSkill(id: string, versionName?: string): void {
     selectedSkillId.value = id
-    selectedVersionTag.value = versionTag ?? getDefaultVersionTag(id)
+    selectedVersionName.value = versionName ?? getDefaultVersionName(id)
     aiTestScenarios.value = []
     aiTestReport.value = null
     aiTestIsGenerating.value = false
@@ -1787,7 +1763,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     myPersonalSkills,
     drafts: myDrafts,
     selectedSkillId,
-    selectedVersionTag,
+    selectedVersionName,
     testConversationHistory,
     testIsRunning,
     aiTestScenarios,
@@ -1814,7 +1790,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     getSkillVersions,
     getReviewingVersion,
     getVersionOptions,
-    getDefaultVersionTag,
+    getDefaultVersionName,
     deleteSkill,
     restoreSkill,
     permanentlyDeleteSkill,
