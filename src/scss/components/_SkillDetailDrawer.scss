@@ -333,38 +333,41 @@
     }
   }
 
-  // ── 技能定義：技能指令／覆蓋能力／實際使用情境合併成一個區塊，
-  //    用比 .section-label 更輕量的子標題分隔，不再各自佔一個帶邊框的
-  //    獨立區塊 ──────────────────────────────
+  // ── 技能定義：直接 render 技能指令／覆蓋能力／實際使用情境組成的
+  //    markdown（見 buildSkillDefinitionMarkdown），套用專案既有的
+  //    markdown-body 覆寫慣例（跟 _KnowledgeDetail.scss 同一套做法：
+  //    背景/文字色/字級都改用 inherit，維持跟抽屜其他區塊一致，
+  //    dark mode 不需要另外處理）────────────────────
 
-  .skill-def-block {
-    & + .skill-def-block {
-      margin-top: 18px;
-    }
-  }
-
-  .skill-def-sublabel {
-    font-size: 12px;
-    font-weight: 600;
+  .markdown-body {
+    background: transparent;
     color: var(--text-muted);
-    margin-bottom: 8px;
-  }
-
-  // ── Instructions block ───────────────────────
-
-  .instructions-block {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 10px;
-    padding: 13px 15px;
     font-size: 12.5px;
-    color: var(--text-muted);
     line-height: 1.75;
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    max-height: 240px;
-    overflow-y: auto;
+    font-family: inherit;
+
+    h2 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 18px 0 8px;
+      padding-bottom: 0;
+      border-bottom: none;
+
+      &:first-child { margin-top: 0; }
+    }
+
+    p, ul, ol { margin: 0 0 10px; }
+    ul, ol { padding-left: 20px; }
+    li { margin-bottom: 4px; }
+    strong { color: var(--text); }
+
+    code {
+      background: var(--page-bg);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 11.5px;
+    }
   }
 
   // ── 附加檔案 ──────────────────────────────
@@ -497,90 +500,6 @@
       font-size: 16px;
       color: $color_main_1;
       flex-shrink: 0;
-    }
-  }
-
-  // ── Capabilities ──────────────────────────────
-
-  .capability-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
-
-    .capability-card {
-      background: var(--page-bg);
-      border: 1px solid var(--divider-a50);
-      border-radius: 10px;
-      padding: 12px 14px;
-
-      .cap-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 5px;
-      }
-
-      .cap-desc {
-        font-size: 12px;
-        color: var(--text-muted);
-        line-height: 1.55;
-      }
-    }
-  }
-
-  .skill-summary {
-    background: var(--page-bg);
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.6;
-  }
-
-  // ── Scenarios ─────────────────────────────────
-
-  .scenario-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .scenario-item {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-
-    .scenario-num {
-      flex-shrink: 0;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: $color_main_4;
-      color: $color_main_2;
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1px;
-    }
-
-    .scenario-body {
-      flex: 1;
-
-      .scenario-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 4px;
-      }
-
-      .scenario-desc {
-        font-size: 12px;
-        color: var(--text-muted);
-        line-height: 1.6;
-      }
     }
   }
 

@@ -237,52 +237,13 @@
               </button>
 
               <!-- 技能定義：技能指令／覆蓋能力／實際使用情境本來就是同一份
-                   skill.md 依序組出來的三段內容（見 buildSkillMarkdown），
-                   合併成一個區塊，不再各自佔一個帶邊框的獨立區塊 -->
+                   skill.md 依序組出來的內容（見 buildSkillDefinitionMarkdown），
+                   直接 render 成 markdown——沒有的段落（例如沒有覆蓋能力）
+                   就不會出現，不會有空區塊卡在那邊 -->
               <div v-if="!condensed || showMoreSkillInfo" class="drawer-section">
                 <div class="section-label">技能定義</div>
-
-                <div class="skill-def-block">
-                  <div class="skill-def-sublabel">技能指令</div>
-                  <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
-                  <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
-                </div>
-
-                <div class="skill-def-block">
-                  <div class="skill-def-sublabel">覆蓋能力</div>
-                  <template v-if="skill.capabilities?.length">
-                    <div class="capability-grid">
-                      <div
-                        v-for="cap in skill.capabilities"
-                        :key="cap.name"
-                        class="capability-card"
-                      >
-                        <div class="cap-name">{{ cap.name }}</div>
-                        <div class="cap-desc">{{ cap.description }}</div>
-                      </div>
-                    </div>
-                    <div class="skill-summary">{{ skill.description }}</div>
-                  </template>
-                  <p v-else class="section-empty-hint">尚未拆解覆蓋能力項目</p>
-                </div>
-
-                <div class="skill-def-block">
-                  <div class="skill-def-sublabel">實際使用情境</div>
-                  <div v-if="skill.usageScenarios?.length" class="scenario-list">
-                    <div
-                      v-for="(sc, i) in skill.usageScenarios"
-                      :key="sc.title"
-                      class="scenario-item"
-                    >
-                      <div class="scenario-num">{{ i + 1 }}</div>
-                      <div class="scenario-body">
-                        <div class="scenario-title">{{ sc.title }}</div>
-                        <div class="scenario-desc">{{ sc.description }}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
-                </div>
+                <div v-if="skillDefinitionHtml" class="markdown-body" v-html="skillDefinitionHtml"></div>
+                <p v-else class="section-empty-hint">尚未撰寫技能定義</p>
               </div>
 
               <!-- 危險操作 -->
@@ -428,12 +389,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import MarkdownIt from 'markdown-it'
+import 'github-markdown-css/github-markdown.css'
 import type { Skill, SkillVersion, SkillVersionStatus, OperationRecord } from '@/stores/skillStore'
 import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
 import { skillFileIcon } from '@/components/Skill/skillFileUpload'
 import { formatFileSize } from '@/utils/file'
+import { buildSkillDefinitionMarkdown } from '@/utils/skillMarkdown'
 
 const CHART_LABELS = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
 
@@ -467,7 +431,17 @@ const showCompare = ref(false)
 const compareV1Id = ref('')
 const compareV2Id = ref('')
 
+const md = new MarkdownIt({ html: false, breaks: true, linkify: false })
+
 const isPersonal = computed(() => props.skill?.zone === 'personal')
+
+// 技能定義直接 render 成 markdown，跟 skill.md 內容共用同一份組法
+// （buildSkillDefinitionMarkdown），沒有的段落就不會出現
+const skillDefinitionHtml = computed(() => {
+  if (!props.skill) return ''
+  const source = buildSkillDefinitionMarkdown(props.skill)
+  return source ? md.render(source) : ''
+})
 
 const derivedFromName = computed(() => {
   if (!props.skill?.derivedFrom) return ''
