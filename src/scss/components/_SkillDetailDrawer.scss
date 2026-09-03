@@ -648,6 +648,17 @@
     margin-left: auto;
   }
 
+  // 版本會隨時間累積，讓管理者能清掉不需要的舊版本；平常低調（跟其他
+  // 中繼資訊一樣淡），hover 才轉成警示色，不會平常就搶眼
+  .vt-delete-btn {
+    font-size: 15px;
+
+    &:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+  }
+
   .vt-note {
     font-size: 12px;
     color: var(--text-muted);

@@ -54,6 +54,33 @@ describe('skillStore', () => {
       expect(skill.description).toBe(target.description)
     })
 
+    it('deleteSkillVersion 刪除非生效中的版本', () => {
+      const store = useSkillStore()
+      // team-marketing-001：v1.0.0 history、v1.1.0 active
+      const before = store.getSkillVersions('team-marketing-001')
+      const target = before.find(v => v.status === 'history')!
+      expect(target).toBeDefined()
+
+      store.deleteSkillVersion('team-marketing-001', target.id)
+
+      const after = store.getSkillVersions('team-marketing-001')
+      expect(after.length).toBe(before.length - 1)
+      expect(after.find(v => v.id === target.id)).toBeUndefined()
+    })
+
+    it('deleteSkillVersion 不能刪除生效中的版本', () => {
+      const store = useSkillStore()
+      const before = store.getSkillVersions('team-marketing-001')
+      const active = before.find(v => v.status === 'active')!
+      expect(active).toBeDefined()
+
+      store.deleteSkillVersion('team-marketing-001', active.id)
+
+      const after = store.getSkillVersions('team-marketing-001')
+      expect(after.length).toBe(before.length)
+      expect(after.find(v => v.id === active.id)).toBeDefined()
+    })
+
     it('rejectSkillVersion 將版本設為 rejected', () => {
       const store = useSkillStore()
       const reviewing = store.getSkillVersions('ext-cs-return-001').find(v => v.status === 'reviewing')

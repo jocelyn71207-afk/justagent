@@ -142,6 +142,17 @@
                           {{ versionStatusLabel(ver.status) }}
                         </span>
                         <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
+                        <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
+                             生效中的版本不能刪，要刪之前得先切換到別的版本 -->
+                        <button
+                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                          type="button"
+                          class="icon-btn vt-delete-btn"
+                          aria-label="刪除版本"
+                          @click="versionPendingDelete = ver"
+                        >
+                          <i class="material-symbols-outlined">delete</i>
+                        </button>
                       </div>
                       <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
                       <div class="vt-actions">
@@ -378,6 +389,25 @@
       </div>
     </Transition>
 
+    <!-- 刪除版本確認 -->
+    <Transition name="confirm-fade">
+      <div
+        v-if="versionPendingDelete && skill"
+        class="drawer-confirm-overlay"
+        @click.self="versionPendingDelete = null"
+      >
+        <div class="drawer-confirm-dialog">
+          <div class="confirm-icon"><i class="material-symbols-outlined">warning</i></div>
+          <h4>確定要刪除版本「{{ versionPendingDelete.versionName }}」？</h4>
+          <p>刪除後這筆版本歷史將無法復原。</p>
+          <div class="confirm-actions">
+            <button class="custom-btn" @click="versionPendingDelete = null">取消</button>
+            <button class="custom-btn btn--danger-ghost" @click="confirmDeleteVersion">確定刪除</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </Teleport>
 </template>
 
@@ -419,6 +449,7 @@ const emit = defineEmits<{
 
 const skillStore = useSkillStore()
 const showConfirm = ref(false)
+const versionPendingDelete = ref<SkillVersion | null>(null)
 const showMarkdown = ref(false)
 const showMoreSkillInfo = ref(false)
 const showCompare = ref(false)
@@ -618,5 +649,11 @@ function formatDate(iso: string): string {
 function confirmDelete() {
   showConfirm.value = false
   emit('delete', props.skill!)
+}
+
+function confirmDeleteVersion() {
+  if (!props.skill || !versionPendingDelete.value) return
+  skillStore.deleteSkillVersion(props.skill.id, versionPendingDelete.value.id)
+  versionPendingDelete.value = null
 }
 </script>
