@@ -962,12 +962,17 @@ This product is broken, I need help
     <div class="modal-box" style="width:640px;">
       <div class="modal-head">編輯 Skill <span class="close-btn" onclick="closeModal('modal-edit-skill')">×</span></div>
       <div class="modal-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div class="form-item"><label>Skill 名稱</label><input type="text" value="通用客服答覆"></div>
-          <div class="form-item"><label>目前生效版本</label><div style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:4px;background:#fafafa;font-size:13px;color:#8c8c8c;">初始客服版</div></div>
-        </div>
-        <div class="form-item"><label>新版本名稱 <span style="color:#ff4d4f;">*</span></label><input type="text" placeholder="e.g. 情緒分析語氣優化（送審後供審核與版本歷史識別用）"></div>
+        <div class="form-item"><label>Skill 名稱</label><input type="text" value="通用客服答覆"></div>
         <div class="form-item"><label>描述</label><textarea rows="2">處理一般客戶諮詢與 FAQ，支援多語言與情緒分析。</textarea></div>
+
+        <div style="border:1px solid #e8e8e8;border-radius:4px;overflow:hidden;margin-bottom:14px;">
+          <div style="background:#fafafa;padding:8px 12px;font-size:12px;font-weight:600;color:#666;border-bottom:1px solid #e8e8e8;">版本</div>
+          <div style="padding:14px 12px 2px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-item"><label>目前生效版本</label><div style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:4px;background:#fafafa;font-size:13px;color:#8c8c8c;">初始客服版</div></div>
+            <div class="form-item"><label>新版本名稱 <span style="color:#ff4d4f;">*</span></label><input type="text" placeholder="e.g. 情緒分析語氣優化"></div>
+          </div>
+        </div>
+
         <div class="form-item"><label>System Prompt</label><textarea rows="5" style="font-family:monospace;font-size:12px;">你是一個專業客服助理，負責解答客戶問題。務必使用親切專業的語氣，並在必要時主動提供相關資訊連結。</textarea></div>
         <div class="form-item">
           <label>綁定 Tools</label>
@@ -977,13 +982,17 @@ This product is broken, I need help
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox"> order-query <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
           </div>
         </div>
-        <div class="form-item" style="display:flex;align-items:center;gap:10px;">
-          <label style="margin:0;flex-shrink:0;">附加檔案</label><span style="font-size:13px;color:#666;">📎 2 個附加檔案</span><button class="btn btn-default btn-sm">管理</button>
+        <div class="form-item" style="margin-bottom:0;">
+          <label>附加檔案</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #d9d9d9;border-radius:4px;padding:8px 10px;">
+            <span style="font-size:13px;color:#666;">📎 2 個附加檔案</span>
+            <button class="btn btn-default btn-sm">管理</button>
+          </div>
         </div>
       </div>
-      <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
+      <div style="padding:8px 20px;border-top:1px solid #e8e8e8;background:#fafafa;font-size:12px;color:#8c8c8c;">💡 儲存後將以上方名稱建立待審核版本；審核通過後仍需手動「設為使用中」才會上線</div>
+      <div class="modal-footer">
         <button class="btn btn-danger btn-sm" style="margin-right:auto;opacity:0.7;" onclick="closeModal('modal-edit-skill')">刪除</button>
-        <span style="width:100%;font-size:12px;color:#8c8c8c;text-align:right;padding-right:4px;">儲存後將以上方名稱建立待審核版本；審核通過後仍需手動「設為使用中」才會上線</span>
         <button class="btn btn-default" onclick="closeModal('modal-edit-skill')">取消</button>
         <button class="btn btn-default" onclick="closeModal('modal-edit-skill');showPage('skill-test')">測試</button>
         <button class="btn btn-primary" onclick="closeModal('modal-edit-skill')">提交審核</button>
