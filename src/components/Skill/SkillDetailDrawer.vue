@@ -224,8 +224,8 @@
               </div>
 
               <!-- 團隊技能範本管理（condensed）：這裡的重點是切換版本，不是閱讀
-                   技能內容，把技能指令／覆蓋能力／實際使用情境／演化上下文收進
-                   一個預設收合的區塊，避免版本歷史被大量說明文字往下擠 -->
+                   技能內容，把技能定義收進一個預設收合的區塊，避免版本歷史
+                   被大量說明文字往下擠 -->
               <button
                 v-if="condensed"
                 type="button"
@@ -236,17 +236,20 @@
                 {{ showMoreSkillInfo ? '收合技能資訊' : '顯示更多技能資訊' }}
               </button>
 
-              <template v-if="!condensed || showMoreSkillInfo">
-                <!-- 技能指令：固定區塊，沒有指令內容時顯示提示文字 -->
-                <div class="drawer-section">
-                  <div class="section-label">技能指令</div>
+              <!-- 技能定義：技能指令／覆蓋能力／實際使用情境本來就是同一份
+                   skill.md 依序組出來的三段內容（見 buildSkillMarkdown），
+                   合併成一個區塊，不再各自佔一個帶邊框的獨立區塊 -->
+              <div v-if="!condensed || showMoreSkillInfo" class="drawer-section">
+                <div class="section-label">技能定義</div>
+
+                <div class="skill-def-block">
+                  <div class="skill-def-sublabel">技能指令</div>
                   <div v-if="skill.instructions" class="instructions-block">{{ skill.instructions }}</div>
                   <p v-else class="section-empty-hint">尚未撰寫技能指令</p>
                 </div>
 
-                <!-- 覆蓋能力：固定區塊，沒有拆解出能力項目時退回顯示技能描述 -->
-                <div class="drawer-section">
-                  <div class="section-label">覆蓋能力</div>
+                <div class="skill-def-block">
+                  <div class="skill-def-sublabel">覆蓋能力</div>
                   <template v-if="skill.capabilities?.length">
                     <div class="capability-grid">
                       <div
@@ -263,9 +266,8 @@
                   <p v-else class="section-empty-hint">尚未拆解覆蓋能力項目</p>
                 </div>
 
-                <!-- 實際使用情境：固定區塊，沒有記錄使用情境時顯示提示文字 -->
-                <div class="drawer-section">
-                  <div class="section-label">實際使用情境</div>
+                <div class="skill-def-block">
+                  <div class="skill-def-sublabel">實際使用情境</div>
                   <div v-if="skill.usageScenarios?.length" class="scenario-list">
                     <div
                       v-for="(sc, i) in skill.usageScenarios"
@@ -281,7 +283,7 @@
                   </div>
                   <p v-else class="section-empty-hint">尚無記錄的使用情境</p>
                 </div>
-              </template>
+              </div>
 
               <!-- 危險操作 -->
               <div v-if="isPersonal" class="drawer-danger-zone">

@@ -333,6 +333,23 @@
     }
   }
 
+  // ── 技能定義：技能指令／覆蓋能力／實際使用情境合併成一個區塊，
+  //    用比 .section-label 更輕量的子標題分隔，不再各自佔一個帶邊框的
+  //    獨立區塊 ──────────────────────────────
+
+  .skill-def-block {
+    & + .skill-def-block {
+      margin-top: 18px;
+    }
+  }
+
+  .skill-def-sublabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
   // ── Instructions block ───────────────────────
 
   .instructions-block {
