@@ -210,14 +210,6 @@
                   </span>
                 </div>
 
-                <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
-                  <i class="material-symbols-outlined">system_update_alt</i>
-                  <span>
-                    Library 來源技能有新版本
-                    <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
-                  </span>
-                </div>
-
                 <div v-if="skill.submitNote" class="psv-note">
                   <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
                 </div>
@@ -470,11 +462,6 @@ const skillDefinitionHtml = computed(() => {
   return source ? md.render(source) : ''
 })
 
-const derivedFromName = computed(() => {
-  if (!props.skill?.derivedFrom) return ''
-  return skillStore.findSkill(props.skill.derivedFrom)?.name ?? props.skill.derivedFrom
-})
-
 // has_library（已核准並發布至 Library）不特別顯示標籤，退回「可使用」——
 // 這只是後台狀態，畫面上不用標出來，personalStatus 本身跟送審層級鎖定
 // 邏輯不受影響
@@ -501,7 +488,6 @@ const hasPersonalStatusDetails = computed(() => {
   return !!(
     s.submitMode ||
     (s.personalStatus === 'reviewing' && s.targetScope) ||
-    s.hasLibraryUpdate ||
     s.submitNote ||
     s.reviewFeedback
   )
