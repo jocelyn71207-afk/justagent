@@ -15,27 +15,22 @@
       <small>Agent Skill 管控</small>
     </div>
     <div class="nav-group">
-      <div class="nav-group-title">Skill 管理</div>
+      <div class="nav-group-title">Skill 總覽</div>
       <div class="nav-children">
         <a class="nav-link active" onclick="showPage('skills')">Skills Repository</a>
-        <a class="nav-link" onclick="showPage('extensions')">企業擴充追蹤</a>
-        <a class="nav-link" onclick="showPage('statistics')">使用統計</a>
+        <a class="nav-link" onclick="showPage('skill-test')">Skill 測試</a>
       </div>
     </div>
     <div class="nav-group">
       <div class="nav-group-title">Skill 開發</div>
       <div class="nav-children">
         <a class="nav-link" onclick="showPage('skill-builder')">Skill Builder</a>
-        <a class="nav-link" onclick="showPage('skill-test')">Skill 測試</a>
         <a class="nav-link" onclick="showPage('my-drafts')">草稿管理</a>
       </div>
     </div>
-    <div class="nav-group">
-      <div class="nav-group-title">基礎設施</div>
-      <div class="nav-children">
-        <a class="nav-link" onclick="showPage('tools')">Tool 管理</a>
-        <a class="nav-link" onclick="showPage('agents')">Agent 配置</a>
-      </div>
+    <div class="nav-children" style="padding-top:var(--space-3);">
+      <a class="nav-link" onclick="showPage('tools')">Tool 管理</a>
+      <a class="nav-link" onclick="showPage('agents')">Agent 配置</a>
     </div>
   </aside>
 
@@ -45,257 +40,257 @@
     <div class="page active" id="page-skills">
       <div class="page-header"><h2>Skills Repository</h2></div>
       <div class="page-content">
-        <div class="search-bar">
-          <label>Skill名稱</label><input type="text" placeholder="輸入名稱">
-          <label>層級</label>
-          <select><option value="">ALL</option><option>系統</option><option>企業</option><option>團隊</option><option>個人</option></select>
-          <label>企業</label>
-          <select><option value="">ALL</option><option>Acme Corp</option><option>HERBALIFE</option><option>佑昇</option></select>
-          <label>狀態</label>
-          <select><option value="">ALL</option><option>已發佈</option><option>草稿</option><option>已停用</option></select>
-          <label>來源</label>
-          <select><option value="">ALL</option><option>平台建立</option><option>自訂版本</option><option>手動建立</option></select>
-          <button class="btn btn-primary">查詢</button>
-          <button class="btn btn-default">清除</button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span style="font-size:12px;color:var(--gray-400);">系統 12 ｜ 企業 5 ｜ 團隊 3 ｜ 個人 2</span>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-create-skill')">+ 新增 Skill</button>
+        <div class="tabs-bar" id="repo-tabs">
+          <div class="tab-item active" onclick="switchRepoTab('repo-all')">全部 Skills</div>
+          <div class="tab-item" onclick="switchRepoTab('repo-extensions')">企業擴充追蹤</div>
+          <div class="tab-item" onclick="switchRepoTab('repo-stats')">使用統計</div>
         </div>
 
-        <div class="table-wrap">
-          <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">用「企業」篩選器可直接撈出該企業的全部 Skill（自建＋擴充版），不分它衍生自哪個系統 Skill</span></div></div>
-          <table>
-            <thead><tr><th>Skill 名稱</th><th>層級</th><th>衍生自</th><th>版本名稱</th><th>狀態</th><th>使用次數</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr class="skill-row-main">
-                <td>💬 <strong>通用客服答覆</strong></td>
-                <td><span class="tag tag-blue">系統</span></td>
-                <td>—</td>
-                <td>初始客服版</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>3,842</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-child">
-                <td>客服答覆 (Acme 退貨版)</td>
-                <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
-                <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
-                <td>退貨話術優化</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>1,284</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-child">
-                <td>客服答覆 (保健品版)</td>
-                <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">HERBALIFE</span></td>
-                <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
-                <td>保健品法規用語版</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>612</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-child">
-                <td>客服答覆 (輔具版)</td>
-                <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">HERBALIFE · 輔具</span></td>
-                <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
-                <td>輔具客服簡化版</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>203</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:var(--accent-500);border-color:var(--accent-500);">公開到企業</button></td>
-              </tr>
-              <tr class="skill-row-main row-pending">
-                <td>📄 <strong>文件摘要生成</strong></td>
-                <td><span class="tag tag-blue">系統</span></td>
-                <td>—</td>
-                <td>Markdown支援與關鍵字提取 <span class="tag tag-orange" style="font-size:10px;">待審核「掃描文件辨識強化」</span></td>
-                <td><span class="status-text status-text--warning">待審核</span></td>
-                <td>2,156</td>
-                <td><button class="btn btn-primary btn-sm" onclick="openModal('modal-review-version')">審核版本</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-child">
-                <td>法規摘要 (法律版)</td>
-                <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">Acme · 法務</span></td>
-                <td><span class="derived-mark" title="文件摘要生成「Markdown支援與關鍵字提取」">↳ 衍生</span></td>
-                <td>法務條款摘要強化</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>45</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-main">
-                <td>📝 <strong>會議摘要</strong></td>
-                <td><span class="tag tag-blue">系統</span></td>
-                <td>—</td>
-                <td>Action Items自動識別</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>967</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-child">
-                <td>工程會議紀錄</td>
-                <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">佑昇 · 工程</span></td>
-                <td><span class="derived-mark" title="會議摘要「Action Items自動識別」">↳ 衍生</span></td>
-                <td>工程術語辨識版</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>67</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:var(--accent-500);border-color:var(--accent-500);">公開到企業</button></td>
-              </tr>
-              <tr class="skill-row-main">
-                <td>📊 <strong>數據可視化</strong></td>
-                <td><span class="tag tag-blue">系統</span></td>
-                <td>—</td>
-                <td>自動圖表生成</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>1,893</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-main">
-                <td>🔍 <strong>競品分析</strong></td>
-                <td><span class="tag tag-blue">系統</span></td>
-                <td>—</td>
-                <td>初始版</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>723</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-main">
-                <td>🏢 <strong>客戶投訴處理</strong></td>
-                <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
-                <td>—</td>
-                <td>退貨流程整合版</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>2,341</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-main">
-                <td>📦 <strong>ERP 庫存查詢</strong> <span class="tag tag-gray" style="font-size:10px;">獨立能力</span></td>
-                <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
-                <td>—</td>
-                <td>多倉庫整合</td>
-                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
-                <td>856</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-              <tr class="skill-row-main">
-                <td>🔎 <strong>內部知識庫搜尋</strong> <span class="tag tag-gray" style="font-size:10px;">獨立能力</span></td>
-                <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
-                <td>—</td>
-                <td>初版搜尋原型</td>
-                <td><span class="status-text status-text--danger">✗ 已停用</span></td>
-                <td>—</td>
-                <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="pagination"><div class="page-btn active">1</div><div class="page-btn">2</div><select><option>10</option><option>20</option></select><span style="font-size:12px;color:var(--gray-400);margin-left:4px;">筆/頁</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========== 企業擴充追蹤 ========== -->
-    <div class="page" id="page-extensions">
-      <div class="page-header"><h2>企業擴充追蹤</h2></div>
-      <div class="page-content">
-        <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
-          <div class="stat-card"><div class="label">非系統層 Skills</div><div class="value">47</div><div class="sub" style="color:var(--accent-500);">企業 18 ｜ 團隊 21 ｜ 個人 8</div></div>
-          <div class="stat-card"><div class="label">最常被擴充的系統 Skill</div><div class="value" style="font-size:16px;">通用客服答覆</div><div class="sub">被 6 家企業擴充</div></div>
-        </div>
-        <div class="search-bar">
-          <label>系統 Skill</label>
-          <select><option value="">ALL</option><option>通用客服答覆</option><option>文件摘要生成</option><option>會議摘要</option></select>
-          <label>層級</label>
-          <select><option value="">ALL</option><option>企業</option><option>團隊</option><option>個人</option></select>
-          <label>企業</label>
-          <select><option value="">ALL</option><option>Acme Corp</option><option>HERBALIFE</option><option>佑昇</option></select>
-          <button class="btn btn-primary">查詢</button>
-          <button class="btn btn-default">清除</button>
-        </div>
-        <div class="table-wrap">
-          <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">追蹤各企業從系統 Skill 擴充的自訂版本</span></div></div>
-          <table>
-            <thead><tr><th>來源系統 Skill</th><th>企業</th><th>層級</th><th>團隊</th><th>擴充 Skill</th><th>建立時間</th><th>使用次數</th></tr></thead>
-            <tbody>
-              <tr><td>通用客服答覆「初始客服版」</td><td>Acme Corp</td><td><span class="tag tag-indigo">企業</span></td><td>—</td><td><strong>客服答覆 (Acme 退貨版)</strong></td><td>2026-06-09</td><td>1,284</td></tr>
-              <tr><td>通用客服答覆「初始客服版」</td><td>HERBALIFE</td><td><span class="tag tag-indigo">企業</span></td><td>—</td><td><strong>客服答覆 (保健品版)</strong></td><td>2026-06-12</td><td>612</td></tr>
-              <tr><td>通用客服答覆「初始客服版」</td><td>HERBALIFE</td><td><span class="tag tag-teal">團隊</span></td><td>輔具</td><td><strong>客服答覆 (輔具版)</strong></td><td>2026-06-18</td><td>203</td></tr>
-              <tr><td>文件摘要生成「Markdown支援與關鍵字提取」</td><td>Acme Corp</td><td><span class="tag tag-teal">團隊</span></td><td>法務</td><td><strong>法規摘要 (法律版)</strong></td><td>2026-05-20</td><td>45</td></tr>
-              <tr><td>會議摘要「Action Items自動識別」</td><td>佑昇</td><td><span class="tag tag-teal">團隊</span></td><td>工程</td><td><strong>工程會議紀錄</strong></td><td>2026-06-01</td><td>67</td></tr>
-            </tbody>
-          </table>
-          <div class="pagination"><div class="page-btn active">1</div><div class="page-btn">2</div><select><option>10</option><option>20</option></select><span style="font-size:12px;color:var(--gray-400);margin-left:4px;">筆/頁</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========== 使用統計 ========== -->
-    <div class="page" id="page-statistics">
-      <div class="page-header"><h2>使用統計</h2></div>
-      <div class="page-content">
-        <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
-          <div class="stat-card stat-card--danger">
-            <div class="label">Skill 執行健康度 <span style="font-size:11px;color:var(--danger-text);">⚠ 低於標準</span></div>
-            <div class="value">95.3%</div>
-            <div class="sub">↓ 2.4% vs 上月 · 建議檢查 confluence-mcp</div>
+        <div class="repo-panel active" id="repo-all">
+          <div class="search-bar">
+            <label>Skill名稱</label><input type="text" placeholder="輸入名稱">
+            <label>層級</label>
+            <select><option value="">ALL</option><option>系統</option><option>企業</option><option>團隊</option><option>個人</option></select>
+            <label>企業</label>
+            <select><option value="">ALL</option><option>Acme Corp</option><option>HERBALIFE</option><option>佑昇</option></select>
+            <label>狀態</label>
+            <select><option value="">ALL</option><option>已發佈</option><option>草稿</option><option>已停用</option></select>
+            <label>來源</label>
+            <select><option value="">ALL</option><option>平台建立</option><option>自訂版本</option><option>手動建立</option></select>
+            <button class="btn btn-primary">查詢</button>
+            <button class="btn btn-default">清除</button>
           </div>
-          <div class="stat-card stat-card--warning">
-            <div class="label">閒置 Skills <span style="font-size:11px;color:var(--gray-400);">30 天零呼叫</span></div>
-            <div class="value">8</div>
-            <div class="sub" style="cursor:pointer;">→ 查看清單，考慮下架</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:12px;color:var(--gray-400);">系統 12 ｜ 企業 5 ｜ 團隊 3 ｜ 個人 2</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-create-skill')">+ 新增 Skill</button>
           </div>
-        </div>
-        <div class="search-bar">
-          <label>時間範圍</label>
-          <select><option>最近 7 天</option><option selected>最近 30 天</option><option>最近 90 天</option></select>
-          <label>企業</label>
-          <select><option value="">ALL</option><option>Acme Corp</option><option>HERBALIFE</option><option>佑昇</option></select>
-          <label>層級</label>
-          <select><option value="">ALL</option><option>系統</option><option>企業</option><option>團隊</option><option>個人</option></select>
-          <button class="btn btn-primary">查詢</button>
-          <button class="btn btn-default">匯出 CSV</button>
-        </div>
-        <div class="tabs-bar" id="stats-tabs">
-          <div class="tab-item active" onclick="switchStatsTab('stats-skill')">Skill 使用排行</div>
-          <div class="tab-item" onclick="switchStatsTab('stats-tool')">Tool 使用排行</div>
-          <div class="tab-item" onclick="switchStatsTab('stats-tenant')">企業使用分佈</div>
-        </div>
-        <div class="stats-panel active" id="stats-skill">
+
           <div class="table-wrap">
-            <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">依使用次數排序 · 最近 30 天</span></div></div>
+            <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">用「企業」篩選器可直接撈出該企業的全部 Skill（自建＋擴充版），不分它衍生自哪個系統 Skill</span></div></div>
             <table>
-              <thead><tr><th>#</th><th>Skill 名稱</th><th>類型</th><th>使用次數</th><th>使用企業數</th><th>趨勢</th></tr></thead>
+              <thead><tr><th>Skill 名稱</th><th>層級</th><th>衍生自</th><th>版本名稱</th><th>狀態</th><th>使用次數</th><th>操作</th></tr></thead>
               <tbody>
-                <tr><td>1</td><td><strong>通用客服答覆</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>3,842</strong></td><td>8</td><td style="color:var(--success-text);">↑ 22%</td></tr>
-                <tr><td>2</td><td><strong>文件摘要生成</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>2,156</strong></td><td>7</td><td style="color:var(--success-text);">↑ 8%</td></tr>
-                <tr><td>3</td><td><strong>數據可視化</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>1,893</strong></td><td>6</td><td style="color:var(--success-text);">↑ 35%</td></tr>
-                <tr><td>4</td><td><strong>客服答覆 (Acme 退貨版)</strong><br><span style="font-size:11px;color:var(--gray-400);">↳ 對話演化 · Acme Corp</span></td><td><span class="tag tag-indigo">企業</span></td><td><strong>1,284</strong></td><td>1</td><td style="color:var(--success-text);">↑ 45%</td></tr>
-                <tr><td>5</td><td><strong>會議摘要</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>967</strong></td><td>5</td><td style="color:var(--gray-400);">→ 0%</td></tr>
-                <tr><td>6</td><td><strong>ERP 庫存查詢</strong><br><span style="font-size:11px;color:var(--tag-orange-text);">↳ Builder · Acme Corp</span></td><td><span class="tag tag-indigo">企業</span></td><td><strong>856</strong></td><td>1</td><td style="color:var(--success-text);">↑ 12%</td></tr>
-                <tr><td>7</td><td><strong>工程會議紀錄</strong><br><span style="font-size:11px;color:var(--tag-teal-text);">↳ 佑昇 · 工程</span></td><td><span class="tag tag-teal">團隊</span></td><td><strong>203</strong></td><td>1</td><td style="color:var(--success-text);">↑ 31%</td></tr>
+                <tr class="skill-row-main">
+                  <td>💬 <strong>通用客服答覆</strong></td>
+                  <td><span class="tag tag-blue">系統</span></td>
+                  <td>—</td>
+                  <td>初始客服版</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>3,842</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-child">
+                  <td>客服答覆 (Acme 退貨版)</td>
+                  <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
+                  <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
+                  <td>退貨話術優化</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>1,284</td>
+                  <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-child">
+                  <td>客服答覆 (保健品版)</td>
+                  <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">HERBALIFE</span></td>
+                  <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
+                  <td>保健品法規用語版</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>612</td>
+                  <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-child">
+                  <td>客服答覆 (輔具版)</td>
+                  <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">HERBALIFE · 輔具</span></td>
+                  <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
+                  <td>輔具客服簡化版</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>203</td>
+                  <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:var(--accent-500);border-color:var(--accent-500);">公開到企業</button></td>
+                </tr>
+                <tr class="skill-row-main row-pending">
+                  <td>📄 <strong>文件摘要生成</strong></td>
+                  <td><span class="tag tag-blue">系統</span></td>
+                  <td>—</td>
+                  <td>Markdown支援與關鍵字提取 <span class="tag tag-orange" style="font-size:10px;">待審核「掃描文件辨識強化」</span></td>
+                  <td><span class="status-text status-text--warning">待審核</span></td>
+                  <td>2,156</td>
+                  <td><button class="btn btn-primary btn-sm" onclick="openModal('modal-review-version')">審核版本</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-child">
+                  <td>法規摘要 (法律版)</td>
+                  <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">Acme · 法務</span></td>
+                  <td><span class="derived-mark" title="文件摘要生成「Markdown支援與關鍵字提取」">↳ 衍生</span></td>
+                  <td>法務條款摘要強化</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>45</td>
+                  <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-main">
+                  <td>📝 <strong>會議摘要</strong></td>
+                  <td><span class="tag tag-blue">系統</span></td>
+                  <td>—</td>
+                  <td>Action Items自動識別</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>967</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-child">
+                  <td>工程會議紀錄</td>
+                  <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">佑昇 · 工程</span></td>
+                  <td><span class="derived-mark" title="會議摘要「Action Items自動識別」">↳ 衍生</span></td>
+                  <td>工程術語辨識版</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>67</td>
+                  <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:var(--accent-500);border-color:var(--accent-500);">公開到企業</button></td>
+                </tr>
+                <tr class="skill-row-main">
+                  <td>📊 <strong>數據可視化</strong></td>
+                  <td><span class="tag tag-blue">系統</span></td>
+                  <td>—</td>
+                  <td>自動圖表生成</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>1,893</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-main">
+                  <td>🔍 <strong>競品分析</strong></td>
+                  <td><span class="tag tag-blue">系統</span></td>
+                  <td>—</td>
+                  <td>初始版</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>723</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-main">
+                  <td>🏢 <strong>客戶投訴處理</strong></td>
+                  <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
+                  <td>—</td>
+                  <td>退貨流程整合版</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>2,341</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-main">
+                  <td>📦 <strong>ERP 庫存查詢</strong> <span class="tag tag-gray" style="font-size:10px;">獨立能力</span></td>
+                  <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
+                  <td>—</td>
+                  <td>多倉庫整合</td>
+                  <td><span class="status-text status-text--success">✓ 已發佈</span></td>
+                  <td>856</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
+                <tr class="skill-row-main">
+                  <td>🔎 <strong>內部知識庫搜尋</strong> <span class="tag tag-gray" style="font-size:10px;">獨立能力</span></td>
+                  <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
+                  <td>—</td>
+                  <td>初版搜尋原型</td>
+                  <td><span class="status-text status-text--danger">✗ 已停用</span></td>
+                  <td>—</td>
+                  <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
+                </tr>
               </tbody>
             </table>
-            <div class="pagination"><div class="page-btn active">1</div><div class="page-btn">2</div><select><option>10</option><option>20</option></select></div>
+            <div class="pagination"><div class="page-btn active">1</div><div class="page-btn">2</div><select><option>10</option><option>20</option></select><span style="font-size:12px;color:var(--gray-400);margin-left:4px;">筆/頁</span></div>
           </div>
         </div>
-        <div class="stats-panel" id="stats-tool">
+
+        <div class="repo-panel" id="repo-extensions">
+          <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
+            <div class="stat-card"><div class="label">非系統層 Skills</div><div class="value">47</div><div class="sub" style="color:var(--accent-500);">企業 18 ｜ 團隊 21 ｜ 個人 8</div></div>
+            <div class="stat-card"><div class="label">最常被擴充的系統 Skill</div><div class="value" style="font-size:16px;">通用客服答覆</div><div class="sub">被 6 家企業擴充</div></div>
+          </div>
+          <div class="search-bar">
+            <label>系統 Skill</label>
+            <select><option value="">ALL</option><option>通用客服答覆</option><option>文件摘要生成</option><option>會議摘要</option></select>
+            <label>層級</label>
+            <select><option value="">ALL</option><option>企業</option><option>團隊</option><option>個人</option></select>
+            <label>企業</label>
+            <select><option value="">ALL</option><option>Acme Corp</option><option>HERBALIFE</option><option>佑昇</option></select>
+            <button class="btn btn-primary">查詢</button>
+            <button class="btn btn-default">清除</button>
+          </div>
           <div class="table-wrap">
-            <div class="table-toolbar"><div class="left"><span style="font-size:12px;font-weight:600;">Top Tools (被 Skill 調用次數)</span></div></div>
+            <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">追蹤各企業從系統 Skill 擴充的自訂版本</span></div></div>
             <table>
-              <thead><tr><th>#</th><th>Tool 名稱</th><th>來源</th><th>被調用次數</th><th>調用它的 Skills</th></tr></thead>
+              <thead><tr><th>來源系統 Skill</th><th>企業</th><th>層級</th><th>團隊</th><th>擴充 Skill</th><th>建立時間</th><th>使用次數</th></tr></thead>
               <tbody>
-                <tr><td>1</td><td><strong>knowledge-base-search</strong></td><td><span class="tag tag-cyan">Native</span></td><td><strong>8,234</strong></td><td>6 Skills</td></tr>
-                <tr><td>2</td><td><strong>erp-server/query_inventory</strong></td><td><span class="tag tag-purple">MCP</span></td><td><strong>4,521</strong></td><td>2 Skills</td></tr>
-                <tr><td>3</td><td><strong>confluence-mcp/search</strong></td><td><span class="tag tag-purple">MCP</span></td><td><strong>2,345</strong></td><td>2 Skills</td></tr>
+                <tr><td>通用客服答覆「初始客服版」</td><td>Acme Corp</td><td><span class="tag tag-indigo">企業</span></td><td>—</td><td><strong>客服答覆 (Acme 退貨版)</strong></td><td>2026-06-09</td><td>1,284</td></tr>
+                <tr><td>通用客服答覆「初始客服版」</td><td>HERBALIFE</td><td><span class="tag tag-indigo">企業</span></td><td>—</td><td><strong>客服答覆 (保健品版)</strong></td><td>2026-06-12</td><td>612</td></tr>
+                <tr><td>通用客服答覆「初始客服版」</td><td>HERBALIFE</td><td><span class="tag tag-teal">團隊</span></td><td>輔具</td><td><strong>客服答覆 (輔具版)</strong></td><td>2026-06-18</td><td>203</td></tr>
+                <tr><td>文件摘要生成「Markdown支援與關鍵字提取」</td><td>Acme Corp</td><td><span class="tag tag-teal">團隊</span></td><td>法務</td><td><strong>法規摘要 (法律版)</strong></td><td>2026-05-20</td><td>45</td></tr>
+                <tr><td>會議摘要「Action Items自動識別」</td><td>佑昇</td><td><span class="tag tag-teal">團隊</span></td><td>工程</td><td><strong>工程會議紀錄</strong></td><td>2026-06-01</td><td>67</td></tr>
               </tbody>
             </table>
+            <div class="pagination"><div class="page-btn active">1</div><div class="page-btn">2</div><select><option>10</option><option>20</option></select><span style="font-size:12px;color:var(--gray-400);margin-left:4px;">筆/頁</span></div>
           </div>
         </div>
-        <div class="stats-panel" id="stats-tenant">
-          <div class="panel">
-            <div class="tenant-stat-grid">
-              <div class="tenant-stat-item"><span class="name">Acme Corp</span><span class="value">4,231</span>調用</div>
-              <div class="tenant-stat-item"><span class="name">HERBALIFE</span><span class="value">3,156</span>調用</div>
-              <div class="tenant-stat-item"><span class="name">佑昇</span><span class="value">2,890</span>調用</div>
-              <div class="tenant-stat-item"><span class="name">其他 5 家</span><span class="value value--muted">2,570</span>調用</div>
+
+        <div class="repo-panel" id="repo-stats">
+          <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
+            <div class="stat-card stat-card--danger">
+              <div class="label">Skill 執行健康度 <span style="font-size:11px;color:var(--danger-text);">⚠ 低於標準</span></div>
+              <div class="value">95.3%</div>
+              <div class="sub">↓ 2.4% vs 上月 · 建議檢查 confluence-mcp</div>
+            </div>
+            <div class="stat-card stat-card--warning">
+              <div class="label">閒置 Skills <span style="font-size:11px;color:var(--gray-400);">30 天零呼叫</span></div>
+              <div class="value">8</div>
+              <div class="sub" style="cursor:pointer;">→ 查看清單，考慮下架</div>
+            </div>
+          </div>
+          <div class="search-bar">
+            <label>時間範圍</label>
+            <select><option>最近 7 天</option><option selected>最近 30 天</option><option>最近 90 天</option></select>
+            <label>企業</label>
+            <select><option value="">ALL</option><option>Acme Corp</option><option>HERBALIFE</option><option>佑昇</option></select>
+            <label>層級</label>
+            <select><option value="">ALL</option><option>系統</option><option>企業</option><option>團隊</option><option>個人</option></select>
+            <button class="btn btn-primary">查詢</button>
+            <button class="btn btn-default">匯出 CSV</button>
+          </div>
+          <div class="tabs-bar" id="stats-tabs">
+            <div class="tab-item active" onclick="switchStatsTab('stats-skill')">Skill 使用排行</div>
+            <div class="tab-item" onclick="switchStatsTab('stats-tool')">Tool 使用排行</div>
+            <div class="tab-item" onclick="switchStatsTab('stats-tenant')">企業使用分佈</div>
+          </div>
+          <div class="stats-panel active" id="stats-skill">
+            <div class="table-wrap">
+              <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">依使用次數排序 · 最近 30 天</span></div></div>
+              <table>
+                <thead><tr><th>#</th><th>Skill 名稱</th><th>類型</th><th>使用次數</th><th>使用企業數</th><th>趨勢</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td><strong>通用客服答覆</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>3,842</strong></td><td>8</td><td style="color:var(--success-text);">↑ 22%</td></tr>
+                  <tr><td>2</td><td><strong>文件摘要生成</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>2,156</strong></td><td>7</td><td style="color:var(--success-text);">↑ 8%</td></tr>
+                  <tr><td>3</td><td><strong>數據可視化</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>1,893</strong></td><td>6</td><td style="color:var(--success-text);">↑ 35%</td></tr>
+                  <tr><td>4</td><td><strong>客服答覆 (Acme 退貨版)</strong><br><span style="font-size:11px;color:var(--gray-400);">↳ 對話演化 · Acme Corp</span></td><td><span class="tag tag-indigo">企業</span></td><td><strong>1,284</strong></td><td>1</td><td style="color:var(--success-text);">↑ 45%</td></tr>
+                  <tr><td>5</td><td><strong>會議摘要</strong></td><td><span class="tag tag-blue">系統</span></td><td><strong>967</strong></td><td>5</td><td style="color:var(--gray-400);">→ 0%</td></tr>
+                  <tr><td>6</td><td><strong>ERP 庫存查詢</strong><br><span style="font-size:11px;color:var(--tag-orange-text);">↳ Builder · Acme Corp</span></td><td><span class="tag tag-indigo">企業</span></td><td><strong>856</strong></td><td>1</td><td style="color:var(--success-text);">↑ 12%</td></tr>
+                  <tr><td>7</td><td><strong>工程會議紀錄</strong><br><span style="font-size:11px;color:var(--tag-teal-text);">↳ 佑昇 · 工程</span></td><td><span class="tag tag-teal">團隊</span></td><td><strong>203</strong></td><td>1</td><td style="color:var(--success-text);">↑ 31%</td></tr>
+                </tbody>
+              </table>
+              <div class="pagination"><div class="page-btn active">1</div><div class="page-btn">2</div><select><option>10</option><option>20</option></select></div>
+            </div>
+          </div>
+          <div class="stats-panel" id="stats-tool">
+            <div class="table-wrap">
+              <div class="table-toolbar"><div class="left"><span style="font-size:12px;font-weight:600;">Top Tools (被 Skill 調用次數)</span></div></div>
+              <table>
+                <thead><tr><th>#</th><th>Tool 名稱</th><th>來源</th><th>被調用次數</th><th>調用它的 Skills</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td><strong>knowledge-base-search</strong></td><td><span class="tag tag-cyan">Native</span></td><td><strong>8,234</strong></td><td>6 Skills</td></tr>
+                  <tr><td>2</td><td><strong>erp-server/query_inventory</strong></td><td><span class="tag tag-purple">MCP</span></td><td><strong>4,521</strong></td><td>2 Skills</td></tr>
+                  <tr><td>3</td><td><strong>confluence-mcp/search</strong></td><td><span class="tag tag-purple">MCP</span></td><td><strong>2,345</strong></td><td>2 Skills</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="stats-panel" id="stats-tenant">
+            <div class="panel">
+              <div class="tenant-stat-grid">
+                <div class="tenant-stat-item"><span class="name">Acme Corp</span><span class="value">4,231</span>調用</div>
+                <div class="tenant-stat-item"><span class="name">HERBALIFE</span><span class="value">3,156</span>調用</div>
+                <div class="tenant-stat-item"><span class="name">佑昇</span><span class="value">2,890</span>調用</div>
+                <div class="tenant-stat-item"><span class="name">其他 5 家</span><span class="value value--muted">2,570</span>調用</div>
+              </div>
             </div>
           </div>
         </div>

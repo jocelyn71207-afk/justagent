@@ -28,6 +28,12 @@ function selectTestSkill(el) {
   document.querySelectorAll('.test-skill-opt').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
 }
+function switchRepoTab(panelId) {
+  document.querySelectorAll('.repo-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  document.querySelectorAll('#repo-tabs .tab-item').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
 function switchStatsTab(panelId) {
   document.querySelectorAll('.stats-panel').forEach(p => p.classList.remove('active'));
   document.getElementById(panelId).classList.add('active');

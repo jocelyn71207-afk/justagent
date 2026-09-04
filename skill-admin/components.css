@@ -158,6 +158,8 @@ th.center, td.center { text-align: center; }
 .test-skill-opt:hover { background: var(--accent-50); }
 .test-skill-opt.active { background: var(--accent-50); color: var(--accent-600); font-weight: 500; border-right: 2px solid var(--accent-500); }
 
+.repo-panel { display: none; }
+.repo-panel.active { display: block; }
 .stats-panel { display: none; }
 .stats-panel.active { display: block; }
 .tc-panel { display: none; }
