@@ -68,120 +68,120 @@
           <table>
             <thead><tr><th>Skill 名稱</th><th>層級</th><th>衍生自</th><th>版本名稱</th><th>狀態</th><th>使用次數</th><th>操作</th></tr></thead>
             <tbody>
-              <tr>
+              <tr class="skill-row-main">
                 <td>💬 <strong>通用客服答覆</strong></td>
                 <td><span class="tag tag-blue">系統</span></td>
                 <td>—</td>
                 <td>初始客服版</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>3,842</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-child">
                 <td>客服答覆 (Acme 退貨版)</td>
                 <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
-                <td>通用客服答覆「初始客服版」</td>
+                <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
                 <td>退貨話術優化</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>1,284</td>
                 <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-child">
                 <td>客服答覆 (保健品版)</td>
                 <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">HERBALIFE</span></td>
-                <td>通用客服答覆「初始客服版」</td>
+                <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
                 <td>保健品法規用語版</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>612</td>
                 <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-child">
                 <td>客服答覆 (輔具版)</td>
                 <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">HERBALIFE · 輔具</span></td>
-                <td>通用客服答覆「初始客服版」</td>
+                <td><span class="derived-mark" title="通用客服答覆「初始客服版」">↳ 衍生</span></td>
                 <td>輔具客服簡化版</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>203</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:#1890ff;border-color:#1890ff;">公開到企業</button></td>
+                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:var(--accent-500);border-color:var(--accent-500);">公開到企業</button></td>
               </tr>
-              <tr style="background:#fffbe6;">
+              <tr class="skill-row-main row-pending">
                 <td>📄 <strong>文件摘要生成</strong></td>
                 <td><span class="tag tag-blue">系統</span></td>
                 <td>—</td>
                 <td>Markdown支援與關鍵字提取 <span class="tag tag-orange" style="font-size:10px;">待審核「掃描文件辨識強化」</span></td>
-                <td style="color:#fa8c16;">待審核</td>
+                <td><span class="status-text status-text--warning">待審核</span></td>
                 <td>2,156</td>
                 <td><button class="btn btn-primary btn-sm" onclick="openModal('modal-review-version')">審核版本</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-child">
                 <td>法規摘要 (法律版)</td>
                 <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">Acme · 法務</span></td>
-                <td>文件摘要生成「Markdown支援與關鍵字提取」</td>
+                <td><span class="derived-mark" title="文件摘要生成「Markdown支援與關鍵字提取」">↳ 衍生</span></td>
                 <td>法務條款摘要強化</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>45</td>
                 <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-main">
                 <td>📝 <strong>會議摘要</strong></td>
                 <td><span class="tag tag-blue">系統</span></td>
                 <td>—</td>
                 <td>Action Items自動識別</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>967</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-child">
                 <td>工程會議紀錄</td>
                 <td><span class="tag tag-teal">團隊</span> <span class="tag tag-orange" style="font-size:10px;">佑昇 · 工程</span></td>
-                <td>會議摘要「Action Items自動識別」</td>
+                <td><span class="derived-mark" title="會議摘要「Action Items自動識別」">↳ 衍生</span></td>
                 <td>工程術語辨識版</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>67</td>
-                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:#1890ff;border-color:#1890ff;">公開到企業</button></td>
+                <td><button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button> <button class="btn btn-default btn-sm" style="color:var(--accent-500);border-color:var(--accent-500);">公開到企業</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-main">
                 <td>📊 <strong>數據可視化</strong></td>
                 <td><span class="tag tag-blue">系統</span></td>
                 <td>—</td>
                 <td>自動圖表生成</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>1,893</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-main">
                 <td>🔍 <strong>競品分析</strong></td>
                 <td><span class="tag tag-blue">系統</span></td>
                 <td>—</td>
                 <td>初始版</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>723</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-main">
                 <td>🏢 <strong>客戶投訴處理</strong></td>
                 <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
                 <td>—</td>
                 <td>退貨流程整合版</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>2,341</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-main">
                 <td>📦 <strong>ERP 庫存查詢</strong> <span class="tag tag-gray" style="font-size:10px;">獨立能力</span></td>
                 <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
                 <td>—</td>
                 <td>多倉庫整合</td>
-                <td style="color:#52c41a;">✓ 已發佈</td>
+                <td><span class="status-text status-text--success">✓ 已發佈</span></td>
                 <td>856</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
-              <tr>
+              <tr class="skill-row-main">
                 <td>🔎 <strong>內部知識庫搜尋</strong> <span class="tag tag-gray" style="font-size:10px;">獨立能力</span></td>
                 <td><span class="tag tag-indigo">企業</span> <span class="tag tag-orange" style="font-size:10px;">Acme</span></td>
                 <td>—</td>
                 <td>初版搜尋原型</td>
-                <td style="color:#ff4d4f;">✗ 已停用</td>
+                <td><span class="status-text status-text--danger">✗ 已停用</span></td>
                 <td>—</td>
                 <td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-skill')">編輯</button> <button class="btn btn-default btn-sm" onclick="showPage('skill-test')">測試</button></td>
               </tr>
