@@ -2,7 +2,10 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 720;
+  // 這是一個「唯讀檢視」utility modal，可能從別的 modal 裡開啟
+  // （例如 SkillEditChatModal，z-index: 730），開啟時要蓋在上面，
+  // 所以要比目前已知會疊在它之上開啟的元件都高
+  z-index: 740;
   display: flex;
   align-items: center;
   justify-content: center;

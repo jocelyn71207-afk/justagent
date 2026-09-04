@@ -142,8 +142,8 @@
     }
   }
 
+  // 附加檔案預設收合，只留一行摘要，展開才佔空間，不會固定擠壓對話區
   .secm-files-panel {
-    padding: 12px 20px;
     border-top: 1px solid var(--divider-a50);
     flex-shrink: 0;
     max-height: 40%;
@@ -151,13 +151,80 @@
     @include use-scroll-bar(var(--scrollbar-a50));
   }
 
+  .secm-files-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+
+    .material-symbols-outlined { font-size: 18px; }
+    &:hover { color: var(--text-muted); }
+  }
+
   .secm-files-label {
     font-size: 11px;
     font-weight: 600;
-    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+  }
+
+  .SkillFileUpload { padding: 0 20px 12px; }
+
+  // ── 查看目前技能內容 ───────────────────────────
+  // 使用者要用文字描述怎麼改，得先看得到現在長什麼樣子。在這個小
+  // 對話框裡直接展開內容會佔掉太多空間，改成開獨立的 skill.md 檢視
+  // Modal（有自己完整的空間），這裡只留一顆低調的入口按鈕
+  .secm-view-original {
+    flex-shrink: 0;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--divider-a50);
+  }
+
+  .secm-view-original-btn {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+    color: var(--text-faint);
+    font-size: 12.5px;
+
+    .material-symbols-outlined { font-size: 16px; }
+  }
+
+  // ── 建議 chip：依技能實際有的內容區塊動態產生，取代原本一句固定、
+  //    跟這顆技能無關的通用範例 ───────────────────
+  .secm-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .secm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover {
+      background: var(--accent-soft);
+      border-color: $color_main_3;
+      color: $color_main_1;
+    }
   }
 
   .secm-input-row {
