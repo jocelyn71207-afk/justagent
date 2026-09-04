@@ -17,6 +17,14 @@
                   <span v-if="!isPersonal" class="skill-tag tag--version">
                     {{ activeVersion?.versionName ?? skill.version }}
                   </span>
+                  <!-- 個人技能的狀態（草稿/審核中/可使用）跟啟用/停用一樣都是
+                       「目前狀態」，放在同一排徽章，不用另外佔一個區塊 -->
+                  <span
+                    v-if="isPersonal && personalStatusLabel"
+                    :class="['skill-tag', personalStatusClass]"
+                  >
+                    {{ personalStatusLabel }}
+                  </span>
                   <!-- 從 Library 技能庫瀏覽進來是唯讀情境，啟用／停用是各團隊自己
                        導入後的狀態，不是這顆 Library 技能本身的屬性，不該顯示 -->
                   <span
@@ -182,48 +190,42 @@
                 <p v-else class="section-empty-hint">尚無版本歷史</p>
               </div>
 
-              <!-- 個人技能目前狀態：可能包含審核退回原因，屬於需要立刻
-                   看到的內容，不放進側欄 -->
-              <div v-if="isPersonal" class="drawer-section">
-                <div class="section-label">目前狀態</div>
-                <div class="psv-card">
-                  <div class="psv-head">
-                    <span
-                      v-if="personalStatusLabel"
-                      :class="['skill-tag', personalStatusClass]"
-                    >
-                      {{ personalStatusLabel }}
-                    </span>
-                    <span v-if="skill.submitMode" class="psv-mode">
-                      {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
-                    </span>
-                    <span
-                      v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
-                      class="skill-tag psv-scope-tag"
-                      :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
-                    >
-                      <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
-                      預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
-                    </span>
-                  </div>
+              <!-- 個人技能的送審脈絡：可能包含審核退回原因，屬於需要立刻
+                   看到的內容，不放進側欄。狀態標籤本身移到標頭跟啟用/停用
+                   放一起，這裡只在真的有內容（建立方式/預計發布範圍/來源
+                   更新提示/送審說明/退回原因）時才顯示，不是固定佔位的
+                   獨立區塊 -->
+              <div v-if="isPersonal && hasPersonalStatusDetails" class="psv-details">
+                <div v-if="skill.submitMode || (skill.personalStatus === 'reviewing' && skill.targetScope)" class="psv-head">
+                  <span v-if="skill.submitMode" class="psv-mode">
+                    {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
+                  </span>
+                  <span
+                    v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
+                    class="skill-tag psv-scope-tag"
+                    :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
+                  >
+                    <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
+                    預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
+                  </span>
+                </div>
 
-                  <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
-                    <i class="material-symbols-outlined">system_update_alt</i>
-                    <span>
-                      Library 來源技能有新版本
-                      <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
-                    </span>
-                  </div>
+                <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
+                  <i class="material-symbols-outlined">system_update_alt</i>
+                  <span>
+                    Library 來源技能有新版本
+                    <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
+                  </span>
+                </div>
 
-                  <div v-if="skill.submitNote" class="psv-note">
-                    <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
-                  </div>
-                  <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
-                    <i class="material-symbols-outlined">feedback</i>
-                    <div>
-                      <div class="psv-reject-feedback-label">審核退回原因</div>
-                      <div>{{ skill.reviewFeedback }}</div>
-                    </div>
+                <div v-if="skill.submitNote" class="psv-note">
+                  <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
+                </div>
+                <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
+                  <i class="material-symbols-outlined">feedback</i>
+                  <div>
+                    <div class="psv-reject-feedback-label">審核退回原因</div>
+                    <div>{{ skill.reviewFeedback }}</div>
                   </div>
                 </div>
               </div>
@@ -489,6 +491,20 @@ const personalStatusClass = computed(() => {
   if (s === 'draft') return 'tag--draft'
   if (s === 'reviewing') return 'tag--reviewing'
   return 'tag--available'
+})
+
+// 狀態標籤本身已經移到標頭，這裡只要判斷「除了狀態以外還有沒有別的
+// 送審脈絡可以顯示」，沒有的話（多數「可使用」的個人技能）整塊都不顯示
+const hasPersonalStatusDetails = computed(() => {
+  const s = props.skill
+  if (!s) return false
+  return !!(
+    s.submitMode ||
+    (s.personalStatus === 'reviewing' && s.targetScope) ||
+    s.hasLibraryUpdate ||
+    s.submitNote ||
+    s.reviewFeedback
+  )
 })
 
 // 圖示跟卡片式目錄（SkillTile／PersonalSkillGroup）統一：用 scope 決定顏色、

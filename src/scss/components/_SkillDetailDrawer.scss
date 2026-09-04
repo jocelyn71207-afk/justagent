@@ -688,13 +688,10 @@
     }
   }
 
-  // ── Personal skill status card ────────────────
-
-  .psv-card {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 10px;
-    padding: 14px 16px;
+  // ── Personal skill submission context ─────────
+  // 狀態標籤已經移到標頭，這裡不再是固定佔位的獨立卡片區塊，只在真的
+  // 有內容時才出現，所以不需要外層背景/邊框，維持輕量的行內間距即可
+  .psv-details {
     display: flex;
     flex-direction: column;
     gap: 10px;
