@@ -217,3 +217,27 @@ th.center, td.center { text-align: center; }
 .server-card table { width: 100%; border-collapse: collapse; }
 .tool-row .tname { font-weight: 600; color: var(--gray-800); }
 .tool-row .tdesc { display: block; font-size: var(--text-xs); color: var(--gray-400); font-weight: 400; margin-top: 2px; }
+
+.draft-card {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.draft-card-info { flex: 1; }
+.draft-card-title { display: flex; align-items: center; gap: var(--space-2); margin-bottom: 4px; }
+.draft-card-title .name { font-size: var(--text-md); font-weight: 600; color: var(--gray-900); }
+.draft-card-meta { font-size: var(--text-sm); color: var(--gray-400); }
+.draft-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.tenant-stat-grid { display: flex; justify-content: space-around; font-size: var(--text-base); text-align: center; }
+.tenant-stat-item .name { font-weight: 600; color: var(--gray-800); }
+.tenant-stat-item .value { color: var(--accent-500); font-size: var(--text-stat); font-weight: 700; display: block; margin: 4px 0; font-variant-numeric: tabular-nums; }
+.tenant-stat-item .value--muted { color: var(--gray-400); }
+
+.disabled-chip { font-size: var(--text-xs); color: var(--gray-400); background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 10px; padding: 2px var(--space-2); text-decoration: line-through; }
+.disabled-note { font-size: var(--text-xs); color: var(--danger-text); padding: 2px 4px; }
