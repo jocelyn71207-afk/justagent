@@ -182,12 +182,13 @@ th.center, td.center { text-align: center; }
 .modal-body { padding: var(--space-5); }
 .form-item { margin-bottom: var(--space-4); }
 .form-item label { display: block; font-size: var(--text-base); color: var(--gray-700); margin-bottom: 5px; }
-.form-item input, .form-item select, .form-item textarea {
+.form-item input:not([type="checkbox"]):not([type="radio"]), .form-item select, .form-item textarea {
   width: 100%; padding: 6px var(--space-3);
   border: 1px solid var(--gray-300); border-radius: var(--radius-sm);
   font-size: var(--text-base); outline: none;
 }
 .form-item input:focus, .form-item select:focus, .form-item textarea:focus { border-color: var(--accent-500); }
+.form-item input[type="checkbox"] { width: auto; flex-shrink: 0; }
 .modal-footer { padding: var(--space-3) var(--space-5); border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: var(--space-2); }
 
 .diff-line { padding: 2px var(--space-2); border-radius: 2px; }
