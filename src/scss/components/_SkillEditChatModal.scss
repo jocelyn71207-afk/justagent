@@ -176,59 +176,23 @@
   .SkillFileUpload { padding: 0 20px 12px; }
 
   // ── 查看目前技能內容 ───────────────────────────
-  // 使用者要用文字描述怎麼改，得先看得到現在長什麼樣子，預設收合，
-  // 跟版本歷史抽屜的「技能定義」共用同一套 markdown-body 覆寫慣例
-  .secm-collapsible {
+  // 使用者要用文字描述怎麼改，得先看得到現在長什麼樣子。在這個小
+  // 對話框裡直接展開內容會佔掉太多空間，改成開獨立的 skill.md 檢視
+  // Modal（有自己完整的空間），這裡只留一顆低調的入口按鈕
+  .secm-view-original {
     flex-shrink: 0;
+    padding: 8px 20px;
     border-bottom: 1px solid var(--divider-a50);
   }
 
-  .secm-collapsible-toggle {
+  .secm-view-original-btn {
     width: 100%;
     justify-content: flex-start;
     gap: 6px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 0;
     color: var(--text-faint);
     font-size: 12.5px;
 
     .material-symbols-outlined { font-size: 16px; }
-    &:hover { background: var(--page-bg); }
-  }
-
-  .secm-original-content {
-    padding: 4px 20px 16px;
-    max-height: 220px;
-    overflow-y: auto;
-    @include use-scroll-bar(var(--scrollbar-a50));
-
-    .markdown-body {
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 12.5px;
-      line-height: 1.7;
-      font-family: inherit;
-
-      h2 {
-        font-size: 12.5px;
-        font-weight: 700;
-        color: var(--text);
-        margin: 14px 0 6px;
-        &:first-child { margin-top: 0; }
-      }
-
-      p, ul, ol { margin: 0 0 8px; }
-      ul, ol { padding-left: 18px; }
-      li { margin-bottom: 3px; }
-      strong { color: var(--text); }
-    }
-  }
-
-  .secm-empty-hint {
-    color: var(--text-faint);
-    font-size: 12.5px;
-    margin: 0;
   }
 
   // ── 建議 chip：依技能實際有的內容區塊動態產生，取代原本一句固定、

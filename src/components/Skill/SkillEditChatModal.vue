@@ -20,21 +20,14 @@
           </div>
 
           <!-- 查看目前技能內容：使用者要用文字描述怎麼改，得先看得到現在
-               長什麼樣子，不能只憑印象——預設收合，跟版本歷史抽屜的
-               「技能定義」共用同一套 markdown render 方式 -->
-          <div class="secm-collapsible">
-            <button
-              type="button"
-              class="custom-btn secm-collapsible-toggle"
-              @click="toggleOriginalContent"
-            >
-              <i class="material-symbols-outlined">{{ showOriginalContent ? 'expand_less' : 'visibility' }}</i>
-              {{ showOriginalContent ? '收合目前技能內容' : '查看目前技能內容' }}
+               長什麼樣子，不能只憑印象。在這個小對話框裡直接展開內容會
+               佔掉太多空間，改成開獨立的 skill.md 檢視 Modal（跟
+               SkillDetailDrawer 的「skill.md」按鈕共用同一個元件），
+               有自己完整的空間，不會擠壓對話區 -->
+          <div class="secm-view-original">
+            <button type="button" class="custom-btn secm-view-original-btn" @click="showMarkdown = true">
+              <i class="material-symbols-outlined">visibility</i>查看目前技能內容
             </button>
-            <div v-if="showOriginalContent" class="secm-original-content">
-              <div v-if="originalContentHtml" class="markdown-body" v-html="originalContentHtml"></div>
-              <p v-else class="secm-empty-hint">這顆技能還沒有任何內容</p>
-            </div>
           </div>
 
           <div ref="messagesEl" class="secm-messages">
@@ -114,17 +107,19 @@
         </div>
       </div>
     </Transition>
+
+    <!-- 查看目前技能內容：獨立 Modal，跟 SkillDetailDrawer 的
+         「skill.md」按鈕共用同一個元件 -->
+    <SkillMarkdownModal v-model="showMarkdown" :skill="skill" />
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
-import MarkdownIt from 'markdown-it'
-import 'github-markdown-css/github-markdown.css'
 import type { Skill, SkillFile } from '@/stores/skillStore'
 import { useSkillStore } from '@/stores/skillStore'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
-import { buildSkillDefinitionMarkdown } from '@/utils/skillMarkdown'
+import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
 
 const props = defineProps<{ modelValue: boolean; skill: Skill | null }>()
 const emit = defineEmits<{
@@ -133,13 +128,12 @@ const emit = defineEmits<{
 }>()
 
 const store = useSkillStore()
-const md = new MarkdownIt({ html: false, breaks: true, linkify: false })
 const inputText = ref('')
 const inputEl = ref<HTMLInputElement | null>(null)
 const messagesEl = ref<HTMLElement | null>(null)
 const localFiles = ref<SkillFile[]>([])
 const filesExpanded = ref(false)
-const showOriginalContent = ref(false)
+const showMarkdown = ref(false)
 
 const hasNameConflict = computed(() => {
   if (!props.skill || props.skill.zone !== 'personal' || !props.skill.derivedFrom) return false
@@ -151,12 +145,6 @@ const conflictSourceName = computed(() => {
   return store.flatSkills.find(s => s.id === props.skill!.derivedFrom)?.name
     ?? store.myPersonalSkills.find(s => s.id === props.skill!.derivedFrom)?.name
     ?? props.skill.derivedFrom
-})
-
-const originalContentHtml = computed(() => {
-  if (!props.skill) return ''
-  const source = buildSkillDefinitionMarkdown(props.skill)
-  return source ? md.render(source) : ''
 })
 
 interface SuggestionChip {
@@ -193,16 +181,8 @@ function applySuggestion(chip: SuggestionChip) {
   nextTick(() => inputEl.value?.focus())
 }
 
-// 兩個收合面板互斥（一次只開一個）：都展開的話疊起來會把面板撐得比
-// 固定高度還高，擠掉底部的輸入框跟「完成修改」按鈕
-function toggleOriginalContent() {
-  showOriginalContent.value = !showOriginalContent.value
-  if (showOriginalContent.value) filesExpanded.value = false
-}
-
 function toggleFiles() {
   filesExpanded.value = !filesExpanded.value
-  if (filesExpanded.value) showOriginalContent.value = false
 }
 
 watch(() => props.modelValue, (open) => {
@@ -211,7 +191,7 @@ watch(() => props.modelValue, (open) => {
     inputText.value = ''
     localFiles.value = [...(props.skill?.files ?? [])]
     filesExpanded.value = false
-    showOriginalContent.value = false
+    showMarkdown.value = false
   }
 })
 
