@@ -144,8 +144,13 @@ Establishes the full token vocabulary and the three CSS files the rest of the pl
  *   #8c8c8c -> --gray-400 (secondary text)      #666 -> --gray-600      #333 -> --gray-800
  *   #d9d9d9 -> --gray-300 (borders)  #e8e8e8 -> --gray-200  #f0f0f0/#f5f5f5 -> --gray-100  #fafafa -> --gray-50
  *   #001529 / #0d2137 / #000c17 / #8899aa / #b0bec5 -> sidebar goes light in this redesign, these have no replacement (deleted, not mapped)
+ *   #fff (any card/modal/panel background, or white text on a solid accent button) -> --surface
+ *   #fde68a (degraded-state border, e.g. Tool 管理's confluence-mcp) -> --warning-border
  */
 :root {
+  /* Surface (pure white — cards, modals, and text-on-solid-accent) */
+  --surface: #fff;
+
   /* Neutral grayscale */
   --gray-50:  #fafafa;
   --gray-100: #f4f4f5;
@@ -170,6 +175,7 @@ Establishes the full token vocabulary and the three CSS files the rest of the pl
   --success-text: #059669;
   --warning-bg:   #fffbeb;
   --warning-text: #d97706;
+  --warning-border: #fde68a;
   --danger-bg:    #fef2f2;
   --danger-text:  #dc2626;
   --info-bg:      #eff6ff;
@@ -342,7 +348,7 @@ body {
 
 .main { flex: 1; margin-left: 200px; }
 .page-header {
-  background: #fff;
+  background: var(--surface);
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--gray-200);
 }
@@ -403,21 +409,21 @@ Covers the most-reused primitives — every one of the 8 pages has at least a bu
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  background: #fff;
+  background: var(--surface);
   color: var(--gray-700);
   transition: all 0.15s;
 }
-.btn-primary { background: var(--accent-500); color: #fff; border-color: var(--accent-500); }
+.btn-primary { background: var(--accent-500); color: var(--surface); border-color: var(--accent-500); }
 .btn-primary:hover { background: var(--accent-600); border-color: var(--accent-600); }
-.btn-default { background: #fff; color: var(--gray-700); }
+.btn-default { background: var(--surface); color: var(--gray-700); }
 .btn-default:hover { border-color: var(--accent-500); color: var(--accent-500); }
-.btn-success { background: var(--success-text); color: #fff; border-color: var(--success-text); }
-.btn-danger { background: var(--danger-text); color: #fff; border-color: var(--danger-text); }
-.btn-warning { background: var(--warning-text); color: #fff; border-color: var(--warning-text); }
+.btn-success { background: var(--success-text); color: var(--surface); border-color: var(--success-text); }
+.btn-danger { background: var(--danger-text); color: var(--surface); border-color: var(--danger-text); }
+.btn-warning { background: var(--warning-text); color: var(--surface); border-color: var(--warning-text); }
 .btn-sm { padding: 3px var(--space-2); font-size: var(--text-sm); height: 26px; }
 
 .search-bar {
-  background: #fff;
+  background: var(--surface);
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-md);
@@ -440,7 +446,7 @@ Covers the most-reused primitives — every one of the 8 pages has at least a bu
 .search-bar input { width: 150px; }
 .search-bar select { min-width: 100px; }
 
-.table-wrap { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; }
+.table-wrap { background: var(--surface); border: 1px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; }
 .table-toolbar {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--gray-200);
@@ -488,9 +494,9 @@ th.center, td.center { text-align: center; }
   display: flex; align-items: center; justify-content: center;
   font-size: var(--text-sm);
   cursor: pointer;
-  background: #fff;
+  background: var(--surface);
 }
-.pagination .page-btn.active { background: var(--accent-500); color: #fff; border-color: var(--accent-500); }
+.pagination .page-btn.active { background: var(--accent-500); color: var(--surface); border-color: var(--accent-500); }
 .pagination select { height: 28px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: var(--text-sm); padding: 0 4px; }
 ```
 
@@ -551,7 +557,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 .tag-red     { background: var(--danger-bg);  color: var(--danger-text); }
 
 .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
-.stat-card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--space-4); }
+.stat-card { background: var(--surface); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--space-4); }
 .stat-card .label { font-size: var(--text-sm); color: var(--gray-400); margin-bottom: var(--space-1); }
 .stat-card .value { font-size: var(--text-stat); font-weight: 700; color: var(--gray-900); font-variant-numeric: tabular-nums; }
 .stat-card .sub { font-size: var(--text-xs); color: var(--success-text); margin-top: 4px; }
@@ -625,7 +631,7 @@ Standardizes the 8 modals down to 3 widths and unifies the various tab-like sele
 - [ ] **Step 1: Write tab/segmented-control and modal rules into `skill-admin/components.css`**
 
 ```css
-.tabs-bar { display: flex; border-bottom: 1px solid var(--gray-200); padding: 0 var(--space-4); background: #fff; }
+.tabs-bar { display: flex; border-bottom: 1px solid var(--gray-200); padding: 0 var(--space-4); background: var(--surface); }
 .tabs-bar .tab-item {
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-base);
@@ -637,7 +643,7 @@ Standardizes the 8 modals down to 3 widths and unifies the various tab-like sele
 .tabs-bar .tab-item:hover { color: var(--accent-600); }
 
 .admin-mode-tab { padding: 5px var(--space-3); font-size: var(--text-sm); font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; color: var(--gray-500); }
-.admin-mode-tab.active { background: #fff; color: var(--accent-600); box-shadow: var(--shadow-sm); }
+.admin-mode-tab.active { background: var(--surface); color: var(--accent-600); box-shadow: var(--shadow-sm); }
 .admin-test-mode { display: none; }
 .admin-test-mode.active { display: flex; }
 
@@ -652,7 +658,7 @@ Standardizes the 8 modals down to 3 widths and unifies the various tab-like sele
 
 .modal-mask { display: none; position: fixed; inset: 0; background: rgba(24, 24, 27, 0.45); z-index: 100; align-items: center; justify-content: center; }
 .modal-mask.active { display: flex; }
-.modal-box { background: #fff; border-radius: var(--radius-md); width: 480px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-md); }
+.modal-box { background: var(--surface); border-radius: var(--radius-md); width: 480px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-md); }
 .modal-box.is-md { width: 560px; }
 .modal-box.is-lg { width: 680px; }
 .modal-head {
@@ -743,24 +749,24 @@ The `.server-card` class already exists in the old CSS but was never actually us
 - [ ] **Step 1: Write chat, panel, and server-card rules into `skill-admin/components.css`**
 
 ```css
-.chat-container { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-md); display: flex; flex-direction: column; height: 500px; }
+.chat-container { background: var(--surface); border: 1px solid var(--gray-200); border-radius: var(--radius-md); display: flex; flex-direction: column; height: 500px; }
 .chat-messages { flex: 1; overflow-y: auto; padding: var(--space-4); }
 .chat-bubble { max-width: 75%; margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: 12px; font-size: var(--text-base); line-height: 1.6; }
 .chat-bubble.bot { background: var(--gray-100); color: var(--gray-800); border-bottom-left-radius: 3px; }
-.chat-bubble.user { background: var(--accent-500); color: #fff; border-bottom-right-radius: 3px; margin-left: auto; }
+.chat-bubble.user { background: var(--accent-500); color: var(--surface); border-bottom-right-radius: 3px; margin-left: auto; }
 .chat-input-bar { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--gray-200); display: flex; gap: var(--space-2); }
 .chat-input-bar input { flex: 1; padding: 6px var(--space-3); border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: var(--text-base); outline: none; }
 
-.panel { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--space-4); }
+.panel { background: var(--surface); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--space-4); }
 .panel h4 { font-size: var(--text-md); margin-bottom: var(--space-3); border-bottom: 1px solid var(--gray-200); padding-bottom: var(--space-2); color: var(--gray-900); }
 
 .tool-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .tool-chip { padding: 2px var(--space-2); background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: var(--text-sm); color: var(--gray-700); }
 
-.server-card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-md); margin-bottom: var(--space-3); overflow: hidden; }
-.server-card--degraded { border-color: #fde68a; }
+.server-card { background: var(--surface); border: 1px solid var(--gray-200); border-radius: var(--radius-md); margin-bottom: var(--space-3); overflow: hidden; }
+.server-card--degraded { border-color: var(--warning-border); }
 .server-card-head { padding: var(--space-3) var(--space-4); background: var(--gray-50); border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; gap: var(--space-3); }
-.server-card--degraded .server-card-head { background: var(--warning-bg); border-color: #fde68a; }
+.server-card--degraded .server-card-head { background: var(--warning-bg); border-color: var(--warning-border); }
 .server-name { font-size: var(--text-base); font-weight: 700; color: var(--gray-900); }
 .server-meta { font-size: var(--text-sm); color: var(--gray-400); }
 .server-card--degraded .server-meta { color: var(--warning-text); }
