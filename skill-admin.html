@@ -852,7 +852,15 @@ This product is broken, I need help
       <div class="modal-head">編輯 Skill <span class="close-btn" onclick="closeModal('modal-edit-skill')">×</span></div>
       <div class="modal-body">
         <div class="form-item"><label>Skill 名稱</label><input type="text" value="通用客服答覆"></div>
+        <div class="form-item">
+          <label>層級</label>
+          <div><span class="tag tag-blue">系統</span></div>
+        </div>
         <div class="form-item"><label>描述</label><textarea rows="2">處理一般客戶諮詢與 FAQ，支援多語言與情緒分析。</textarea></div>
+        <div class="form-item">
+          <label>狀態</label>
+          <select><option selected>已發佈</option><option>草稿</option><option>已停用</option></select>
+        </div>
 
         <div style="border:1px solid var(--gray-200);border-radius:4px;overflow:hidden;margin-bottom:14px;">
           <div style="background:var(--gray-50);padding:8px 12px;font-size:12px;font-weight:600;color:var(--gray-600);border-bottom:1px solid var(--gray-200);">版本</div>
@@ -860,15 +868,52 @@ This product is broken, I need help
             <div class="form-item"><label>目前生效版本</label><div style="padding:6px 10px;border:1px solid var(--gray-200);border-radius:4px;background:var(--gray-50);font-size:13px;color:var(--gray-400);">初始客服版</div></div>
             <div class="form-item"><label>新版本名稱 <span style="color:var(--danger-text);">*</span></label><input type="text" placeholder="e.g. 情緒分析語氣優化"></div>
           </div>
+          <div style="padding:0 12px 12px;">
+            <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">版本歷史</div>
+            <div style="font-size:12px;color:var(--gray-600);line-height:1.9;">
+              <div style="display:flex;justify-content:space-between;"><span>初始客服版 <span class="tag tag-green" style="font-size:10px;">現行</span></span><span style="color:var(--gray-400);">2026-06-01</span></div>
+              <div style="display:flex;justify-content:space-between;"><span>情緒分析優化版</span><span style="color:var(--gray-400);">2026-04-18</span></div>
+              <div style="display:flex;justify-content:space-between;"><span>初始版本</span><span style="color:var(--gray-400);">2026-02-10</span></div>
+            </div>
+          </div>
         </div>
 
-        <div class="form-item"><label>System Prompt</label><textarea rows="5" style="font-family:monospace;font-size:12px;">你是一個專業客服助理，負責解答客戶問題。務必使用親切專業的語氣，並在必要時主動提供相關資訊連結。</textarea></div>
+        <div class="form-item"><label>Skill 內容</label><textarea rows="9" style="font-family:monospace;font-size:12px;">## 使用時機
+處理客戶透過線上客服管道提出的一般諮詢、FAQ、情緒性抱怨。
+
+## 操作步驟
+1. 判斷客戶問題類型（諮詢／投訴／退換貨）
+2. 呼叫 knowledge-base-search 查詢相關政策
+3. 若偵測到負面情緒，優先安撫語氣再回覆內容
+4. 提供明確後續步驟或轉接窗口
+
+## 範例
+輸入：「我上週訂的商品狀態怎麼看不到」
+輸出：查詢訂單狀態並主動詢問是否需要協助追蹤物流
+
+## 注意事項
+- 不處理庫存查詢相關請求（由 ERP 庫存查詢 Skill 負責）
+- 涉及退款金額需標示「需人工覆核」</textarea></div>
+        <div class="form-item"><label>System Prompt</label><textarea rows="4" style="font-family:monospace;font-size:12px;">你是一個專業客服助理，負責解答客戶問題。務必使用親切專業的語氣，並在必要時主動提供相關資訊連結。</textarea></div>
+        <div class="form-item"><label>Output Schema</label><textarea rows="4" style="font-family:monospace;font-size:12px;">{
+  "reply": "string",
+  "intent": "inquiry | complaint | return",
+  "sentiment": "positive | neutral | negative",
+  "needs_human_review": "boolean"
+}</textarea></div>
         <div class="form-item">
           <label>綁定 Tools</label>
           <div style="border:1px solid var(--gray-300);border-radius:4px;padding:10px;max-height:110px;overflow-y:auto;">
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> knowledge-base-search <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> sentiment-analysis/analyze <span class="tag tag-purple" style="margin-left:auto;">MCP</span></label>
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox"> order-query <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
+          </div>
+        </div>
+        <div class="form-item">
+          <label>測試案例</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--gray-300);border-radius:4px;padding:8px 10px;">
+            <span style="font-size:13px;color:var(--gray-600);">🧪 12 個測試案例（自動產生）</span>
+            <button class="btn btn-default btn-sm" onclick="closeModal('modal-edit-skill');showPage('skill-test')">管理</button>
           </div>
         </div>
         <div class="form-item" style="margin-bottom:0;">
