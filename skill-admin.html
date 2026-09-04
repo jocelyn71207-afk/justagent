@@ -8,25 +8,10 @@
   <link rel="stylesheet" href="skill-admin/layout.css">
   <link rel="stylesheet" href="skill-admin/components.css">
   <style>
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; line-height: 1.6; }
-    .tag-blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
-    .tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
-    .tag-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
-    .tag-red { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
-    .tag-purple { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
-    .tag-gray { background: #fafafa; color: #8c8c8c; border: 1px solid #d9d9d9; }
-    .tag-cyan { background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; }
-    .tag-indigo { background: #eef2ff; color: #4338ca; border: 1px solid #a5b4fc; }
-    .tag-teal { background: #f0fdfa; color: #0f766e; border: 1px solid #5eead4; }
     .tabs-bar { display: flex; border-bottom: 1px solid #e8e8e8; padding: 0 16px; background: #fff; }
     .tabs-bar .tab-item { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: #666; }
     .tabs-bar .tab-item.active { color: #1890ff; border-bottom-color: #1890ff; }
     .tabs-bar .tab-item:hover { color: #1890ff; }
-    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-    .stat-box { background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; padding: 14px 16px; }
-    .stat-box .label { font-size: 12px; color: #8c8c8c; margin-bottom: 6px; }
-    .stat-box .value { font-size: 24px; font-weight: 700; color: #333; }
-    .stat-box .sub { font-size: 11px; color: #52c41a; margin-top: 4px; }
     .server-card { background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; padding: 16px; margin-bottom: 12px; }
     .server-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .server-card-head h4 { font-size: 14px; font-weight: 600; }
@@ -256,8 +241,8 @@
       <div class="page-header"><h2>企業擴充追蹤</h2></div>
       <div class="page-content">
         <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
-          <div class="stat-box"><div class="label">非系統層 Skills</div><div class="value">47</div><div class="sub" style="color:#1890ff;">企業 18 ｜ 團隊 21 ｜ 個人 8</div></div>
-          <div class="stat-box"><div class="label">最常被擴充的系統 Skill</div><div class="value" style="font-size:16px;">通用客服答覆</div><div class="sub">被 6 家企業擴充</div></div>
+          <div class="stat-card"><div class="label">非系統層 Skills</div><div class="value">47</div><div class="sub" style="color:#1890ff;">企業 18 ｜ 團隊 21 ｜ 個人 8</div></div>
+          <div class="stat-card"><div class="label">最常被擴充的系統 Skill</div><div class="value" style="font-size:16px;">通用客服答覆</div><div class="sub">被 6 家企業擴充</div></div>
         </div>
         <div class="search-bar">
           <label>系統 Skill</label>
@@ -291,15 +276,15 @@
       <div class="page-header"><h2>使用統計</h2></div>
       <div class="page-content">
         <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
-          <div class="stat-box">
+          <div class="stat-card stat-card--danger">
             <div class="label">Skill 執行健康度 <span style="font-size:11px;color:#ff4d4f;">⚠ 低於標準</span></div>
-            <div class="value" style="color:#ff4d4f;">95.3%</div>
-            <div class="sub" style="color:#ff4d4f;">↓ 2.4% vs 上月 · 建議檢查 confluence-mcp</div>
+            <div class="value">95.3%</div>
+            <div class="sub">↓ 2.4% vs 上月 · 建議檢查 confluence-mcp</div>
           </div>
-          <div class="stat-box">
+          <div class="stat-card stat-card--warning">
             <div class="label">閒置 Skills <span style="font-size:11px;color:#8c8c8c;">30 天零呼叫</span></div>
-            <div class="value" style="color:#fa8c16;">8</div>
-            <div class="sub" style="color:#fa8c16; cursor:pointer;">→ 查看清單，考慮下架</div>
+            <div class="value">8</div>
+            <div class="sub" style="cursor:pointer;">→ 查看清單，考慮下架</div>
           </div>
         </div>
         <div class="search-bar">
@@ -366,10 +351,10 @@
       <div class="page-header"><h2>Skill 測試中心</h2></div>
       <div class="page-content">
         <div class="stat-row">
-          <div class="stat-box"><div class="label">總測試案例</div><div class="value">86</div></div>
-          <div class="stat-box"><div class="label">最近通過率</div><div class="value" style="color:#52c41a;">94.2%</div></div>
-          <div class="stat-box"><div class="label">失敗案例</div><div class="value" style="color:#ff4d4f;">5</div></div>
-          <div class="stat-box"><div class="label">平均回應時間</div><div class="value">342ms</div></div>
+          <div class="stat-card"><div class="label">總測試案例</div><div class="value">86</div></div>
+          <div class="stat-card"><div class="label">最近通過率</div><div class="value" style="color:#52c41a;">94.2%</div></div>
+          <div class="stat-card"><div class="label">失敗案例</div><div class="value" style="color:#ff4d4f;">5</div></div>
+          <div class="stat-card"><div class="label">平均回應時間</div><div class="value">342ms</div></div>
         </div>
         <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;margin-top:8px;">
           <div style="background:#fff;border:1px solid #d9d9d9;border-radius:4px;overflow:hidden;">
@@ -496,7 +481,7 @@ This product is broken, I need help
       <div class="page-header"><h2>Tool 管理</h2></div>
       <div class="page-content">
         <div class="stat-row" style="grid-template-columns:1fr;max-width:300px;margin-bottom:16px;">
-          <div class="stat-box"><div class="label">異常 Servers <span style="font-size:11px;color:#ff4d4f;">⚠ 需要處理</span></div><div class="value" style="color:#ff4d4f;">1</div><div class="sub" style="color:#ff4d4f;">→ confluence-mcp P95 延遲異常</div></div>
+          <div class="stat-card stat-card--danger"><div class="label">異常 Servers <span style="font-size:11px;color:#ff4d4f;">⚠ 需要處理</span></div><div class="value">1</div><div class="sub">→ confluence-mcp P95 延遲異常</div></div>
         </div>
         <div class="search-bar">
           <label>Tool名稱</label><input type="text" placeholder="輸入名稱">
