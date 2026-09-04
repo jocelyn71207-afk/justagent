@@ -1,1 +1,101 @@
 /* skill-admin shared components: buttons, tables, tags, stat cards, tabs, modals, chat, server-card. Populated across Tasks 4-7. */
+
+.btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-300);
+  cursor: pointer;
+  font-size: var(--text-base);
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--surface);
+  color: var(--gray-700);
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--accent-500); color: var(--surface); border-color: var(--accent-500); }
+.btn-primary:hover { background: var(--accent-600); border-color: var(--accent-600); }
+.btn-default { background: var(--surface); color: var(--gray-700); }
+.btn-default:hover { border-color: var(--accent-500); color: var(--accent-500); }
+.btn-success { background: var(--success-text); color: var(--surface); border-color: var(--success-text); }
+.btn-danger { background: var(--danger-text); color: var(--surface); border-color: var(--danger-text); }
+.btn-warning { background: var(--warning-text); color: var(--surface); border-color: var(--warning-text); }
+.btn-sm { padding: 3px var(--space-2); font-size: var(--text-sm); height: 26px; }
+
+.search-bar {
+  background: var(--surface);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.search-bar label { font-size: var(--text-base); color: var(--gray-500); white-space: nowrap; }
+.search-bar input, .search-bar select {
+  padding: 5px var(--space-2);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  height: 30px;
+  outline: none;
+}
+.search-bar input:focus, .search-bar select:focus { border-color: var(--accent-500); }
+.search-bar input { width: 150px; }
+.search-bar select { min-width: 100px; }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; }
+.table-toolbar {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.table-toolbar .left { display: flex; align-items: center; gap: var(--space-3); }
+.table-toolbar .right { display: flex; align-items: center; gap: var(--space-2); }
+table { width: 100%; border-collapse: collapse; }
+thead { background: var(--gray-50); }
+th {
+  padding: var(--space-3) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-400);
+  text-align: left;
+  border-bottom: 1px solid var(--gray-200);
+  white-space: nowrap;
+}
+td {
+  padding: var(--space-3) var(--space-3);
+  font-size: var(--text-base);
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+td, th { font-variant-numeric: tabular-nums; }
+tr:hover td { background: var(--accent-50); }
+th.center, td.center { text-align: center; }
+
+.pagination {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  border-top: 1px solid var(--gray-200);
+}
+.pagination .page-btn {
+  width: 28px; height: 28px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  background: var(--surface);
+}
+.pagination .page-btn.active { background: var(--accent-500); color: var(--surface); border-color: var(--accent-500); }
+.pagination select { height: 28px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: var(--text-sm); padding: 0 4px; }
