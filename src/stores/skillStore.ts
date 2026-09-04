@@ -1469,6 +1469,16 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
   }
 
+  // 版本會隨時間越積越多，管理者可以清掉不需要的舊版本；生效中的版本
+  // 不能刪，要刪之前得先用 setLibraryActiveVersion 切換到別的版本
+  function deleteSkillVersion(skillId: string, versionId: string): void {
+    const skill = _findAny(skillId)
+    if (!skill?.versions) return
+    const version = skill.versions.find(v => v.id === versionId)
+    if (!version || version.status === 'active') return
+    skill.versions = skill.versions.filter(v => v.id !== versionId)
+  }
+
   function duplicateAsPersonalSkill(sourceId: string, nameOverride?: string): Skill {
     const source = findSkill(sourceId)
     if (!source) throw new Error(`duplicateAsPersonalSkill: source not found (${sourceId})`)
@@ -1816,6 +1826,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     hasSkillNameConflict,
     wouldSkillNameConflict,
     setLibraryActiveVersion,
+    deleteSkillVersion,
     approvePersonalSkill,
     rejectPersonalSkill,
     hasPendingReview,

@@ -648,6 +648,17 @@
     margin-left: auto;
   }
 
+  // 版本會隨時間累積，讓管理者能清掉不需要的舊版本；平常低調（跟其他
+  // 中繼資訊一樣淡），hover 才轉成警示色，不會平常就搶眼
+  .vt-delete-btn {
+    font-size: 15px;
+
+    &:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+  }
+
   .vt-note {
     font-size: 12px;
     color: var(--text-muted);
@@ -677,13 +688,10 @@
     }
   }
 
-  // ── Personal skill status card ────────────────
-
-  .psv-card {
-    background: var(--page-bg);
-    border: 1px solid var(--divider-a50);
-    border-radius: 10px;
-    padding: 14px 16px;
+  // ── Personal skill submission context ─────────
+  // 狀態標籤已經移到標頭，這裡不再是固定佔位的獨立卡片區塊，只在真的
+  // 有內容時才出現，所以不需要外層背景/邊框，維持輕量的行內間距即可
+  .psv-details {
     display: flex;
     flex-direction: column;
     gap: 10px;

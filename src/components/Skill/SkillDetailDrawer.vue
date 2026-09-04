@@ -17,6 +17,14 @@
                   <span v-if="!isPersonal" class="skill-tag tag--version">
                     {{ activeVersion?.versionName ?? skill.version }}
                   </span>
+                  <!-- 個人技能的狀態（草稿/審核中/可使用）跟啟用/停用一樣都是
+                       「目前狀態」，放在同一排徽章，不用另外佔一個區塊 -->
+                  <span
+                    v-if="isPersonal && personalStatusLabel"
+                    :class="['skill-tag', personalStatusClass]"
+                  >
+                    {{ personalStatusLabel }}
+                  </span>
                   <!-- 從 Library 技能庫瀏覽進來是唯讀情境，啟用／停用是各團隊自己
                        導入後的狀態，不是這顆 Library 技能本身的屬性，不該顯示 -->
                   <span
@@ -71,10 +79,10 @@
 
           <!-- 有版本待審核：原本只有捲到版本歷史才看得到，容易被忽略，
                放在統計數據上方、一打開就看得到。從 Library 技能庫瀏覽進來時
-               是唯讀情境，不需要看到審核流程相關資訊；團隊技能範本管理
-               （condensed）版本歷史清單裡每個「審核中」版本自己就有
-               「開始審核」按鈕，不需要再重複一個提示條 -->
-          <div v-if="!isPersonal && !libraryView && !condensed && reviewingVersion" class="pending-review-banner">
+               是唯讀情境，不需要看到審核流程相關資訊。審核中的版本不會出現
+               在版本歷史清單裡（見 sortedVersions），這裡是唯一能發現／
+               開始審核的地方，團隊技能範本管理（condensed）也要顯示 -->
+          <div v-if="!isPersonal && !libraryView && reviewingVersion" class="pending-review-banner">
             <div class="pending-review-text">
               <i class="material-symbols-outlined">pending_actions</i>
               新版本
@@ -103,7 +111,8 @@
               <div class="dm-num">{{ formatCount(skill.usageCount) }}</div>
               <div class="dm-lbl">本月使用</div>
             </div>
-            <div v-if="isPersonal || manageable" class="dm-toggle">
+            <!-- 個人技能審核中不能切換啟用/停用，避免動到正在被審核的內容 -->
+            <div v-if="(isPersonal && skill.personalStatus !== 'reviewing') || manageable" class="dm-toggle">
               <button
                 class="custom-btn dm-toggle-btn btn--danger-ghost"
                 @click="emit('toggle', skill!)"
@@ -141,25 +150,29 @@
                           {{ versionStatusLabel(ver.status) }}
                         </span>
                         <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
+                        <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
+                             生效中的版本不能刪，要刪之前得先切換到別的版本 -->
+                        <button
+                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                          type="button"
+                          class="icon-btn vt-delete-btn"
+                          aria-label="刪除版本"
+                          @click="versionPendingDelete = ver"
+                        >
+                          <i class="material-symbols-outlined">delete</i>
+                        </button>
                       </div>
                       <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
                       <div class="vt-actions">
                         <!-- 「待啟用」（剛審核通過，還沒上線）或「歷史」（曾經生效、
-                             後來被取代）才能設為使用中；審核中／草稿／退回都還沒
-                             通過審核，不能直接上線 -->
+                             後來被取代）才能設為使用中；審核中的版本不會出現在這份
+                             清單裡（見 sortedVersions），不用另外判斷 -->
                         <button
                           v-if="props.manageable && !isPersonal && (ver.status === 'approved' || ver.status === 'history')"
                           class="custom-btn vt-activate-btn"
                           @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
                         >
                           <i class="material-symbols-outlined">check_circle</i>{{ condensed ? '切換版本' : '設為使用中' }}
-                        </button>
-                        <button
-                          v-if="ver.status === 'reviewing'"
-                          class="custom-btn"
-                          @click="emit('review', skill!.id, ver.id)"
-                        >
-                          <i class="material-symbols-outlined">rate_review</i>開始審核
                         </button>
                         <!-- 固定跟目前生效版本比較，不是跟清單中緊接著的前一筆比；
                              生效版本自己這一列不用跟自己比 -->
@@ -177,48 +190,42 @@
                 <p v-else class="section-empty-hint">尚無版本歷史</p>
               </div>
 
-              <!-- 個人技能目前狀態：可能包含審核退回原因，屬於需要立刻
-                   看到的內容，不放進側欄 -->
-              <div v-if="isPersonal" class="drawer-section">
-                <div class="section-label">目前狀態</div>
-                <div class="psv-card">
-                  <div class="psv-head">
-                    <span
-                      v-if="personalStatusLabel"
-                      :class="['skill-tag', personalStatusClass]"
-                    >
-                      {{ personalStatusLabel }}
-                    </span>
-                    <span v-if="skill.submitMode" class="psv-mode">
-                      {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
-                    </span>
-                    <span
-                      v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
-                      class="skill-tag psv-scope-tag"
-                      :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
-                    >
-                      <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
-                      預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
-                    </span>
-                  </div>
+              <!-- 個人技能的送審脈絡：可能包含審核退回原因，屬於需要立刻
+                   看到的內容，不放進側欄。狀態標籤本身移到標頭跟啟用/停用
+                   放一起，這裡只在真的有內容（建立方式/預計發布範圍/來源
+                   更新提示/送審說明/退回原因）時才顯示，不是固定佔位的
+                   獨立區塊 -->
+              <div v-if="isPersonal && hasPersonalStatusDetails" class="psv-details">
+                <div v-if="skill.submitMode || (skill.personalStatus === 'reviewing' && skill.targetScope)" class="psv-head">
+                  <span v-if="skill.submitMode" class="psv-mode">
+                    {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}
+                  </span>
+                  <span
+                    v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
+                    class="skill-tag psv-scope-tag"
+                    :class="skill.targetScope === 'team' ? 'tag--team' : 'tag--enterprise'"
+                  >
+                    <i class="material-symbols-outlined">{{ skill.targetScope === 'team' ? 'group' : 'corporate_fare' }}</i>
+                    預計發布：{{ skill.targetScope === 'team' ? `團隊技能（${skill.targetTeamName ?? '未指定團隊'}）` : '企業技能' }}
+                  </span>
+                </div>
 
-                  <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
-                    <i class="material-symbols-outlined">system_update_alt</i>
-                    <span>
-                      Library 來源技能有新版本
-                      <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
-                    </span>
-                  </div>
+                <div v-if="skill.hasLibraryUpdate" class="psv-upstream-hint">
+                  <i class="material-symbols-outlined">system_update_alt</i>
+                  <span>
+                    Library 來源技能有新版本
+                    <span v-if="derivedFromName" class="psv-upstream-src">「{{ derivedFromName }}」</span>
+                  </span>
+                </div>
 
-                  <div v-if="skill.submitNote" class="psv-note">
-                    <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
-                  </div>
-                  <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
-                    <i class="material-symbols-outlined">feedback</i>
-                    <div>
-                      <div class="psv-reject-feedback-label">審核退回原因</div>
-                      <div>{{ skill.reviewFeedback }}</div>
-                    </div>
+                <div v-if="skill.submitNote" class="psv-note">
+                  <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
+                </div>
+                <div v-if="skill.reviewFeedback" class="psv-reject-feedback">
+                  <i class="material-symbols-outlined">feedback</i>
+                  <div>
+                    <div class="psv-reject-feedback-label">審核退回原因</div>
+                    <div>{{ skill.reviewFeedback }}</div>
                   </div>
                 </div>
               </div>
@@ -246,8 +253,8 @@
                 <p v-else class="section-empty-hint">尚未撰寫技能定義</p>
               </div>
 
-              <!-- 危險操作 -->
-              <div v-if="isPersonal" class="drawer-danger-zone">
+              <!-- 危險操作：審核中不能刪除，避免刪掉一個正在被審核的內容 -->
+              <div v-if="isPersonal && skill.personalStatus !== 'reviewing'" class="drawer-danger-zone">
                 <div class="danger-zone-label">危險操作</div>
                 <button
                   class="custom-btn btn--danger-ghost drawer-delete-btn"
@@ -384,6 +391,25 @@
       </div>
     </Transition>
 
+    <!-- 刪除版本確認 -->
+    <Transition name="confirm-fade">
+      <div
+        v-if="versionPendingDelete && skill"
+        class="drawer-confirm-overlay"
+        @click.self="versionPendingDelete = null"
+      >
+        <div class="drawer-confirm-dialog">
+          <div class="confirm-icon"><i class="material-symbols-outlined">warning</i></div>
+          <h4>確定要刪除版本「{{ versionPendingDelete.versionName }}」？</h4>
+          <p>刪除後這筆版本歷史將無法復原。</p>
+          <div class="confirm-actions">
+            <button class="custom-btn" @click="versionPendingDelete = null">取消</button>
+            <button class="custom-btn btn--danger-ghost" @click="confirmDeleteVersion">確定刪除</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </Teleport>
 </template>
 
@@ -425,6 +451,7 @@ const emit = defineEmits<{
 
 const skillStore = useSkillStore()
 const showConfirm = ref(false)
+const versionPendingDelete = ref<SkillVersion | null>(null)
 const showMarkdown = ref(false)
 const showMoreSkillInfo = ref(false)
 const showCompare = ref(false)
@@ -466,6 +493,20 @@ const personalStatusClass = computed(() => {
   return 'tag--available'
 })
 
+// 狀態標籤本身已經移到標頭，這裡只要判斷「除了狀態以外還有沒有別的
+// 送審脈絡可以顯示」，沒有的話（多數「可使用」的個人技能）整塊都不顯示
+const hasPersonalStatusDetails = computed(() => {
+  const s = props.skill
+  if (!s) return false
+  return !!(
+    s.submitMode ||
+    (s.personalStatus === 'reviewing' && s.targetScope) ||
+    s.hasLibraryUpdate ||
+    s.submitNote ||
+    s.reviewFeedback
+  )
+})
+
 // 圖示跟卡片式目錄（SkillTile／PersonalSkillGroup）統一：用 scope 決定顏色、
 // 個人技能用 person 圖示，其餘一律 psychology，不再依 type（system/extension）
 // 另外分一套配色，避免同一顆技能在列表卡片跟詳情抽屜長得不一樣
@@ -478,9 +519,12 @@ const iconScopeClass = computed(() => {
   return 'icon--system'
 })
 
+// 審核中的版本還沒有定論（可能通過也可能被退回），不算「歷史」的一部分，
+// 不收進版本歷史清單——要看／處理審核中版本走 pending-review-banner 或
+// 待審核佇列，不是這裡
 const sortedVersions = computed(() => {
   if (!props.skill?.versions) return []
-  return [...props.skill.versions].reverse()
+  return [...props.skill.versions].filter(v => v.status !== 'reviewing').reverse()
 })
 
 // 目前生效版本：「與目前版本比較」固定跟它比，不是跟清單中緊接著的前一筆比
@@ -621,5 +665,11 @@ function formatDate(iso: string): string {
 function confirmDelete() {
   showConfirm.value = false
   emit('delete', props.skill!)
+}
+
+function confirmDeleteVersion() {
+  if (!props.skill || !versionPendingDelete.value) return
+  skillStore.deleteSkillVersion(props.skill.id, versionPendingDelete.value.id)
+  versionPendingDelete.value = null
 }
 </script>

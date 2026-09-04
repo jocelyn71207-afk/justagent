@@ -42,8 +42,8 @@
 
   .src-title-block { flex: 1; min-width: 0; }
 
-  // 名稱是唯一的視覺主角，狀態徽章推到最右——不再跟名稱、模式、範圍
-  // 四個東西擠在同一行搶版面
+  // 名稱是唯一的視覺主角——整個佇列本來就都是審核中的技能，不需要再
+  // 各自掛一個「審核中」徽章重複這件事
   .src-name-row {
     display: flex;
     align-items: center;
@@ -60,8 +60,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .src-status-tag { margin-left: auto; flex-shrink: 0; }
 
   // 「建立新技能/更新版本」跟「預計發布範圍」是同一件事的兩個面向
   // （送審動作 → 結果），用箭頭連起來放在名稱下面安靜的一行，
