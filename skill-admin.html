@@ -8,10 +8,6 @@
   <link rel="stylesheet" href="skill-admin/layout.css">
   <link rel="stylesheet" href="skill-admin/components.css">
   <style>
-    .tabs-bar { display: flex; border-bottom: 1px solid #e8e8e8; padding: 0 16px; background: #fff; }
-    .tabs-bar .tab-item { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: #666; }
-    .tabs-bar .tab-item.active { color: #1890ff; border-bottom-color: #1890ff; }
-    .tabs-bar .tab-item:hover { color: #1890ff; }
     .server-card { background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; padding: 16px; margin-bottom: 12px; }
     .server-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .server-card-head h4 { font-size: 14px; font-weight: 600; }
@@ -29,27 +25,6 @@
     .action-icons { display: flex; gap: 6px; }
     .action-icon { width: 24px; height: 24px; border-radius: 4px; border: 1px solid #d9d9d9; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; }
     .action-icon:hover { border-color: #1890ff; color: #1890ff; }
-    .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
-    .modal-mask.active { display: flex; }
-    .modal-box { background: #fff; border-radius: 4px; width: 520px; max-height: 80vh; overflow-y: auto; }
-    .modal-head { padding: 14px 20px; border-bottom: 1px solid #e8e8e8; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
-    .modal-head .close-btn { cursor: pointer; font-size: 18px; color: #999; }
-    .modal-body { padding: 20px; }
-    .form-item { margin-bottom: 14px; }
-    .form-item label { display: block; font-size: 13px; color: #333; margin-bottom: 5px; }
-    .form-item input, .form-item select, .form-item textarea { width: 100%; padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; outline: none; }
-    .modal-footer { padding: 12px 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 8px; }
-    .admin-mode-tab { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 3px; cursor: pointer; color: #666; }
-    .admin-mode-tab.active { background: #fff; color: #1890ff; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-    .admin-test-mode { display: none; }
-    .admin-test-mode.active { display: flex; }
-    .test-skill-opt { padding: 7px 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #666; }
-    .test-skill-opt:hover { background: #e6f7ff; }
-    .test-skill-opt.active { background: #e6f7ff; color: #1890ff; font-weight: 500; border-right: 2px solid #1890ff; }
-    .stats-panel { display: none; }
-    .stats-panel.active { display: block; }
-    .tc-panel { display: none; }
-    .tc-panel.active { display: block; }
   </style>
 </head>
 <body>
@@ -784,7 +759,7 @@ This product is broken, I need help
   </div>
 
   <div class="modal-mask" id="modal-create-agent">
-    <div class="modal-box">
+    <div class="modal-box is-md">
       <div class="modal-head">新增 Agent <span class="close-btn" onclick="closeModal('modal-create-agent')">×</span></div>
       <div class="modal-body">
         <div class="form-item"><label>Agent 名稱 <span style="color:#ff4d4f;">*</span></label><input type="text" placeholder="e.g. 客服機器人"></div>
@@ -804,7 +779,7 @@ This product is broken, I need help
   </div>
 
   <div class="modal-mask" id="modal-review-version">
-    <div class="modal-box" style="width:680px;">
+    <div class="modal-box is-lg">
       <div class="modal-head">版本審核：文件摘要生成 <span class="close-btn" onclick="closeModal('modal-review-version')">×</span></div>
       <div class="modal-body">
         <div style="display:flex;gap:12px;margin-bottom:8px;">
@@ -817,15 +792,15 @@ This product is broken, I need help
         <div style="border:1px solid #e8e8e8;border-radius:4px;overflow:hidden;margin-bottom:10px;">
           <div style="background:#fafafa;padding:8px 12px;font-size:12px;font-weight:600;border-bottom:1px solid #e8e8e8;">System Prompt 變更</div>
           <div style="padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.8;">
-            <div style="background:#fff2f0;padding:2px 6px;border-radius:2px;margin-bottom:2px;"><span style="color:#ff4d4f;">-</span> 你是一個文件摘要助理，請將輸入文件整理成重點摘要。</div>
-            <div style="background:#f6ffed;padding:2px 6px;border-radius:2px;"><span style="color:#52c41a;">+</span> 你是一個專業文件摘要助理，請將輸入文件整理成條列式重點摘要，並標示關鍵數據與結論。</div>
+            <div class="diff-line removed"><span class="status-text status-text--danger">-</span> 你是一個文件摘要助理，請將輸入文件整理成重點摘要。</div>
+            <div class="diff-line added"><span class="status-text status-text--success">+</span> 你是一個專業文件摘要助理，請將輸入文件整理成條列式重點摘要，並標示關鍵數據與結論。</div>
           </div>
         </div>
 
         <div style="border:1px solid #e8e8e8;border-radius:4px;overflow:hidden;margin-bottom:10px;">
           <div style="background:#fafafa;padding:8px 12px;font-size:12px;font-weight:600;border-bottom:1px solid #e8e8e8;">Tool 綁定變更</div>
           <div style="padding:10px 12px;font-size:12px;line-height:1.8;">
-            <div style="background:#f6ffed;padding:2px 6px;border-radius:2px;"><span style="color:#52c41a;">+</span> 新增綁定：<strong>pdf-extractor</strong>（Native）</div>
+            <div class="diff-line added"><span class="status-text status-text--success">+</span> 新增綁定：<strong>pdf-extractor</strong>（Native）</div>
           </div>
         </div>
 
@@ -849,7 +824,7 @@ This product is broken, I need help
   </div>
 
   <div class="modal-mask" id="modal-upstream-update">
-    <div class="modal-box" style="width:600px;">
+    <div class="modal-box is-md">
       <div class="modal-head">🔔 上游 Skill 更新通知 <span class="close-btn" onclick="closeModal('modal-upstream-update')">×</span></div>
       <div class="modal-body">
         <div style="background:#fff7e6;border:1px solid #ffd591;border-radius:4px;padding:12px;margin-bottom:16px;">
@@ -859,8 +834,8 @@ This product is broken, I need help
         <div style="border:1px solid #e8e8e8;border-radius:4px;overflow:hidden;margin-bottom:10px;">
           <div style="background:#fafafa;padding:8px 12px;font-size:12px;font-weight:600;border-bottom:1px solid #e8e8e8;">System Prompt 變更</div>
           <div style="padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.8;">
-            <div style="background:#fff2f0;padding:2px 6px;border-radius:2px;margin-bottom:2px;"><span style="color:#ff4d4f;">-</span> 你是一個客服助理，負責解答客戶問題。</div>
-            <div style="background:#f6ffed;padding:2px 6px;border-radius:2px;"><span style="color:#52c41a;">+</span> 你是一個專業客服助理，負責解答客戶問題。務必使用親切專業的語氣，並在必要時主動提供相關資訊連結。</div>
+            <div class="diff-line removed"><span class="status-text status-text--danger">-</span> 你是一個客服助理，負責解答客戶問題。</div>
+            <div class="diff-line added"><span class="status-text status-text--success">+</span> 你是一個專業客服助理，負責解答客戶問題。務必使用親切專業的語氣，並在必要時主動提供相關資訊連結。</div>
           </div>
         </div>
         <div style="border:1px solid #b7eb8f;border-radius:4px;padding:10px;background:#f6ffed;font-size:12px;">
@@ -897,7 +872,7 @@ This product is broken, I need help
   </div>
 
   <div class="modal-mask" id="modal-edit-skill">
-    <div class="modal-box" style="width:640px;">
+    <div class="modal-box is-lg">
       <div class="modal-head">編輯 Skill <span class="close-btn" onclick="closeModal('modal-edit-skill')">×</span></div>
       <div class="modal-body">
         <div class="form-item"><label>Skill 名稱</label><input type="text" value="通用客服答覆"></div>
@@ -939,7 +914,7 @@ This product is broken, I need help
   </div>
 
   <div class="modal-mask" id="modal-edit-tool">
-    <div class="modal-box" style="width:580px;">
+    <div class="modal-box is-md">
       <div class="modal-head">編輯 Tool <span class="close-btn" onclick="closeModal('modal-edit-tool')">×</span></div>
       <div class="modal-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
