@@ -161,7 +161,7 @@
                   </div>
                   <div class="d-flex gap-2 mt-2">
                     <button
-                      v-if="ver.id !== viewedVer?.id"
+                      v-if="ver.id !== viewedVer?.id && ver.status !== 'reviewing'"
                       class="custom-btn fs-12 py-1 px-2"
                       @click="viewVersion(ver.id)"
                     >
