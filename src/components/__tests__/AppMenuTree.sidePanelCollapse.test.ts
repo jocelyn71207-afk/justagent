@@ -102,6 +102,40 @@ describe('AppMenuTree 收合後子群組改用 hover flyout', () => {
   })
 })
 
+describe('AppMenuTree 收合後團隊切換器也能懸浮', () => {
+  it('收合後滑鼠移入團隊切換器，會彈出團隊清單', async () => {
+    const wrapper = mountMenu()
+    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+
+    const switcher = wrapper.find('.side-panel-switcher')
+    await switcher.trigger('mouseenter')
+
+    const list = wrapper.find('.team-switch-list')
+    expect(list.attributes('style') ?? '').not.toContain('display: none')
+    expect(list.text()).toContain('UGG電子商務')
+    expect(list.text()).toContain('UGG實體門市')
+
+    await switcher.trigger('mouseleave')
+    expect(wrapper.find('.team-switch-list').attributes('style')).toContain('display: none')
+  })
+
+  it('展開狀態下 hover 團隊切換器不會有作用（維持原本點擊才展開的行為）', async () => {
+    const wrapper = mountMenu()
+    const switcher = wrapper.find('.side-panel-switcher')
+    await switcher.trigger('mouseenter')
+
+    expect(wrapper.find('.team-switch-list').attributes('style')).toContain('display: none')
+  })
+
+  it('展開狀態下點擊團隊切換器仍然可以展開團隊清單（既有行為不受影響）', async () => {
+    const wrapper = mountMenu()
+    const switcher = wrapper.find('.side-panel-switcher')
+    await switcher.trigger('click')
+
+    expect(wrapper.find('.team-switch-list').attributes('style') ?? '').not.toContain('display: none')
+  })
+})
+
 describe('AppMenuTree 收合再展開不影響子群組原本的開合狀態', () => {
   it('收合前展開「AI 技能」子清單，收合再展開後，子清單應該還是展開的', async () => {
     const wrapper = mountMenu()

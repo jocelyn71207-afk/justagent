@@ -117,9 +117,13 @@
       <div class="side-panel-switcher" ref="teamSwitcherBtn"
         :class="{ 'is-open': isTeamSwitcherOpen }"
         role="button" tabindex="0" :aria-expanded="isTeamSwitcherOpen"
-        @click="!isSidePanelCollapsed && (isTeamSwitcherOpen = !isTeamSwitcherOpen)"
-        @keydown.enter.prevent="!isSidePanelCollapsed && (isTeamSwitcherOpen = !isTeamSwitcherOpen)"
-        @keydown.space.prevent="!isSidePanelCollapsed && (isTeamSwitcherOpen = !isTeamSwitcherOpen)">
+        @click="isTeamSwitcherOpen = !isTeamSwitcherOpen"
+        @keydown.enter.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
+        @keydown.space.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
+        @mouseenter="isSidePanelCollapsed && (isTeamSwitcherOpen = true)"
+        @mouseleave="isSidePanelCollapsed && (isTeamSwitcherOpen = false)"
+        @focusin="isSidePanelCollapsed && (isTeamSwitcherOpen = true)"
+        @focusout="isSidePanelCollapsed && (isTeamSwitcherOpen = false)">
         <template v-if="!isSidePanelCollapsed">
           <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam!.name) }}</span>
           <span class="side-panel-switcher-name">{{ selectedTeam!.name }}</span>
@@ -133,17 +137,15 @@
           <i class="material-symbols-outlined">{{ isSidePanelCollapsed ? 'dock_to_right' : 'dock_to_left' }}</i>
         </button>
 
-        <Transition name="rail-expand">
-          <div class="rail-popover team-switch-list" v-show="isTeamSwitcherOpen && !isSidePanelCollapsed">
-            <div class="team-switch-item" v-for="(item, i) in companyTeams" :key="'switch' + item.id"
-              :class="{ active: item.id === selectedTeamId }"
-              @click.stop="switchTeam(item.id)">
-              <span class="team-switch-dot" :style="{ background: teamColor(i) }">{{ teamInitial(item.name) }}</span>
-              <span class="team-switch-name">{{ item.name }}</span>
-              <i v-if="item.id === selectedTeamId" class="material-symbols-outlined team-switch-check">check</i>
-            </div>
+        <div class="rail-popover team-switch-list" v-show="isTeamSwitcherOpen">
+          <div class="team-switch-item" v-for="(item, i) in companyTeams" :key="'switch' + item.id"
+            :class="{ active: item.id === selectedTeamId }"
+            @click.stop="switchTeam(item.id)">
+            <span class="team-switch-dot" :style="{ background: teamColor(i) }">{{ teamInitial(item.name) }}</span>
+            <span class="team-switch-name">{{ item.name }}</span>
+            <i v-if="item.id === selectedTeamId" class="material-symbols-outlined team-switch-check">check</i>
           </div>
-        </Transition>
+        </div>
       </div>
 
       <div class="side-panel-divider"></div>

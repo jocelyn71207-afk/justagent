@@ -235,10 +235,13 @@
   background: var(--surface);
   border-right: 1px solid var(--divider);
   padding: 20px 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  // 不能設 overflow-y: auto（原本就有、不是這次加的）——只要這個容器有任何一
+  // 軸不是 visible，瀏覽器就會把「往右彈出去」的浮層（.rail-popover、團隊
+  // 切換清單、收合後的 flyout）一起裁掉，浮層在 DOM 裡明明已經 display 出
+  // 來，畫面上卻整個看不到。目前面板內容（單一團隊的導覽項目）高度不會超
+  // 出正常螢幕，先拿掉捲動；如果之後項目多到真的需要捲動，要改成把浮層
+  // 用 Teleport 移出這個容器再處理定位，不能簡單加回 overflow
   transition: width $menutransition ease, padding $menutransition ease;
-  @include use-scroll-bar(var(--scrollbar-a50));
 
   // 收合成迷你圖示條，跟 rail 同寬——兩條圖示條並排視覺上不會忽寬忽窄
   &.is-collapsed {
@@ -394,6 +397,15 @@
     outline: 2px solid var(--accent);
     outline-offset: -2px;
   }
+}
+
+// 收合後「AI 技能／共享資源庫」的懸浮子選單：跟 .company-rail-list／
+// .team-switch-list 一樣要自己補 width/padding，.rail-popover 本身沒有，
+// 不然內容會貼著卡片邊緣、看起來很擠
+.side-panel-flyout {
+  top: -6px;
+  min-width: 180px;
+  padding: 6px;
 }
 
 // popover 標題：讓使用者一打開就知道這份清單的範疇是「企業」還是「團隊」，
