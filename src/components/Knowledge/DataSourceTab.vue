@@ -2,7 +2,7 @@
 <template>
   <div class="DataSourceTab">
 
-    <div class="section-desc">連接外部資料來源，系統將自動同步資料並在知識內容管理建立對應的知識條目</div>
+    <div class="section-desc">連接外部資料來源，系統將自動同步資料並在知識庫管理建立對應的知識條目</div>
 
     <!-- SharePoint 已連接卡片 -->
     <div v-if="spState.connected" class="connected-section">

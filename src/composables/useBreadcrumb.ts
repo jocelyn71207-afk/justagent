@@ -44,11 +44,6 @@ export function useBreadcrumb() {
       result.push({ label: rootStore.nowMenuTreeCompanyName })
     }
 
-    if (parentLabel) {
-      // 純文字的上層標籤（例如 side-menu 群組名稱），不是實際路由，不能連結
-      result.push({ label: parentLabel })
-    }
-
     if (route.query.teamName) {
       result.push({
         label: route.query.teamName as string,
@@ -60,6 +55,13 @@ export function useBreadcrumb() {
           },
         },
       })
+    }
+
+    if (parentLabel) {
+      // 純文字的上層標籤（例如 side-menu 群組名稱），不是實際路由，不能連結；
+      // 順序固定「團隊／母單元／現在單元」，團隊一定排最前面，所以要排在
+      // 上面的 teamName 之後，跟 parentName 分支同一個位置
+      result.push({ label: parentLabel })
     }
 
     if (parentName) {

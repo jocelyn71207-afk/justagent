@@ -47,7 +47,7 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/ResourceLibrary',
         name: 'ResourceLibrary',
         component: () => import('@/views/ResourceLibrary.vue'),
-        meta: { title: '共享資源庫' },
+        meta: { title: '共用檔案管理', parentLabel: '共享資源庫' },
       },
       {
         path: '/view/TeamAccessManagement',
@@ -71,7 +71,7 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/CompanyTeamSettings',
         name: 'CompanyTeamSettings',
         component: () => import('@/views/CompanyTeamSettings.vue'),
-        meta: { title: '企業/團隊設定', useCompanyName: true },
+        meta: { title: '企業設定', useCompanyName: true },
       },
       {
         path: '/view/GUI',
@@ -82,7 +82,7 @@ export const routes: RouteRecordRaw[] = [
         path: '/view/ProjectTrashCans',
         name: 'ProjectTrashCans',
         component: () => import('@/views/ProjectTrashCans.vue'),
-        meta: { title: '垃圾桶' },
+        meta: { title: '專案垃圾桶' },
       },
       {
         path: '/view/KnowledgeBase',

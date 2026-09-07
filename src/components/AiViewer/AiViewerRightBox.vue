@@ -7,7 +7,7 @@
     <!-- conv1 空白開始狀態全螢幕遮罩 -->
     <div class="conv1-empty-overlay" v-if="currentConversationId === 'conv1' && conv1Msgs.length === 0"
       @click.stop @wheel.stop @touchmove.stop>
-      <div class="conv1-empty-content">
+      <div class="conv1-empty-content" @click="isShowConv1MoreSuggestions = false">
         <div class="conv1-empty-header">
           <img class="conv1-empty-logo" src="@/assets/logo.svg" alt="JustAgent" />
           <div class="conv1-empty-title">Hi，我是你的AI工作助理</div>
@@ -15,7 +15,7 @@
         </div>
 
         <div class="conv1-suggest-list">
-          <button class="conv1-suggest-card" v-for="item in conv1VisibleSuggestions" :key="item.title"
+          <button class="conv1-suggest-card" v-for="item in conv1PrimarySuggestions" :key="item.title"
             @click="useConv1Suggestion(item.prompt)">
             <div class="conv1-suggest-text">
               <div class="conv1-suggest-title">{{ item.title }}</div>
@@ -25,11 +25,23 @@
               <i class="material-symbols-outlined">{{ item.icon }}</i>
             </div>
           </button>
-        </div>
 
-        <button class="conv1-suggest-refresh" @click="cycleConv1Suggestions">
-          <i class="material-symbols-outlined">autorenew</i> 切換
-        </button>
+          <!-- 其他選項：只顯示前 3 個常用類型在畫面上，其餘收進下拉選單，
+               避免卡片撐爆面板高度、要捲動才找得到輸入框 -->
+          <div class="conv1-suggest-more-wrap">
+            <button class="conv1-suggest-more-btn" @click.stop="isShowConv1MoreSuggestions = !isShowConv1MoreSuggestions">
+              <i class="material-symbols-outlined">{{ isShowConv1MoreSuggestions ? 'expand_less' : 'expand_more' }}</i>
+              其他選項
+            </button>
+            <div class="AiViewer-next-option-box conv1-suggest-more-menu" v-show="isShowConv1MoreSuggestions">
+              <div class="option-item" v-for="item in conv1MoreSuggestions" :key="item.title"
+                @click="useConv1Suggestion(item.prompt); isShowConv1MoreSuggestions = false">
+                <i class="material-symbols-outlined">{{ item.icon }}</i>
+                {{ item.title }}
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="conv1-empty-input-box">
           <textarea
@@ -1299,8 +1311,10 @@ watch(
 const conv1OverlayInput = ref('');
 
 // ── 歡迎畫面的建議提示卡：對應 AiViewer 實際會處理的文件/數據類型，
-//    點擊直接把 prompt 帶入輸入框（由使用者按下送出，不是自動觸發假的 AI 回覆）；
-//    共 6 組，「切換」每次從剩下的裡面換一批 3 組上來 ──
+//    點擊直接把 prompt 帶入輸入框（由使用者按下送出，不是自動觸發假的 AI 回覆）。
+//    只在畫面上放前 3 個最常用的完整卡片，其餘收進「其他選項」下拉選單——
+//    6 張卡片全部展開會把輸入框擠到要捲動才看得到，所以固定卡片數量、
+//    用下拉選單裝其餘選項，兩個問題一次解決 ──
 const CONV1_SUGGESTIONS = [
   { icon: 'monitoring', tag: 'tag-teal', title: '銷售數據分析報告', desc: '上傳銷售數據，幫你抓出趨勢與異常', prompt: '請幫我分析這份銷售數據，找出趨勢與異常。' },
   { icon: 'translate', tag: 'tag-blue', title: '文件格式互譯', desc: '支援 Excel、PPT、Word 等格式互譯', prompt: '請幫我把這份文件翻譯成英文，格式維持不變。' },
@@ -1309,14 +1323,9 @@ const CONV1_SUGGESTIONS = [
   { icon: 'school', tag: 'tag-green', title: '教育訓練教材彙整', desc: '把多份簡報整理成教材大綱', prompt: '請幫我把這幾份簡報彙整成一份教育訓練教材大綱。' },
   { icon: 'verified', tag: 'tag-rust', title: '簽核流程設計方案', desc: '協助撰寫技術規格與流程文件', prompt: '請幫我撰寫一份簽核流程的技術規格文件。' },
 ];
-const conv1SuggestOffset = ref(0);
-const conv1VisibleSuggestions = computed(() => {
-  const n = CONV1_SUGGESTIONS.length;
-  return [0, 1, 2].map((i) => CONV1_SUGGESTIONS[(conv1SuggestOffset.value + i) % n]);
-});
-function cycleConv1Suggestions() {
-  conv1SuggestOffset.value = (conv1SuggestOffset.value + 3) % CONV1_SUGGESTIONS.length;
-}
+const conv1PrimarySuggestions = CONV1_SUGGESTIONS.slice(0, 3);
+const conv1MoreSuggestions = CONV1_SUGGESTIONS.slice(3);
+const isShowConv1MoreSuggestions = ref(false);
 function useConv1Suggestion(prompt: string) {
   conv1OverlayInput.value = prompt;
 }

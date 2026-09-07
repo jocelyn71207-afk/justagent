@@ -5,7 +5,7 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">企業/團隊設定</div>
+          <div class="banner-title">企業設定</div>
         </div>
       </div>
 
