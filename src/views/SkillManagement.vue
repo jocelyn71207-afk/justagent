@@ -641,9 +641,17 @@ function handleChatEdit() {
   showEditChatForDuplicate.value = true
 }
 
+// 對話修改完，直接引導去技能測試沙盒驗證改動有沒有生效——只在真的
+// 有送出過訊息（實際改了內容）才導頁，單純點進來看一眼就關掉的話
+// 不用打斷使用者，維持原本行為
 function closeChatEdit() {
+  const skill = editChoiceSkill.value
+  const hadEdits = store.editChatHistory.length > 0
   showEditChatForDuplicate.value = false
   editChoiceSkill.value = null
+  if (skill && hadEdits) {
+    router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
+  }
 }
 
 // ── 個人技能 handlers ──────────────────────────────
