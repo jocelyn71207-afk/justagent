@@ -583,13 +583,14 @@
 
   // ── Version cards ──────────────────────────────
   // 每個版本一張獨立卡片（細邊框 + 左側色條標示狀態），取代原本連接線
-  // 時間軸樣式的做法——版本之間沒有需要強調的先後關係，色條顏色沿用
-  // 原本時間軸圓點的同一套語彙
-
+  // 時間軸樣式的做法——版本之間沒有需要強調的先後關係，改成 grid 排版
+  // （跟 .my-skills-list 同一套慣例），窄螢幕自動退回單欄，色條顏色
+  // 沿用原本時間軸圓點的同一套語彙
   .vt-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 10px;
+    align-items: start;
   }
 
   .vt-card {
