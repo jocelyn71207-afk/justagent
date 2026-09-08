@@ -581,50 +581,43 @@
     }
   }
 
-  // ── Version timeline ──────────────────────────
-
+  // ── Version cards ──────────────────────────────
+  // 每個版本一張獨立卡片（細邊框 + 左側色條標示狀態），取代原本連接線
+  // 時間軸樣式的做法——版本之間沒有需要強調的先後關係，改成 grid 排版
+  // （跟 .my-skills-list 同一套慣例），窄螢幕自動退回單欄，色條顏色
+  // 沿用原本時間軸圓點的同一套語彙
   .vt-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+    align-items: start;
   }
 
-  .vt-item {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
+  .vt-card {
     position: relative;
-    padding-bottom: 18px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 10px;
+    background: var(--page-bg);
+    padding: 12px 14px 12px 17px;
 
-    &:last-child { padding-bottom: 0; }
-
-    &:not(:last-child)::before {
+    &::before {
       content: '';
       position: absolute;
-      left: 4px;
-      top: 12px;
-      bottom: 0;
-      width: 2px;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 2px;
       background: var(--divider-a50);
     }
+
+    &--active    { &::before { background: $color_main_1; } }
+    &--reviewing { &::before { background: $color-warning-amber; } }
+    &--approved  { &::before { background: var(--tag-blue-text); } }
+    &--history   { &::before { background: var(--text-faint); } }
+    &--draft     { &::before { background: var(--divider-a50); } }
+    &--rejected  { &::before { background: $color-danger; } }
   }
-
-  .vt-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 4px;
-    z-index: 1;
-
-    &.vt-dot--active    { background: $color_main_1; box-shadow: 0 0 0 3px $color_main_4; }
-    &.vt-dot--reviewing { background: $color-warning-amber; box-shadow: 0 0 0 3px var(--tag-amber-bg); }
-    &.vt-dot--approved  { background: var(--tag-blue-text); box-shadow: 0 0 0 3px var(--tag-blue-bg); }
-    &.vt-dot--history   { background: var(--text-faint); }
-    &.vt-dot--draft     { background: var(--divider-a50); border: 2px solid var(--text-faint); }
-    &.vt-dot--rejected  { background: $color-danger; }
-  }
-
-  .vt-body { flex: 1; }
 
   .vt-header {
     display: flex;

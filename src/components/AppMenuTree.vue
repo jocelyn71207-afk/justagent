@@ -12,7 +12,7 @@
        圖示條負責切換（通用單元／企業/團隊），右側選單面板常駐展開，
        顯示「目前選中的團隊」專屬的導覽項目，不是 hover 才彈出的浮層。
        ============================================================ -->
-  <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen, 'no-team-panel': !showTeamPanel }]">
+  <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen, 'no-team-panel': !showTeamPanel, 'is-panel-collapsed': isSidePanelCollapsed }]">
 
     <div class="rail">
       <div class="rail-top">
