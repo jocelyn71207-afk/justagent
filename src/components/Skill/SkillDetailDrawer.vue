@@ -138,51 +138,56 @@
               <div v-if="!isPersonal && !libraryView" class="drawer-section">
                 <div class="section-label">版本歷史</div>
                 <div v-if="skill.versions?.length" class="vt-list">
-                  <div v-for="ver in sortedVersions" :key="ver.id" class="vt-item">
-                    <div :class="['vt-dot', `vt-dot--${ver.status}`]"></div>
-                    <div class="vt-body">
-                      <div class="vt-header">
-                        <!-- 版本不用版號區隔，一律顯示版本名稱，所有狀態
-                             （含審核中）都一樣，跟待審核提示條、審核視窗的
-                             顯示方式保持一致 -->
-                        <span class="vt-version-name">{{ ver.versionName }}</span>
-                        <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
-                          {{ versionStatusLabel(ver.status) }}
-                        </span>
-                        <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
-                      </div>
-                      <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
-                      <div class="vt-actions">
-                        <!-- 「待啟用」（剛審核通過，還沒上線）或「歷史」（曾經生效、
-                             後來被取代）才能設為使用中；審核中的版本不會出現在這份
-                             清單裡（見 sortedVersions），不用另外判斷 -->
-                        <button
-                          v-if="props.manageable && !isPersonal && (ver.status === 'approved' || ver.status === 'history')"
-                          class="custom-btn vt-activate-btn"
-                          @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
-                        >
-                          <i class="material-symbols-outlined">check_circle</i>{{ condensed ? '切換版本' : '設為使用中' }}
-                        </button>
-                        <!-- 固定跟目前生效版本比較，不是跟清單中緊接著的前一筆比；
-                             生效版本自己這一列不用跟自己比 -->
-                        <button
-                          v-if="activeVersion && ver.id !== activeVersion.id"
-                          class="custom-btn"
-                          @click="openCompareWithActive(ver)"
-                        >
-                          <i class="material-symbols-outlined">difference</i>與目前版本比較
-                        </button>
-                        <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
-                             生效中的版本不能刪，要刪之前得先切換到別的版本。
-                             跟其他版本操作放在同一排，不再獨立浮在標頭那一行 -->
-                        <button
-                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
-                          class="custom-btn btn--danger-ghost vt-delete-btn"
-                          @click="versionPendingDelete = ver"
-                        >
-                          <i class="material-symbols-outlined">delete</i>刪除版本
-                        </button>
-                      </div>
+                  <!-- 每個版本一張獨立卡片，左側色條標示狀態（跟原本時間軸
+                       圓點同一套顏色語彙），不用連接線的時間軸樣式——版本
+                       之間沒有需要強調的先後關係，卡片式更方便單獨閱讀
+                       每一筆的內容跟操作 -->
+                  <div
+                    v-for="ver in sortedVersions"
+                    :key="ver.id"
+                    :class="['vt-card', `vt-card--${ver.status}`]"
+                  >
+                    <div class="vt-header">
+                      <!-- 版本不用版號區隔，一律顯示版本名稱，所有狀態
+                           （含審核中）都一樣，跟待審核提示條、審核視窗的
+                           顯示方式保持一致 -->
+                      <span class="vt-version-name">{{ ver.versionName }}</span>
+                      <span :class="['vt-status-badge', `vt-status--${ver.status}`]">
+                        {{ versionStatusLabel(ver.status) }}
+                      </span>
+                      <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
+                    </div>
+                    <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
+                    <div class="vt-actions">
+                      <!-- 「待啟用」（剛審核通過，還沒上線）或「歷史」（曾經生效、
+                           後來被取代）才能設為使用中；審核中的版本不會出現在這份
+                           清單裡（見 sortedVersions），不用另外判斷 -->
+                      <button
+                        v-if="props.manageable && !isPersonal && (ver.status === 'approved' || ver.status === 'history')"
+                        class="custom-btn vt-activate-btn"
+                        @click="skillStore.setLibraryActiveVersion(skill!.id, ver.id)"
+                      >
+                        <i class="material-symbols-outlined">check_circle</i>{{ condensed ? '切換版本' : '設為使用中' }}
+                      </button>
+                      <!-- 固定跟目前生效版本比較，不是跟清單中緊接著的前一筆比；
+                           生效版本自己這一列不用跟自己比 -->
+                      <button
+                        v-if="activeVersion && ver.id !== activeVersion.id"
+                        class="custom-btn"
+                        @click="openCompareWithActive(ver)"
+                      >
+                        <i class="material-symbols-outlined">difference</i>與目前版本比較
+                      </button>
+                      <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
+                           生效中的版本不能刪，要刪之前得先切換到別的版本。
+                           跟其他版本操作放在同一排，不再獨立浮在標頭那一行 -->
+                      <button
+                        v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                        class="custom-btn btn--danger-ghost vt-delete-btn"
+                        @click="versionPendingDelete = ver"
+                      >
+                        <i class="material-symbols-outlined">delete</i>刪除版本
+                      </button>
                     </div>
                   </div>
                 </div>
