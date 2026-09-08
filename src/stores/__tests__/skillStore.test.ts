@@ -256,6 +256,33 @@ describe('skillStore', () => {
       expect(newVersion).toBeDefined()
     })
 
+    it('submitPersonalSkill 在 version_update 模式下，帶入 targetSkillId 時發佈目標由呼叫端指定，不隨著 derivedFrom', () => {
+      const store = useSkillStore()
+      // personal-001 的 derivedFrom 是 sys-meeting-001，這裡刻意指定一個
+      // 完全不相關的目標技能（ext-erp-001），驗證真的送到指定目標，不是
+      // 悄悄還是送去 derivedFrom
+      const skill = store.myPersonalSkills.find(s => s.id === 'personal-001')!
+      expect(skill.derivedFrom).toBe('sys-meeting-001')
+
+      const beforeDerivedFrom = store.getSkillVersions('sys-meeting-001').length
+      const beforeTarget = store.getSkillVersions('ext-erp-001').length
+
+      store.submitPersonalSkill(
+        skill.id,
+        'version_update',
+        '改動說明',
+        '自選目標版本',
+        'enterprise',
+        undefined,
+        'ext-erp-001'
+      )
+
+      expect(store.getSkillVersions('sys-meeting-001').length).toBe(beforeDerivedFrom)
+      const targetVersions = store.getSkillVersions('ext-erp-001')
+      expect(targetVersions.length).toBe(beforeTarget + 1)
+      expect(targetVersions.some(v => v.status === 'reviewing' && v.versionName === '自選目標版本')).toBe(true)
+    })
+
     it('suggestVersionName 有說明文字時，摘要成短標題（優先參考使用者已填的內容）', async () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]

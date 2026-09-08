@@ -458,6 +458,11 @@
     margin-top: 10px;
   }
 
+  // 更新版本模式：發佈目標由使用者自選，不隨著來源技能自動決定
+  .dsd-target {
+    padding: 12px 20px 0;
+  }
+
   .dsd-team-select {
     width: 100%;
     border: 1px solid var(--divider-a50);

@@ -31,9 +31,6 @@
         <span v-if="submittedBy" class="src-meta-item">
           <i class="material-symbols-outlined">person</i>送審人：{{ submittedBy }}
         </span>
-        <span v-if="derivedFromName" class="src-meta-item">
-          <i class="material-symbols-outlined">link</i>來源：{{ derivedFromName }}
-        </span>
         <span v-if="skill.submitNote" class="src-meta-item">
           <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
         </span>
@@ -130,7 +127,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Skill } from '@/stores/skillStore'
-import { useSkillStore } from '@/stores/skillStore'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
 
 const props = defineProps<{ skill: Skill }>()
@@ -140,7 +136,6 @@ const emit = defineEmits<{
   reject: [skill: Skill, feedback: string]
 }>()
 
-const store = useSkillStore()
 const showInstructions = ref(false)
 const showMarkdown = ref(false)
 const showRejectDialog = ref(false)
@@ -165,9 +160,4 @@ const submitModeLabel = computed(() =>
 const targetScope = computed(() => props.skill.targetScope ?? 'enterprise')
 const targetTeamName = computed(() => props.skill.targetTeamName)
 const submittedBy = computed(() => props.skill.submittedBy)
-
-const derivedFromName = computed(() => {
-  if (!props.skill.derivedFrom) return null
-  return store.flatSkills.find(s => s.id === props.skill.derivedFrom)?.name ?? null
-})
 </script>

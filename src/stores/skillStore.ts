@@ -1390,7 +1390,11 @@ export const useSkillStore = defineStore('skillStore', () => {
     note: string,
     versionName: string,
     targetScope: 'enterprise' | 'team' = 'enterprise',
-    targetTeamName?: string
+    targetTeamName?: string,
+    // 更新版本模式要更新哪一個 Library 技能，由使用者在送審 dialog 自己選，
+    // 不寫死用 skill.derivedFrom（發佈目標不隨著來源）；沒帶的話（例如舊
+    // 呼叫端／測試）才退回用 derivedFrom 當預設，維持向下相容
+    targetSkillId?: string
   ): void {
     const skill = myPersonalSkillsRef.value.find(s => s.id === id)
     if (!skill) return
@@ -1401,11 +1405,12 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.targetTeamName = targetScope === 'team' ? targetTeamName : undefined
     skill.submittedBy = 'jocelyn.tseng'
 
-    // 更新版本模式：在來源 Library 技能的版本歷史新增一筆「審核中」版本，
-    // 內容是這顆個人技能目前的快照。「建立新技能」模式的技能還不存在於
+    // 更新版本模式：在使用者選定的 Library 技能的版本歷史新增一筆「審核中」
+    // 版本，內容是這顆個人技能目前的快照。「建立新技能」模式的技能還不存在於
     // Library，沒有版本歷史可以掛
-    if (mode === 'version_update' && skill.derivedFrom) {
-      const target = _findAny(skill.derivedFrom)
+    const resolvedTargetId = targetSkillId ?? skill.derivedFrom
+    if (mode === 'version_update' && resolvedTargetId) {
+      const target = _findAny(resolvedTargetId)
       if (target) {
         target.versions ??= []
         const now = new Date().toISOString()
