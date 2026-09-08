@@ -150,17 +150,6 @@
                           {{ versionStatusLabel(ver.status) }}
                         </span>
                         <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
-                        <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
-                             生效中的版本不能刪，要刪之前得先切換到別的版本 -->
-                        <button
-                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
-                          type="button"
-                          class="icon-btn vt-delete-btn"
-                          aria-label="刪除版本"
-                          @click="versionPendingDelete = ver"
-                        >
-                          <i class="material-symbols-outlined">delete</i>
-                        </button>
                       </div>
                       <div v-if="ver.updateNote" class="vt-note">{{ ver.updateNote }}</div>
                       <div class="vt-actions">
@@ -182,6 +171,16 @@
                           @click="openCompareWithActive(ver)"
                         >
                           <i class="material-symbols-outlined">difference</i>與目前版本比較
+                        </button>
+                        <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
+                             生效中的版本不能刪，要刪之前得先切換到別的版本。
+                             跟其他版本操作放在同一排，不再獨立浮在標頭那一行 -->
+                        <button
+                          v-if="props.manageable && !isPersonal && ver.status !== 'active'"
+                          class="custom-btn btn--danger-ghost vt-delete-btn"
+                          @click="versionPendingDelete = ver"
+                        >
+                          <i class="material-symbols-outlined">delete</i>刪除版本
                         </button>
                       </div>
                     </div>
