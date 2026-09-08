@@ -110,6 +110,10 @@ export interface Skill {
   hasLibraryUpdate?: boolean
   submitNote?: string
   submitMode?: 'version_update' | 'new_skill'
+  // 送審時使用者命名的版本名稱，待審核區要顯示這個——跟推進 target 技能
+  // versions[] 的那筆 reviewing 版本用同一個名稱，只是這裡直接存在個人
+  // 技能自己身上，不用另外反查 target 的版本歷史
+  submitVersionName?: string
   targetScope?: 'enterprise' | 'team'
   targetTeamName?: string
   submittedBy?: string
@@ -813,6 +817,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     derivedFromVersion: '初始版本',
     submitMode: 'version_update',
     submitNote: '新增多輪對話品質評估邏輯，支援情緒分析',
+    submitVersionName: '多輪對話品質評估',
     targetScope: 'enterprise',
     submittedBy: '陳雅婷',
     aiAnalysis: [
@@ -846,6 +851,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     skillName: '合約審核摘要',
     submitMode: 'new_skill',
     submitNote: '支援中英文合約自動摘要，標註高風險條款',
+    submitVersionName: '合約審核摘要首次發布',
     targetScope: 'team',
     targetTeamName: '法務部',
     submittedBy: '林志明',
@@ -882,6 +888,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     derivedFromVersion: 'Action Items自動識別',
     submitMode: 'version_update',
     submitNote: '新增行動項目追蹤欄位，支援多位發言人識別',
+    submitVersionName: '多發言人識別與行動項目追蹤',
     targetScope: 'enterprise',
     submittedBy: '黃思婷',
     aiAnalysis: [
@@ -914,6 +921,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     skillName: '產品 FAQ 自動回覆',
     submitMode: 'new_skill',
     submitNote: '',
+    submitVersionName: '產品 FAQ 自動回覆首次發布',
     targetScope: 'team',
     targetTeamName: '客服部',
     submittedBy: '王建豪',
@@ -1401,6 +1409,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.personalStatus = 'reviewing'
     skill.submitNote = note
     skill.submitMode = mode
+    skill.submitVersionName = versionName
     skill.targetScope = targetScope
     skill.targetTeamName = targetScope === 'team' ? targetTeamName : undefined
     skill.submittedBy = 'jocelyn.tseng'

@@ -61,6 +61,18 @@
     white-space: nowrap;
   }
 
+  // 送審時使用者命名的版本名稱，跟技能名稱放一起但視覺上比較安靜，
+  // 名稱還是唯一的主角
+  .src-version-name {
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--text-faint);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   // 「建立新技能/更新版本」跟「預計發布範圍」是同一件事的兩個面向
   // （送審動作 → 結果），用箭頭連起來放在名稱下面安靜的一行，
   // 不再各自頂著一個顯眼的色塊搶注意力
