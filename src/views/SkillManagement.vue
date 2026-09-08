@@ -389,9 +389,16 @@
               <p v-if="submitTeamLocked" class="dsd-scope-hint">
                 此技能已有團隊版本的 Library 版，本次只能送審企業層級
               </p>
+              <!-- 這顆技能已經有明確的部門歸屬（先前送審記錄，或延伸自某個
+                   團隊技能）時，發布團隊鎖定成那個部門，不能改選別的部門；
+                   完全沒有歸屬線索（例如全新、非延伸自任何技能的技能）才
+                   維持原本可自由選擇 -->
               <div v-if="submitScope === 'team'" class="dsd-team">
                 <label class="dsd-note-label">發布團隊</label>
-                <select v-model="submitTeamName" class="dsd-team-select">
+                <div v-if="lockedTeamName" class="dsd-team-locked">
+                  <i class="material-symbols-outlined">lock</i>{{ lockedTeamName }}
+                </div>
+                <select v-else v-model="submitTeamName" class="dsd-team-select">
                   <option v-for="t in knownTeamNames" :key="t" :value="t">{{ t }}</option>
                 </select>
               </div>
@@ -578,6 +585,11 @@ const knownTeamNames = computed(() => {
   return Array.from(names)
 })
 
+const lockedTeamName = computed(() => {
+  if (!submitConfirmSkill.value) return null
+  return store.resolveSubmitTeamName(submitConfirmSkill.value)
+})
+
 // 更新版本模式的目標技能選單：依所選發布層級篩選，系統技能是平台建立的，
 // 不開放個人送審更新
 const eligibleTargetSkills = computed(() => {
@@ -689,7 +701,7 @@ function handlePersonalSubmit(skill: Skill) {
   submitMode.value = skill.derivedFrom ? 'version_update' : 'new_skill'
   submitTeamLocked.value = teamAlreadyPublished
   submitScope.value = teamAlreadyPublished ? 'enterprise' : (skill.targetScope ?? 'enterprise')
-  submitTeamName.value = skill.targetTeamName ?? knownTeamNames.value[0] ?? ''
+  submitTeamName.value = store.resolveSubmitTeamName(skill) ?? knownTeamNames.value[0] ?? ''
   // 有來源技能的話預帶入選單當預設值（減少常見情境的操作），但使用者
   // 可以自由更換；沒有來源技能則不預選，必須主動選擇
   submitTargetSkillId.value = skill.derivedFrom ?? ''
