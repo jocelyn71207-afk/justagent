@@ -15,6 +15,7 @@
         </div>
         <div class="rq-row-main">
           <div class="rq-row-name">{{ skill.name }}</div>
+          <div v-if="skill.submitVersionName" class="rq-row-version">「{{ skill.submitVersionName }}」</div>
           <div class="rq-row-sub">
             {{ flowLabel(skill) }}<template v-if="skill.submittedBy"> · {{ skill.submittedBy }}</template>
           </div>

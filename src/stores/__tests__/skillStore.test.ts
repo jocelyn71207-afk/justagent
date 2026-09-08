@@ -227,7 +227,7 @@ describe('skillStore', () => {
       store.myPersonalSkills.forEach(s => expect(s.zone).toBe('personal'))
     })
 
-    it('submitPersonalSkill 將 personalStatus 設為 reviewing 並記錄 note 和 mode', () => {
+    it('submitPersonalSkill 將 personalStatus 設為 reviewing 並記錄 note、mode 和版本名稱', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]
       expect(skill.personalStatus).toBe('available')
@@ -235,6 +235,9 @@ describe('skillStore', () => {
       expect(store.myPersonalSkills[0].personalStatus).toBe('reviewing')
       expect(store.myPersonalSkills[0].submitNote).toBe('測試說明')
       expect(store.myPersonalSkills[0].submitMode).toBe('new_skill')
+      // 待審核區要顯示版本名稱，直接存在個人技能自己身上，不用反查
+      // target 技能的版本歷史
+      expect(store.myPersonalSkills[0].submitVersionName).toBe('測試版本')
     })
 
     it('submitPersonalSkill 對不存在 id 不報錯', () => {

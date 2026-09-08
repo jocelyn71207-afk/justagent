@@ -13,6 +13,7 @@
         <div class="src-title-block">
           <div class="src-name-row">
             <span class="src-name">{{ skill.name }}</span>
+            <span v-if="skill.submitVersionName" class="src-version-name">「{{ skill.submitVersionName }}」</span>
           </div>
           <div class="src-tag-row">
             <span :class="['src-mode-tag', submitMode === 'version_update' ? 'src-mode-tag--update' : 'src-mode-tag--new']">
