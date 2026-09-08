@@ -481,6 +481,24 @@
     }
   }
 
+  // 發布團隊鎖定成這顆技能已經歸屬的部門時，不能改選，用跟 select 同樣
+  // 的框線/間距呈現，但改成純顯示（灰底＋鎖頭圖示），不是可互動的控制項
+  .dsd-team-locked {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    background: var(--page-bg);
+    box-sizing: border-box;
+
+    .material-symbols-outlined { font-size: 15px; color: var(--text-faint); }
+  }
+
   .dsd-note {
     padding: 12px 20px 0;
   }

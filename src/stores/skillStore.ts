@@ -1116,6 +1116,20 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  // 送審 dialog 選「團隊技能」層級時，發布團隊要鎖定成這顆技能已經歸屬的
+  // 部門，不能改選：先前送審記錄（targetTeamName）優先，沒有的話看是不是
+  // 延伸自某個團隊技能（derivedFrom 指向的來源本身有 teamName）。都沒有
+  // 的話回傳 null，維持原本可自由選擇部門的行為——不是每顆技能都能推斷出
+  // 部門，不能無中生有鎖一個
+  function resolveSubmitTeamName(skill: Skill): string | null {
+    if (skill.targetTeamName) return skill.targetTeamName
+    if (skill.derivedFrom) {
+      const source = findSkill(skill.derivedFrom)
+      if (source?.scope === 'team' && source.teamName) return source.teamName
+    }
+    return null
+  }
+
   function getSkillVersions(skillId: string): SkillVersion[] {
     const skill = _findAny(skillId)
     return skill?.versions ?? []
@@ -1811,6 +1825,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     detachFromUpstream,
     detachUpstream,
     findSkill,
+    resolveSubmitTeamName,
     getSkillVersions,
     getReviewingVersion,
     getVersionOptions,

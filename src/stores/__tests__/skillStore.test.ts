@@ -240,6 +240,29 @@ describe('skillStore', () => {
       expect(store.myPersonalSkills[0].submitVersionName).toBe('測試版本')
     })
 
+    it('resolveSubmitTeamName 有先前送審記錄（targetTeamName）時直接用該部門', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.id === 'personal-003')!
+      expect(skill.targetTeamName).toBe('業務部')
+      expect(store.resolveSubmitTeamName(skill)).toBe('業務部')
+    })
+
+    it('resolveSubmitTeamName 沒有送審記錄但延伸自團隊技能時，用來源技能的部門', () => {
+      const store = useSkillStore()
+      // ext-meeting-eng-001 是團隊技能，屬於工程部
+      const copy = store.duplicateAsPersonalSkill('ext-meeting-eng-001')
+      expect(copy.targetTeamName).toBeUndefined()
+      expect(store.resolveSubmitTeamName(copy)).toBe('工程部')
+    })
+
+    it('resolveSubmitTeamName 沒有送審記錄、也沒有延伸自團隊技能時回傳 null（維持可自由選擇）', () => {
+      const store = useSkillStore()
+      // personal-001 延伸自 sys-meeting-001（系統技能，沒有 teamName）
+      const skill = store.myPersonalSkills.find(s => s.id === 'personal-001')!
+      expect(skill.targetTeamName).toBeUndefined()
+      expect(store.resolveSubmitTeamName(skill)).toBeNull()
+    })
+
     it('submitPersonalSkill 對不存在 id 不報錯', () => {
       const store = useSkillStore()
       expect(() => store.submitPersonalSkill('nonexistent', 'new_skill', '', '測試版本')).not.toThrow()
