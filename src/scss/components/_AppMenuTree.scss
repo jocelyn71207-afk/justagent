@@ -23,6 +23,14 @@
   &.no-team-panel {
     width: $railWidth;
   }
+
+  // 第二層收合成迷你圖示條時，最外層容器也要跟著縮寬——.side-panel 自己
+  // 縮寬只是內層元件的事，這個外層容器是獨立的固定寬度（flex: none），
+  // 不會因為裡面的子元素變窄就自動跟著縮小，沒同步改的話畫面會留一塊
+  // 空白區域，看起來像收合沒生效
+  &.is-panel-collapsed {
+    width: $railWidth;
+  }
 }
 
 .rail {

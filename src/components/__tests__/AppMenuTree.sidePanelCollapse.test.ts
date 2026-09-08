@@ -31,6 +31,13 @@ describe('AppMenuTree 側邊選單第二層收合', () => {
     expect(wrapper.find('.side-panel').classes()).not.toContain('is-collapsed')
   })
 
+  it('收合後，最外層 .AppMenuTree 容器也要跟著縮寬，不能維持展開時的整塊寬度——不然側邊面板縮小了、外層卻還保留原本的區域位置，中間會留一塊空白', async () => {
+    const wrapper = mountMenu()
+    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+
+    expect(wrapper.find('.AppMenuTree').classes()).toContain('is-panel-collapsed')
+  })
+
   it('收合後，團隊切換器不保留團隊圖示／名稱／展開箭頭，只留收合按鈕本身', async () => {
     const wrapper = mountMenu()
     await wrapper.find('.side-panel-collapse-toggle').trigger('click')
