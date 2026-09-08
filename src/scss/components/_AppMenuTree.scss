@@ -27,9 +27,11 @@
   // 第二層收合成迷你圖示條時，最外層容器也要跟著縮寬——.side-panel 自己
   // 縮寬只是內層元件的事，這個外層容器是獨立的固定寬度（flex: none），
   // 不會因為裡面的子元素變窄就自動跟著縮小，沒同步改的話畫面會留一塊
-  // 空白區域，看起來像收合沒生效
+  // 空白區域，看起來像收合沒生效。注意：side-panel 收合後還在（只是變窄
+  // 成 rail 寬度），不是整個消失，所以這裡要用 $collapsedMenuWidth（兩個
+  // rail 寬度相加），不能誤用只給「side-panel 根本不存在」情境的 $railWidth
   &.is-panel-collapsed {
-    width: $railWidth;
+    width: $collapsedMenuWidth;
   }
 }
 
