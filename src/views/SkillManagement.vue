@@ -339,27 +339,19 @@
               </div>
               <div class="dsd-info-row">
                 <span class="dsd-info-label">來源</span>
-                <span class="dsd-info-val">{{ submitConfirmSkill.derivedFrom ? '對話延伸' : '手寫建立' }}</span>
-              </div>
-              <div v-if="submitConfirmSkill.derivedFrom" class="dsd-info-row">
-                <span class="dsd-info-label">來源技能</span>
-                <span class="dsd-info-val">{{ getDerivedFromName(submitConfirmSkill.derivedFrom) }}</span>
+                <span class="dsd-info-val">{{ submitConfirmSkill.derivedFrom ? '延伸自對話' : '自建' }}</span>
               </div>
             </div>
 
             <div class="dsd-options">
               <button
                 :class="['dsd-option', submitMode === 'version_update' && 'is-selected']"
-                :disabled="!submitConfirmSkill.derivedFrom"
                 @click="submitMode = 'version_update'"
               >
                 <i class="material-symbols-outlined">update</i>
                 <div class="dsd-option-body">
                   <div class="dsd-option-title">更新版本</div>
-                  <div class="dsd-option-desc">
-                    提交為原技能的新版本，審核通過後更新現有技能
-                    <span v-if="!submitConfirmSkill.derivedFrom">（此技能無來源技能）</span>
-                  </div>
+                  <div class="dsd-option-desc">提交為某個現有技能的新版本，審核通過後更新該技能</div>
                 </div>
                 <i v-if="submitMode === 'version_update'" class="material-symbols-outlined dsd-check">check_circle</i>
               </button>
@@ -405,6 +397,19 @@
               </div>
             </div>
 
+            <!-- 更新版本模式：發佈目標由使用者自己選，不隨著來源技能自動決定；
+                 選單依所選發布層級（企業/該團隊）列出現有 Library 技能 -->
+            <div v-if="submitMode === 'version_update'" class="dsd-target">
+              <label class="dsd-note-label">更新哪一個技能</label>
+              <select v-model="submitTargetSkillId" class="dsd-team-select">
+                <option value="" disabled>請選擇要更新的技能</option>
+                <option v-for="s in eligibleTargetSkills" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+              <p v-if="!eligibleTargetSkills.length" class="dsd-scope-hint">
+                {{ submitScope === 'team' ? '該團隊目前沒有可更新的技能' : '目前沒有可更新的企業技能' }}
+              </p>
+            </div>
+
             <div class="dsd-note">
               <label class="dsd-note-label">版本名稱</label>
               <div class="dsd-version-name-row">
@@ -444,7 +449,7 @@
               <button class="custom-btn" @click="submitConfirmSkill = null">取消</button>
               <button
                 class="custom-btn custom-main-btn"
-                :disabled="!submitVersionName.trim()"
+                :disabled="!submitVersionName.trim() || (submitMode === 'version_update' && !submitTargetSkillId)"
                 @click="confirmSubmitSkill"
               >
                 <i class="material-symbols-outlined">send</i>送出審核
@@ -558,6 +563,9 @@ const submitScope = ref<'enterprise' | 'team'>('enterprise')
 // 若送審的版本已經是團隊 Library 版，團隊層級已經有了，只能往上送企業層級
 const submitTeamLocked = ref(false)
 const submitTeamName = ref('')
+// 更新版本模式要更新哪一個 Library 技能，使用者自己選——發佈目標不隨著
+// 來源技能（derivedFrom）自動決定
+const submitTargetSkillId = ref('')
 const submitNote = ref('')
 const submitVersionName = ref('')
 const suggestingVersionName = ref(false)
@@ -568,6 +576,24 @@ const knownTeamNames = computed(() => {
   store.flatSkills.forEach(s => { if (s.teamName) names.add(s.teamName) })
   store.myPersonalSkills.forEach(s => { if (s.targetTeamName) names.add(s.targetTeamName) })
   return Array.from(names)
+})
+
+// 更新版本模式的目標技能選單：依所選發布層級篩選，系統技能是平台建立的，
+// 不開放個人送審更新
+const eligibleTargetSkills = computed(() => {
+  return store.flatSkills.filter(s => {
+    if (s.scope === 'system') return false
+    if (submitScope.value === 'team') return s.scope === 'team' && s.teamName === submitTeamName.value
+    return s.scope === 'enterprise'
+  })
+})
+
+// 發布層級或團隊變更時，原本選的目標技能可能不在新的候選清單裡了，
+// 要重新檢查；還在清單裡就維持原選擇，不用重選
+watch([submitScope, submitTeamName], () => {
+  if (!eligibleTargetSkills.value.some(s => s.id === submitTargetSkillId.value)) {
+    submitTargetSkillId.value = ''
+  }
 })
 
 const upstreamVersionForDetail = computed(() => {
@@ -664,6 +690,9 @@ function handlePersonalSubmit(skill: Skill) {
   submitTeamLocked.value = teamAlreadyPublished
   submitScope.value = teamAlreadyPublished ? 'enterprise' : (skill.targetScope ?? 'enterprise')
   submitTeamName.value = skill.targetTeamName ?? knownTeamNames.value[0] ?? ''
+  // 有來源技能的話預帶入選單當預設值（減少常見情境的操作），但使用者
+  // 可以自由更換；沒有來源技能則不預選，必須主動選擇
+  submitTargetSkillId.value = skill.derivedFrom ?? ''
   submitNote.value = ''
   submitVersionName.value = ''
   // 開啟 dialog 就先給一個 AI 建議草稿（此時說明通常還沒填，用泛用建議打底），
@@ -687,13 +716,15 @@ async function suggestVersionNameNow() {
 
 function confirmSubmitSkill() {
   if (!submitConfirmSkill.value || !submitVersionName.value.trim()) return
+  if (submitMode.value === 'version_update' && !submitTargetSkillId.value) return
   store.submitPersonalSkill(
     submitConfirmSkill.value.id,
     submitMode.value,
     submitNote.value,
     submitVersionName.value.trim(),
     submitScope.value,
-    submitScope.value === 'team' ? submitTeamName.value : undefined
+    submitScope.value === 'team' ? submitTeamName.value : undefined,
+    submitMode.value === 'version_update' ? submitTargetSkillId.value : undefined
   )
   submitConfirmSkill.value = null
   submitNote.value = ''
@@ -715,9 +746,5 @@ function handleReject(skill: Skill, feedback: string) {
 
 function handleToggle(skill: Skill) {
   store.toggleSkill(skill.id)
-}
-
-function getDerivedFromName(derivedFrom: string): string {
-  return store.findSkill(derivedFrom)?.name ?? derivedFrom
 }
 </script>
