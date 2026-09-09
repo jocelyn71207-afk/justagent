@@ -414,11 +414,18 @@ function startTracking(
 function onBodyPointerDown(event: PointerEvent) {
   emit('activated');
   if (!props.draggable) return;
+  // 注意：一定要在 startTracking 之前、只算「一次」起始座標快照，
+  // 不能在 onMove 裡面每次都讀「當下」的 props.x/props.y——因為
+  // handleMove 算出來的 dx/dy 是「相對拖曳起點」的累積位移，如果每次都
+  // 疊加在已經被父層（AiViewerContentBox.vue 的 handleResizeDrag，每次
+  // 'dragging' 事件都會把 boxX/boxY 設成新值再透過 props 傳回來）更新過的
+  // 「當下」座標上，會造成座標指數級亂飄（同一個位移量被算了兩次）。
+  const startBox = { x: props.x, y: props.y, width: props.w, height: props.h };
   startTracking(
     event,
     (dx, dy) => {
       isDragging.value = true;
-      const { x, y } = applyDrag({ x: props.x, y: props.y, width: props.w, height: props.h }, dx, dy);
+      const { x, y } = applyDrag(startBox, dx, dy);
       const snappedX = props.snap ? snapToGrid(x, props.grid[0]) : x;
       const snappedY = props.snap ? snapToGrid(y, props.grid[1]) : y;
       emit('dragging', snappedX, snappedY, props.w, props.h);
