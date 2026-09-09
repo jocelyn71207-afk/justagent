@@ -114,11 +114,12 @@ function startTracking(
 function onBodyPointerDown(event: PointerEvent) {
   emit('activated');
   if (!props.draggable) return;
+  const startBox = { x: props.x, y: props.y, width: props.w, height: props.h };
   startTracking(
     event,
     (dx, dy) => {
       isDragging.value = true;
-      const { x, y } = applyDrag({ x: props.x, y: props.y, width: props.w, height: props.h }, dx, dy);
+      const { x, y } = applyDrag(startBox, dx, dy);
       const snappedX = props.snap ? snapToGrid(x, props.grid[0]) : x;
       const snappedY = props.snap ? snapToGrid(y, props.grid[1]) : y;
       emit('dragging', snappedX, snappedY, props.w, props.h);
