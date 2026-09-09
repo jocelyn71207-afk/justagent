@@ -19,7 +19,7 @@
     <i class="material-symbols-outlined">error</i>
     <span>此區塊無法顯示</span>
   </div>
-  <VueDragResizeRotate v-else-if="init" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
+  <DragResizeBox v-else-if="init" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
     :class="['AiViewerContentResize', {
       'isTouch': isTouchDevice, // 是觸控裝置
       'isDragResize': nowIsDragResize, // 目前正在拖曳或改尺寸中
@@ -29,7 +29,6 @@
     :id="props.id"
     :ref="'AiViewer' + props.id"
     :active="nowChoiceAiViewerId === props.id && !isConentScroll"
-    :enable-native-drag="false"
     :z="props.z"
     :x="boxX"
     :y="boxY"
@@ -37,10 +36,8 @@
     :h="boxHeight"
     :minWidth="props.minWidth"
     :minHeight="props.minHeight"
-    :maxWidth="props.maxWidth"
-    :maxHeight="props.maxHeight"
-    :parent="false"
-    :scaleRatio="1"
+    :maxWidth="props.maxWidth ?? undefined"
+    :maxHeight="props.maxHeight ?? undefined"
     :snap="true"
     :snapToGrid="false"
     :grid="[2, 2]"
@@ -326,7 +323,7 @@
       />
 
     </div>
-  </VueDragResizeRotate>
+  </DragResizeBox>
 </template>
 
 <script setup lang="ts">
@@ -334,7 +331,7 @@ import { ref, nextTick, onMounted, onErrorCaptured, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent } from '@/utils/utils';
-import VueDragResizeRotate from "@gausszhou/vue3-drag-resize-rotate";
+import DragResizeBox from '@/components/AiViewer/DragResizeBox.vue';
 import MemoPaperView from '@/components/AiViewer/MemoPaperView.vue';
 import pdfViewBox from '@/components/AiViewer/viewBlock/pdfViewBox.vue';
 import excelViewBox from '@/components/AiViewer/viewBlock/excelViewBox.vue';
