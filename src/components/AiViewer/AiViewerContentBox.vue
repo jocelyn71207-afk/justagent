@@ -11,7 +11,15 @@
     // 先備份設定
     :resizable="!isConentScroll && !isStopDrag && (!isTouchDevice || (isTouchDevice && !isShowCommentView))"
   -->
-  <VueDragResizeRotate v-if="init" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
+  <!-- 區塊渲染錯誤保護：VueDragResizeRotate（或其子內容）渲染拋出例外時，
+       onErrorCaptured 會把 hasRenderError 設為 true，改顯示佔位框，
+       避免例外冒泡到整個畫布／頁面造成全站白屏 -->
+  <div v-if="hasRenderError" class="AiViewerContentResize block-render-error"
+    :style="{ position: 'absolute', left: boxX + 'px', top: boxY + 'px', width: boxWidth + 'px', height: boxHeight + 'px' }">
+    <i class="material-symbols-outlined">error</i>
+    <span>此區塊無法顯示</span>
+  </div>
+  <VueDragResizeRotate v-else-if="init" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
     :class="['AiViewerContentResize', {
       'isTouch': isTouchDevice, // 是觸控裝置
       'isDragResize': nowIsDragResize, // 目前正在拖曳或改尺寸中
@@ -322,7 +330,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, computed, watch } from 'vue'
+import { ref, nextTick, onMounted, onErrorCaptured, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent } from '@/utils/utils';
@@ -432,6 +440,17 @@ const contentBoxDOM = ref<HTMLElement | null>(null);
 const isShowCommentView = ref<boolean>(false); // 是否顯示便條紙小介面
 const isChange = ref<boolean>(false); // 紀錄是否有改變座標與尺寸 (作為後端同步更新的依據)
 const blockIsFailure = ref<boolean>(false); // 區塊是否載入失敗 (各個 viewBox 組件回傳值)
+
+// 區塊渲染錯誤保護（error boundary）：
+// VueDragResizeRotate 這類第三方拖曳套件跟目前 Vue 版本有已知相容性問題，
+// 渲染某些區塊（例如 TXT）時可能整個拋出例外。用 onErrorCaptured 攔下來，
+// 只讓「這一個區塊」改顯示佔位框，避免例外往上冒泡導致整個畫布／頁面跟著崩潰。
+const hasRenderError = ref<boolean>(false);
+onErrorCaptured((err, _instance, info) => {
+  hasRenderError.value = true;
+  console.error(`[AiViewerContentBox] 區塊渲染失敗，id=${props.id}，info=${info}`, err);
+  return false; // 阻止例外繼續往上層冒泡
+});
 const blockName = ref<string>(props.blockName);
 const catchBlockName = ref<string>(''); // 是否修改區塊名稱
 const modifyBlockNameInput = ref<HTMLInputElement | null>(null);
