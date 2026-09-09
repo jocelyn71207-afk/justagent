@@ -4,13 +4,33 @@
     :style="rootStyle"
     @pointerdown="onBodyPointerDown"
   >
+    <template v-if="props.resizable">
+      <div
+        v-for="handle in HANDLES"
+        :key="handle"
+        :class="['handle', `handle-${handle}`]"
+        :style="handleStyle(handle)"
+        @pointerdown.stop="onHandlePointerDown($event, handle)"
+      >
+        <slot :name="handle" />
+      </div>
+    </template>
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { applyDrag, snapToGrid } from '@/utils/dragResizeMath';
+import { applyDrag, applyResize, snapToGrid, type HandleName } from '@/utils/dragResizeMath';
+
+const HANDLES: HandleName[] = ['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'];
+const HANDLE_SIZE = 20; // px，跟呼叫端既有 .handle-icon（20px 圓點）搭配
+const HANDLE_OFFSET = -10; // px，讓控制點熱區中心對齊區塊邊界
+
+const CURSOR_MAP: Record<HandleName, string> = {
+  tl: 'nwse-resize', tr: 'nesw-resize', br: 'nwse-resize', bl: 'nesw-resize',
+  tm: 'ns-resize', bm: 'ns-resize', ml: 'ew-resize', mr: 'ew-resize',
+};
 
 const props = withDefaults(defineProps<{
   x: number;
@@ -128,6 +148,50 @@ function onBodyPointerDown(event: PointerEvent) {
     (finalX, finalY) => {
       isDragging.value = false;
       emit('dragstop', finalX, finalY);
+    },
+  );
+}
+
+function handleStyle(handle: HandleName): Record<string, string> {
+  const half = HANDLE_SIZE / 2;
+  const style: Record<string, string> = {
+    width: `${HANDLE_SIZE}px`,
+    height: `${HANDLE_SIZE}px`,
+    cursor: CURSOR_MAP[handle],
+  };
+  if (handle === 'tl' || handle === 'tm' || handle === 'tr') style.top = `${HANDLE_OFFSET}px`;
+  if (handle === 'bl' || handle === 'bm' || handle === 'br') style.bottom = `${HANDLE_OFFSET}px`;
+  if (handle === 'tl' || handle === 'ml' || handle === 'bl') style.left = `${HANDLE_OFFSET}px`;
+  if (handle === 'tr' || handle === 'mr' || handle === 'br') style.right = `${HANDLE_OFFSET}px`;
+  if (handle === 'tm' || handle === 'bm') style.left = `calc(50% - ${half}px)`;
+  if (handle === 'ml' || handle === 'mr') style.top = `calc(50% - ${half}px)`;
+  return style;
+}
+
+function onHandlePointerDown(event: PointerEvent, handle: HandleName) {
+  emit('activated');
+  if (!props.resizable) return;
+  const startBox = { x: props.x, y: props.y, width: props.w, height: props.h };
+  startTracking(
+    event,
+    (dx, dy) => {
+      isResizing.value = true;
+      const box = applyResize(handle, startBox, dx, dy, {
+        minWidth: props.minWidth,
+        minHeight: props.minHeight,
+        maxWidth: props.maxWidth,
+        maxHeight: props.maxHeight,
+      }, props.lockAspectRatio);
+      const snappedX = props.snap ? snapToGrid(box.x, props.grid[0]) : box.x;
+      const snappedY = props.snap ? snapToGrid(box.y, props.grid[1]) : box.y;
+      const snappedW = props.snap ? snapToGrid(box.width, props.grid[0]) : box.width;
+      const snappedH = props.snap ? snapToGrid(box.height, props.grid[1]) : box.height;
+      emit('resizing', snappedX, snappedY, snappedW, snappedH);
+      return { x: snappedX, y: snappedY };
+    },
+    (finalX, finalY) => {
+      isResizing.value = false;
+      emit('resizestop', finalX, finalY);
     },
   );
 }
