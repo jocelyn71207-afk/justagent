@@ -77,8 +77,19 @@ export function applyResize(
   const isCorner = (edges.left || edges.right) && (edges.top || edges.bottom);
   if (lockAspectRatio && isCorner && box.width > 0 && box.height > 0) {
     const ratio = box.width / box.height;
-    const lockedHeight = clamp(width / ratio, bounds.minHeight, bounds.maxHeight);
-    const lockedWidth = clamp(lockedHeight * ratio, bounds.minWidth, bounds.maxWidth);
+    // 用「變化比例較大的那一軸」當主軸，反推另一軸——避免永遠只看 width（dx），
+    // 導致純粹上下拖曳角落控制點時完全沒反應（dy 被忽略）。
+    const widthChangeRatio = Math.abs(width - box.width) / box.width;
+    const heightChangeRatio = Math.abs(height - box.height) / box.height;
+    let lockedWidth: number;
+    let lockedHeight: number;
+    if (heightChangeRatio > widthChangeRatio) {
+      lockedHeight = clamp(height, bounds.minHeight, bounds.maxHeight);
+      lockedWidth = clamp(lockedHeight * ratio, bounds.minWidth, bounds.maxWidth);
+    } else {
+      lockedWidth = clamp(width, bounds.minWidth, bounds.maxWidth);
+      lockedHeight = clamp(lockedWidth / ratio, bounds.minHeight, bounds.maxHeight);
+    }
     width = lockedWidth;
     height = lockedHeight;
     if (edges.left) x = box.x + box.width - width;

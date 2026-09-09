@@ -102,6 +102,13 @@ describe('applyResize - 邊界夾限', () => {
     const result = applyResize('mr', BOX, 999, 0, bounds);
     expect(result.width).toBe(250);
   });
+
+  it('tl 大幅往左上拖曳超過 maxWidth 時，寬度夾在上限、右邊界仍然固定', () => {
+    const bounds = { minWidth: 0, minHeight: 0, maxWidth: 300, maxHeight: Infinity };
+    const result = applyResize('tl', BOX, -500, 0, bounds);
+    expect(result.width).toBe(300);
+    expect(result.x + result.width).toBe(BOX.x + BOX.width);
+  });
 });
 
 describe('applyResize - lockAspectRatio', () => {
@@ -116,5 +123,20 @@ describe('applyResize - lockAspectRatio', () => {
     const result = applyResize('mr', BOX, 100, 0, NO_BOUNDS, true);
     expect(result.width).toBe(300);
     expect(result.height).toBe(100); // 不變
+  });
+
+  it('br 角落，dy 為主要變化時，寬度依高度連動（修正只看 dx 導致 dy 被忽略的 bug）', () => {
+    const result = applyResize('br', BOX, 0, 200, NO_BOUNDS, true);
+    // BOX 寬高比 200:100 = 2:1；dy=200 讓 height 變化比例(200/100=2.0)遠大於 width(0)
+    expect(result.height).toBe(300);
+    expect(result.width).toBe(600);
+  });
+
+  it('tl 角落，純 dy 拖曳時寬高同步鎖定，且角落正確往左上移動（右下邊界固定）', () => {
+    const result = applyResize('tl', BOX, 0, -200, NO_BOUNDS, true);
+    expect(result.height).toBe(300);
+    expect(result.width).toBe(600);
+    expect(result.x + result.width).toBe(BOX.x + BOX.width);
+    expect(result.y + result.height).toBe(BOX.y + BOX.height);
   });
 });

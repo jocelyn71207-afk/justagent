@@ -97,6 +97,8 @@ const rootClasses = computed(() => [
 ]);
 
 const rootStyle = computed(() => ({
+  position: 'absolute' as const,
+  touchAction: 'none',
   transform: `translate(${props.x}px, ${props.y}px)`,
   width: `${props.w}px`,
   height: `${props.h}px`,
@@ -162,6 +164,7 @@ function handleStyle(handle: HandleName): Record<string, string> {
   const offset = isCoarsePointer.value ? HANDLE_OFFSET * 1.6 : HANDLE_OFFSET;
   const half = size / 2;
   const style: Record<string, string> = {
+    position: 'absolute',
     width: `${size}px`,
     height: `${size}px`,
     cursor: CURSOR_MAP[handle],
