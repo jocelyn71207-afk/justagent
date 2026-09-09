@@ -1,26 +1,12 @@
 <template>
   <!-- 主場景 debug 資訊顯示區 -->
-  <VueDragResizeRotate
+  <div
     class="debug-views AiViewerContentResize"
     v-if="lookDebug"
-    :enable-native-drag="true"
-    :draggable="false"
-    :resizable="false"
-    :rotatable="false"
-    :w="200"
-    :h="450"
+    style="position: absolute; width: 200px; height: 450px;"
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)"
   >
-    <template v-slot:tl><div class="handle-icon"></div></template>
-    <template v-slot:tm><div class="handle-icon"></div></template>
-    <template v-slot:tr><div class="handle-icon"></div></template>
-    <template v-slot:mr><div class="handle-icon"></div></template>
-    <template v-slot:br><div class="handle-icon"></div></template>
-    <template v-slot:bm><div class="handle-icon"></div></template>
-    <template v-slot:bl><div class="handle-icon"></div></template>
-    <template v-slot:ml><div class="handle-icon"></div></template>
-
     <div class="debug-views-content">
       <button class="custom-btn" @click="lookDebug = false">
         <i class="material-symbols-outlined">close</i>
@@ -56,7 +42,7 @@
         }}</pre>
       </div>
     </div>
-  </VueDragResizeRotate>
+  </div>
 
   <!-- 固定頂部工具列：使用者身分／專案識別＋專案層級選單常駐在最上方，
        畫布操作（縮放/上傳/資源庫/搜尋/旅程等）維持懸浮在畫布上，不收進這裡 -->
@@ -473,7 +459,6 @@ import AiViewerLeftBox from "@/components/AiViewer/AiViewerLeftBox.vue";
 import AiViewerRightBox from "@/components/AiViewer/AiViewerRightBox.vue";
 import AiViewerContentBox from "@/components/AiViewer/AiViewerContentBox.vue";
 import FullAiViewerBlockBox from "@/components/AiViewer/FullAiViewerBlockBox.vue";
-import VueDragResizeRotate from "@gausszhou/vue3-drag-resize-rotate";
 import StageMap from "@/components/AiViewer/StageMap.vue";
 import ProjectUseAngentModal from "@/components/AiViewer/ProjectUseAngentModal.vue";
 import ProjectSettingModal from "@/components/AiViewer/ProjectSettingModal.vue";

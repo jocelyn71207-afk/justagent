@@ -414,11 +414,18 @@ function startTracking(
 function onBodyPointerDown(event: PointerEvent) {
   emit('activated');
   if (!props.draggable) return;
+  // 注意：一定要在 startTracking 之前、只算「一次」起始座標快照，
+  // 不能在 onMove 裡面每次都讀「當下」的 props.x/props.y——因為
+  // handleMove 算出來的 dx/dy 是「相對拖曳起點」的累積位移，如果每次都
+  // 疊加在已經被父層（AiViewerContentBox.vue 的 handleResizeDrag，每次
+  // 'dragging' 事件都會把 boxX/boxY 設成新值再透過 props 傳回來）更新過的
+  // 「當下」座標上，會造成座標指數級亂飄（同一個位移量被算了兩次）。
+  const startBox = { x: props.x, y: props.y, width: props.w, height: props.h };
   startTracking(
     event,
     (dx, dy) => {
       isDragging.value = true;
-      const { x, y } = applyDrag({ x: props.x, y: props.y, width: props.w, height: props.h }, dx, dy);
+      const { x, y } = applyDrag(startBox, dx, dy);
       const snappedX = props.snap ? snapToGrid(x, props.grid[0]) : x;
       const snappedY = props.snap ? snapToGrid(y, props.grid[1]) : y;
       emit('dragging', snappedX, snappedY, props.w, props.h);
@@ -730,6 +737,17 @@ Expected: 錯誤數量跟改動前一致（既有的 pre-existing 錯誤，例�
 - 在 conv1 觸發「請幫我做行銷策略分析」，確認產出的 HTML report 區塊一樣能正常顯示與拖曳/縮放
 - 多選 2 個以上區塊，拖曳其中一個，確認其他區塊跟著位移相同差值（這段邏輯在 `checXY` 裡，見 spec）
 - 打開瀏覽器 console，確認沒有任何 `Cannot read properties of null (reading 'ce')` 或其他新錯誤
+
+> **實作時發現、已在 Task 5 執行時修正的計畫遺漏**：`AiViewerContentBox.vue` 自己的
+> `maxWidth`/`maxHeight` props 型別是 `[Number, null]`、預設值 `null`（第 397-404 行），
+> 原本模板直接 `:maxWidth="props.maxWidth"` 轉傳給子元件。舊套件對此沒有嚴格型別檢查，
+> 但 `DragResizeBox` 的 `maxWidth?: number`（預設 `Infinity`）在 TypeScript 下無法接受
+> `null`，而且執行期 `null` 會讓 `clamp()` 內部 `Math.min(value, null)` 把 `null` 當
+> `0` 算，導致每次縮放都被夾到 0——等於整個縮放功能失效。修法：把這兩處綁定改成
+> `:maxWidth="props.maxWidth ?? undefined"`／`:maxHeight="props.maxHeight ?? undefined"`，
+> 讓 `undefined` 觸發 `DragResizeBox` 自己 `withDefaults` 的 `Infinity` 預設值（Vue 的
+> prop 預設值只在收到 `undefined` 時套用，收到 `null` 不會）。這不是這個 Task 原本列出
+> 的異動項目，是實作時發現的真實 bug，記錄在這裡供之後參考。
 
 - [ ] **Step 5: Commit**
 

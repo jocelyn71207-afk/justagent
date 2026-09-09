@@ -1,25 +1,25 @@
 <template>
-  <!-- VueDragResizeRotate  套件已知問題
-    :disableUserSelect="true"  防止拖曳時文字被選取, 在:draggable="true"時會沒有作用
-
-    TODO... 先用 :scaleRatio="1"
-            先不用 :scaleRatio="props.parentScale",
-            因為會影響父層拿到的寬高與座標值,
-            前端不會有問題, 但是後端儲存後, 多人協作下, 通知別的用戶更新小區塊座標就會有問題,
-            因為每一個用戶的主場景縮放比例與主場景座標都不一樣.
+  <!-- DragResizeBox（見 src/components/AiViewer/DragResizeBox.vue，取代已停止維護、
+    跟 Vue 3.5 不相容的 @gausszhou/vue3-drag-resize-rotate）目前刻意不做縮放比例補償
+    （不傳任何 scaleRatio 之類的 prop，拖曳/縮放位移直接用螢幕像素差值）：
+    因為每個使用者的主場景縮放比例與座標都不一樣，若要補償縮放比例，多人協作下
+    通知其他使用者更新小區塊座標會需要額外同步機制。詳見
+    docs/superpowers/specs/2026-09-09-canvas-drag-resize-replacement-design.md
+    「座標系統」一節。
 
     // 先備份設定
     :resizable="!isConentScroll && !isStopDrag && (!isTouchDevice || (isTouchDevice && !isShowCommentView))"
   -->
-  <!-- 區塊渲染錯誤保護：VueDragResizeRotate（或其子內容）渲染拋出例外時，
+  <!-- 區塊渲染錯誤保護：DragResizeBox（或其子內容，例如各 viewBox 元件）渲染拋出例外時，
        onErrorCaptured 會把 hasRenderError 設為 true，改顯示佔位框，
-       避免例外冒泡到整個畫布／頁面造成全站白屏 -->
+       避免例外冒泡到整個畫布／頁面造成全站白屏。這是通用防護網，不專屬於特定套件——
+       即使造成這次 bug 的第三方套件已經移除，這層保護仍然保留。 -->
   <div v-if="hasRenderError" class="AiViewerContentResize block-render-error"
     :style="{ position: 'absolute', left: boxX + 'px', top: boxY + 'px', width: boxWidth + 'px', height: boxHeight + 'px' }">
     <i class="material-symbols-outlined">error</i>
     <span>此區塊無法顯示</span>
   </div>
-  <VueDragResizeRotate v-else-if="init" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
+  <DragResizeBox v-else-if="init" @wheel="stopWhellZoomEvent($event)" @touchmove="stopTouchpadZoomEvent($event)"
     :class="['AiViewerContentResize', {
       'isTouch': isTouchDevice, // 是觸控裝置
       'isDragResize': nowIsDragResize, // 目前正在拖曳或改尺寸中
@@ -29,7 +29,6 @@
     :id="props.id"
     :ref="'AiViewer' + props.id"
     :active="nowChoiceAiViewerId === props.id && !isConentScroll"
-    :enable-native-drag="false"
     :z="props.z"
     :x="boxX"
     :y="boxY"
@@ -37,16 +36,11 @@
     :h="boxHeight"
     :minWidth="props.minWidth"
     :minHeight="props.minHeight"
-    :maxWidth="props.maxWidth"
-    :maxHeight="props.maxHeight"
-    :parent="false"
-    :scaleRatio="1"
+    :maxWidth="props.maxWidth ?? undefined"
+    :maxHeight="props.maxHeight ?? undefined"
     :snap="true"
-    :snapToGrid="false"
     :grid="[2, 2]"
     :aspectRatio="props.aspectRatio"
-    axis="both"
-    :rotatable="false"
     :draggable="!isConentScroll && !isStopDrag && !catchBlockName"
     :resizable="(
       !isShowCommentView &&
@@ -326,7 +320,7 @@
       />
 
     </div>
-  </VueDragResizeRotate>
+  </DragResizeBox>
 </template>
 
 <script setup lang="ts">
@@ -334,7 +328,7 @@ import { ref, nextTick, onMounted, onErrorCaptured, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent } from '@/utils/utils';
-import VueDragResizeRotate from "@gausszhou/vue3-drag-resize-rotate";
+import DragResizeBox from '@/components/AiViewer/DragResizeBox.vue';
 import MemoPaperView from '@/components/AiViewer/MemoPaperView.vue';
 import pdfViewBox from '@/components/AiViewer/viewBlock/pdfViewBox.vue';
 import excelViewBox from '@/components/AiViewer/viewBlock/excelViewBox.vue';
@@ -442,9 +436,11 @@ const isChange = ref<boolean>(false); // 紀錄是否有改變座標與尺寸 (�
 const blockIsFailure = ref<boolean>(false); // 區塊是否載入失敗 (各個 viewBox 組件回傳值)
 
 // 區塊渲染錯誤保護（error boundary）：
-// VueDragResizeRotate 這類第三方拖曳套件跟目前 Vue 版本有已知相容性問題，
-// 渲染某些區塊（例如 TXT）時可能整個拋出例外。用 onErrorCaptured 攔下來，
-// 只讓「這一個區塊」改顯示佔位框，避免例外往上冒泡導致整個畫布／頁面跟著崩潰。
+// 任何區塊內容（DragResizeBox 本身或其子內容，例如各 viewBox 元件）渲染時
+// 拋出例外，用 onErrorCaptured 攔下來，只讓「這一個區塊」改顯示佔位框，
+// 避免例外往上冒泡導致整個畫布／頁面跟著崩潰。這是通用防護網：原本用來
+// 止血一個已經移除的第三方套件（@gausszhou/vue3-drag-resize-rotate 跟
+// Vue 3.5 不相容）造成的崩潰，但保留下來能防住任何其他原因的渲染例外。
 const hasRenderError = ref<boolean>(false);
 onErrorCaptured((err, _instance, info) => {
   hasRenderError.value = true;
@@ -611,7 +607,7 @@ function handleContentMouseleave(stopDrag: boolean) {
   isStopDrag.value = stopDrag;
 }
 
-// VueDragResizeRotate 套件 activated 事件
+// DragResizeBox 元件 activated 事件
 function activated() {
   console.log('activated >>> ', props.id);
   emit('choice', props.id);
