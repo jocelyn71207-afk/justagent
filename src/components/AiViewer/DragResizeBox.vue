@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { applyDrag, applyResize, snapToGrid, type HandleName } from '@/utils/dragResizeMath';
 
 const HANDLES: HandleName[] = ['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'];
@@ -31,6 +31,11 @@ const CURSOR_MAP: Record<HandleName, string> = {
   tl: 'nwse-resize', tr: 'nesw-resize', br: 'nwse-resize', bl: 'nesw-resize',
   tm: 'ns-resize', bm: 'ns-resize', ml: 'ew-resize', mr: 'ew-resize',
 };
+
+const isCoarsePointer = ref(false);
+onMounted(() => {
+  isCoarsePointer.value = window.matchMedia('(pointer: coarse)').matches;
+});
 
 const props = withDefaults(defineProps<{
   x: number;
@@ -153,16 +158,18 @@ function onBodyPointerDown(event: PointerEvent) {
 }
 
 function handleStyle(handle: HandleName): Record<string, string> {
-  const half = HANDLE_SIZE / 2;
+  const size = isCoarsePointer.value ? HANDLE_SIZE * 1.6 : HANDLE_SIZE;
+  const offset = isCoarsePointer.value ? HANDLE_OFFSET * 1.6 : HANDLE_OFFSET;
+  const half = size / 2;
   const style: Record<string, string> = {
-    width: `${HANDLE_SIZE}px`,
-    height: `${HANDLE_SIZE}px`,
+    width: `${size}px`,
+    height: `${size}px`,
     cursor: CURSOR_MAP[handle],
   };
-  if (handle === 'tl' || handle === 'tm' || handle === 'tr') style.top = `${HANDLE_OFFSET}px`;
-  if (handle === 'bl' || handle === 'bm' || handle === 'br') style.bottom = `${HANDLE_OFFSET}px`;
-  if (handle === 'tl' || handle === 'ml' || handle === 'bl') style.left = `${HANDLE_OFFSET}px`;
-  if (handle === 'tr' || handle === 'mr' || handle === 'br') style.right = `${HANDLE_OFFSET}px`;
+  if (handle === 'tl' || handle === 'tm' || handle === 'tr') style.top = `${offset}px`;
+  if (handle === 'bl' || handle === 'bm' || handle === 'br') style.bottom = `${offset}px`;
+  if (handle === 'tl' || handle === 'ml' || handle === 'bl') style.left = `${offset}px`;
+  if (handle === 'tr' || handle === 'mr' || handle === 'br') style.right = `${offset}px`;
   if (handle === 'tm' || handle === 'bm') style.left = `calc(50% - ${half}px)`;
   if (handle === 'ml' || handle === 'mr') style.top = `calc(50% - ${half}px)`;
   return style;
