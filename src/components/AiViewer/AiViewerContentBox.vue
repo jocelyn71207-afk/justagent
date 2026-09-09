@@ -513,9 +513,14 @@ function handleResizeDrag(x: number, y: number, width: number, height: number): 
   boxY.value = (y !== null && y !== undefined) ? y : boxY.value
 
   // 如果為 excel 套件, 要讓套件重整
-  if (excelRef.value) {
-    // console.log('excelRef.value.getExcelObj() >>> ', excelRef.value.getExcelObj());
-    excelRef.value.getExcelObj().sheet.reload();
+  // 注意：excelRef.value 是 excelViewBox 元件實例，掛載後就一定存在；
+  // 但元件內部的 excelObj 是非同步載入 Excel 檔案（fetch + XLSX.read）完成後才會賦值，
+  // 在那之前呼叫 getExcelObj() 會拿到 null。如果使用者在 Excel 檔案還沒載入完成時
+  // 就拖曳/縮放這個區塊（例如檔案較大、網路較慢時），沒有這層檢查會直接對 null 取
+  // .sheet 而丟出例外「Cannot read properties of null (reading 'sheet')」。
+  const excelObj = excelRef.value?.getExcelObj();
+  if (excelObj?.sheet) {
+    excelObj.sheet.reload();
   }
 
   // 更新 toolbar 的寬度   TODO.. excelObj 之後要刪除
