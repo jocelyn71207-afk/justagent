@@ -139,20 +139,20 @@
     <!-- 對話訊息大區域 wrapper -->
     <div class="rbox-main-wrapper">
 
-    <!-- 對話訊息大區域 -->
-    <VirtualList class="AiAgentChatArea"
+    <!-- 對話訊息大區域
+         注意：這裡刻意不用 vue3-virtual-scroll-list（套件跟目前 Vue 版本不相容，
+         渲染函式裡對 hoisted vnode 用 ref 的寫法會導致清單永遠畫不出任何一筆訊息，
+         見 AiAgentChatArea 前身 <VirtualList> 用法的 git 歷史）。demo 對話訊息數量
+         不大，直接用 v-for 全量渲染即可，不需要真正的虛擬捲動。 -->
+    <div class="AiAgentChatArea"
       ref="AiAgentChatList"
-      :data-key="'id'"
-      :data-sources="testMsgs"
-      :data-component="AiViewerRecord"
-      :keeps="99999999"
-      :footer-class="'AiAgentChatArea-footer-box'"
-      @totop="scrollCall('DESC')"
-      @tobottom="scrollCall('ASC')"
       @click="handleChatAreaClick($event)"
     >
-      <template #footer></template>
-    </VirtualList>
+      <div class="wrap">
+        <AiViewerRecord v-for="(item, idx) in testMsgs" :key="item.id" :source="item" :index="idx" />
+      </div>
+      <div class="AiAgentChatArea-footer-box"></div>
+    </div>
 
     </div><!-- /rbox-main-wrapper -->
 
@@ -826,7 +826,6 @@ import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
 import type { ToolboxItem } from '@/types/AiViewer';
-import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
 import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
 import commentListArea from '@/components/AiViewer/commentListArea.vue';
@@ -932,7 +931,7 @@ onMounted(() => {
 // 使用者輸入參考
 const { userInputModal } = storeToRefs(aiviewerStore);
 const fireUploadRef = ref<HTMLInputElement|null>(null);
-const AiAgentChatList = ref<InstanceType<typeof VirtualList>|null>(null);
+const AiAgentChatList = ref<HTMLDivElement|null>(null);
 
 // 目前選擇的罐頭任務  TODO... 格式暫定, TODO... 是否要拔到 store 裡？
 const isShowCannedTaskListBox = ref(false);
@@ -1224,16 +1223,14 @@ function submitJourneyModify() {
   processConv1Msg('旅程過於單一');
 }
 
-// virtual-list 滾動到頂部或底部的回呼
-function scrollCall(direction: 'ASC' | 'DESC') {
-  console.log('scrollCall 觸發: ', direction);
-}
-// virtual-list 執行滾動到頂部或底部
+// 對話河道捲動到頂部或底部（AiAgentChatList 改成純 v-for 渲染後，直接操作 scrollTop 即可）
 function AiAgentChatListScrollTo(direction: 'ASC' | 'DESC') {
+  const el = AiAgentChatList.value;
+  if (!el) return;
   if (direction === 'DESC') {
-    AiAgentChatList.value?.scrollToIndex(0);
+    el.scrollTop = 0;
   } else {
-    AiAgentChatList.value?.scrollToBottom();
+    el.scrollTop = el.scrollHeight;
   }
 }
 
@@ -2133,31 +2130,39 @@ function conv2DoneComps() {
   conv2StepFpVisible.value = false;
   conv2ShowStepPill.value = false;
   c2Push({ forUser: true, msg: `確認以上 ${names.length} 個競品，請生成分析報告。` });
-  c2Push({ msg: `已確認 ${names.length} 個競品，開始生成報告⋯<div class="conv2-search-card" style="margin-top:8px">
-  <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取競品頁面資料</div>
-  <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對與評分中</div>
-  <div class="conv2-ss conv2-ss--wait">ReportGenerator 產出 HTML 報告</div>
-</div>` });
-  c2Scroll();
-  setTimeout(() => { conv2ShowReport(); c2Scroll(); }, 2200);
+  runDelegateSteps({
+    msg: `已確認 ${names.length} 個競品，開始生成報告⋯`,
+    bookend: '競品分析 Agent → DeepAgent（深度分析）',
+    labels: [
+      'ProductExtractor 爬取競品頁面資料',
+      'FeatureAnalyzer 特徵比對與評分中',
+      'ReportGenerator 產出 HTML 報告',
+    ],
+    totalMs: 2200,
+    onDone: () => { conv2ShowReport(); c2Scroll(); },
+  });
 }
 function conv2StartSearch() {
   conv2StepFpVisible.value = false;
   c2Push({ forUser: true, msg: '確認無誤，開始搜索。' });
-  c2Push({ msg: `設定已確認，DeepAgent 開始深度搜索⋯<div class="conv2-search-card" style="margin-top:8px">
-  <div class="conv2-ss conv2-ss--done">SearchStrategist 產生深度搜索任務</div>
-  <div class="conv2-ss conv2-ss--done">GoogleSearchEngine 搜索並過濾關鍵字</div>
-  <div class="conv2-ss conv2-ss--active">ImageSimilarityFilter 圖片相似度篩選中</div>
-  <div class="conv2-ss conv2-ss--wait">篩選完成，產出備選競品清單</div>
-</div>` });
-  c2Scroll();
-  setTimeout(() => {
-    c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
-    c2Scroll();
-    conv2CurStep.value = 5;
-    conv2S5SelComps.value = new Set([1, 2, 3, 4]);
-    conv2StepFpVisible.value = true;
-  }, 1800);
+  runDelegateSteps({
+    msg: '設定已確認，DeepAgent 開始深度搜索⋯',
+    bookend: 'Orchestrator → 產品助理 Subagent（競品分析 Agent）→ DeepAgent',
+    labels: [
+      'SearchStrategist 產生深度搜索任務',
+      'GoogleSearchEngine 搜索並過濾關鍵字',
+      'ImageSimilarityFilter 圖片相似度篩選中',
+      '篩選完成，產出備選競品清單',
+    ],
+    totalMs: 1800,
+    onDone: () => {
+      c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
+      c2Scroll();
+      conv2CurStep.value = 5;
+      conv2S5SelComps.value = new Set([1, 2, 3, 4]);
+      conv2StepFpVisible.value = true;
+    },
+  });
 }
 
 const CONV2_MODE_CARD_MSG = `你好！請選擇想要的分析模式：
@@ -2206,6 +2211,44 @@ function c2Push(msg: any) {
 }
 function c2Scroll() {
   nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+// Orchestrator 單層委派下，競品分析 Agent ↔ DeepAgent 的委派狀態卡片：
+// push 一則 cardType:'delegateStatus' 訊息，並逐步把每個 step 從
+// wait → active → done（取代舊版整包 setTimeout 才換一次的假動畫），
+// 總時長跟原本的等待時間一致，跑完才呼叫 onDone 接續原本的流程。
+function runDelegateSteps(opts: {
+  msg: string;
+  bookend: string;
+  labels: string[];
+  totalMs: number;
+  onDone: () => void;
+}) {
+  const delegateSteps = opts.labels.map((label, i) => ({
+    label,
+    status: (i === 0 ? 'active' : 'wait') as 'done' | 'active' | 'wait',
+  }));
+  c2Push({ msg: opts.msg, cardType: 'delegateStatus', bookend: opts.bookend, delegateSteps });
+  c2Scroll();
+
+  const idx = conv2Msgs.value.length - 1;
+  const stepMs = Math.max(1, Math.round(opts.totalMs / opts.labels.length));
+  let i = 0;
+  const timer = setInterval(() => {
+    const cur = conv2Msgs.value[idx];
+    if (!cur) { clearInterval(timer); return; }
+    const nextSteps = cur.delegateSteps.map((s: any, si: number) => {
+      if (si <= i) return { ...s, status: 'done' };
+      if (si === i + 1) return { ...s, status: 'active' };
+      return s;
+    });
+    conv2Msgs.value[idx] = { ...cur, delegateSteps: nextSteps };
+    i++;
+    if (i >= opts.labels.length) {
+      clearInterval(timer);
+      opts.onDone();
+    }
+  }, stepMs);
 }
 
 function handleChatAreaClick(e: MouseEvent) {
@@ -2541,7 +2584,7 @@ function conv2ShowReport() {
       'competitor_analysis_report.html'
     );
   } catch (e) { /* canvas may not be initialized in this context */ }
-  c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。' });
+  c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。<span class="conv2-orchestrator-chip">任務完成 · 控制權交還 Orchestrator</span>' });
   c2Push({ finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
   ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">

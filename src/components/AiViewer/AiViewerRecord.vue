@@ -88,6 +88,15 @@
           </div>
         </template>
 
+        <!-- 委派狀態卡片（Orchestrator → 產品助理 Subagent → DeepAgent） -->
+        <template v-else-if="props.source.cardType === 'delegateStatus'">
+          <div v-html="displayMsg"></div>
+          <DelegateStatusCard
+            :steps="props.source.delegateSteps ?? []"
+            :bookend="props.source.bookend"
+          />
+        </template>
+
         <!-- 處理中訊息（含 loading 動畫） -->
         <template v-else-if="props.source.isProcessing">
           <div v-html="displayMsg"></div>
@@ -137,6 +146,7 @@
 import { ref, watchEffect, inject } from 'vue'
 import { formatFileSize, fileTypeMeta } from '@/utils/file'
 import ThinkingChainCard from '@/components/AiViewer/ThinkingChainCard.vue'
+import DelegateStatusCard from '@/components/AiViewer/DelegateStatusCard.vue'
 
 interface KnowledgeSource {
   knowledgeId: string
