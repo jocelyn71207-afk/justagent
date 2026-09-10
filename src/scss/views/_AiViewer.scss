@@ -2045,6 +2045,19 @@
     &.tag-rose   { background: var(--tag-rose-bg);   color: var(--tag-rose-text);   border-color: transparent; }
   }
 
+  // 發話 agent 名稱：跟頭像同一份色票，只取文字色（不加底色），維持輕量
+  .agent-name-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+
+    &.tag-violet { color: var(--tag-violet-text); }
+    &.tag-teal   { color: var(--tag-teal-text); }
+    &.tag-amber  { color: var(--tag-amber-text); }
+    &.tag-blue   { color: var(--tag-blue-text); }
+    &.tag-rose   { color: var(--tag-rose-text); }
+  }
+
   .message-wrap {
     flex: 1;
     min-width: 0;

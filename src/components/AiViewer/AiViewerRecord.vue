@@ -12,6 +12,9 @@
     </div>
 
     <div class="message-wrap">
+      <!-- 發話 agent 名稱：跟頭像同一份 agentPersona，文字取代滑鼠移過去才看得到的 tooltip -->
+      <div class="agent-name-label" :class="agentPersona.tag" v-if="!props.source.forUser && !props.source.isThinking">{{ agentPersona.name }}</div>
+
       <!-- 思維鏈卡片：AI 訊息且有 thinkingSteps 或正在 thinking 時顯示 -->
       <ThinkingChainCard
         v-if="!props.source.forUser && (props.source.isThinking || props.source.thinkingSteps?.length)"
