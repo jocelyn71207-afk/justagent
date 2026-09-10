@@ -1422,6 +1422,66 @@ function c1PushThinkingThenReply(
   }, thinkingDelay);
 }
 
+// 「行銷報告」任務：示範一個請求依序經過 3 個專責 agent 接力完成——
+// 產品助理先取得商品系列資料，交給數據經理調閱相關銷售數據，
+// 最後由行銷經理整合成行銷活動成效報告。AI大腦→產品助理→數據經理→行銷經理→
+// AI大腦 之間的交接列由河道的 messageHandoffs 機制自動顯示，這裡只需要
+// 依序把每個 agent 的訊息帶上正確的 agent 欄位。
+function conv1MarketingReportFlow() {
+  const thinkingId = 'thinking-' + Date.now();
+  conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+
+  setTimeout(() => {
+    const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId);
+    if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+    conv1Msgs.value.push({ id: 'mr-1', agent: 'productAssistant', isProcessing: true, msg: '收到！正在查詢商品文件，彙整 Hurricane Trailsetter 系列資料⋯' });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 1200);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'mr-2',
+      agent: 'productAssistant',
+      msg: '已找到 Hurricane Trailsetter AW26 系列完整商品資料：共 <strong>4 款鞋型</strong>（Sandal 男/女、Mid 男/女），<strong>8 種配色</strong>，建議售價帶 NT$2,480–NT$3,280，核心賣點為防滑大底、快乾材質與 Gore-Tex® 防水膜。已交給數據經理調閱相關銷售數據⋯',
+    });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 2100);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({ id: 'mr-3', agent: 'dataManager', isProcessing: true, msg: '正在調閱 Hurricane Trailsetter 相關銷售數據⋯' });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 3000);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'mr-4',
+      agent: 'dataManager',
+      msg: '已調閱近 3 年銷售數據：系列 2025 年銷量達 <strong>2,310 雙</strong>，連續三年成長 20%+，其中 <strong>Sandal 女款貢獻最高</strong>（809 雙，占系列 35%），Mid 款則相對成長較緩。已交給行銷經理整合成行銷活動成效報告⋯',
+    });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 3900);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({ id: 'mr-5', agent: 'marketingManager', isProcessing: true, msg: '正在整合商品資料與銷售數據，生成行銷活動成效報告⋯' });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 4800);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'mr-6',
+      agent: 'marketingManager',
+      finishResponse: true,
+      cardType: 'translationComplete',
+      msg: '✅ 已整合商品系列資料與銷售數據，完成 Hurricane Trailsetter 行銷活動成效報告：本季 ROAS 達 4.2 倍，建議加碼 Sandal 女款的社群曝光預算，並針對 Mid 款規劃健行場景內容以拉近銷量差距。報告已加入畫布，可直接查看或下載。',
+      files: [{ name: 'hurricane_trailsetter_campaign_performance.html', type: 'HTML', size: 8996 }],
+    });
+    try { addReportBlock('/justagent/hurricane_trailsetter_campaign_performance.html', 'hurricane_trailsetter_campaign_performance.html'); } catch (e) { /* ignore */ }
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    pushConv1NextStepPrompt('行銷報告');
+  }, 6000);
+}
+
 function processConv1Msg(msg: string) {
   // 初始翻譯請求：對話尚未開始（id_3 尚未出現）
   if (!conv1Msgs.value.some((m: any) => m.cardType === 'translationConfirm')) {
@@ -1450,7 +1510,11 @@ function processConv1Msg(msg: string) {
     }, 1000)
     return
   }
-  if (msg.includes('圖表')) {
+  if (msg.includes('行銷報告') || msg.includes('行銷活動成效')) {
+    // 注意：這個判斷必須排在「圖表」之前——「行銷活動成效報告」快捷卡的 prompt
+    // 文字本身也包含「圖表」兩個字，如果順序相反會被下面的圖表分支先攔截。
+    conv1MarketingReportFlow();
+  } else if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
     conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));

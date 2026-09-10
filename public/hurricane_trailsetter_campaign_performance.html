@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hurricane Trailsetter 行銷活動成效報告</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f7;
+    --border: #e4e7ed;
+    --text: #1a1d23;
+    --text-2: #5c6370;
+    --text-3: #9ca3af;
+    --blue: #3b72f6;
+    --blue-light: rgba(59,114,246,0.08);
+    --green: #16a34a;
+    --green-light: rgba(22,163,74,0.08);
+    --orange: #ea580c;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
+  }
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    color: var(--text);
+    padding: 28px 24px 48px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+  .report-brand { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+  .report-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+  .report-meta { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .report-tag { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--green-light); color: var(--green); border: 1px solid rgba(22,163,74,.2); white-space: nowrap; align-self: flex-start; margin-top: 4px; }
+
+  .stat-row { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+  .stat-card { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-card.accent-green { border-left-color: var(--green); }
+  .stat-val { font-size: 20px; font-weight: 800; }
+  .stat-val.up { color: var(--green); }
+  .stat-lbl { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin: 24px 0 10px; }
+  .section-title:first-of-type { margin-top: 0; }
+
+  .agent-source { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+
+  .series-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .series-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .series-row:last-child { margin-bottom: 0; }
+  .series-item { flex: 1; min-width: 150px; background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
+  .series-name { font-weight: 700; font-size: 12px; }
+  .series-sub { font-size: 11px; color: var(--text-2); margin-top: 3px; }
+
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .bar-row .bar-name { width: 92px; flex-shrink: 0; color: var(--text-2); }
+  .bar-row .bar-track { flex: 1; height: 8px; border-radius: 4px; background: var(--surface2); overflow: hidden; }
+  .bar-row .bar-fill { height: 100%; border-radius: 4px; background: var(--blue); }
+  .bar-row .bar-val { width: 56px; text-align: right; font-weight: 700; flex-shrink: 0; }
+  .bar-row.is-top .bar-fill { background: var(--green); }
+  .bar-row.is-top .bar-name { color: var(--green); font-weight: 700; }
+
+  .insight-list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .insight-list li { margin-bottom: 8px; margin-left: 16px; }
+  .insight-list li:last-child { margin-bottom: 0; }
+
+  .followup-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .followup-label { width: 100%; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
+  .chip { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-2); background: var(--surface); cursor: pointer; transition: all .15s; }
+  .chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+</style>
+</head>
+<body>
+
+  <div class="report-header">
+    <div>
+      <div class="report-brand">JustAgent · 行銷活動成效分析</div>
+      <div class="report-title">Hurricane Trailsetter 行銷活動成效報告</div>
+      <div class="report-meta">資料來源：商品系列資料（產品助理）· 銷售數據（數據經理）· 台灣市場</div>
+    </div>
+    <span class="report-tag">已完成</span>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-val">2,310<span style="font-size:12px;font-weight:600;color:var(--text-3)"> 雙</span></div>
+      <div class="stat-lbl">2025 系列總銷量</div>
+    </div>
+    <div class="stat-card accent-green">
+      <div class="stat-val up">+20.3%</div>
+      <div class="stat-lbl">年成長率（連續 3 年 20%+）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="font-size:15px">Sandal 女款</div>
+      <div class="stat-lbl">TOP 貢獻鞋型（809 雙）</div>
+    </div>
+    <div class="stat-card accent-green">
+      <div class="stat-val" style="color:var(--green)">4.2x</div>
+      <div class="stat-lbl">本季行銷活動 ROAS</div>
+    </div>
+  </div>
+
+  <div class="section-title">商品系列摘要<span class="agent-source">來自產品助理</span></div>
+  <div class="series-card">
+    <div class="series-row">
+      <div class="series-item">
+        <div class="series-name">Sandal 女款 / 男款</div>
+        <div class="series-sub">休閒穿搭路線 · 快乾織帶 · 4 種配色</div>
+      </div>
+      <div class="series-item">
+        <div class="series-name">Mid 女款 / 男款</div>
+        <div class="series-sub">健行支撐路線 · Vibram® 大底 · 4 種配色</div>
+      </div>
+    </div>
+    <div class="series-row">
+      <div class="series-item">
+        <div class="series-name">共 4 款鞋型 · 8 種配色</div>
+        <div class="series-sub">建議售價帶 NT$2,480–NT$3,280</div>
+      </div>
+      <div class="series-item">
+        <div class="series-name">核心賣點</div>
+        <div class="series-sub">防滑大底、快乾材質、Gore-Tex® 防水膜</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:26px">各鞋款銷售拆分（雙）<span class="agent-source">來自數據經理</span></div>
+  <div class="bar-chart">
+    <div class="bar-row is-top"><span class="bar-name">Sandal 女款</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">809</span></div>
+    <div class="bar-row"><span class="bar-name">Sandal 男款</span><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><span class="bar-val">578</span></div>
+    <div class="bar-row"><span class="bar-name">Mid 男款</span><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="bar-val">462</span></div>
+    <div class="bar-row"><span class="bar-name">Mid 女款</span><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="bar-val">461</span></div>
+  </div>
+
+  <div class="section-title" style="margin-top:26px">行銷活動成效與建議<span class="agent-source">來自行銷經理</span></div>
+  <ul class="insight-list">
+    <li><strong>Sandal 女款是成長主力（809 雙，占系列 35%）：</strong>建議加碼社群與聯名曝光預算，延續動能。</li>
+    <li><strong>整體系列連續 3 年成長 20%+，ROAS 達 4.2x：</strong>目前的商品組合＋渠道配置已驗證有效，2026 可提高投放規模。</li>
+    <li><strong>Mid 款支撐/防水賣點尚未被市場充分認知：</strong>建議下一波活動主打健行場景內容，拉近與 Sandal 款的銷量差距。</li>
+  </ul>
+
+  <div class="followup-wrap">
+    <div class="followup-label">繼續探索</div>
+    <span class="chip" data-msg="生成 Hurricane Trailsetter AW26 行銷策略報告">📋 查看完整行銷策略</span>
+    <span class="chip" data-msg="給我 Hurricane Trailsetter 相關的銷售圖表，我要做報告使用">📊 查看銷售圖表</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.chip[data-msg]').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var msg = this.getAttribute('data-msg');
+        window.parent.postMessage({ type: 'hurricane-chip-click', msg: msg }, '*');
+      });
+    });
+  </script>
+
+</body>
+</html>
