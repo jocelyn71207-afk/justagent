@@ -149,7 +149,10 @@
       @click="handleChatAreaClick($event)"
     >
       <div class="wrap">
-        <AiViewerRecord v-for="(item, idx) in testMsgs" :key="item.id" :source="item" :index="idx" />
+        <template v-for="(item, idx) in testMsgs" :key="item.id">
+          <AgentHandoffDivider v-if="messageHandoffs[item.id]" :from="messageHandoffs[item.id].from" :to="messageHandoffs[item.id].to" />
+          <AiViewerRecord :source="item" :index="idx" />
+        </template>
       </div>
       <div class="AiAgentChatArea-footer-box"></div>
     </div>
@@ -827,6 +830,7 @@ import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEn
 import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
 import type { ToolboxItem } from '@/types/AiViewer';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
+import AgentHandoffDivider from '@/components/AiViewer/AgentHandoffDivider.vue';
 import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
 import commentListArea from '@/components/AiViewer/commentListArea.vue';
 import fileListArea from '@/components/AiViewer/fileListArea.vue';
@@ -3375,6 +3379,24 @@ const testMsgs = computed(() => {
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
+});
+
+// 工作任務交接提示：標注 testMsgs 裡「這一則跟前一則實際顯示的 AI 訊息比較，
+// agent 換人了」的訊息 id，交接列會插在這些訊息前面。
+// 使用者訊息、思考中訊息不列入比較（沒有意義的形象、也不會實際顯示頭像），
+// 對話中第一則 AI 訊息不算交接（沒有「前一個」可以比較）。
+const messageHandoffs = computed(() => {
+  const result: Record<string, { from: AgentKey; to: AgentKey }> = {};
+  let lastAgent: AgentKey | undefined;
+  for (const m of testMsgs.value) {
+    if (m.forUser || m.isThinking) continue;
+    const agent: AgentKey = m.agent ?? 'brain';
+    if (lastAgent && agent !== lastAgent) {
+      result[m.id] = { from: lastAgent, to: agent };
+    }
+    lastAgent = agent;
+  }
+  return result;
 });
 
 function resetConversation() {
