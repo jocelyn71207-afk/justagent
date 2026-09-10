@@ -833,6 +833,7 @@ import fileListArea from '@/components/AiViewer/fileListArea.vue';
 import blockListArea from '@/components/AiViewer/blockListArea.vue';
 import popDialog from '@/services/popDialog';
 import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions, fileTypeMeta } from '@/utils/file';
+import type { AgentKey } from '@/utils/agentPersona';
 
 // 對話訊息裡用純字串拼出來的 HTML 報告檔案圖示：跟共用資源庫同一套 file-icon-tile，
 // 取代舊的 fileTypeIcon/html.png（這裡是塞進 v-html 的原始字串，不是 Vue 樣板，
@@ -1364,6 +1365,7 @@ function pushConv1NextStepPrompt(doneKey: string) {
   if (remaining.length === 0) return;
   conv1Msgs.value.push({
     id: 'next-step-' + Date.now(),
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     cardType: 'nextStepPrompt',
     msg: '請問接下來還有什麼我可以為您服務的嗎？',
     nextSteps: remaining,
@@ -1379,10 +1381,12 @@ function c1PushThinkingThenReply(
   reportUrl: string,
   reportName: string,
   doneKey: string,
+  agent: AgentKey,
 ) {
   const thinkingId = 'thinking-' + Date.now();
   conv1Msgs.value.push({
     id: thinkingId,
+    agent: 'brain', // 思考中＝AI大腦正在判斷任務、還沒分派
     isThinking: true,
     thinkingSteps: MOCK_THINKING_STEPS,
     sources: MOCK_SOURCES,
@@ -1393,6 +1397,7 @@ function c1PushThinkingThenReply(
     if (idx !== -1) conv1Msgs.value.splice(idx, 1);
     conv1Msgs.value.push({
       id: 'ai-reply-' + Date.now(),
+      agent, // 分派完成，實際輸出結果由對應 agent 呈現
       finishResponse: true,
       cardType: 'translationComplete',
       msg: replyMsg,
@@ -1410,13 +1415,13 @@ function processConv1Msg(msg: string) {
   // 初始翻譯請求：對話尚未開始（id_3 尚未出現）
   if (!conv1Msgs.value.some((m: any) => m.cardType === 'translationConfirm')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Title.value = '2026商品文件翻譯'
-      conv1Msgs.value.push({ id: 'id_2', msg: '當然可以，麻煩你幫我確認 以下翻譯條件內容，確認後我會立刻開工 💪' })
+      conv1Msgs.value.push({ id: 'id_2', agent: 'brain', msg: '當然可以，麻煩你幫我確認 以下翻譯條件內容，確認後我會立刻開工 💪' })
       conv1Msgs.value.push({
         id: 'id_3',
         forUser: true,
@@ -1436,7 +1441,7 @@ function processConv1Msg(msg: string) {
   }
   if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1487,6 +1492,7 @@ function processConv1Msg(msg: string) {
 
       conv1Msgs.value.push({
         id: 'ai-charts-' + Date.now(),
+        agent: 'dataManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '📊 已幫你產出 <strong>3 張銷售分析圖表</strong>，已加到右側畫布：<br>・年度銷售量（長條圖）<br>・年成長率趨勢（折線圖）<br>・各鞋款銷售拆分（堆疊長條圖）<br><br>可直接在畫布上調整大小、截圖使用。',
@@ -1509,6 +1515,7 @@ function processConv1Msg(msg: string) {
       '/justagent/hurricane_trailsetter_marketing_strategy.html',
       'hurricane_trailsetter_marketing_strategy.html',
       '行銷策略',
+      'marketingManager',
     );
   } else if (msg.includes('用戶畫像')) {
     c1PushThinkingThenReply(
@@ -1518,16 +1525,18 @@ function processConv1Msg(msg: string) {
       '/justagent/hurricane_trailsetter_user_persona.html',
       'hurricane_trailsetter_user_persona.html',
       '用戶畫像',
+      'marketingManager',
     );
   } else if (msg.includes('行銷自動化旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
@@ -1544,13 +1553,14 @@ function processConv1Msg(msg: string) {
     }, 5000)
   } else if (msg.includes('旅程過於單一') || msg.includes('更豐富的旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
@@ -1563,13 +1573,14 @@ function processConv1Msg(msg: string) {
     }, 5000)
   } else if (msg.includes('壽星') || msg.includes('生日旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已從 CDP 篩選出台北地區 <strong>1,284 位 5 月壽星</strong>，完成專屬行銷自動化旅程設計。旅程從生日前 7 天預熱啟動，整合 Email、LINE、SMS 三大渠道，並在 D+1 依兌換行為進行分流，預估轉換提升 38%，請在畫布中查閱。',
@@ -1582,13 +1593,14 @@ function processConv1Msg(msg: string) {
     }, 5000)
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '以下是 3 條 Hurricane Trailsetter AW26 品牌曝光廣告文案：<br><br>① <strong>「山路之王，秋冬出擊」</strong><br>Hurricane Trailsetter — 專為台灣山林設計，防滑耐磨，陪你征服每一條步道。<br><br>② <strong>「戶外不將就，腳感決定一切」</strong><br>全新 AW26 系列登場，Vibram 大底 × 防水鞋面，由內而外的戶外自信。<br><br>③ <strong>「你的下一段旅程，從這裡開始」</strong><br>Hurricane Trailsetter AW26，限時優惠倒數中。',
       });
@@ -1596,13 +1608,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('歡迎 Email 模板')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '📧 <strong>歡迎 Email 模板</strong><br><br><strong>主旨：</strong>歡迎加入 Hurricane Trailsetter 探險家族 🏔️<br><br><strong>內文：</strong><br>Hi [姓名]，<br><br>感謝你關注 Hurricane Trailsetter！我們為 AW26 秋冬系列注入了全新工藝——<br>・Vibram® 大底，抓地力提升 30%<br>・Gore-Tex® 防水膜，惡劣天氣也不妥協<br>・符合台灣山林地形設計的鞋楦<br><br>身為我們的新朋友，這裡有一份 <strong>專屬 9 折優惠碼：WELCOME26</strong>，有效期 7 天。<br><br>[立即選購] 按鈕<br><br>期待在每條步道上看見你的足跡。<br>Hurricane Trailsetter 團隊',
       });
@@ -1610,13 +1623,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('LINE 腳本')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '💬 <strong>LINE 歡迎訊息腳本</strong><br><br><strong>主訊息：</strong><br>嗨！感謝加入 Hurricane Trailsetter 官方帳號 🏔️<br>AW26 秋冬新品現正上市，加好友限定 85 折！<br><br><strong>快速回覆按鈕（建議設定 3 個）：</strong><br>・🛒 立即選購<br>・📦 查看新品<br>・🎁 領取優惠碼<br><br><strong>備注：</strong>按鈕點擊後導向官網商品頁，搭配 UTM 參數追蹤轉換。',
       });
@@ -1624,13 +1638,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('再行銷受眾')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '🎯 <strong>再行銷受眾設定建議</strong><br><br><strong>受眾條件（Meta Ads Manager）：</strong><br>・行為事件：<code>ViewContent</code>（商品頁停留 &gt; 15 秒）<br>・時間窗口：過去 <strong>7 天</strong>內瀏覽但未購買<br>・排除條件：過去 30 天內已購買者<br><br><strong>廣告素材建議：</strong><br>・動態商品廣告（DPA）自動帶入瀏覽商品<br>・文案：「還在考慮嗎？限時優惠只剩 2 天 ⏳」<br>・預算：日預算 NT$500，CPM 目標 ≤ NT$180',
       });
@@ -1638,13 +1653,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('穿搭指南')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '📝 <strong>戶外穿搭指南 Email 內容草稿</strong><br><br><strong>主旨：</strong>這個秋冬，跟著 Hurricane 這樣穿出門 🍂<br><br><strong>Section 1 — 日系機能風</strong><br>Hurricane Trailsetter Mid + 寬版工作褲 + 薄羽絨背心，輕量機能感十足。<br><br><strong>Section 2 — 城市健走風</strong><br>Hurricane Trailsetter Sandal + 修身長褲 + 連帽外套，從捷運到步道無縫接軌。<br><br><strong>Section 3 — 週末山林風</strong><br>Hurricane Trailsetter Mid + 快乾長褲 + 防風外層，應對台灣 2000m 以下山徑全制霸。<br><br>每段附產品連結與 UTM 追蹤參數。',
       });
@@ -1652,13 +1668,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('棄單 SMS')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '📱 <strong>棄單 SMS 提醒文案（2 條）</strong><br><br><strong>版本 A（優惠導向，70 字以內）：</strong><br>「Hurricane Trailsetter 購物車提醒：你的 AW26 鞋款還在等你！現在結帳享 85 折，限今日。點此完成購買：[短網址]」<br><br><strong>版本 B（稀缺感導向，70 字以內）：</strong><br>「你選的 Hurricane Trailsetter 剩最後幾雙，明天可能就沒了！點此立即結帳：[短網址]  回覆 TD 退訂」<br><br><strong>建議發送時間：</strong>棄單後 1 小時，若未購買再於 24 小時後發版本 B。',
       });
@@ -1666,13 +1683,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('忠誠計畫')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '⭐ <strong>購後忠誠計畫建議</strong><br><br><strong>積分規則：</strong><br>・每消費 NT$1 = 1 點<br>・開箱影片投稿 = 500 點<br>・成功推薦好友 = 300 點（雙方各得）<br><br><strong>會員等級（3 級）：</strong><br>・🥾 <strong>Trail Starter</strong>（0–2,999 點）：生日禮 + 新品早鳥 5% off<br>・🏔️ <strong>Trail Explorer</strong>（3,000–9,999 點）：免運 + 季末特賣 10% off<br>・🦅 <strong>Trail Master</strong>（10,000 點以上）：專屬客服 + 限定商品優先購 + 15% off<br><br><strong>升級通知：</strong>LINE 推播 + Email 雙管道，搭配升級限定優惠碼刺激下一單。',
       });
@@ -1680,17 +1698,18 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('日文')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
-      conv1Msgs.value.push({ id: 'id_4b', isProcessing: true, msg: '收到！正在啟動日文翻譯引擎，針對品牌術語與敬語表達進行優化處理，請稍候⋯' })
+      conv1Msgs.value.push({ id: 'id_4b', agent: 'productAssistant', isProcessing: true, msg: '收到！正在啟動日文翻譯引擎，針對品牌術語與敬語表達進行優化處理，請稍候⋯' })
       nextTick(() => AiAgentChatListScrollTo('ASC'))
     }, 900)
     setTimeout(() => {
       conv1Msgs.value.push({
         id: 'id_7',
+        agent: 'productAssistant',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '🇯🇵 日文版翻譯完成！同樣處理了 <strong>143 個欄位</strong>，針對日本市場慣用的敬語表達進行了調整與優化，建議確認品牌術語的語氣風格是否符合需求後即可使用。📋 <strong>AW26 Product Descriptions_日本語.xlsx</strong> 已加入左側畫布，請點開查閱。',
@@ -1718,17 +1737,18 @@ function processConv1Msg(msg: string) {
     }, 3200)
   } else if (msg.includes('Hurricane') || msg.includes('鞋款') || msg.includes('銷售數據')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
-      conv1Msgs.value.push({ id: 'id_8b', msg: '正在從商品文件中提取 Hurricane Trailsetter 系列資料，並比對歷年銷售數據⋯' })
+      conv1Msgs.value.push({ id: 'id_8b', agent: 'dataManager', msg: '正在從商品文件中提取 Hurricane Trailsetter 系列資料，並比對歷年銷售數據⋯' })
       nextTick(() => AiAgentChatListScrollTo('ASC'))
     }, 900)
     setTimeout(() => {
       conv1Msgs.value.push({
         id: 'id_9',
+        agent: 'dataManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>（Sandal 男女 + Mid 男女），2022 年起連續三年成長 20%+。<br>完整數據與 2026 預測報告已加到右側畫布，點一下就能展開看。',
@@ -1972,19 +1992,20 @@ function conv1StartTranslation() {
   const lang = record.lang || conv1TranslLang.value
 
   const thinkingId = 'thinking-' + Date.now()
-  conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+  conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true })
   nextTick(() => AiAgentChatListScrollTo('ASC'))
 
   setTimeout(() => {
     const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
     if (idx !== -1) conv1Msgs.value.splice(idx, 1)
-    conv1Msgs.value.push({ id: 'id_4', isProcessing: true, msg: '收到！✅ 檔案讀取成功，正在開始處理。<br><br>將依照以下順序進行：<br>① 載入產品文件翻譯的專業規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式並輸出對齊版本<br><br>請稍候，即將為您完成 ⚡' })
+    conv1Msgs.value.push({ id: 'id_4', agent: 'productAssistant', isProcessing: true, msg: '收到！✅ 檔案讀取成功，正在開始處理。<br><br>將依照以下順序進行：<br>① 載入產品文件翻譯的專業規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式並輸出對齊版本<br><br>請稍候，即將為您完成 ⚡' })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
   }, 900)
 
   setTimeout(() => {
     conv1Msgs.value.push({
       id: 'id_5',
+      agent: 'productAssistant',
       finishResponse: true,
       cardType: 'translationComplete',
       msg: `✅ 翻譯完成！此次共處理 <strong>143 個產品欄位</strong>，品牌術語已保留原文並附上對照表，另外也為您標出了 <strong>12 個商標詞</strong>，整理在 .txt 檔中方便核對。<br><br>📋 <strong>AW26 Product Descriptions_${lang}.xlsx</strong> 已加入左側畫布，隨時可點開查閱。`,
@@ -2019,6 +2040,7 @@ function conv1StartTranslation() {
   setTimeout(() => {
     conv1Msgs.value.push({
       id: 'id_5b',
+      agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
       finishResponse: true,
       msg: '請問接下來還有什麼可以為您服務的嗎？',
     })

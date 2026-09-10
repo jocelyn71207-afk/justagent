@@ -4,8 +4,12 @@
     isThinking: props.source.isThinking,
     feedback: props.source.finishResponse
   }]">
-    <!-- AI 頭像 (非使用者、非 thinking 狀態) -->
-    <div class="ai-avatar" v-if="!props.source.forUser && !props.source.isThinking">AI</div>
+    <!-- AI 頭像 (非使用者、非 thinking 狀態)：依訊息的 agent 欄位顯示對應形象，
+         沒有帶欄位時 fallback 成 AI大腦（見 agentPersonaMeta） -->
+    <div class="ai-avatar" :class="agentPersona.tag" v-if="!props.source.forUser && !props.source.isThinking"
+      v-tooltip="agentPersona.name">
+      <i class="material-symbols-outlined">{{ agentPersona.icon }}</i>
+    </div>
 
     <div class="message-wrap">
       <!-- 思維鏈卡片：AI 訊息且有 thinkingSteps 或正在 thinking 時顯示 -->
@@ -143,8 +147,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watchEffect, inject } from 'vue'
+import { ref, computed, watchEffect, inject } from 'vue'
 import { formatFileSize, fileTypeMeta } from '@/utils/file'
+import { agentPersonaMeta } from '@/utils/agentPersona'
 import ThinkingChainCard from '@/components/AiViewer/ThinkingChainCard.vue'
 import DelegateStatusCard from '@/components/AiViewer/DelegateStatusCard.vue'
 
@@ -160,6 +165,9 @@ const props = defineProps<{
 }>()
 
 const openDrawer = inject<(sources: KnowledgeSource[]) => void>('openDrawer')!
+
+// 訊息的發話 agent 形象（沒有 agent 欄位時 fallback 成 AI大腦）
+const agentPersona = computed(() => agentPersonaMeta(props.source.agent))
 
 const displayMsg = ref('')
 
