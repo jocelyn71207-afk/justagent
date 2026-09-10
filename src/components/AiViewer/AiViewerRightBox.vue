@@ -1144,33 +1144,40 @@ function handleAccessoryFileSelect(event: Event) {
 // 調整 textarea 高度
 const userInputRef = ref<HTMLTextAreaElement|null>(null);
 async function adjustTextareaHeight() {
-  if (!userInputRef.value) {
-    userInputRef.value!.style.height = 'auto';
+  // 元素目前不存在（尚未掛載，或被 v-if="!inputAreaHidden" 暫時移除）時沒有東西可以調整，
+  // 直接返回即可。
+  // 注意：下面先把元素存到區域變數 el，而不是每次都重新讀 userInputRef.value——
+  // 這個函式中間有 await（60ms），在等待期間輸入框有可能因為畫面切換（例如切換對話、
+  // 快速任務面板開啟）被 v-if 移除、userInputRef.value 變成 null；如果 await 之後
+  // 繼續用 userInputRef.value! 存取 .style，就會對 null 取值而丟出例外。el 是一般的
+  // DOM 節點參照，就算後來從畫面上被移除也不會變成 null，可以安全繼續操作。
+  const el = userInputRef.value;
+  if (!el) {
     return;
   }
 
   // 取得舊高度
-  const oldHeight = userInputRef.value!.style.height;
+  const oldHeight = el.style.height;
 
   // 先重置高度，以便正確計算 scrollHeight
-  userInputRef.value!.style.height = 'auto';
+  el.style.height = 'auto';
 
   // 取得新高度
-  const newHeight = userInputRef.value!.scrollHeight + 2; // 加一些額外空間
+  const newHeight = el.scrollHeight + 2; // 加一些額外空間
 
   // 回復舊高度以觸發動畫效果
-  userInputRef.value!.style.height = oldHeight;
+  el.style.height = oldHeight;
   await new Promise(resolve => setTimeout(resolve, 60));
 
   // 設定新高度
-  userInputRef.value!.style.height = `${newHeight}px`;
+  el.style.height = `${newHeight}px`;
 
   // 如果高度超過最大高度，則添加滾動條
   const maxHeight = 110; // 最大高度
   if (newHeight > maxHeight) {
-    userInputRef.value!.classList.add('useScrollBar');
+    el.classList.add('useScrollBar');
   } else {
-    userInputRef.value!.classList.remove('useScrollBar');
+    el.classList.remove('useScrollBar');
   }
 }
 watch(() => userInputModal.value.msg, () => {
