@@ -2178,7 +2178,7 @@ function conv2StartSearch() {
     ],
     totalMs: 1800,
     onDone: () => {
-      c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
+      c2Push({ agent: 'productAssistant', msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
       c2Scroll();
       conv2CurStep.value = 5;
       conv2S5SelComps.value = new Set([1, 2, 3, 4]);
@@ -2223,7 +2223,7 @@ function conv2InitFlow() {
   conv2Title.value = '商品競品分析';
   c2Push({ forUser: true, msg: '商品競品分析' });
   setTimeout(() => {
-    c2Push({ msg: CONV2_MODE_CARD_MSG });
+    c2Push({ agent: 'brain', msg: CONV2_MODE_CARD_MSG });
     c2Scroll();
   }, 300);
 }
@@ -2245,12 +2245,13 @@ function runDelegateSteps(opts: {
   labels: string[];
   totalMs: number;
   onDone: () => void;
+  agent?: AgentKey;
 }) {
   const delegateSteps = opts.labels.map((label, i) => ({
     label,
     status: (i === 0 ? 'active' : 'wait') as 'done' | 'active' | 'wait',
   }));
-  c2Push({ msg: opts.msg, cardType: 'delegateStatus', bookend: opts.bookend, delegateSteps });
+  c2Push({ msg: opts.msg, agent: opts.agent ?? 'productAssistant', cardType: 'delegateStatus', bookend: opts.bookend, delegateSteps });
   c2Scroll();
 
   const idx = conv2Msgs.value.length - 1;
@@ -2397,7 +2398,7 @@ function conv2SelectMode(mode: string) {
 
   if (mode === 'direct') {
     setTimeout(() => {
-      c2Push({ msg: '好的！請在下方面板填寫商品與競品資訊。' });
+      c2Push({ agent: 'productAssistant', msg: '好的！請在下方面板填寫商品與競品資訊。' });
       c2Scroll();
       conv2DirectFpStep.value = 1;
       conv2DirectFpVisible.value = true;
@@ -2408,7 +2409,7 @@ function conv2SelectMode(mode: string) {
 
   if (mode === 'deep') {
     setTimeout(() => {
-      c2Push({ msg: '好的！請在下方面板完成深度分析設定。' });
+      c2Push({ agent: 'productAssistant', msg: '好的！請在下方面板完成深度分析設定。' });
       c2Scroll();
       conv2CurStep.value = 1;
       conv2S1ShowSkuInput.value = false;
@@ -2421,7 +2422,7 @@ function conv2SelectMode(mode: string) {
 
   // init: 開啟上傳懸浮面板
   setTimeout(() => {
-    c2Push({ msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請在下方面板上傳商品資訊。` });
+    c2Push({ agent: 'productAssistant', msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請在下方面板上傳商品資訊。` });
     c2Scroll();
     conv2UploadFpVisible.value = true;
     conv2ShowUploadPill.value = true;
@@ -2433,14 +2434,14 @@ function conv2StartAnalysis() {
   conv2ShowUploadPill.value = false;
   conv2Title.value = "競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋";
   c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--color-border)" src="${DEMO_IMG}"/><span>${conv2UploadDesc.value}</span></div>` });
-  c2Push({ isThinking: true, msg: 'AI 正在思考中...' });
+  c2Push({ agent: 'brain', isThinking: true, msg: 'AI 正在思考中...' });
   c2Scroll();
   setTimeout(() => {
     const idx = conv2Msgs.value.findIndex((m) => m.isThinking);
     if (idx !== -1) conv2Msgs.value.splice(idx, 1);
-    c2Push({ msg: `已識別為<strong>毛絨動物臉室內拖鞋</strong>，捕捉到以下特徵：` });
+    c2Push({ agent: 'productAssistant', msg: `已識別為<strong>毛絨動物臉室內拖鞋</strong>，捕捉到以下特徵：` });
     const btnLabel = conv2Mode.value === 'deep' ? '確認並開始深度分析 →' : '確認並產出初步分析報告 →';
-    c2Push({ msg: `<div class="conv2-product-card">
+    c2Push({ agent: 'productAssistant', msg: `<div class="conv2-product-card">
   <div class="conv2-pc-head">
     <img class="conv2-pc-thumb" src="${DEMO_IMG}"/>
     <div>
@@ -2460,11 +2461,11 @@ function conv2StartAnalysis() {
 
 function conv2ConfirmProduct() {
   if (conv2Mode.value === 'init') {
-    c2Push({ msg: '正在產出初步分析報告⋯' });
+    c2Push({ agent: 'productAssistant', msg: '正在產出初步分析報告⋯' });
     c2Scroll();
     setTimeout(() => {
       const extIco = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V7M8 1h3m0 0v3m0-3L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      c2Push({ msg: `初步分析完成，共找到 <strong>5 個直接競品</strong>、<strong>1 個功能競品</strong>：<div class="conv2-init-list">
+      c2Push({ agent: 'productAssistant', msg: `初步分析完成，共找到 <strong>5 個直接競品</strong>、<strong>1 個功能競品</strong>：<div class="conv2-init-list">
   <div class="conv2-comp-item conv2-comp-item--rank">
     <span class="conv2-comp-rank">1</span>
     <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">ZARA</div><div class="conv2-comp-title">CAPYFUN 室內拖鞋 - 粉色</div><div class="conv2-comp-feat">毛絨材質・動物臉設計・室內防滑底・NT$890</div></div>
@@ -2510,7 +2511,7 @@ function conv2ConfirmProduct() {
 function conv2InitToDeep() {
   conv2Mode.value = 'deep';
   c2Push({ forUser: true, msg: '深度分析' });
-  c2Push({ msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
+  c2Push({ agent: 'productAssistant', msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
   c2Scroll();
   conv2CurStep.value = 1;
   conv2S1ShowSkuInput.value = false;
@@ -2522,7 +2523,7 @@ function conv2InitToDeep() {
 function conv2InitToDirect() {
   conv2Mode.value = 'direct';
   c2Push({ forUser: true, msg: '直接生成報告' });
-  c2Push({ msg: '好的，商品資訊已取得，請在下方面板提供競品網址。' });
+  c2Push({ agent: 'productAssistant', msg: '好的，商品資訊已取得，請在下方面板提供競品網址。' });
   c2Scroll();
   conv2DirectFpStep.value = 3;
   conv2DirectFpVisible.value = true;
@@ -2547,7 +2548,7 @@ function conv2DirectSelectMethod(method: string) {
 function conv2DirectSubmitSku() {
   conv2DirectFpStep.value = 3;
   c2Push({ forUser: true, msg: `UG1166915BLK @2025產品總表-Q3` });
-  c2Push({ msg: `收到！正在讀取知識庫並查詢商品資料⋯<div class="conv2-search-card" style="margin-top:8px">
+  c2Push({ agent: 'productAssistant', msg: `收到！正在讀取知識庫並查詢商品資料⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">KnowledgeReader 讀取知識庫：2025產品總表-Q3</div>
   <div class="conv2-ss conv2-ss--active">ProductLookup 查詢貨號：UG1166915BLK</div>
   <div class="conv2-ss conv2-ss--wait">識別商品資訊完成</div>
@@ -2565,7 +2566,7 @@ function conv2DirectSubmitSku() {
           .replace('conv2-ss--wait', 'conv2-ss--done'),
       };
     }
-    c2Push({ msg: `✅ 已從知識庫找到商品資料：<strong>UGG Women's Elea Pooch Slip-on</strong>（UG1166915BLK）` });
+    c2Push({ agent: 'productAssistant', msg: `✅ 已從知識庫找到商品資料：<strong>UGG Women's Elea Pooch Slip-on</strong>（UG1166915BLK）` });
     c2Scroll();
   }, 1800);
 }
@@ -2578,7 +2579,7 @@ function conv2DirectSubmitUrls() {
     try { return `${i + 1}. ${new URL(u).hostname}`; } catch { return `${i + 1}. ${u}`; }
   }).join('<br>');
   c2Push({ forUser: true, msg: `提供 ${urls.length} 個競品網址：<br>${urlListHtml}` });
-  c2Push({ msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
+  c2Push({ agent: 'productAssistant', msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取商品資料中</div>
   <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對分析中</div>
   <div class="conv2-ss conv2-ss--wait">ReportGenerator 生成競品報告</div>
@@ -2589,7 +2590,7 @@ function conv2DirectSubmitUrls() {
 
 function conv2SubmitUrls() {
   c2Push({ forUser: true, msg: '提供 3 個競品網址：<br>1. shopee.tw — 日光手感-小狗立體保暖毛絨拖鞋<br>2. paidal.com.tw — 野生喵喵怪毛絨室內拖鞋<br>3. zara.com/tw — CAPYFUN 室內拖鞋' });
-  c2Push({ msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
+  c2Push({ agent: 'productAssistant', msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取商品資料中</div>
   <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對分析中</div>
   <div class="conv2-ss conv2-ss--wait">ReportGenerator 生成競品報告</div>
@@ -2606,8 +2607,8 @@ function conv2ShowReport() {
       'competitor_analysis_report.html'
     );
   } catch (e) { /* canvas may not be initialized in this context */ }
-  c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。<span class="conv2-orchestrator-chip">任務完成 · 控制權交還 Orchestrator</span>' });
-  c2Push({ finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
+  c2Push({ agent: 'brain', msg: '✅ 報告已生成完畢，可下載 HTML 檔案。<span class="conv2-orchestrator-chip">任務完成 · 控制權交還 Orchestrator</span>' });
+  c2Push({ agent: 'brain', finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
   ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">competitor_analysis_report.html</div>
@@ -2681,7 +2682,7 @@ function conv3InitFlow() {
   conv3Title.value = 'TEVA新品特徵貼標';
   c3Push({ forUser: true, msg: '請整理這批 TEVA 新品原廠文件，依顏色、款式、材質、尺碼、風格完成特徵貼標' });
   setTimeout(() => {
-    c3Push({ msg: '收到，請先在下方面板附加要整理的原廠文件。' });
+    c3Push({ agent: 'brain', msg: '收到，請先在下方面板附加要整理的原廠文件。' });
     c3Scroll();
     conv3UploadFpVisible.value = true;
     conv3ShowUploadPill.value = true;
@@ -2734,7 +2735,7 @@ function conv4InitFlow() {
   conv4Title.value = '產品銷售報告整理';
   c4Push({ forUser: true, msg: '請幫我整理上個月的產品銷售報告，相關資料請幫我查詢 @2026Q1產品銷售，輸出格式請參考 @三諾產品部輸出報告規範' });
   setTimeout(() => {
-    c4Push({ msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card" style="margin-top:8px">
+    c4Push({ agent: 'dataManager', msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SalesDataQuery 查詢 2026Q1 產品銷售數據</div>
   <div class="conv2-ss conv2-ss--wait">ReportFormatter 套用三諾產品部輸出報告規範</div>
 </div>` });
@@ -2745,6 +2746,7 @@ function conv4InitFlow() {
         addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '2026年6月產品銷售報告.html');
       } catch { /* 畫布可能尚未初始化 */ }
       c4Push({
+        agent: 'dataManager',
         finishResponse: true,
         msg: `✅ 已完成上個月（6月）產品銷售報告，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2785,14 +2787,14 @@ function conv3ConfirmUpload() {
   conv3ShowUploadPill.value = false;
   const fileListHtml = conv3UploadedFiles.value.map((f, i) => `${i + 1}. ${f.name}`).join('<br>');
   c3Push({ forUser: true, msg: `已附加 ${conv3UploadedFiles.value.length} 份文件：<br>${fileListHtml}` });
-  c3Push({ msg: `收到，這批原廠文件看起來版本蠻雜亂的，我先掃描並整併這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
+  c3Push({ agent: 'productManager', msg: `收到，這批原廠文件看起來版本蠻雜亂的，我先掃描並整併這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">DocumentParser 解析原廠型錄與規格表</div>
   <div class="conv2-ss conv2-ss--wait">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
 </div>` });
   c3Scroll();
   setTimeout(() => {
     conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
-    c3Push({ msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
+    c3Push({ agent: 'productManager', msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
     c3Scroll();
     conv3DimFpVisible.value = true;
     conv3ShowDimPill.value = true;
@@ -2812,7 +2814,7 @@ function conv3ConfirmDims() {
   conv3ShowDimPill.value = false;
   const dimNames = conv3Dims.value.filter(d => d.sel).map(d => d.title).join('、');
   c3Push({ forUser: true, msg: `確認以 ${dimNames} 進行貼標，開始執行。` });
-  c3Push({ msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
+  c3Push({ agent: 'productManager', msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">DocumentParser 解析原廠型錄與規格表</div>
   <div class="conv2-ss conv2-ss--done">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
   <div class="conv2-ss conv2-ss--active">FeatureTagger 依 ${dimNames} 進行特徵貼標中</div>
@@ -2828,8 +2830,9 @@ function conv3ShowResult(dimNames: string) {
   try {
     addReportBlock('/justagent/teva_feature_tagging_report.html', 'TEVA_特徵貼標報告.html');
   } catch (e) { /* 畫布可能尚未初始化 */ }
-  c3Push({ msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
+  c3Push({ agent: 'productManager', msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
   c3Push({
+    agent: 'productManager',
     finishResponse: true,
     msg: `<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2869,7 +2872,7 @@ function submitConv3TaggingConcern() {
 
 function conv3ReviseTagging() {
   setTimeout(() => {
-    c3Push({ msg: `您說得對，我重新比對一次原廠規格表⋯<div class="conv2-search-card" style="margin-top:8px">
+    c3Push({ agent: 'productManager', msg: `您說得對，我重新比對一次原廠規格表⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">QualityReview 重新交叉比對命名與規格一致性</div>
 </div>` });
     c3Scroll();
@@ -2880,6 +2883,7 @@ function conv3ReviseTagging() {
         addReportBlock('/justagent/teva_feature_tagging_report-1.html', 'TEVA_特徵貼標報告（修正版）.html');
       } catch { /* 畫布可能尚未初始化 */ }
       c3Push({
+        agent: 'productManager',
         finishResponse: true,
         msg: `已修正：TEV-AW26-011（Original Universal Premier）因命名與 TEV-AW26-002（Original Universal）相近，先前合併時誤套用了 002 的材質規格，已重新比對原廠規格表更正為頭層牛皮材質，材質維度分佈也同步由 10 種組合修正為 11 種組合。修正版報告已加入畫布。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2897,6 +2901,7 @@ function conv3ReviseTagging() {
 
 function conv3AskBuildKnowledgeBase() {
   c3Push({
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     msg: `這批商品已完成特徵貼標，要不要把整理好的商品資料建成知識庫，方便之後快速查詢與再利用？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv3-build-kb">是，建立知識庫</span>
@@ -2913,6 +2918,7 @@ function conv3BuildKnowledgeBase() {
   c3Scroll();
   setTimeout(() => {
     c3Push({
+      agent: 'brain',
       finishResponse: true,
       msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
   <span style="font-size:20px;line-height:1">📚</span>
@@ -2932,7 +2938,7 @@ function conv3SkipKnowledgeBase() {
   c3Push({ forUser: true, msg: '不用了' });
   c3Scroll();
   setTimeout(() => {
-    c3Push({ msg: '好的，這批貼標結果已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c3Push({ agent: 'brain', msg: '好的，這批貼標結果已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
     c3Scroll();
   }, 500);
 }
@@ -2940,6 +2946,7 @@ function conv3SkipKnowledgeBase() {
 
 function conv4AskBuildSkill() {
   c4Push({
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存起來，之後產品部同仁都能快速套用？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv4-build-skill">是，幫我建立 Skill</span>
@@ -2956,6 +2963,7 @@ function conv4BuildSkill() {
   c4Scroll();
   setTimeout(() => {
     c4Push({
+      agent: 'brain',
       msg: `好的，我先整理這個流程的設定，請確認以下內容是否正確：
 <div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
   <span style="font-size:20px;line-height:1">🧩</span>
@@ -2980,6 +2988,7 @@ function conv4ConfirmSaveSkill() {
   c4Scroll();
   setTimeout(() => {
     c4Push({
+      agent: 'brain',
       finishResponse: true,
       msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到<span data-action="goto-skill-management" style="color:var(--primary);text-decoration:underline;cursor:pointer;font-weight:600">Skill 管理</span>頁面查看或調整這個 Skill 的細節設定。`,
     });
@@ -2993,7 +3002,7 @@ function conv4SkipSkill() {
   c4Push({ forUser: true, msg: '不用了' });
   c4Scroll();
   setTimeout(() => {
-    c4Push({ msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c4Push({ agent: 'brain', msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
     c4Scroll();
   }, 500);
 }
@@ -3038,7 +3047,7 @@ function conv5InitFlow() {
   c5Push({ forUser: true, msg: '換季檔期快到了，幫我提供一份 Teva 的促銷方案，記得先看一下目前庫存，也了解一下現在社群、時尚雜誌跟趨勢報告在流行什麼，最後整理成行銷策略和風險評估。' });
 
   setTimeout(() => {
-    c5Push({ msg: `收到，我先查詢目前的商品庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+    c5Push({ agent: 'marketingManager', msg: `收到，我先查詢目前的商品庫存⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">InventoryQuery 查詢 Teva 商品線即時庫存</div>
 </div>` });
     c5Scroll();
@@ -3049,6 +3058,7 @@ function conv5InitFlow() {
         addReportBlock('/justagent/teva_inventory_snapshot.html', 'Teva 商品庫存即時資料.html');
       } catch { /* 畫布可能尚未初始化 */ }
       c5Push({
+        agent: 'marketingManager',
         finishResponse: true,
         msg: `📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。庫存資料已加入畫布，可直接查看。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3062,7 +3072,7 @@ function conv5InitFlow() {
       c5Scroll();
 
       setTimeout(() => {
-        c5Push({ msg: `<div class="conv2-search-card" style="margin-top:8px">
+        c5Push({ agent: 'marketingManager', msg: `<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
   <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
   <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
@@ -3078,6 +3088,7 @@ function conv5InitFlow() {
             addReportBlock('/justagent/teva_seasonal_promotion_strategy.html', 'Teva 2026 換季促銷方案.html', false);
           } catch { /* 畫布可能尚未初始化 */ }
           c5Push({
+            agent: 'marketingManager',
             finishResponse: true,
             msg: `✅ 已完成 Teva 換季促銷方案，主打商品鎖定 6 月銷售亮眼的 Original Universal，並依 Gorpcore／機能穿搭趨勢規劃社群與雜誌曝光。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3118,7 +3129,7 @@ function conv5Approve() {
   c5Push({ forUser: true, msg: '沒問題，可以啟動' });
   c5Scroll();
   setTimeout(() => {
-    c5Push({ msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
+    c5Push({ agent: 'marketingManager', msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
     c5Scroll();
   }, 500);
 }
@@ -3137,7 +3148,7 @@ function submitConv5Concern() {
 
 function conv5ReviseStrategy() {
   setTimeout(() => {
-    c5Push({ msg: `您說得對，我重新核對一次庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+    c5Push({ agent: 'marketingManager', msg: `您說得對，我重新核對一次庫存⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">InventoryQuery 重新核對 Teva 商品線即時庫存</div>
 </div>` });
     c5Scroll();
@@ -3148,6 +3159,7 @@ function conv5ReviseStrategy() {
         addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html', false);
       } catch { /* 畫布可能尚未初始化 */ }
       c5Push({
+        agent: 'marketingManager',
         finishResponse: true,
         msg: `已修正：Original Universal 現貨僅剩 18 件，不適合作為大量曝光的主打商品，已改由庫存充足（320 件）、同樣熱銷的 Hurricane XLT2 接手主打，60% 廣告預算同步轉移；Original Universal 改包裝為「限量珍藏款」，用低庫存做稀缺感話題操作，風險評估表也已同步更新。修正版報告已加入畫布。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3186,7 +3198,7 @@ const CONV6_STRATEGY_SOURCES: KnowledgeSource[] = [...CONV6_SOURCES, ...CONV6_TR
 
 function processConv6Msg(msg: string) {
   if (conv6FlowStarted.value) {
-    setTimeout(() => { c6Push({ msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
+    setTimeout(() => { c6Push({ agent: 'brain', msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
     return;
   }
   const hasTeva = msg.includes('TEVA');
@@ -3197,12 +3209,12 @@ function processConv6Msg(msg: string) {
     conv6RunAnalysis();
     return;
   }
-  setTimeout(() => { c6Push({ msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
+  setTimeout(() => { c6Push({ agent: 'brain', msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
 }
 
 function conv6RunAnalysis() {
   setTimeout(() => {
-    c6Push({ msg: `收到，我先透過 MCP 串接 Adobe Commerce 查詢並比對會員資料⋯<div class="conv2-search-card" style="margin-top:8px">
+    c6Push({ agent: 'dataManager', msg: `收到，我先透過 MCP 串接 Adobe Commerce 查詢並比對會員資料⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">AdobeCommerceConnector（MCP）建立連線</div>
   <div class="conv2-ss conv2-ss--wait">MagentoSalesAPI 查詢 TEVA 涼鞋各通路銷售數據</div>
   <div class="conv2-ss conv2-ss--wait">MemberSegmentAnalyzer 交叉比對會員輪廓</div>
@@ -3236,6 +3248,7 @@ function conv6RunAnalysis() {
         }, '會員輪廓分布.json');
       } catch (e) { /* 畫布可能尚未初始化 */ }
       c6Push({
+        agent: 'dataManager',
         finishResponse: true,
         msg: `✅ 已完成 TEVA 涼鞋 2026Q2 各通路銷售與會員輪廓分析，圖表已加入畫布。<br><br>重點洞察：實體門市貢獻最高但年減 4%，天貓旗艦店成長最快（+32%）；會員回購占比達 68%，顯示既有會員貢獻穩定。`,
         sources: CONV6_SOURCES,
@@ -3261,6 +3274,7 @@ function conv6FlipSearchCard(from: string[], to: string[]) {
 
 function conv6AskReportChoice() {
   c6Push({
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     msg: `要不要我把這次的分析整理成一份洞察報告？你想要哪一種？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv6-report-channel">通路銷售深度分析報告</span>
@@ -3288,6 +3302,7 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
         addReportBlock('/justagent/teva_channel_sales_report.html', '通路銷售深度分析報告.html');
       } catch (e) { /* 畫布可能尚未初始化 */ }
       c6Push({
+        agent: 'dataManager',
         finishResponse: true,
         msg: `✅ 已完成「通路銷售深度分析報告」，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3302,14 +3317,14 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
     } else if (kind === 'strategy') {
       conv6RunStrategyDeepResearch();
     } else {
-      c6Push({ msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
+      c6Push({ agent: 'dataManager', msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
       c6Scroll();
     }
   }, 500);
 }
 
 function conv6RunStrategyDeepResearch() {
-  c6Push({ msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，存入外部市場趨勢庫後再結合通路與會員數據，運用 RAG 產出策略與風險評估⋯<div class="conv2-search-card" style="margin-top:8px">
+  c6Push({ agent: 'marketingManager', msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，存入外部市場趨勢庫後再結合通路與會員數據，運用 RAG 產出策略與風險評估⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
   <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
   <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
@@ -3327,6 +3342,7 @@ function conv6RunStrategyDeepResearch() {
       addReportBlock('/justagent/teva_channel_marketing_strategy_report.html', '行銷策略與風險評估報告.html');
     } catch { /* 畫布可能尚未初始化 */ }
     c6Push({
+      agent: 'marketingManager',
       finishResponse: true,
       msg: `✅ 已完成「行銷策略與風險評估報告」：Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢已存入外部市場趨勢庫，並生成優化關鍵字；再透過 RAG 綜合這些外部資料與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，產出對應的行銷策略建議與風險評估。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
