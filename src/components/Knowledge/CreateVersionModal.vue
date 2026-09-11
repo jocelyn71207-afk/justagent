@@ -8,27 +8,15 @@
             建立草稿不會影響目前已發布版本。您可以在編輯器中修改後再送審，審核通過才會正式取代目前版本。
           </p>
 
-          <!-- 版本類型選擇 -->
+          <!-- 版本名稱 -->
           <div class="mb-4">
-            <label class="field-label">版本升級類型 <span class="required-mark">*</span></label>
-            <div class="d-flex gap-3 mt-2">
-              <div
-                class="KnowledgeBase version-type-btn flex-1"
-                :class="{ active: type === 'MINOR' }"
-                @click="type = 'MINOR'"
-              >
-                <div class="version-type-title">小版本更新 (Minor)</div>
-                <div class="version-type-desc">v1.2 → v1.3　適用：修正錯字、微調數據</div>
-              </div>
-              <div
-                class="KnowledgeBase version-type-btn flex-1"
-                :class="{ active: type === 'MAJOR' }"
-                @click="type = 'MAJOR'"
-              >
-                <div class="version-type-title">大版本更新 (Major)</div>
-                <div class="version-type-desc">v1.2 → v2.0　適用：政策重構、大幅改寫</div>
-              </div>
-            </div>
+            <label class="field-label">版本名稱 <span class="required-mark">*</span></label>
+            <input
+              type="text"
+              class="custom-input w-100 mt-2"
+              v-model="name"
+              placeholder="請幫這個版本取個名字，例如：修正保固條款用詞"
+            />
           </div>
 
           <!-- 更新說明 -->
@@ -47,7 +35,7 @@
           <button class="swal2-cancel swal2-styled" @click="$emit('update:modelValue', false)">取消</button>
           <button
             class="swal2-confirm swal2-styled btn-secondary"
-            :disabled="!note.trim()"
+            :disabled="!name.trim() || !note.trim()"
             @click="handleConfirm"
           >
             <i class="material-symbols-outlined fs-18 mr-1">add_box</i>
@@ -65,22 +53,22 @@ import { ref, watch } from 'vue';
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'confirm', data: { type: 'MINOR' | 'MAJOR'; note: string }): void;
+  (e: 'confirm', data: { name: string; note: string }): void;
 }>();
 
-const type = ref<'MINOR' | 'MAJOR'>('MINOR');
+const name = ref('');
 const note = ref('');
 
 watch(() => props.modelValue, (val) => {
   if (val) {
-    type.value = 'MINOR';
+    name.value = '';
     note.value = '';
   }
 });
 
 function handleConfirm() {
-  if (!note.value.trim()) return;
-  emit('confirm', { type: type.value, note: note.value });
+  if (!name.value.trim() || !note.value.trim()) return;
+  emit('confirm', { name: name.value, note: note.value });
   emit('update:modelValue', false);
 }
 </script>

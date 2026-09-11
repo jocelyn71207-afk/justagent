@@ -1681,22 +1681,19 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   }
 
   // 建立新草稿 (基於已發布版本)
-  const createDraftFromPublished = (knowledgeId: string, type: 'MINOR' | 'MAJOR', updateNote: string) => {
+  const createDraftFromPublished = (knowledgeId: string, name: string, updateNote: string) => {
     const k = getKnowledgeById(knowledgeId);
     if (!k) return;
 
     const published = k.versions.find(v => v.status === 'active');
     if (!published) return;
 
-    // 計算新版本號
-    const currentNum = published.versionNumber; // e.g. "v1.2"
-    const [major, minor] = currentNum.replace('v', '').split('.').map(Number);
-    const newNum = type === 'MAJOR' ? `v${major + 1}.0` : `v${major}.${minor + 1}`;
-
+    // 版本「號碼」直接採用使用者輸入的名稱，不再從舊版號解析、自動遞增；
+    // 建立時間仍照舊記錄在 lastUpdateTime，時序判斷一律看陣列順序／lastUpdateTime，不倚賴這個名稱的格式。
     const newVersion: KnowledgeVersion = {
       ...JSON.parse(JSON.stringify(published)),
-      id: `${newNum}-draft-${Date.now()}`,
-      versionNumber: newNum,
+      id: `draft-${Date.now()}`,
+      versionNumber: name,
       status: 'draft' as VersionStatus,
       lastUpdateBy: 'Current User', // 正常應從 userStore 拿
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),

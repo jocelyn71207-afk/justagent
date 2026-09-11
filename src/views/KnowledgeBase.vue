@@ -563,8 +563,8 @@ function openCreateVersion(id: string) {
   isCreateVersionOpen.value = true
 }
 
-function handleCreateVersion(data: { type: 'MINOR' | 'MAJOR', note: string }) {
-  const newId = knowledgeStore.createDraftFromPublished(createVersionTargetId.value, data.type, data.note)
+function handleCreateVersion(data: { name: string, note: string }) {
+  const newId = knowledgeStore.createDraftFromPublished(createVersionTargetId.value, data.name, data.note)
   if (newId) {
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId: createVersionTargetId.value, versionId: newId } })
   }

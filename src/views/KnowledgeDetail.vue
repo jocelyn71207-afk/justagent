@@ -538,8 +538,8 @@ const pipelineStageLabelMap: Record<string, string> = {
 // ── 建立新版本 ──
 const isCreateVersionOpen = ref(false)
 
-function handleCreateVersion(data: { type: 'MINOR' | 'MAJOR', note: string }) {
-  const newId = knowledgeStore.createDraftFromPublished(props.id, data.type, data.note)
+function handleCreateVersion(data: { name: string, note: string }) {
+  const newId = knowledgeStore.createDraftFromPublished(props.id, data.name, data.note)
   if (newId) {
     router.push({ name: 'KnowledgeEditor', params: { knowledgeId: props.id, versionId: newId } })
   }
