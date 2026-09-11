@@ -225,6 +225,10 @@ export interface KnowledgeVersion {
   reviewedTime?: string
   reviewFeedback?: string
   conversionLog?: ConversionStep[]
+  // true 僅代表這一版的內容是 pipeline／AI 自動生成的草稿，尚未經人工編輯確認過
+  // （由 markPipelineDone 標記）；透過複製舊版本建立新草稿的流程（建立新版本、更新知識庫、
+  // 還原為草稿）都必須明確重置成 false，不可以沿用被複製版本的標記。
+  aiGenerated?: boolean
 }
 
 export interface KnowledgeItem {
@@ -1698,6 +1702,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       lastUpdateBy: 'Current User', // 正常應從 userStore 拿
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
       updateNote: updateNote,
+      aiGenerated: false, // 複製自已發布版本，非 pipeline 生成，重置標記避免沿用舊版本的旗標
     };
 
     k.versions.push(newVersion);
@@ -1759,6 +1764,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       status: 'draft' as VersionStatus,
       updateNote: `還原自 ${oldVersion.versionNumber}：${note}`,
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      aiGenerated: false, // 複製自舊版本，重置標記避免沿用舊版本的旗標
     };
 
     k.versions.push(newVersion);
@@ -2134,6 +2140,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       lastUpdateBy: 'Current User',
       lastUpdateTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
       sourceFiles: files.map(f => ({ fileId: f.fileId, fileName: f.fileName, linkedVersion: f.linkedVersion })),
+      aiGenerated: false, // 複製自舊版本，重置標記避免沿用舊版本的旗標
     };
 
     k.versions.push(newVersion);
@@ -2427,7 +2434,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   function markPipelineDone(id: string, chunks: ChunkPreview[], aiContent?: string) {
     const item = knowledgeList.value.find(k => k.id === id)
     if (!item) return
-    item.status = 'reviewing'
+    item.status = 'pending'
     item.pipelineProgress = 100
     item.pipelineStage = null
     item.pipelineError = null
@@ -2438,7 +2445,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       item.versions[item.versions.length - 1]
 
     if (draft) {
-      draft.status = 'reviewing'
+      draft.status = 'draft'
+      draft.aiGenerated = true
       draft.chunks = chunks
       draft.embeddingModel = 'BAAI/bge-m3'
       draft.embeddingDimension = 1024

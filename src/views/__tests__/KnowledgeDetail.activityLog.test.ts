@@ -23,13 +23,14 @@ async function mountDetail(knowledgeId: string) {
   return wrapper
 }
 
-describe('KnowledgeDetail — isPipelineReview 改讀 activityLog', () => {
-  it('有 SUBMITTED 活動紀錄的 reviewing 版本，不顯示 Pipeline 提示 banner', async () => {
+describe('KnowledgeDetail — isPipelineReview 改看草稿是否為 aiGenerated', () => {
+  it('reviewing 版本不顯示 Pipeline 提示 banner（已送審，不再是待決定的草稿）', async () => {
     // 先建 pinia、取得 store、直接改資料，再用同一個 store 實例掛載元件
     setActivePinia(createPinia())
     const store = useKnowledgeStore()
     const item = store.getKnowledgeById('k2')!
     const v2 = item.versions.find(v => v.versionNumber === 'v2.0')!
+    v2.aiGenerated = true // 即使內容曾是 AI 生成的，只要已送審（reviewing）就不該再提示
     item.activityLog = [
       { id: 'test-act-1', action: 'SUBMITTED', by: 'Rita', time: '2026-04-01 11:00', versionId: v2.id, versionNumber: 'v2.0' },
     ]
@@ -44,13 +45,29 @@ describe('KnowledgeDetail — isPipelineReview 改讀 activityLog', () => {
     expect(wrapper.find('.pipeline-review-banner').exists()).toBe(false)
   })
 
-  it('reviewing 但完全沒有活動紀錄時，顯示 Pipeline 提示 banner', async () => {
-    // 先建 pinia、取得 store、直接改資料，再用同一個 store 實例掛載元件
+  it('draft 版本但非 aiGenerated（例如人工建立的新版本草稿），不顯示 Pipeline 提示 banner', async () => {
     setActivePinia(createPinia())
     const store = useKnowledgeStore()
-    const item = store.getKnowledgeById('k3')! // k3 的 v1.0 目前是 draft，先手動改成 reviewing 但不寫活動紀錄
-    item.versions[0].status = 'reviewing'
-    item.activityLog = []
+    const item = store.getKnowledgeById('k3')! // k3 的 v1.0 目前是 draft
+    item.versions[0].status = 'draft'
+    item.versions[0].aiGenerated = false
+
+    const wrapper = mount(KnowledgeDetail, {
+      props: { id: 'k3' },
+      global: { plugins: [newRouter()], stubs: STUBS },
+    })
+    await flushPromises()
+    await new Promise(resolve => setTimeout(resolve, 600))
+
+    expect(wrapper.find('.pipeline-review-banner').exists()).toBe(false)
+  })
+
+  it('draft 版本且為 aiGenerated（pipeline 剛處理完成、尚未人工確認），顯示 Pipeline 提示 banner', async () => {
+    setActivePinia(createPinia())
+    const store = useKnowledgeStore()
+    const item = store.getKnowledgeById('k3')! // k3 的 v1.0 目前是 draft
+    item.versions[0].status = 'draft'
+    item.versions[0].aiGenerated = true
 
     const wrapper = mount(KnowledgeDetail, {
       props: { id: 'k3' },

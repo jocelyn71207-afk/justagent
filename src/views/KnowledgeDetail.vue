@@ -114,7 +114,7 @@
             <!-- Pipeline 審核提示 banner -->
             <div v-if="isPipelineReview" class="pipeline-review-banner">
               <i class="material-symbols-outlined">smart_toy</i>
-              <span>此條目由 Pipeline 處理完成，以下為 AI 生成的知識摘要。請切換至「分段預覽」審查內容品質，確認無誤後點擊「開始審核」批准發佈。</span>
+              <span>此草稿由 Pipeline 處理完成，以下為 AI 生成的知識摘要。請切換至「分段預覽」審查內容品質，確認無誤後點擊「繼續編輯草稿」進行調整並送審。</span>
             </div>
 
             <div class="content-preview">
@@ -455,13 +455,10 @@ const draftVersion = computed(() =>
   knowledge.value?.versions.find(v => v.status === 'draft' || v.status === 'rejected') ?? null
 )
 
-// Pipeline 審核狀態：reviewing 但 activityLog 裡沒有這個版本的 SUBMITTED 紀錄（尚未人工送審）
+// Pipeline 審核提示：這個草稿的內容是 pipeline／AI 自動生成的（尚未人工編輯確認過、也還沒送審），
+// 提醒使用者切換到分段預覽確認內容品質，再自行決定要不要送審
 const isPipelineReview = computed(() => {
-  if (viewedVer.value?.status !== 'reviewing') return false
-  const hasSubmitRecord = knowledge.value?.activityLog?.some(
-    e => e.action === 'SUBMITTED' && e.versionId === viewedVer.value?.id
-  )
-  return !hasSubmitRecord
+  return viewedVer.value?.status === 'draft' && !!viewedVer.value?.aiGenerated
 })
 
 const renderedContent = computed(() => {
