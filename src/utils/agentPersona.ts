@@ -5,8 +5,9 @@
 
 export type AgentKey =
   | 'brain'             // AI大腦：確認需求、分派任務
-  | 'productAssistant'  // 產品助理：整理資料（檔案格式轉換、翻譯）
-  | 'productManager'    // 產品經理：產品描述文案撰寫
+  | 'productAssistant'  // 產品助理：整理資料、初步/例行工作（檔案格式轉換、翻譯、快速分析）
+  | 'productManager'    // 產品經理：產品描述文案撰寫，以及更深入/需要判斷的產品相關工作
+                         // （例如競品深度分析）——助理做初步，經理接手深入的部分
   | 'dataManager'       // 數據經理：產品銷售數據分析
   | 'marketingManager'; // 行銷經理：行銷策略分析
 

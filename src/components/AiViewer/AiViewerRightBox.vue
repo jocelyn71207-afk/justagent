@@ -2228,8 +2228,9 @@ function conv2DoneComps() {
   conv2ShowStepPill.value = false;
   c2Push({ forUser: true, msg: `確認以上 ${names.length} 個競品，請生成分析報告。` });
   runDelegateSteps({
+    agent: 'productManager',
     msg: `已確認 ${names.length} 個競品，開始生成報告⋯`,
-    bookend: '競品分析 Agent → DeepAgent（深度分析）',
+    bookend: '產品經理（競品分析 Agent）→ DeepAgent',
     labels: [
       'ProductExtractor 爬取競品頁面資料',
       'FeatureAnalyzer 特徵比對與評分中',
@@ -2243,8 +2244,9 @@ function conv2StartSearch() {
   conv2StepFpVisible.value = false;
   c2Push({ forUser: true, msg: '確認無誤，開始搜索。' });
   runDelegateSteps({
+    agent: 'productManager',
     msg: '設定已確認，DeepAgent 開始深度搜索⋯',
-    bookend: 'Orchestrator → 產品助理 Subagent（競品分析 Agent）→ DeepAgent',
+    bookend: '產品經理（競品分析 Agent）→ DeepAgent',
     labels: [
       'SearchStrategist 產生深度搜索任務',
       'GoogleSearchEngine 搜索並過濾關鍵字',
@@ -2253,7 +2255,7 @@ function conv2StartSearch() {
     ],
     totalMs: 1800,
     onDone: () => {
-      c2Push({ agent: 'productAssistant', msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
+      c2Push({ agent: 'productManager', msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
       c2Scroll();
       conv2CurStep.value = 5;
       conv2S5SelComps.value = new Set([1, 2, 3, 4]);
@@ -2484,7 +2486,7 @@ function conv2SelectMode(mode: string) {
 
   if (mode === 'deep') {
     setTimeout(() => {
-      c2Push({ agent: 'productAssistant', msg: '好的！請在下方面板完成深度分析設定。' });
+      c2Push({ agent: 'productManager', msg: '好的！請在下方面板完成深度分析設定。' });
       c2Scroll();
       conv2CurStep.value = 1;
       conv2S1ShowSkuInput.value = false;
@@ -2586,7 +2588,9 @@ function conv2ConfirmProduct() {
 function conv2InitToDeep() {
   conv2Mode.value = 'deep';
   c2Push({ forUser: true, msg: '深度分析' });
-  c2Push({ agent: 'productAssistant', msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
+  // 產品助理的初步分析到此結束，直接交給產品經理接手深度分析——
+  // 這是同一個任務內的自然延伸，不是新的分派決策，所以不繞回 AI大腦。
+  c2Push({ agent: 'productManager', msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
   c2Scroll();
   conv2CurStep.value = 1;
   conv2S1ShowSkuInput.value = false;
@@ -3449,6 +3453,10 @@ const testMsgs = computed(() => {
 // agent 換人了」的訊息 id，交接列會插在這些訊息前面。
 // 使用者訊息、思考中訊息不列入比較（沒有意義的形象、也不會實際顯示頭像），
 // 對話中第一則 AI 訊息不算交接（沒有「前一個」可以比較）。
+// 注意：這裡純粹是「跟前一則比對」，不要求中間一定要經過 AI大腦——同一個任務
+// 內的自然延伸（例如 conv2 產品助理做完初步分析、使用者選深度分析，直接交給
+// 產品經理），agent 可以互相直接交接，不必每次都繞回 AI大腦再分派一次。
+// AI大腦只在真正的分派/決策時刻（任務一開始、或任務完全結束要問下一步）出現。
 const messageHandoffs = computed(() => {
   const result: Record<string, { from: AgentKey; to: AgentKey }> = {};
   let lastAgent: AgentKey | undefined;
