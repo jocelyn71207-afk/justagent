@@ -2993,7 +2993,7 @@ function conv3BuildKnowledgeBase() {
   c3Scroll();
   setTimeout(() => {
     c3Push({
-      agent: 'brain',
+      agent: 'dataManager', // 建立知識庫＝把貼標結果實際存進資料庫/索引，屬於數據經理的職責範圍
       finishResponse: true,
       msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
   <span style="font-size:20px;line-height:1">📚</span>
