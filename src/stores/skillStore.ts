@@ -139,6 +139,7 @@ export interface CreateSkillPayload {
   assignedAgents: string[]
   scope?: 'enterprise' | 'team'
   files?: SkillFile[]
+  capabilities?: SkillCapability[]
 }
 
 export interface UpdateSkillPayload {
@@ -149,6 +150,7 @@ export interface UpdateSkillPayload {
   isEnabled: boolean
   assignedAgents: string[]
   files?: SkillFile[]
+  capabilities?: SkillCapability[]
 }
 
 export interface DraftSkill {
@@ -1201,6 +1203,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       triggerHint: data.triggerHint,
       assignedAgents: data.assignedAgents,
       files: data.files ?? [],
+      capabilities: data.capabilities ?? [],
     })
   }
 
@@ -1221,6 +1224,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       testPassRate: 0,
       avgLatencyMs: 0,
       files: data.files ?? [],
+      capabilities: data.capabilities ?? [],
     })
   }
 
@@ -1234,6 +1238,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.isEnabled = data.isEnabled
     skill.assignedAgents = data.assignedAgents
     skill.files = data.files ?? []
+    skill.capabilities = data.capabilities ?? []
     if (skill.personalStatus === 'draft' && skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions) {
       skill.personalStatus = 'available'
     }

@@ -1,0 +1,86 @@
+.SkillCapabilityEditor {
+  .sce-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .sce-preset-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    border: 1px solid var(--divider);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover:not(:disabled) {
+      background: var(--page-bg);
+      border-color: $color_main_3;
+      color: var(--text);
+    }
+
+    &:disabled {
+      cursor: default;
+      color: $color_main_1;
+      border-color: $color_main_1;
+      background: transparent;
+      opacity: 0.7;
+    }
+  }
+
+  .sce-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .sce-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--divider-a50);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .sce-item-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sce-name-input {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .sce-desc-input {
+    font-size: 12.5px;
+    resize: vertical;
+    min-height: 40px;
+  }
+
+  .sce-remove-btn {
+    flex-shrink: 0;
+    color: var(--text-faint);
+
+    &:hover { color: var(--text); }
+    .material-symbols-outlined { font-size: 16px; }
+  }
+
+  .sce-add-btn {
+    .material-symbols-outlined { font-size: 16px; }
+  }
+}

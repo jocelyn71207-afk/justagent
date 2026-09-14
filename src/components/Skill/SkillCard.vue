@@ -17,7 +17,7 @@
         {{ skill.name }}
         <span class="skill-tag tag--version">v{{ skill.version }}</span>
       </div>
-      <div v-if="skill.description" class="skill-card-desc">{{ skill.description }}</div>
+      <div v-if="cardDesc" class="skill-card-desc">{{ cardDesc }}</div>
       <div class="skill-card-stats">
         <span class="sk-stat">
           <i class="material-symbols-outlined">bolt</i>{{ formatCount(skill.usageCount) }} 次觸發
@@ -72,4 +72,8 @@ const scopeIconClass = computed(() => {
 function formatCount(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 }
+
+// 用第一筆使用情境的標題取代原本的技能描述，讓卡片一眼看出「什麼時候會用到」
+// 而不是技能本身的功能說明；沒有使用情境的技能（例如剛手動建立的）才退回顯示描述
+const cardDesc = computed(() => props.skill.usageScenarios?.[0]?.title || props.skill.description)
 </script>
