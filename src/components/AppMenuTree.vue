@@ -168,7 +168,8 @@
       <Transition name="panel-fade" mode="out-in">
       <div :key="selectedTeamId ?? ''">
         <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-          class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam.id }">
+          class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam.id }"
+          @click="closeTeamPanel">
           <i class="material-symbols-outlined">folder</i><span class="side-panel-item-label">團隊專案</span>
         </RouterLink>
 
@@ -183,10 +184,10 @@
           <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
         </div>
         <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
-          <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
+          <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }" @click="closeTeamPanel">
             <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
           </RouterLink>
-          <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
+          <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }" @click="closeTeamPanel">
             <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
           </RouterLink>
         </div>
@@ -203,21 +204,25 @@
         </div>
         <div class="side-panel-sub" v-show="selectedTeam.isResourceOpen">
           <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam.id }">
+            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam.id }"
+            @click="closeTeamPanel">
             <i class="material-symbols-outlined">folder_open</i><span class="side-panel-item-label">共用檔案管理</span>
           </RouterLink>
           <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam.id }">
+            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam.id }"
+            @click="closeTeamPanel">
             <i class="material-symbols-outlined">menu_book</i><span class="side-panel-item-label">知識庫管理</span>
           </RouterLink>
         </div>
 
         <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-          class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam.id }">
+          class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam.id }"
+          @click="closeTeamPanel">
           <i class="material-symbols-outlined">lock_person</i><span class="side-panel-item-label">權限管理</span>
         </RouterLink>
         <RouterLink :to="{ path: '/view/ProjectTrashCans', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
-          class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam.id }">
+          class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam.id }"
+          @click="closeTeamPanel">
           <i class="material-symbols-outlined">auto_delete</i><span class="side-panel-item-label">專案垃圾桶</span>
         </RouterLink>
       </div>
