@@ -18,17 +18,14 @@ function makeRouter() {
   })
 }
 
-function findRailBtn(wrapper: ReturnType<typeof mount>, icon: string) {
-  return wrapper.findAll('.rail-btn').find(b => b.find('i').text() === icon)!
-}
-
 describe('AppMenuTree 團隊切換器依企業篩選', () => {
-  it('預設（第一間企業）的常駐面板切換器，只列出第一間企業的團隊，不會混入第二間企業的團隊', async () => {
+  it('預設（第一間企業）的團隊選單切換器，只列出第一間企業的團隊，不會混入第二間企業的團隊', async () => {
     setActivePinia(createPinia())
     const router = makeRouter()
     await router.push('/view/TeamProject')
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
+    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const names = wrapper.findAll('.team-switch-list .team-switch-name').map(n => n.text())
 
@@ -37,17 +34,18 @@ describe('AppMenuTree 團隊切換器依企業篩選', () => {
     expect(names).not.toContain('橙心門市')
   })
 
-  it('切到第二間企業後，常駐面板切換器只列出第二間企業的團隊', async () => {
+  it('切到第二間企業後，團隊選單切換器只列出第二間企業的團隊', async () => {
     setActivePinia(createPinia())
     const router = makeRouter()
     await router.push('/view/TeamProject')
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await findRailBtn(wrapper, 'domain').trigger('click')
-    const companyRows = wrapper.findAll('.company-rail-list .team-switch-item--company')
+    await wrapper.find('.nav-company-selector').trigger('click')
+    const companyRows = wrapper.findAll('.nav-inline-list .team-switch-item--company')
     await companyRows[1].trigger('click') // 第二間企業
     await flushPromises()
 
+    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const names = wrapper.findAll('.team-switch-list .team-switch-name').map(n => n.text())
 

@@ -1,12 +1,15 @@
 // ============================================================
-// AppMenuTree — 圖示 rail ＋ 常駐展開的團隊選單面板
+// AppMenuTree — 單一導覽欄 ＋ 獨立彈出式團隊選單面板
 //
 // 骨架邏輯：
-//   .rail        圖示條：使用者頭像（上）、通用單元（最近使用/探索/搜尋）、
-//                企業設定、產品 logo（下）
-//   .side-panel  常駐展開的面板，最上方是「團隊切換器」（顯示目前選中團隊，
-//                點擊展開下拉清單切換），下方是該團隊的導覽項目——
-//                企業/團隊切換不再長在 rail 上，改坐在面板頂端
+//   .nav-*        單一導覽欄：使用者頭像/收合鈕（上）、企業選擇器、探索、
+//                 搜尋、最近使用、企業設定、團隊功能（中）、返回入口頁、
+//                 Logo/版本（下）。可在「文字+圖示」展開態／「純圖示」
+//                 收合態之間切換。
+//   .team-panel   團隊選單彈出面板：只有點「團隊功能」才會出現，點 X 或
+//                 點背景關閉；不是常駐在導覽欄旁邊。裡面內容（團隊切換器、
+//                 團隊專案/AI 技能/共享資源庫/權限管理/專案垃圾桶）沿用
+//                 .side-panel-* 這套既有類別。
 // ============================================================
 
 .AppMenuTree {
@@ -17,55 +20,62 @@
   height: 100svh;
   flex: none;
   display: flex;
-  width: $menuWidth;
-
-  // 「最近使用」「探索」不顯示團隊層的常駐選單面板，寬度只剩 rail
-  &.no-team-panel {
-    width: $railWidth;
-  }
-
-  // 第二層收合成迷你圖示條時，最外層容器也要跟著縮寬——.side-panel 自己
-  // 縮寬只是內層元件的事，這個外層容器是獨立的固定寬度（flex: none），
-  // 不會因為裡面的子元素變窄就自動跟著縮小，沒同步改的話畫面會留一塊
-  // 空白區域，看起來像收合沒生效。注意：side-panel 收合後還在（只是變窄
-  // 成 rail 寬度），不是整個消失，所以這裡要用 $collapsedMenuWidth（兩個
-  // rail 寬度相加），不能誤用只給「side-panel 根本不存在」情境的 $railWidth
-  &.is-panel-collapsed {
-    width: $collapsedMenuWidth;
-  }
-}
-
-.rail {
-  position: relative; // rail 上彈出的浮層（搜尋／團隊／使用者選單）都靠這個當定位基準，
-                       // 不然浮層會相對整個 .AppMenuTree 定位——側邊面板有沒有顯示會讓
-                       // .AppMenuTree 寬度跳動，浮層就跟著跑位，離觸發的圖示很遠
-  width: $railWidth;
-  flex: none;
-  height: 100%;
+  flex-direction: column;
+  width: $navWidth;
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--divider);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  transition: width $menutransition ease;
+
+  &.is-collapsed {
+    width: $railWidth;
+  }
 }
 
-// ── 常駐圖示共用樣式（.rail-btn 用於通用單元；.rail-team-btn 用於團隊）──
-.rail-btn {
+.nav-top {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 8px 10px;
+}
+
+.nav-divider {
+  height: 1px;
+  background: var(--divider);
+  margin: 6px 4px;
+}
+
+.nav-spacer {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.nav-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 8px 16px;
+}
+
+// ── 共用的導覽項目樣式：企業選擇器、探索、最近使用、企業設定、團隊功能、
+//    返回入口頁都是同一種列，圖示固定、文字在收合時用 v-if 移除 ──
+.nav-item {
   position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--sidebar-muted);
+  gap: 10px;
+  width: 100%;
+  padding: 9px 8px;
   border: none;
+  border-radius: 8px;
   background: transparent;
-  cursor: pointer;
+  color: var(--sidebar-muted);
+  font-size: 13.5px;
   text-decoration: none;
-  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  text-align: left;
 
-  i { font-size: 21px; }
+  i:first-child { font-size: 20px; flex-shrink: 0; color: inherit; }
 
   &:hover { background: var(--sidebar-hover); }
 
@@ -77,74 +87,157 @@
 
   &:focus-visible {
     outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline-offset: 1px;
   }
 }
 
-.rail-top {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 0 10px;
+.nav-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item-caret {
   flex-shrink: 0;
+  font-size: 18px;
+  color: var(--text-faint);
 }
 
-.rail-logo {
-  width: 26px;
-  height: 26px;
-  margin-bottom: 8px;
+// 導覽欄收合時，所有項目置中顯示圖示（文字用 v-if 移除，不是 CSS 藏起來）
+.AppMenuTree.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 9px;
 }
 
-.rail-divider {
-  width: 26px;
-  height: 1px;
-  background: var(--divider);
-  margin: 6px 0 2px;
-  flex-shrink: 0;
+// 純圖示按鈕（收合時的搜尋、返回入口頁）：跟 .nav-item 同一套視覺，但語意
+// 上是按鈕不是連結
+.nav-icon-btn {
+  justify-content: center;
 }
 
-// ── rail 中段留白：把 .rail-bottom 推到最底，企業/團隊切換已移到 side-panel 頂端 ──
-.rail-spacer {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-}
-
-.rail-bottom {
+// ── 使用者頭像列：頭像/名稱/收合鈕同一列，跟現有 rail 頭像同樣 hover 高亮 ──
+.nav-user-row {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 10px 0 16px;
-  flex-shrink: 0;
-}
-
-.rail-user-btn {
-  position: relative;
+  padding: 6px 6px 6px 4px;
+  margin-bottom: 4px;
+  border-radius: 8px;
   cursor: pointer;
 
-  .user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    background-color: var(--primary);
-    color: var(--primary-fg);
-    user-select: none;
-  }
-
-  &:hover .user-avatar,
-  &.active .user-avatar {
-    box-shadow: 0 0 0 2px var(--sidebar-active);
-  }
+  &:hover,
+  &.active { background: var(--sidebar-hover); }
 }
 
-// ── 使用者選單／搜尋框：這兩個還是「點擊才出現」的浮層，貼著 rail 展開 ──
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  background-color: var(--primary);
+  color: var(--primary-fg);
+  user-select: none;
+}
+
+.nav-user-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-bell {
+  flex-shrink: 0;
+  font-size: 19px;
+  color: var(--text-faint);
+}
+
+.nav-collapse-toggle {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+
+  i { font-size: 17px; }
+
+  &:hover { background: var(--sidebar-hover); color: var(--text); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+.AppMenuTree.is-collapsed .nav-user-row {
+  justify-content: center;
+  padding: 6px;
+
+  .user-avatar { margin: 0 auto; }
+}
+
+// ── 企業選擇器：點了向下展開清單（不是彈出浮層）──
+.nav-company-selector {
+  &.active .nav-item-caret { transform: rotate(180deg); }
+}
+
+.nav-inline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px 6px 34px;
+  overflow-y: auto;
+  max-height: 200px;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+.AppMenuTree.is-collapsed .nav-inline-list {
+  display: none; // 收合時企業清單改由點擊圖示彈出的浮層負責（沿用 .rail-popover）
+}
+
+// ── 搜尋：展開時是常駐輸入框，收合時只剩圖示、點擊才彈出輸入框 ──
+.nav-search {
+  cursor: text;
+  position: relative;
+  background: var(--sidebar-hover);
+  border-radius: 8px;
+  padding: 8px 10px;
+
+  i:first-child { position: static; }
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0 20px 0 8px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 13.5px;
+    &::placeholder { color: var(--sidebar-muted); }
+  }
+  .clear-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px !important;
+  }
+
+  &:hover { background: var(--sidebar-hover); } // 蓋掉 .nav-item 預設 hover 的透明背景
+}
+
+// ── 使用者選單／搜尋框（收合時）／企業清單（收合時）：點擊才出現的浮層 ──
 .rail-popover {
   position: absolute;
   left: calc(100% + 10px);
@@ -156,7 +249,7 @@
   transform-origin: left center;
 }
 
-// 展開動畫：從貼著 rail 的位置「長出來」，不是瞬間出現/消失
+// 展開動畫：從貼著導覽欄的位置「長出來」，不是瞬間出現/消失
 .rail-expand-enter-active,
 .rail-expand-leave-active {
   transition: opacity 0.14s ease, transform 0.14s ease;
@@ -207,18 +300,6 @@
   }
 }
 
-// 企業／團隊合併入口彈出清單：貼著 rail 上「企業」圖示右側展開。企業／團隊
-// 曾經是兩顆分開的 rail 圖示、兩份清單，合併後只剩這一份，用巢狀結構同時
-// 呈現「有哪些企業」跟「每間企業底下有哪些團隊」
-.company-rail-list {
-  top: 67px;
-  width: 200px;
-  max-height: 400px;
-  padding: 6px;
-  overflow-y: auto;
-  @include use-scroll-bar(var(--scrollbar-a50));
-}
-
 .user-flyout {
   top: -4px;
   width: 200px;
@@ -235,38 +316,130 @@
       margin: 0 0 6px;
     }
   }
-}
 
-// ── 常駐團隊選單面板：跟企業/團隊圖示同步，不是浮層 ──
-.side-panel {
-  width: $sidePanelWidth;
-  flex: none;
-  height: 100%;
-  background: var(--surface);
-  border-right: 1px solid var(--divider);
-  padding: 20px 10px;
-  // 不能設 overflow-y: auto（原本就有、不是這次加的）——只要這個容器有任何一
-  // 軸不是 visible，瀏覽器就會把「往右彈出去」的浮層（.rail-popover、團隊
-  // 切換清單、收合後的 flyout）一起裁掉，浮層在 DOM 裡明明已經 display 出
-  // 來，畫面上卻整個看不到。目前面板內容（單一團隊的導覽項目）高度不會超
-  // 出正常螢幕，先拿掉捲動；如果之後項目多到真的需要捲動，要改成把浮層
-  // 用 Teleport 移出這個容器再處理定位，不能簡單加回 overflow
-  transition: width $menutransition ease, padding $menutransition ease;
-
-  // 收合成迷你圖示條，跟 rail 同寬——兩條圖示條並排視覺上不會忽寬忽窄
-  &.is-collapsed {
-    width: $railWidth;
-    padding: 20px 8px;
+  .option-item {
+    padding: 8px 10px;
+    border-radius: 7px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    &:hover { background: var(--sidebar-hover); }
   }
 }
 
-// 收合按鈕跟團隊切換器並排同一列，不是浮動把手也不是另外自成一列
-.side-panel-collapse-toggle {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
+// ── 團隊功能：亮起代表目前停在某個團隊頁面，或團隊面板正開著 ──
+.nav-team-toggle.active {
+  background: var(--accent-soft, var(--sidebar-active));
+  color: var(--primary);
+  font-weight: 600;
+}
+
+// ── 返回入口頁 + Logo/版本 ──
+.nav-entrance-link { color: var(--sidebar-muted); }
+
+.nav-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px 2px;
+}
+.AppMenuTree.is-collapsed .nav-footer {
+  justify-content: center;
+  padding: 10px 0 2px;
+}
+
+.nav-footer-logo {
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
-  margin-left: auto;
+}
+
+.nav-footer-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.nav-footer-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.nav-footer-version {
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+
+// ============================================================
+// 團隊選單面板：獨立彈出式面板，只有點「團隊功能」才會出現
+// ============================================================
+
+.team-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: rgba(#09151A, 0.35);
+}
+.team-panel-backdrop-fade-enter-active,
+.team-panel-backdrop-fade-leave-active {
+  transition: opacity 0.16s ease;
+}
+.team-panel-backdrop-fade-enter-from,
+.team-panel-backdrop-fade-leave-to {
+  opacity: 0;
+}
+
+.team-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: $navWidth;
+  z-index: 16;
+  width: $navWidth;
+  background: var(--surface);
+  border-right: 1px solid var(--divider);
+  padding: 16px 10px;
+  overflow-y: auto;
+  @include use-scroll-bar(var(--scrollbar-a50));
+}
+.AppMenuTree.is-collapsed ~ .team-panel {
+  left: $railWidth;
+}
+
+.team-panel-slide-enter-active,
+.team-panel-slide-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.team-panel-slide-enter-from,
+.team-panel-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-8px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-panel-slide-enter-active,
+  .team-panel-slide-leave-active {
+    transition: opacity 0.1s linear;
+  }
+  .team-panel-slide-enter-from,
+  .team-panel-slide-leave-to {
+    transform: none;
+  }
+}
+
+.team-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 6px 12px;
+}
+.team-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.team-panel-close {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,40 +448,13 @@
   color: var(--text-faint);
   cursor: pointer;
 
-  i { font-size: 17px; }
+  i { font-size: 18px; }
 
   &:hover { background: var(--sidebar-hover); color: var(--text); }
   &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 }
-.side-panel.is-collapsed .side-panel-switcher {
-  justify-content: center;
-}
-.side-panel.is-collapsed .side-panel-collapse-toggle {
-  margin-left: 0;
-}
 
-// 收合後所有導覽項目置中顯示圖示（文字用 v-if 移除，不是 CSS 藏起來）
-.side-panel.is-collapsed .side-panel-item {
-  justify-content: center;
-  padding: 9px 0;
-}
-
-// 群組（AI 技能／共享資源庫）的容器：收合後靠這個當 .rail-popover flyout 的定位基準
-.side-panel-nav-group {
-  position: relative;
-}
-
-.side-panel-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  padding: 2px 10px 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-// ── 團隊切換器：坐在面板最上方，取代原本長在 rail 上的企業圖示 ──
+// ── 團隊切換器：坐在面板最上方 ──
 .side-panel-switcher {
   position: relative;
   display: flex;
@@ -373,7 +519,7 @@
   .side-panel-switcher-caret { transition: none; }
 }
 
-// 團隊切換下拉清單：從切換器「正下方」長出來，不是 .rail-popover 預設的貼右側展開
+// 團隊切換下拉清單：從切換器「正下方」長出來
 .team-switch-list {
   position: absolute;
   left: 0;
@@ -409,17 +555,7 @@
   }
 }
 
-// 收合後「AI 技能／共享資源庫」的懸浮子選單：跟 .company-rail-list／
-// .team-switch-list 一樣要自己補 width/padding，.rail-popover 本身沒有，
-// 不然內容會貼著卡片邊緣、看起來很擠
-.side-panel-flyout {
-  top: -6px;
-  min-width: 180px;
-  padding: 6px;
-}
-
-// popover 標題：讓使用者一打開就知道這份清單的範疇是「企業」還是「團隊」，
-// 不用只靠 rail 上兩個外觀相似的圖示去猜
+// popover 標題：讓使用者一打開就知道這份清單的範疇
 .rail-popover-label {
   padding: 4px 8px 6px;
   font-size: 11px;
@@ -447,21 +583,8 @@
   &--company { border-radius: 999px; }
 }
 
-// 企業／團隊合併成一個 popover：每間企業底下巢狀列出所屬團隊，用縮排＋左側
-// 引導線呈現「屬於」的關係，跟 .side-panel-sub 的階層視覺語彙一致
-.rail-popover-sub {
-  padding: 2px 0 4px 10px;
-  margin: 0 0 4px 16px;
-  border-left: 1px solid var(--divider-a50);
-}
-
 .team-switch-item--company {
   font-weight: 600;
-}
-
-.team-switch-item--sub {
-  font-size: 12.5px;
-  color: var(--sidebar-muted);
 }
 
 .team-switch-name {
@@ -531,11 +654,8 @@
   }
 }
 
-// 第二層可展開群組（技能管理／共享資源庫）：本身也是一個項目，
-// 但點擊是展開/收合子項目，不是導覽。group 的 .active 只代表「目前路徑
-// 落在這個群組底下」，真正選中的子項目會在下面自己再亮一次——兩層都用
-// 同一種實心底色會疊成一大塊，看起來很擠，所以 group 這層改成輕量標示
-// （字重＋icon 上色），不填滿底色，把唯一的實心高亮留給子項目
+// 第二層可展開群組（AI 技能／共享資源庫）：本身也是一個項目，
+// 但點擊是展開/收合子項目，不是導覽
 .side-panel-group {
   user-select: none;
 
@@ -570,10 +690,12 @@
 }
 
 // ============================================================
-// 手機：漢堡選單改回清單式抽屜（常駐雙欄在小螢幕上放不下）
+// 手機：漢堡選單維持清單式抽屜（這次重構不動手機版）
 // ============================================================
 @media (max-width: $breakpoint-mobile) {
   .AppMenuTree { display: none; }
+  .team-panel-backdrop,
+  .team-panel { display: none; }
 
   .hamburger-btn {
     display: flex;
@@ -666,8 +788,8 @@
       &.mobile-sub { padding-left: 44px; font-size: 13px; }
     }
 
-    // 團隊切換器／群組／子項目直接沿用桌機 side-panel 那套類別（.side-panel-switcher、
-    // .side-panel-item、.side-panel-group、.side-panel-sub），這裡只補手機專屬的間距
+    // 團隊切換器／群組／子項目直接沿用 .side-panel-* 這套類別，這裡只補
+    // 手機專屬的間距
     .mobile-team-switcher { margin-top: 6px; }
   }
 }

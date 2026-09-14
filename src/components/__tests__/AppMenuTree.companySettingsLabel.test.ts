@@ -19,7 +19,7 @@ describe('AppMenuTree 企業/團隊設定改名為企業設定', () => {
     expect(mobileMenu.text()).not.toContain('企業/團隊設定')
   })
 
-  it('rail 上的企業設定圖示 tooltip 文字應為「企業設定」，不是舊的「企業/團隊設定」', () => {
+  it('導覽欄收合後，企業設定圖示 tooltip 文字應為「企業設定」，不是舊的「企業/團隊設定」', async () => {
     setActivePinia(createPinia())
     const router = createRouter({
       history: createWebHistory(),
@@ -31,12 +31,14 @@ describe('AppMenuTree 企業/團隊設定改名為企業設定', () => {
         directives: {
           tooltip: {
             mounted(el, binding) { el.setAttribute('data-tooltip', binding.value) },
+            updated(el, binding) { el.setAttribute('data-tooltip', binding.value) },
           },
         },
       },
     })
+    await wrapper.find('.nav-collapse-toggle').trigger('click')
 
-    const settingsLink = wrapper.findAll('.rail-btn').find(b => b.find('i').text() === 'settings')!
+    const settingsLink = wrapper.findAll('.nav-item').find(b => b.find('i').exists() && b.find('i').text() === 'settings')!
     expect(settingsLink.attributes('data-tooltip')).toBe('企業設定')
   })
 })

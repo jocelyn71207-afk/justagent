@@ -3,15 +3,10 @@
 // Layout
 $header-height: 36px;
 $header-AiViewer-height: 44px; // AiViewer 固定頂部工具列（身分/專案識別）的高度
-// 側邊欄改為圖示 rail ＋ 常駐展開的團隊選單面板（見 AppMenuTree）：
-// $menuWidth 是兩者合計的總寬度，供 .views-page 等版面寬度計算使用
-$railWidth: 64px;
-$sidePanelWidth: 216px;
-$menuWidth: $railWidth + $sidePanelWidth;
-// side-panel 收合後不是消失，是縮成跟 rail 一樣寬的迷你圖示條——兩欄都還在，
-// 所以收合後的總寬度是「兩個 $railWidth」，不是單一個 $railWidth（那個值只
-// 適用於 side-panel 整個不存在的 no-team-panel 情境，兩者不能共用）
-$collapsedMenuWidth: $railWidth * 2;
+// 側邊選單是單一導覽欄（見 AppMenuTree），可在「文字+圖示」與「純圖示」
+// 之間收合；團隊相關項目收進獨立的彈出式團隊選單面板，不佔常駐版面寬度
+$railWidth: 64px; // 導覽欄收合後的寬度
+$navWidth: 220px; // 導覽欄展開時的寬度
 $menuHeaderHeight: 216px;
 $menuFooterHeight: 50px;
 $menutransition: 0.2s;
