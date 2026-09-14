@@ -8,75 +8,72 @@
   <div class="mobile-overlay" v-if="isMobileMenuOpen" @click="closeMobileMenu" />
 
   <!-- ============================================================
-       桌機／平板：圖示條（rail）＋ 常駐顯示的團隊選單面板
-       圖示條負責切換（通用單元／企業/團隊），右側選單面板常駐展開，
-       顯示「目前選中的團隊」專屬的導覽項目，不是 hover 才彈出的浮層。
+       桌機／平板：單一導覽欄（取代原本 rail 圖示條＋常駐 side-panel 兩欄）。
+       團隊相關的導覽項目收進獨立的「團隊選單」彈出面板，只有點「團隊功能」
+       才會出現，不是常駐在旁邊——導覽欄本身可以在「文字+圖示」跟「純圖示」
+       之間收合，兩個收合機制彼此獨立。
        ============================================================ -->
-  <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen, 'no-team-panel': !showTeamPanel, 'is-panel-collapsed': isSidePanelCollapsed }]">
-
-    <div class="rail">
-      <div class="rail-top">
-        <div :class="['rail-user-btn', { active: isOpenUserOptionsBox }]" @click="isOpenUserOptionsBox = true">
-          <div class="user-avatar">L</div>
-
-          <Transition name="rail-expand">
-            <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
-              <div class="user-flyout-title">
-                <p class="user-name">Lucas.chien</p>
-              </div>
-              <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
-              <div class="option-item" @click="handleLogout">登出</div>
-            </div>
-          </Transition>
-        </div>
-
-        <div class="rail-divider"></div>
-
-        <!-- 企業／團隊入口合併成一個：點一下同時看到「有哪些企業」跟「每間企業底下
-             有哪些團隊」，不用先點企業圖示切換範圍、再點另一顆團隊圖示才能跳團隊——
-             那是兩個步驟做同一件事，這裡一步就能直接跳到任何企業的任何團隊 -->
-        <button type="button" class="rail-btn" :class="{ active: isCompanyRailOpen }" v-tooltip.right="'企業／團隊'"
-          @click="isCompanyRailOpen = true">
-          <i class="material-symbols-outlined">domain</i>
+  <div :class="['AppMenuTree', { 'is-mobile-open': isMobileMenuOpen, 'is-collapsed': isNavCollapsed }]">
+    <div class="nav-top">
+      <div :class="['nav-user-row', { active: isOpenUserOptionsBox }]" @click="isOpenUserOptionsBox = true">
+        <div class="user-avatar">L</div>
+        <span class="nav-user-name" v-if="!isNavCollapsed">Lucas.chien</span>
+        <i class="material-symbols-outlined nav-bell" v-if="!isNavCollapsed">notifications</i>
+        <button type="button" class="nav-collapse-toggle" v-tooltip.right="isNavCollapsed ? '展開導覽欄' : '收合導覽欄'"
+          :aria-label="isNavCollapsed ? '展開導覽欄' : '收合導覽欄'"
+          @click.stop="isNavCollapsed = !isNavCollapsed">
+          <i class="material-symbols-outlined">{{ isNavCollapsed ? 'dock_to_right' : 'dock_to_left' }}</i>
         </button>
 
         <Transition name="rail-expand">
-          <div class="rail-popover company-rail-list" v-show="isCompanyRailOpen" ref="companyRailPopoverEl">
-            <div class="rail-popover-label">企業</div>
-            <template v-for="item in companyList" :key="'railcompany' + item.id">
-              <div class="team-switch-item team-switch-item--company"
-                :class="{ active: item.id === nowMenuTreeCompanyId }"
-                @click="selectCompany(item)">
-                <span class="team-switch-dot team-switch-dot--company" style="background: var(--primary)">{{ item.name.charAt(0) }}</span>
-                <span class="team-switch-name">{{ item.name }}</span>
-                <i v-if="item.id === nowMenuTreeCompanyId" class="material-symbols-outlined team-switch-check">check</i>
-              </div>
-              <div class="rail-popover-sub">
-                <div class="team-switch-item team-switch-item--sub" v-for="(team, i) in teamsOfCompany(item.id)" :key="'railteam' + team.id"
-                  :class="{ active: team.id === selectedTeamId }"
-                  @click="jumpToTeam(team.id)">
-                  <span class="team-switch-dot" :style="{ background: teamColor(i) }">{{ teamInitial(team.name) }}</span>
-                  <span class="team-switch-name">{{ team.name }}</span>
-                  <i v-if="team.id === selectedTeamId" class="material-symbols-outlined team-switch-check">check</i>
-                </div>
-              </div>
-            </template>
+          <div class="rail-popover user-flyout next-option-box" ref="moreUserOptionsBox" v-show="isOpenUserOptionsBox">
+            <div class="user-flyout-title">
+              <p class="user-name">Lucas.chien</p>
+            </div>
+            <div class="option-item" @click="rootStore.isShowBuserModal = true">個人設定</div>
+            <div class="option-item" @click="handleLogout">登出</div>
           </div>
         </Transition>
+      </div>
 
-        <RouterLink to="/view/ProjectDashboard" class="rail-btn" :class="{ active: route.path === '/view/ProjectDashboard' }" v-tooltip.right="'最近使用'">
-          <i class="material-symbols-outlined">schedule</i>
-        </RouterLink>
-        <RouterLink to="/view/Explore" class="rail-btn" :class="{ active: route.path === '/view/Explore' }" v-tooltip.right="'探索'">
-          <i class="material-symbols-outlined">lightbulb</i>
-        </RouterLink>
+      <div class="nav-divider"></div>
 
-        <button type="button" class="rail-btn" :class="{ active: isSearchOpen }" v-tooltip.right="'搜尋'"
+      <!-- 企業選擇器：點了向下展開清單，不是彈出浮層 -->
+      <button type="button" class="nav-item nav-company-selector" :class="{ active: isCompanyRailOpen }"
+        v-tooltip.right="isNavCollapsed ? '企業' : null"
+        @click="isCompanyRailOpen = !isCompanyRailOpen">
+        <span class="team-switch-dot team-switch-dot--company" style="background: var(--primary)">{{ nowMenuTreeCompanyName.charAt(0) }}</span>
+        <span class="nav-item-label" v-if="!isNavCollapsed">{{ nowMenuTreeCompanyName }}</span>
+        <i class="material-symbols-outlined nav-item-caret" v-if="!isNavCollapsed">{{ isCompanyRailOpen ? 'expand_less' : 'expand_more' }}</i>
+      </button>
+      <div class="nav-inline-list" v-show="isCompanyRailOpen" ref="companyRailPopoverEl">
+        <div class="team-switch-item team-switch-item--company" v-for="item in companyList" :key="'railcompany' + item.id"
+          :class="{ active: item.id === nowMenuTreeCompanyId }"
+          @click="selectCompany(item)">
+          <span class="team-switch-dot team-switch-dot--company" style="background: var(--primary)">{{ item.name.charAt(0) }}</span>
+          <span class="team-switch-name">{{ item.name }}</span>
+          <i v-if="item.id === nowMenuTreeCompanyId" class="material-symbols-outlined team-switch-check">check</i>
+        </div>
+      </div>
+
+      <RouterLink to="/view/Explore" class="nav-item" :class="{ active: route.path === '/view/Explore' }" v-tooltip.right="isNavCollapsed ? '探索' : null">
+        <i class="material-symbols-outlined">lightbulb</i><span class="nav-item-label" v-if="!isNavCollapsed">探索</span>
+      </RouterLink>
+
+      <!-- 搜尋：展開時是隨時可輸入的搜尋框，收合時只剩圖示、點擊才彈出輸入框 -->
+      <div class="nav-item nav-search universal-search-box" v-if="!isNavCollapsed">
+        <i class="material-symbols-outlined">search</i>
+        <i class="material-symbols-outlined fc-grey-1 clear-btn" v-if="appSearchKeyword" @click="appSearchKeyword = ''; isEnterAppSearchPage = false;">close</i>
+        <input type="text" class="custom-input w-100" placeholder="搜尋" v-model="appSearchKeyword" @keyup="() => {
+          isEnterAppSearchPage = true;
+          if (appSearchKeyword === '') { isEnterAppSearchPage = false; }
+        }"/>
+      </div>
+      <template v-else>
+        <button type="button" class="nav-item nav-icon-btn" :class="{ active: isSearchOpen }" v-tooltip.right="'搜尋'"
           @click="isSearchOpen = true">
           <i class="material-symbols-outlined">search</i>
         </button>
-
-        <!-- 搜尋彈出框：點擊搜尋圖示才出現，不佔用常駐空間 -->
         <Transition name="rail-expand">
           <div class="rail-popover search-popover" v-show="isSearchOpen" ref="searchPopoverEl">
             <div class="universal-search-box">
@@ -84,58 +81,75 @@
               <i class="material-symbols-outlined fc-grey-1 clear-btn" v-if="appSearchKeyword" @click="appSearchKeyword = ''; isEnterAppSearchPage = false;">close</i>
               <input type="text" class="custom-input w-100" placeholder="搜尋" v-model="appSearchKeyword" ref="searchInputEl" @keyup="() => {
                 isEnterAppSearchPage = true;
-                if (appSearchKeyword === '') {
-                  isEnterAppSearchPage = false;
-                }
+                if (appSearchKeyword === '') { isEnterAppSearchPage = false; }
               }"/>
             </div>
           </div>
         </Transition>
+      </template>
 
-        <div class="rail-divider"></div>
-      </div>
+      <RouterLink to="/view/ProjectDashboard" class="nav-item" :class="{ active: route.path === '/view/ProjectDashboard' }" v-tooltip.right="isNavCollapsed ? '最近使用' : null">
+        <i class="material-symbols-outlined">schedule</i><span class="nav-item-label" v-if="!isNavCollapsed">最近使用</span>
+      </RouterLink>
+      <RouterLink to="/view/CompanyTeamSettings" class="nav-item" :class="{ active: route.path === '/view/CompanyTeamSettings' }" v-tooltip.right="isNavCollapsed ? '企業設定' : null">
+        <i class="material-symbols-outlined">settings</i><span class="nav-item-label" v-if="!isNavCollapsed">企業設定</span>
+      </RouterLink>
 
-      <div class="rail-spacer"></div>
+      <div class="nav-divider"></div>
 
-      <div class="rail-bottom">
-        <RouterLink to="/view/CompanyTeamSettings" class="rail-btn" :class="{ active: route.path === '/view/CompanyTeamSettings' }" v-tooltip.right="'企業設定'">
-          <i class="material-symbols-outlined">settings</i>
-        </RouterLink>
-
-        <div class="rail-divider"></div>
-
-        <img class="rail-logo" src="@/assets/logo.svg" alt="JustAgent" />
-      </div>
+      <!-- 團隊功能：目前在任何團隊頁面時亮起，點擊開關「團隊選單」面板；
+           不會因為網址帶 teamId 就自動彈出，只有主動點擊才會打開 -->
+      <button type="button" class="nav-item nav-team-toggle" :class="{ active: isTeamPanelOpen || isOnTeamRoute }"
+        v-tooltip.right="isNavCollapsed ? '團隊功能' : null"
+        @click="toggleTeamPanel">
+        <i class="material-symbols-outlined">groups</i><span class="nav-item-label" v-if="!isNavCollapsed">團隊功能</span>
+      </button>
     </div>
 
-    <!-- 常駐選單面板：顯示「目前選中團隊」的導覽項目，不隨滑鼠移開而消失；
-         切換團隊時內容淡入淡出，避免整塊文字瞬間跳掉 -->
-    <div class="side-panel" :class="{ 'is-collapsed': isSidePanelCollapsed }" v-if="showTeamPanel">
-      <!-- 團隊切換：放在常駐面板最上方，點擊展開團隊清單；不再長在側邊
-           圖示條上——圖示條留給真正「全域」的單元。收合按鈕跟切換器並排同一
-           列；收合後這一列不保留團隊圖示/名稱，只留收合按鈕本身 -->
+    <div class="nav-spacer"></div>
+
+    <div class="nav-bottom">
+      <RouterLink to="/entrance" class="nav-item nav-entrance-link" v-if="!isNavCollapsed">
+        <i class="material-symbols-outlined">home</i><span class="nav-item-label">返回入口頁</span>
+      </RouterLink>
+      <RouterLink to="/entrance" class="nav-item nav-icon-btn" v-tooltip.right="'返回入口頁'" v-else>
+        <i class="material-symbols-outlined">home</i>
+      </RouterLink>
+
+      <div class="nav-footer">
+        <img class="nav-footer-logo" src="@/assets/logo.svg" alt="JustAgent" />
+        <div class="nav-footer-text" v-if="!isNavCollapsed">
+          <span class="nav-footer-name">JustAgent</span>
+          <span class="nav-footer-version">JustAgent-v.1.0.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       團隊選單面板：只有點「團隊功能」才會出現，點 X 或點導覽欄以外的地方
+       關閉；面板是版面裡的正常一欄，出現時會把右邊的頁面內容推過去，不是
+       浮在內容上面的浮層。
+       ============================================================ -->
+  <Transition name="team-panel-slide">
+    <div class="team-panel" v-show="isTeamPanelOpen" ref="teamPanelEl">
+      <template v-if="selectedTeam">
+      <div class="team-panel-header">
+        <span class="team-panel-title">團隊選單</span>
+        <button type="button" class="team-panel-close" aria-label="關閉團隊選單" @click="closeTeamPanel">
+          <i class="material-symbols-outlined">close</i>
+        </button>
+      </div>
+
       <div class="side-panel-switcher" ref="teamSwitcherBtn"
         :class="{ 'is-open': isTeamSwitcherOpen }"
         role="button" tabindex="0" :aria-expanded="isTeamSwitcherOpen"
         @click="isTeamSwitcherOpen = !isTeamSwitcherOpen"
         @keydown.enter.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
-        @keydown.space.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
-        @mouseenter="isSidePanelCollapsed && (isTeamSwitcherOpen = true)"
-        @mouseleave="isSidePanelCollapsed && (isTeamSwitcherOpen = false)"
-        @focusin="isSidePanelCollapsed && (isTeamSwitcherOpen = true)"
-        @focusout="isSidePanelCollapsed && (isTeamSwitcherOpen = false)">
-        <template v-if="!isSidePanelCollapsed">
-          <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam!.name) }}</span>
-          <span class="side-panel-switcher-name">{{ selectedTeam!.name }}</span>
-          <i class="material-symbols-outlined side-panel-switcher-caret">unfold_more</i>
-        </template>
-
-        <button type="button" class="side-panel-collapse-toggle"
-          v-tooltip.right="isSidePanelCollapsed ? '展開側邊選單' : '收合側邊選單'"
-          :aria-label="isSidePanelCollapsed ? '展開側邊選單' : '收合側邊選單'"
-          @click.stop="toggleSidePanelCollapsed">
-          <i class="material-symbols-outlined">{{ isSidePanelCollapsed ? 'dock_to_right' : 'dock_to_left' }}</i>
-        </button>
+        @keydown.space.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen">
+        <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam.name) }}</span>
+        <span class="side-panel-switcher-name">{{ selectedTeam.name }}</span>
+        <i class="material-symbols-outlined side-panel-switcher-caret">unfold_more</i>
 
         <div class="rail-popover team-switch-list" v-show="isTeamSwitcherOpen">
           <div class="team-switch-item" v-for="(item, i) in companyTeams" :key="'switch' + item.id"
@@ -150,104 +164,75 @@
 
       <div class="side-panel-divider"></div>
 
-    <Transition name="panel-fade" mode="out-in">
-    <div :key="selectedTeamId ?? ''">
-      <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam!.id }"
-        v-tooltip.right="isSidePanelCollapsed ? '團隊專案' : null">
-        <i class="material-symbols-outlined">folder</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">團隊專案</span>
-      </RouterLink>
+      <Transition name="panel-fade" mode="out-in">
+      <div :key="selectedTeamId ?? ''">
+        <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+          class="side-panel-item" :class="{ active: route.path === '/view/TeamProject' && route.query.teamId == selectedTeam.id }"
+          @click="closeTeamPanel">
+          <i class="material-symbols-outlined">folder</i><span class="side-panel-item-label">團隊專案</span>
+        </RouterLink>
 
-      <!-- 技能管理：第二層，展開才看到子項目；收合後改用滑鼠移入/focus 彈出的浮層 -->
-      <div class="side-panel-nav-group"
-        @mouseenter="openGroupFlyout('skill')" @mouseleave="closeGroupFlyout('skill')"
-        @focusin="openGroupFlyout('skill')" @focusout="closeGroupFlyout('skill')">
         <div class="side-panel-item side-panel-group"
           role="button" tabindex="0"
-          :aria-expanded="selectedTeam!.isSkillOpen"
+          :aria-expanded="selectedTeam.isSkillOpen"
           :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
-          @click="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
-          @keydown.enter.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
-          @keydown.space.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen">
-          <i class="material-symbols-outlined">psychology</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">AI 技能</span>
-          <i class="material-symbols-outlined side-panel-caret" v-if="!isSidePanelCollapsed">{{ selectedTeam!.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+          @click="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen"
+          @keydown.enter.prevent="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen"
+          @keydown.space.prevent="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen">
+          <i class="material-symbols-outlined">psychology</i><span class="side-panel-item-label">AI 技能</span>
+          <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
         </div>
-        <div class="side-panel-sub" v-show="!isSidePanelCollapsed && selectedTeam!.isSkillOpen">
-          <RouterLink to="/view/Skills"
-            class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
+        <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
+          <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }" @click="closeTeamPanel">
             <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
           </RouterLink>
-          <RouterLink to="/view/SkillTest"
-            class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
+          <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }" @click="closeTeamPanel">
             <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
           </RouterLink>
         </div>
-        <div class="rail-popover side-panel-flyout" v-show="isSidePanelCollapsed && openFlyoutGroup === 'skill'">
-          <div class="rail-popover-label">AI 技能</div>
-          <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
-            <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
-          </RouterLink>
-          <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
-            <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
-          </RouterLink>
-        </div>
-      </div>
 
-      <!-- 共享資源庫：第二層，展開才看到子項目；收合後改用滑鼠移入/focus 彈出的浮層 -->
-      <div class="side-panel-nav-group"
-        @mouseenter="openGroupFlyout('resource')" @mouseleave="closeGroupFlyout('resource')"
-        @focusin="openGroupFlyout('resource')" @focusout="closeGroupFlyout('resource')">
         <div class="side-panel-item side-panel-group"
           role="button" tabindex="0"
-          :aria-expanded="selectedTeam!.isResourceOpen"
+          :aria-expanded="selectedTeam.isResourceOpen"
           :class="{ active: route.path === '/view/ResourceLibrary' || route.path === '/view/KnowledgeBase' }"
-          @click="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen"
-          @keydown.enter.prevent="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen"
-          @keydown.space.prevent="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen">
-          <i class="material-symbols-outlined">cloud</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">共享資源庫</span>
-          <i class="material-symbols-outlined side-panel-caret" v-if="!isSidePanelCollapsed">{{ selectedTeam!.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+          @click="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen"
+          @keydown.enter.prevent="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen"
+          @keydown.space.prevent="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen">
+          <i class="material-symbols-outlined">cloud</i><span class="side-panel-item-label">共享資源庫</span>
+          <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
         </div>
-        <div class="side-panel-sub" v-show="!isSidePanelCollapsed && selectedTeam!.isResourceOpen">
-          <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam!.id }">
+        <div class="side-panel-sub" v-show="selectedTeam.isResourceOpen">
+          <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam.id }"
+            @click="closeTeamPanel">
             <i class="material-symbols-outlined">folder_open</i><span class="side-panel-item-label">共用檔案管理</span>
           </RouterLink>
-          <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam!.id }">
+          <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam.id }"
+            @click="closeTeamPanel">
             <i class="material-symbols-outlined">menu_book</i><span class="side-panel-item-label">知識庫管理</span>
           </RouterLink>
         </div>
-        <div class="rail-popover side-panel-flyout" v-show="isSidePanelCollapsed && openFlyoutGroup === 'resource'">
-          <div class="rail-popover-label">共享資源庫</div>
-          <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-            class="side-panel-item" :class="{ active: route.path === '/view/ResourceLibrary' && route.query.teamId == selectedTeam!.id }">
-            <i class="material-symbols-outlined">folder_open</i><span class="side-panel-item-label">共用檔案管理</span>
-          </RouterLink>
-          <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-            class="side-panel-item" :class="{ active: route.path === '/view/KnowledgeBase' && route.query.teamId == selectedTeam!.id }">
-            <i class="material-symbols-outlined">menu_book</i><span class="side-panel-item-label">知識庫管理</span>
-          </RouterLink>
-        </div>
+
+        <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+          class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam.id }"
+          @click="closeTeamPanel">
+          <i class="material-symbols-outlined">lock_person</i><span class="side-panel-item-label">權限管理</span>
+        </RouterLink>
+        <RouterLink :to="{ path: '/view/ProjectTrashCans', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }"
+          class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam.id }"
+          @click="closeTeamPanel">
+          <i class="material-symbols-outlined">auto_delete</i><span class="side-panel-item-label">專案垃圾桶</span>
+        </RouterLink>
       </div>
-
-      <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/TeamAccessManagement' && route.query.teamId == selectedTeam!.id }"
-        v-tooltip.right="isSidePanelCollapsed ? '權限管理' : null">
-        <i class="material-symbols-outlined">lock_person</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">權限管理</span>
-      </RouterLink>
-      <RouterLink :to="{ path: '/view/ProjectTrashCans', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }"
-        class="side-panel-item" :class="{ active: route.path === '/view/ProjectTrashCans' && route.query.teamId == selectedTeam!.id }"
-        v-tooltip.right="isSidePanelCollapsed ? '專案垃圾桶' : null">
-        <i class="material-symbols-outlined">auto_delete</i><span class="side-panel-item-label" v-if="!isSidePanelCollapsed">專案垃圾桶</span>
-      </RouterLink>
+      </Transition>
+      </template>
     </div>
-    </Transition>
-    </div>
-
-  </div>
+  </Transition>
 
   <!-- ============================================================
-       手機：漢堡選單維持清單式（常駐雙欄在小螢幕上放不下）
+       手機：漢堡選單維持清單式（單欄+彈出面板在小螢幕上一樣放不下，
+       這次重構先不動手機版，維持現有的抽屜清單）
        ============================================================ -->
   <div class="AppMenuTreeMobile" v-if="isMobileMenuOpen">
     <div class="mobile-header">
@@ -271,10 +256,7 @@
       <i class="material-symbols-outlined">settings</i>企業設定
     </RouterLink>
 
-    <!-- 團隊區塊：跟桌機版共用同一套「切換器＋常駐面板」模型，不再是手機獨有的
-         手風琴（每個團隊各自表頭展開）。同一個 selectedTeam／isTeamSwitcherOpen
-         狀態，切換團隊、展開技能管理/共享資源庫群組的行為桌機/手機完全一致。 -->
-    <template v-if="showTeamPanel">
+    <template v-if="isOnTeamRoute && selectedTeam">
       <div class="side-panel-divider"></div>
 
       <div class="side-panel-switcher mobile-team-switcher"
@@ -283,8 +265,8 @@
         @click="isTeamSwitcherOpen = !isTeamSwitcherOpen"
         @keydown.enter.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen"
         @keydown.space.prevent="isTeamSwitcherOpen = !isTeamSwitcherOpen">
-        <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam!.name) }}</span>
-        <span class="side-panel-switcher-name">{{ selectedTeam!.name }}</span>
+        <span class="side-panel-switcher-icon" :style="{ background: teamColor(selectedTeamIndex) }">{{ teamInitial(selectedTeam.name) }}</span>
+        <span class="side-panel-switcher-name">{{ selectedTeam.name }}</span>
         <i class="material-symbols-outlined side-panel-switcher-caret">unfold_more</i>
       </div>
       <div class="team-switch-list" v-show="isTeamSwitcherOpen">
@@ -297,17 +279,17 @@
         </div>
       </div>
 
-      <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }" class="side-panel-item mobile-item" @click="closeMobileMenu">
+      <RouterLink :to="{ path: '/view/TeamProject', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }" class="side-panel-item mobile-item" @click="closeMobileMenu">
         <i class="material-symbols-outlined">folder</i>團隊專案
       </RouterLink>
 
       <div class="side-panel-item side-panel-group mobile-item"
-        role="button" tabindex="0" :aria-expanded="selectedTeam!.isSkillOpen"
-        @click="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen">
+        role="button" tabindex="0" :aria-expanded="selectedTeam.isSkillOpen"
+        @click="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen">
         <i class="material-symbols-outlined">psychology</i>AI 技能
-        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam!.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isSkillOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
       </div>
-      <div class="side-panel-sub" v-show="selectedTeam!.isSkillOpen">
+      <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
         <RouterLink to="/view/Skills" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">auto_awesome</i>技能管理
         </RouterLink>
@@ -317,24 +299,24 @@
       </div>
 
       <div class="side-panel-item side-panel-group mobile-item"
-        role="button" tabindex="0" :aria-expanded="selectedTeam!.isResourceOpen"
-        @click="selectedTeam!.isResourceOpen = !selectedTeam!.isResourceOpen">
+        role="button" tabindex="0" :aria-expanded="selectedTeam.isResourceOpen"
+        @click="selectedTeam.isResourceOpen = !selectedTeam.isResourceOpen">
         <i class="material-symbols-outlined">cloud</i>共享資源庫
-        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam!.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
+        <i class="material-symbols-outlined side-panel-caret">{{ selectedTeam.isResourceOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</i>
       </div>
-      <div class="side-panel-sub" v-show="selectedTeam!.isResourceOpen">
-        <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
+      <div class="side-panel-sub" v-show="selectedTeam.isResourceOpen">
+        <RouterLink :to="{ path: '/view/ResourceLibrary', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">folder_open</i>共用檔案管理
         </RouterLink>
-        <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
+        <RouterLink :to="{ path: '/view/KnowledgeBase', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">menu_book</i>知識庫管理
         </RouterLink>
       </div>
 
-      <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }" class="side-panel-item mobile-item" @click="closeMobileMenu">
+      <RouterLink :to="{ path: '/view/TeamAccessManagement', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }" class="side-panel-item mobile-item" @click="closeMobileMenu">
         <i class="material-symbols-outlined">lock_person</i>權限管理
       </RouterLink>
-      <RouterLink :to="{ path: '/view/ProjectTrashCans', query: { teamId: selectedTeam!.id, teamName: selectedTeam!.name } }" class="side-panel-item mobile-item" @click="closeMobileMenu">
+      <RouterLink :to="{ path: '/view/ProjectTrashCans', query: { teamId: selectedTeam.id, teamName: selectedTeam.name } }" class="side-panel-item mobile-item" @click="closeMobileMenu">
         <i class="material-symbols-outlined">auto_delete</i>專案垃圾桶
       </RouterLink>
     </template>
@@ -354,9 +336,8 @@ const router = useRouter();
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, appSearchKeyword, testGroups, companyList, nowMenuTreeCompanyId, nowMenuTreeCompanyName } = storeToRefs(rootStore);
 
-// 團隊切換器（rail 團隊入口／常駐面板／手機版）只列出「目前選定企業」底下的
-// 團隊，不是列出所有企業的團隊——企業是團隊的上層範疇，選錯範疇卻看到別間
-// 企業的團隊，才是真正會讓人迷路的地方
+// 團隊切換器只列出「目前選定企業」底下的團隊，不是列出所有企業的團隊——
+// 企業是團隊的上層範疇，選錯範疇卻看到別間企業的團隊，才是真正會讓人迷路的地方
 const companyTeams = computed(() => testGroups.value.filter((g: any) => g.companyId === nowMenuTreeCompanyId.value));
 
 // 團隊圖示色票：跟品牌色同一組調性（去飽和），不用跟主題無關的彩虹色
@@ -370,16 +351,18 @@ function teamInitial(name: string): string {
   return (stripped || name).charAt(0);
 }
 
-// 常駐選單面板：顯示「目前選中團隊」的導覽項目，預設選目前企業的第一個團隊，
-// 這樣面板一開始就有內容，不會是空的
+// 團隊選單面板顯示「目前選中團隊」的導覽項目，預設選目前企業的第一個團隊，
+// 這樣面板一開啟就有內容，不會是空的
 const selectedTeamId = ref<string | null>(companyTeams.value[0]?.id ?? null);
 const selectedTeam = computed(() => testGroups.value.find((g: any) => g.id === selectedTeamId.value) ?? null);
 const selectedTeamIndex = computed(() => companyTeams.value.findIndex((g: any) => g.id === selectedTeamId.value));
 
-// 「最近使用」「探索」是跨團隊、也跨企業的全域單元，不屬於任何特定團隊，
-// 停在這兩個頁面時不顯示團隊層的常駐選單面板
+// 「最近使用」「探索」是跨團隊、也跨企業的全域單元，不屬於任何特定團隊；
+// 這個純粹用來讓「團隊功能」項目在目前停在團隊頁面時亮起，不控制面板要不要
+// 自動彈出——面板只有使用者主動點擊「團隊功能」或關閉鈕才會開關
 const GLOBAL_ROUTES = ['/view/ProjectDashboard', '/view/Explore'];
-const showTeamPanel = computed(() => !!selectedTeam.value && !GLOBAL_ROUTES.includes(route.path));
+const isOnTeamRoute = computed(() => !!selectedTeam.value && !GLOBAL_ROUTES.includes(route.path));
+
 // 團隊清單有異動、或企業被切換導致目前選中的團隊不再列在 companyTeams 裡時，
 // 自動改選目前企業的第一個團隊，同一個 watcher 涵蓋兩種情境
 watch(companyTeams, (groups: any[]) => {
@@ -388,9 +371,20 @@ watch(companyTeams, (groups: any[]) => {
   }
 });
 
-// 團隊切換：常駐面板上方的下拉、rail 企業／團隊合併入口、手機版切換器，全部
-// 呼叫同一個 switchTeam()，同一個團隊、同一個當下頁面情境要有同一種結果，
-// 不能一個會跳頁一個不會，換了團隊卻讓使用者以為自己還停在舊資料上
+// 團隊選單面板：只有點「團隊功能」或關閉鈕才會開關，不會因為網址帶 teamId
+// 就自動彈出
+const isTeamPanelOpen = ref(false);
+const teamPanelEl = ref<HTMLElement | null>(null);
+function toggleTeamPanel() {
+  isTeamPanelOpen.value = !isTeamPanelOpen.value;
+}
+function closeTeamPanel() {
+  isTeamPanelOpen.value = false;
+}
+
+// 團隊切換：面板內的下拉、企業清單裡直接點團隊（目前簡化成只留企業清單，
+// 團隊切換收在面板自己的切換器裡）都呼叫同一個 switchTeam()，同一個團隊、
+// 同一個當下頁面情境要有同一種結果，不能一個會跳頁一個不會
 const isTeamSwitcherOpen = ref(false);
 const teamSwitcherBtn = ref<HTMLElement | null>(null);
 
@@ -414,49 +408,17 @@ function switchTeam(id: string) {
     router.push({ path: '/view/TeamProject', query: { teamId: team.id, teamName: team.name } });
     closeMobileMenu();
   }
-  // 其餘頁面（技能清單／技能測試沙盒）直接讀 store 的 selectedTeamId，不吃
+  // 其餘頁面（技能管理／技能測試沙盒）直接讀 store 的 selectedTeamId，不吃
   // URL query，畫面會自動反映新選的團隊，不用額外導覽
 }
 
-// 側邊選單第二層（team side-panel）是否收合成迷你圖示條：純畫面狀態、不記憶，
-// 每次重新整理／換頁都預設展開（手機版不需要，手機本來就是關閉即收起的抽屜）
-const isSidePanelCollapsed = ref(false);
-function toggleSidePanelCollapsed() {
-  isSidePanelCollapsed.value = !isSidePanelCollapsed.value;
-  openFlyoutGroup.value = null;
-}
+// 導覽欄本身是否收合成迷你圖示條：純畫面狀態、不記憶，每次重新整理／換頁
+// 都預設展開（手機版不需要，手機本來就是關閉即收起的抽屜）
+const isNavCollapsed = ref(false);
 
-// 收合後「AI 技能」「共享資源庫」改用滑鼠移入/鍵盤 focus 彈出的浮層瀏覽子
-// 項目，跟展開狀態下的 isSkillOpen/isResourceOpen（內縮清單開合狀態）分開
-// 記錄——收合再展開不會動到後者，子群組原本的開合狀態原樣保留
-const openFlyoutGroup = ref<'skill' | 'resource' | null>(null);
-function openGroupFlyout(key: 'skill' | 'resource') {
-  if (isSidePanelCollapsed.value) openFlyoutGroup.value = key;
-}
-function closeGroupFlyout(key: 'skill' | 'resource') {
-  if (openFlyoutGroup.value === key) openFlyoutGroup.value = null;
-}
-
-// Rail 上企業／團隊合併的入口：常駐圖示，不用先點頭像才找得到企業切換
+// 企業選擇器：常駐圖示，不用先點頭像才找得到企業切換
 const isCompanyRailOpen = ref(false);
 const companyRailPopoverEl = ref<HTMLElement | null>(null);
-function teamsOfCompany(companyId: string) {
-  return testGroups.value.filter((g: any) => g.companyId === companyId);
-}
-// popover 裡直接點某間企業底下的團隊（可能不是目前使用中的企業）：先把使用中
-// 企業同步成那個團隊所屬的企業，再交給 switchTeam() 處理導覽，這樣不管團隊屬於
-// 哪間企業，切換的落地頁邏輯都是同一套，不用另外重複一份判斷
-function jumpToTeam(id: string) {
-  const team = testGroups.value.find((g: any) => g.id === id);
-  if (!team) return;
-  const company = companyList.value.find((c) => c.id === team.companyId);
-  if (company) {
-    nowMenuTreeCompanyId.value = company.id;
-    nowMenuTreeCompanyName.value = company.name;
-  }
-  isCompanyRailOpen.value = false;
-  switchTeam(id);
-}
 function selectCompany(item: { id: string; name: string }) {
   isCompanyRailOpen.value = false;
   if (item.id === nowMenuTreeCompanyId.value) return; // 選的還是目前這間企業，不用重新導覽
@@ -467,9 +429,9 @@ function selectCompany(item: { id: string; name: string }) {
   const firstTeamOfNewCompany = testGroups.value.find((g: any) => g.companyId === item.id);
   selectedTeamId.value = firstTeamOfNewCompany?.id ?? null;
 
-  // 「最近使用」「探索」不分企業（見上面 GLOBAL_ROUTES 的說明），留在原地就好；
-  // 其餘頁面顯示的都是某個團隊的資料，而那個團隊已經不屬於新企業了，
-  // 帶去新企業第一個團隊的團隊專案頁，跟切換團隊時的落地頁邏輯一致
+  // 「最近使用」「探索」不分企業，留在原地就好；其餘頁面顯示的都是某個團隊
+  // 的資料，而那個團隊已經不屬於新企業了，帶去新企業第一個團隊的團隊專案頁，
+  // 跟切換團隊時的落地頁邏輯一致
   if (!GLOBAL_ROUTES.includes(route.path) && firstTeamOfNewCompany) {
     router.push({ path: '/view/TeamProject', query: { teamId: firstTeamOfNewCompany.id, teamName: firstTeamOfNewCompany.name } });
     closeMobileMenu();
@@ -492,7 +454,7 @@ watch(() => route.fullPath, () => {
   if (RESOURCE_PATHS.includes(route.path)) team.isResourceOpen = true;
 }, { immediate: true });
 
-// 搜尋彈出框
+// 搜尋彈出框（只有導覽欄收合時才用得到；展開時搜尋框直接顯示在導覽欄裡）
 const isSearchOpen = ref(false);
 const searchPopoverEl = ref<HTMLElement | null>(null);
 const searchInputEl = ref<HTMLInputElement | null>(null);
@@ -524,6 +486,9 @@ onMounted(() => {
   });
   initClickOutsideListener(companyRailPopoverEl.value!, () => {
     isCompanyRailOpen.value = false;
+  });
+  initClickOutsideListener(teamPanelEl.value!, () => {
+    isTeamPanelOpen.value = false;
   });
 });
 </script>

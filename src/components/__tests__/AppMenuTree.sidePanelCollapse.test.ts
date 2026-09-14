@@ -13,151 +13,131 @@ function mountMenu() {
   return mount(AppMenuTree, { global: { plugins: [router] } })
 }
 
-describe('AppMenuTree 側邊選單第二層收合', () => {
-  it('預設是展開的，側邊面板沒有 is-collapsed class', () => {
+describe('AppMenuTree 導覽欄收合', () => {
+  it('預設是展開的，.AppMenuTree 沒有 is-collapsed class', () => {
     const wrapper = mountMenu()
-    expect(wrapper.find('.side-panel').classes()).not.toContain('is-collapsed')
+    expect(wrapper.find('.AppMenuTree').classes()).not.toContain('is-collapsed')
   })
 
-  it('點擊收合按鈕後，側邊面板加上 is-collapsed class；再點一次恢復展開', async () => {
+  it('點擊收合按鈕後，.AppMenuTree 加上 is-collapsed class；再點一次恢復展開', async () => {
     const wrapper = mountMenu()
-    const toggleBtn = wrapper.find('.side-panel-collapse-toggle')
+    const toggleBtn = wrapper.find('.nav-collapse-toggle')
     expect(toggleBtn.exists()).toBe(true)
 
     await toggleBtn.trigger('click')
-    expect(wrapper.find('.side-panel').classes()).toContain('is-collapsed')
+    expect(wrapper.find('.AppMenuTree').classes()).toContain('is-collapsed')
 
     await toggleBtn.trigger('click')
-    expect(wrapper.find('.side-panel').classes()).not.toContain('is-collapsed')
+    expect(wrapper.find('.AppMenuTree').classes()).not.toContain('is-collapsed')
   })
 
-  it('收合後，最外層 .AppMenuTree 容器也要跟著縮寬，不能維持展開時的整塊寬度——不然側邊面板縮小了、外層卻還保留原本的區域位置，中間會留一塊空白', async () => {
+  it('收合後，導覽項目不顯示文字，只留圖示', async () => {
     const wrapper = mountMenu()
-    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+    await wrapper.find('.nav-collapse-toggle').trigger('click')
 
-    expect(wrapper.find('.AppMenuTree').classes()).toContain('is-panel-collapsed')
+    const nav = wrapper.find('.AppMenuTree')
+    expect(nav.text()).not.toContain('探索')
+    expect(nav.text()).not.toContain('最近使用')
+    expect(nav.text()).not.toContain('企業設定')
+    expect(nav.text()).not.toContain('團隊功能')
   })
 
-  it('收合後，團隊切換器不保留團隊圖示／名稱／展開箭頭，只留收合按鈕本身', async () => {
+  it('展開狀態下完全不受影響：文字、圖示都跟收合功能加入前一樣', () => {
     const wrapper = mountMenu()
-    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+    const nav = wrapper.find('.AppMenuTree')
+    expect(nav.text()).toContain('探索')
+    expect(nav.text()).toContain('最近使用')
+    expect(nav.text()).toContain('企業設定')
+    expect(nav.text()).toContain('團隊功能')
+  })
+})
 
-    const switcher = wrapper.find('.side-panel-switcher')
-    expect(switcher.find('.side-panel-switcher-icon').exists()).toBe(false)
-    expect(switcher.find('.side-panel-switcher-name').exists()).toBe(false)
-    expect(switcher.find('.side-panel-switcher-caret').exists()).toBe(false)
-    expect(switcher.find('.side-panel-collapse-toggle').exists()).toBe(true)
+describe('AppMenuTree 團隊選單面板開關', () => {
+  it('預設不會顯示團隊選單面板', () => {
+    const wrapper = mountMenu()
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
-  it('收合後，單一項目（團隊專案／權限管理／專案垃圾桶）不顯示文字，只留圖示', async () => {
+  it('點擊「團隊功能」會打開團隊選單面板，裡面有團隊專案等導覽項目', async () => {
     const wrapper = mountMenu()
-    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+    await wrapper.find('.nav-team-toggle').trigger('click')
 
-    const panel = wrapper.find('.side-panel')
-    expect(panel.text()).not.toContain('團隊專案')
-    expect(panel.text()).not.toContain('權限管理')
-    expect(panel.text()).not.toContain('專案垃圾桶')
-  })
-
-  it('展開狀態下完全不受影響：文字、圖示、群組展開都跟收合功能加入前一樣', () => {
-    const wrapper = mountMenu()
-    const panel = wrapper.find('.side-panel')
+    const panel = wrapper.find('.team-panel')
+    expect(panel.attributes('style')).not.toContain('display: none')
+    expect(panel.text()).toContain('團隊選單')
     expect(panel.text()).toContain('團隊專案')
-    expect(panel.text()).toContain('權限管理')
-    expect(panel.text()).toContain('專案垃圾桶')
     expect(panel.text()).toContain('AI 技能')
     expect(panel.text()).toContain('共享資源庫')
   })
-})
 
-describe('AppMenuTree 收合後子群組改用 hover flyout', () => {
-  it('收合前，AI 技能群組 hover 不會有作用（展開狀態下沒有 flyout）', async () => {
+  it('點擊面板的 X 關閉鈕會關閉團隊選單面板', async () => {
     const wrapper = mountMenu()
-    const group = wrapper.findAll('.side-panel-nav-group')[0]
-    await group.trigger('mouseenter')
+    await wrapper.find('.nav-team-toggle').trigger('click')
+    expect(wrapper.find('.team-panel').attributes('style')).not.toContain('display: none')
 
-    expect(wrapper.find('.side-panel-flyout').isVisible()).toBe(false)
+    await wrapper.find('.team-panel-close').trigger('click')
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
-  it('收合後滑鼠移入「AI 技能」群組，會彈出包含「技能管理」「技能測試沙盒」的浮層', async () => {
+  it('點擊面板裡的導覽項目（例如團隊專案）後，面板應該自動關閉，不會固定留在畫面上蓋住剛導覽過去的頁面', async () => {
     const wrapper = mountMenu()
-    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+    await wrapper.find('.nav-team-toggle').trigger('click')
+    expect(wrapper.find('.team-panel').attributes('style')).not.toContain('display: none')
 
-    const skillGroup = wrapper.findAll('.side-panel-nav-group')[0]
-    await skillGroup.trigger('mouseenter')
+    const teamProjectLink = wrapper.findAll('.side-panel-item').find(el => el.text().includes('團隊專案'))!
+    await teamProjectLink.trigger('click')
 
-    const flyout = skillGroup.find('.side-panel-flyout')
-    expect(flyout.attributes('style') ?? '').not.toContain('display: none')
-    expect(flyout.text()).toContain('技能管理')
-    expect(flyout.text()).toContain('技能測試沙盒')
-
-    await skillGroup.trigger('mouseleave')
-    expect(skillGroup.find('.side-panel-flyout').attributes('style')).toContain('display: none')
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
-  it('收合後滑鼠移入「共享資源庫」群組，會彈出包含「共用檔案管理」「知識庫管理」的浮層', async () => {
+  it('再次點擊「團隊功能」可以切換關閉（不需要一定用 X）', async () => {
     const wrapper = mountMenu()
-    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
+    const toggle = wrapper.find('.nav-team-toggle')
+    await toggle.trigger('click')
+    expect(wrapper.find('.team-panel').attributes('style')).not.toContain('display: none')
 
-    const resourceGroup = wrapper.findAll('.side-panel-nav-group')[1]
-    await resourceGroup.trigger('mouseenter')
-
-    const flyout = resourceGroup.find('.side-panel-flyout')
-    expect(flyout.isVisible()).toBe(true)
-    expect(flyout.text()).toContain('共用檔案管理')
-    expect(flyout.text()).toContain('知識庫管理')
-  })
-})
-
-describe('AppMenuTree 收合後團隊切換器也能懸浮', () => {
-  it('收合後滑鼠移入團隊切換器，會彈出團隊清單', async () => {
-    const wrapper = mountMenu()
-    await wrapper.find('.side-panel-collapse-toggle').trigger('click')
-
-    const switcher = wrapper.find('.side-panel-switcher')
-    await switcher.trigger('mouseenter')
-
-    const list = wrapper.find('.team-switch-list')
-    expect(list.attributes('style') ?? '').not.toContain('display: none')
-    expect(list.text()).toContain('UGG電子商務')
-    expect(list.text()).toContain('UGG實體門市')
-
-    await switcher.trigger('mouseleave')
-    expect(wrapper.find('.team-switch-list').attributes('style')).toContain('display: none')
+    await toggle.trigger('click')
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
-  it('展開狀態下 hover 團隊切換器不會有作用（維持原本點擊才展開的行為）', async () => {
-    const wrapper = mountMenu()
-    const switcher = wrapper.find('.side-panel-switcher')
-    await switcher.trigger('mouseenter')
+  it('直接用網址進入團隊頁面，不會自動彈出團隊選單面板——只有點擊「團隊功能」才會開', async () => {
+    setActivePinia(createPinia())
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [{ path: '/view/TeamProject', component: { template: '<div/>' } }],
+    })
+    await router.push('/view/TeamProject')
+    const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    expect(wrapper.find('.team-switch-list').attributes('style')).toContain('display: none')
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
-  it('展開狀態下點擊團隊切換器仍然可以展開團隊清單（既有行為不受影響）', async () => {
-    const wrapper = mountMenu()
-    const switcher = wrapper.find('.side-panel-switcher')
-    await switcher.trigger('click')
+  it('目前在團隊頁面時，「團隊功能」項目會亮起（active）', async () => {
+    setActivePinia(createPinia())
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [{ path: '/view/TeamProject', component: { template: '<div/>' } }],
+    })
+    await router.push('/view/TeamProject')
+    const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    expect(wrapper.find('.team-switch-list').attributes('style') ?? '').not.toContain('display: none')
+    expect(wrapper.find('.nav-team-toggle').classes()).toContain('active')
   })
 })
 
-describe('AppMenuTree 收合再展開不影響子群組原本的開合狀態', () => {
-  it('收合前展開「AI 技能」子清單，收合再展開後，子清單應該還是展開的', async () => {
+describe('AppMenuTree 團隊選單面板內的群組展開狀態會保留', () => {
+  it('展開「AI 技能」子清單後，關閉再重新打開面板，子清單應該還是展開的', async () => {
     const wrapper = mountMenu()
+    const toggle = wrapper.find('.nav-team-toggle')
 
-    // 展開狀態下先點開「AI 技能」群組的內縮子清單
+    await toggle.trigger('click')
     const skillTrigger = wrapper.findAll('.side-panel-group')[0]
     await skillTrigger.trigger('click')
-    expect(wrapper.find('.side-panel-sub').isVisible()).toBe(true)
+    expect(wrapper.find('.side-panel-sub').attributes('style')).not.toContain('display: none')
 
-    // 收合再展開
-    const toggleBtn = wrapper.find('.side-panel-collapse-toggle')
-    await toggleBtn.trigger('click')
-    await toggleBtn.trigger('click')
+    await toggle.trigger('click') // 關閉面板
+    await toggle.trigger('click') // 重新打開
 
-    // 子清單應該恢復展開，不是被重置成收合
-    expect(wrapper.find('.side-panel-sub').isVisible()).toBe(true)
+    expect(wrapper.find('.side-panel-sub').attributes('style')).not.toContain('display: none')
   })
 })
