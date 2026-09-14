@@ -127,14 +127,13 @@
   </div>
 
   <!-- ============================================================
-       團隊選單面板：獨立彈出式面板，只有點「團隊功能」才會出現，點 X
-       或點背景關閉；不是常駐在導覽欄旁邊。
+       團隊選單面板：只有點「團隊功能」才會出現，點 X 或點導覽欄以外的地方
+       關閉；面板是版面裡的正常一欄，出現時會把右邊的頁面內容推過去，不是
+       浮在內容上面的浮層。
        ============================================================ -->
-  <Transition name="team-panel-backdrop-fade">
-    <div class="team-panel-backdrop" v-if="isTeamPanelOpen" @click="closeTeamPanel"></div>
-  </Transition>
   <Transition name="team-panel-slide">
-    <div class="team-panel" v-if="isTeamPanelOpen && selectedTeam" ref="teamPanelEl">
+    <div class="team-panel" v-show="isTeamPanelOpen" ref="teamPanelEl">
+      <template v-if="selectedTeam">
       <div class="team-panel-header">
         <span class="team-panel-title">團隊選單</span>
         <button type="button" class="team-panel-close" aria-label="關閉團隊選單" @click="closeTeamPanel">
@@ -227,6 +226,7 @@
         </RouterLink>
       </div>
       </Transition>
+      </template>
     </div>
   </Transition>
 
@@ -486,6 +486,9 @@ onMounted(() => {
   });
   initClickOutsideListener(companyRailPopoverEl.value!, () => {
     isCompanyRailOpen.value = false;
+  });
+  initClickOutsideListener(teamPanelEl.value!, () => {
+    isTeamPanelOpen.value = false;
   });
 });
 </script>

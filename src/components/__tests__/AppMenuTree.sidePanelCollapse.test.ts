@@ -55,7 +55,7 @@ describe('AppMenuTree 導覽欄收合', () => {
 describe('AppMenuTree 團隊選單面板開關', () => {
   it('預設不會顯示團隊選單面板', () => {
     const wrapper = mountMenu()
-    expect(wrapper.find('.team-panel').exists()).toBe(false)
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
   it('點擊「團隊功能」會打開團隊選單面板，裡面有團隊專案等導覽項目', async () => {
@@ -63,7 +63,7 @@ describe('AppMenuTree 團隊選單面板開關', () => {
     await wrapper.find('.nav-team-toggle').trigger('click')
 
     const panel = wrapper.find('.team-panel')
-    expect(panel.exists()).toBe(true)
+    expect(panel.attributes('style')).not.toContain('display: none')
     expect(panel.text()).toContain('團隊選單')
     expect(panel.text()).toContain('團隊專案')
     expect(panel.text()).toContain('AI 技能')
@@ -73,40 +73,31 @@ describe('AppMenuTree 團隊選單面板開關', () => {
   it('點擊面板的 X 關閉鈕會關閉團隊選單面板', async () => {
     const wrapper = mountMenu()
     await wrapper.find('.nav-team-toggle').trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(true)
+    expect(wrapper.find('.team-panel').attributes('style')).not.toContain('display: none')
 
     await wrapper.find('.team-panel-close').trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(false)
-  })
-
-  it('點擊背景（backdrop）也會關閉團隊選單面板', async () => {
-    const wrapper = mountMenu()
-    await wrapper.find('.nav-team-toggle').trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(true)
-
-    await wrapper.find('.team-panel-backdrop').trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(false)
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
   it('點擊面板裡的導覽項目（例如團隊專案）後，面板應該自動關閉，不會固定留在畫面上蓋住剛導覽過去的頁面', async () => {
     const wrapper = mountMenu()
     await wrapper.find('.nav-team-toggle').trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(true)
+    expect(wrapper.find('.team-panel').attributes('style')).not.toContain('display: none')
 
     const teamProjectLink = wrapper.findAll('.side-panel-item').find(el => el.text().includes('團隊專案'))!
     await teamProjectLink.trigger('click')
 
-    expect(wrapper.find('.team-panel').exists()).toBe(false)
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
   it('再次點擊「團隊功能」可以切換關閉（不需要一定用 X）', async () => {
     const wrapper = mountMenu()
     const toggle = wrapper.find('.nav-team-toggle')
     await toggle.trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(true)
+    expect(wrapper.find('.team-panel').attributes('style')).not.toContain('display: none')
 
     await toggle.trigger('click')
-    expect(wrapper.find('.team-panel').exists()).toBe(false)
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
   it('直接用網址進入團隊頁面，不會自動彈出團隊選單面板——只有點擊「團隊功能」才會開', async () => {
@@ -118,7 +109,7 @@ describe('AppMenuTree 團隊選單面板開關', () => {
     await router.push('/view/TeamProject')
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    expect(wrapper.find('.team-panel').exists()).toBe(false)
+    expect(wrapper.find('.team-panel').attributes('style')).toContain('display: none')
   })
 
   it('目前在團隊頁面時，「團隊功能」項目會亮起（active）', async () => {
@@ -142,11 +133,11 @@ describe('AppMenuTree 團隊選單面板內的群組展開狀態會保留', () =
     await toggle.trigger('click')
     const skillTrigger = wrapper.findAll('.side-panel-group')[0]
     await skillTrigger.trigger('click')
-    expect(wrapper.find('.side-panel-sub').isVisible()).toBe(true)
+    expect(wrapper.find('.side-panel-sub').attributes('style')).not.toContain('display: none')
 
     await toggle.trigger('click') // 關閉面板
     await toggle.trigger('click') // 重新打開
 
-    expect(wrapper.find('.side-panel-sub').isVisible()).toBe(true)
+    expect(wrapper.find('.side-panel-sub').attributes('style')).not.toContain('display: none')
   })
 })

@@ -370,39 +370,22 @@
 }
 
 // ============================================================
-// 團隊選單面板：獨立彈出式面板，只有點「團隊功能」才會出現
+// 團隊選單面板：只有點「團隊功能」才會出現，是版面裡正常的一欄（flex
+// child），出現時會把右邊的頁面內容推過去，不是浮在內容上面、蓋住畫面的
+// 浮層——關閉方式靠點 X 或點導覽欄以外的地方（initClickOutsideListener），
+// 不需要額外的暗色背景遮罩
 // ============================================================
 
-.team-panel-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 15;
-  background: rgba(#09151A, 0.35);
-}
-.team-panel-backdrop-fade-enter-active,
-.team-panel-backdrop-fade-leave-active {
-  transition: opacity 0.16s ease;
-}
-.team-panel-backdrop-fade-enter-from,
-.team-panel-backdrop-fade-leave-to {
-  opacity: 0;
-}
-
 .team-panel {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: $navWidth;
-  z-index: 16;
+  position: relative;
+  flex: none;
   width: $teamPanelWidth;
+  height: 100%;
   background: var(--surface);
   border-right: 1px solid var(--divider);
   padding: 16px 10px;
   overflow-y: auto;
   @include use-scroll-bar(var(--scrollbar-a50));
-}
-.AppMenuTree.is-collapsed ~ .team-panel {
-  left: $railWidth;
 }
 
 .team-panel-slide-enter-active,
@@ -694,7 +677,6 @@
 // ============================================================
 @media (max-width: $breakpoint-mobile) {
   .AppMenuTree { display: none; }
-  .team-panel-backdrop,
   .team-panel { display: none; }
 
   .hamburger-btn {
