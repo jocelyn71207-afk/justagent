@@ -184,7 +184,7 @@
               <textarea class="conv2-up-ta" v-model="conv2UploadDesc" rows="3" @click.stop="conv2FillDemoDesc()"></textarea>
               <div :class="['conv2-up-status', {'conv2-up-status--ready': conv2UploadImgLoaded || conv2UploadDesc}]">
                 <template v-if="conv2UploadImgLoaded || conv2UploadDesc">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   {{ conv2UploadImgLoaded && conv2UploadDesc ? '圖片已上傳・描述已填寫' : conv2UploadImgLoaded ? '圖片已上傳' : '描述已填寫' }}
                 </template>
                 <template v-else>圖片或描述至少填一項</template>
@@ -192,7 +192,7 @@
             </div>
           </div>
           <div class="conv2-fp-btn-row">
-            <button class="conv2-fp-submit-btn" @click.stop="conv2StartAnalysis()">開始分析 →</button>
+            <button class="conv2-fp-submit-btn" @click.stop="conv2StartAnalysis()">開始分析</button>
           </div>
         </div>
       </div>
@@ -242,7 +242,7 @@
             </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
               <button class="conv2-fp-sec-btn" @click.stop="conv2DirectFpStep = 1"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitSku()">確認送出 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitSku()">確認送出</button>
             </div>
           </div>
           <!-- Step 3: 輸入競品網址 -->
@@ -251,7 +251,7 @@
             <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2DirectUrlInput" rows="4" @click.stop="conv2FillDemoUrls()"
               placeholder="每行一個網址&#10;e.g. https://shopee.tw/..." style="margin-top:8px"></textarea>
             <div class="conv2-fp-btn-row" style="margin-top:8px">
-              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitUrls()">開始分析 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitUrls()">開始分析</button>
             </div>
           </div>
         </div>
@@ -299,11 +299,11 @@
               <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop="!conv2S2Brand && (conv2S2Brand = 'UGG')" /></div>
               <div><div class="conv2-fl">定價 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Price" @click.stop="!conv2S2Price && (conv2S2Price = 'NT$5,980')" /></div>
             </div>
-            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--color-error,#dc2626)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop="!conv2S2Name && (conv2S2Name = DEMO_NAME)" /></div>
-            <div><div class="conv2-fl">商品描述 <span style="color:var(--color-error,#dc2626)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop="!conv2S2Desc && (conv2S2Desc = DEMO_DESC)"></textarea></div>
+            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--danger)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop="!conv2S2Name && (conv2S2Name = DEMO_NAME)" /></div>
+            <div><div class="conv2-fl">商品描述 <span style="color:var(--danger)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop="!conv2S2Desc && (conv2S2Desc = DEMO_DESC)"></textarea></div>
             <div class="conv2-err">{{ conv2S2Err }}</div>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep1to2()">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep1to2()">確認</button>
             </div>
           </div>
           <!-- Step 2: 商品類別 -->
@@ -317,7 +317,7 @@
             <input class="conv2-fi conv2-fi--full" v-model="conv2S1Custom" placeholder="找不到，自行輸入…" @click.stop style="margin-top:4px" />
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認</button>
             </div>
           </div>
           <!-- Step 3: 分析特徵 -->
@@ -327,7 +327,7 @@
               :class="['conv2-feat-item', {sel: f.sel}]"
               @click.stop="conv2TogFeat(f)">
               <div class="conv2-fcb">
-                <svg v-if="f.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg v-if="f.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="var(--tag-blue-text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div><div class="conv2-ft">{{ f.title }}</div><div class="conv2-fd">{{ f.desc }}</div></div>
             </div>
@@ -335,7 +335,7 @@
             <div class="conv2-fp-btn-row">
               <span class="conv2-cbadge">已選 {{ conv2S3Features.filter(f => f.sel).length }} / {{ conv2S3Features.length }}</span>
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(2)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep(4)">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(4)">確認</button>
             </div>
           </div>
           <!-- Step 4: 搜索範圍 -->
@@ -351,7 +351,7 @@
             <div style="font-size:11px;color:var(--color-text-alpha50);margin-top:8px">確認後進入設定審核，無誤後 DeepAgent 開始搜索</div>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(3)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep('45')">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep('45')">確認</button>
             </div>
           </div>
           <!-- Step 45: 確認設定 -->
@@ -365,7 +365,7 @@
             </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(4)"><i class="material-symbols-outlined">arrow_back</i>返回修改</button>
-              <button class="conv2-fp-btn conv2-fp-btn--green" @click.stop="conv2StartSearch()">確認無誤，開始搜索 →</button>
+              <button class="conv2-fp-btn conv2-fp-btn--green" @click.stop="conv2StartSearch()">確認無誤，開始搜索</button>
             </div>
           </div>
           <!-- Step 5: 確認競品 -->
@@ -405,7 +405,7 @@
             <div class="conv2-err">{{ conv2S5Err }}</div>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2ResetComps()">重設</button>
-              <button class="conv2-fp-btn" :disabled="conv2S5SelComps.size < 1" @click.stop="conv2DoneComps()">產出報告 →</button>
+              <button class="conv2-fp-btn" :disabled="conv2S5SelComps.size < 1" @click.stop="conv2DoneComps()">產出報告</button>
             </div>
           </div>
         </div>
@@ -442,7 +442,7 @@
             </div>
           </div>
           <div class="conv2-fp-btn-row">
-            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理 →</button>
+            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理</button>
           </div>
         </div>
       </div>
@@ -461,14 +461,14 @@
             :class="['conv2-feat-item', {sel: d.sel}]"
             @click.stop="conv3TogDim(d)">
             <div class="conv2-fcb">
-              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="var(--tag-blue-text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="conv2-ft">{{ d.title }}</div>
           </div>
           <div class="conv2-err">{{ conv3DimErr }}</div>
           <div class="conv2-fp-btn-row">
             <span class="conv2-cbadge">已選 {{ conv3Dims.filter(d => d.sel).length }} / {{ conv3Dims.length }}</span>
-            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認 →</button>
+            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認</button>
           </div>
         </div>
       </div>
@@ -486,7 +486,7 @@
           <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv3TaggingConcernInput" rows="3" @click.stop
             placeholder="例如：某個 SKU 的材質標籤好像貼錯了..."></textarea>
           <div class="conv2-fp-btn-row">
-            <button class="conv2-fp-submit-btn" @click.stop="submitConv3TaggingConcern()">確認送出 →</button>
+            <button class="conv2-fp-submit-btn" @click.stop="submitConv3TaggingConcern()">確認送出</button>
           </div>
         </div>
       </div>
@@ -677,7 +677,7 @@
             <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="journeyModifyInput" rows="3" @click.stop
               placeholder="例如：旅程過於單一，我需要更豐富的旅程設計..."></textarea>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出</button>
             </div>
           </div>
         </div>
@@ -694,7 +694,7 @@
             <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv5ConcernInput" rows="3" @click.stop
               placeholder="例如：主打商品的庫存足夠支撐大量曝光嗎？"></textarea>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-submit-btn" @click.stop="submitConv5Concern()">確認送出 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="submitConv5Concern()">確認送出</button>
             </div>
           </div>
         </div>
@@ -1427,6 +1427,24 @@ function c1PushThinkingThenReply(
 // 最後由行銷經理整合成行銷活動成效報告。AI大腦→產品助理→數據經理→行銷經理→
 // AI大腦 之間的交接列由河道的 messageHandoffs 機制自動顯示，這裡只需要
 // 依序把每個 agent 的訊息帶上正確的 agent 欄位。
+// 行銷報告多 agent 協作流程的持續進度卡片：跟下面既有的逐則訊息用同一組
+// setTimeout 時間點同步推進，讓使用者不用自己從對話內容拼湊「現在跑到哪一步」
+// ──沿用 DelegateStatusCard（conv2 委派流程已經在用的同一顆純展示元件，
+// 元件自己的註解就寫著「方便未來其他 conv 流程重用」），不用另外做新元件
+const MR_PIPELINE_ID = 'mr-pipeline';
+const MR_PIPELINE_LABELS = ['產品助理・彙整商品資料', '數據經理・分析銷售數據', '行銷經理・生成行銷報告'];
+function advanceMrPipeline(doneUpToIndex: number) {
+  const idx = conv1Msgs.value.findIndex((m: any) => m.id === MR_PIPELINE_ID);
+  if (idx === -1) return;
+  const cur = conv1Msgs.value[idx];
+  const nextSteps = cur.delegateSteps.map((s: any, i: number) => {
+    if (i <= doneUpToIndex) return { ...s, status: 'done' };
+    if (i === doneUpToIndex + 1) return { ...s, status: 'active' };
+    return s;
+  });
+  conv1Msgs.value[idx] = { ...cur, delegateSteps: nextSteps };
+}
+
 function conv1MarketingReportFlow() {
   const thinkingId = 'thinking-' + Date.now();
   conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
@@ -1435,6 +1453,14 @@ function conv1MarketingReportFlow() {
   setTimeout(() => {
     const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId);
     if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+    conv1Msgs.value.push({
+      id: MR_PIPELINE_ID,
+      agent: 'brain',
+      cardType: 'delegateStatus',
+      bookend: '產品助理 → 數據經理 → 行銷經理',
+      delegateSteps: MR_PIPELINE_LABELS.map((label, i) => ({ label, status: i === 0 ? 'active' : 'wait' })),
+      msg: '',
+    });
     conv1Msgs.value.push({ id: 'mr-1', agent: 'productAssistant', isProcessing: true, msg: '收到！正在查詢商品文件，彙整 Hurricane Trailsetter 系列資料⋯' });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
   }, 1200);
@@ -1445,6 +1471,7 @@ function conv1MarketingReportFlow() {
       agent: 'productAssistant',
       msg: '已找到 Hurricane Trailsetter AW26 系列完整商品資料：共 <strong>4 款鞋型</strong>（Sandal 男/女、Mid 男/女），<strong>8 種配色</strong>，建議售價帶 NT$2,480–NT$3,280，核心賣點為防滑大底、快乾材質與 Gore-Tex® 防水膜。已交給數據經理調閱相關銷售數據⋯',
     });
+    advanceMrPipeline(0);
     nextTick(() => AiAgentChatListScrollTo('ASC'));
   }, 2100);
 
@@ -1459,6 +1486,7 @@ function conv1MarketingReportFlow() {
       agent: 'dataManager',
       msg: '已調閱近 3 年銷售數據：系列 2025 年銷量達 <strong>2,310 雙</strong>，連續三年成長 20%+，其中 <strong>Sandal 女款貢獻最高</strong>（809 雙，占系列 35%），Mid 款則相對成長較緩。已交給行銷經理整合成行銷活動成效報告⋯',
     });
+    advanceMrPipeline(1);
     nextTick(() => AiAgentChatListScrollTo('ASC'));
   }, 3900);
 
@@ -1476,6 +1504,7 @@ function conv1MarketingReportFlow() {
       msg: '✅ 已整合商品系列資料與銷售數據，完成 Hurricane Trailsetter 行銷活動成效報告：本季 ROAS 達 4.2 倍，建議加碼 Sandal 女款的社群曝光預算，並針對 Mid 款規劃健行場景內容以拉近銷量差距。報告已加入畫布，可直接查看或下載。',
       files: [{ name: 'hurricane_trailsetter_campaign_performance.html', type: 'HTML', size: 8996 }],
     });
+    advanceMrPipeline(2);
     try { addReportBlock('/justagent/hurricane_trailsetter_campaign_performance.html', 'hurricane_trailsetter_campaign_performance.html'); } catch (e) { /* ignore */ }
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     pushConv1NextStepPrompt('行銷報告');
@@ -2510,14 +2539,14 @@ function conv2StartAnalysis() {
   conv2UploadFpVisible.value = false;
   conv2ShowUploadPill.value = false;
   conv2Title.value = "競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋";
-  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--color-border)" src="${DEMO_IMG}"/><span>${conv2UploadDesc.value}</span></div>` });
+  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--divider)" src="${DEMO_IMG}"/><span>${conv2UploadDesc.value}</span></div>` });
   c2Push({ agent: 'brain', isThinking: true, msg: 'AI 正在思考中...' });
   c2Scroll();
   setTimeout(() => {
     const idx = conv2Msgs.value.findIndex((m) => m.isThinking);
     if (idx !== -1) conv2Msgs.value.splice(idx, 1);
     c2Push({ agent: 'productAssistant', msg: `已識別為<strong>毛絨動物臉室內拖鞋</strong>，捕捉到以下特徵：` });
-    const btnLabel = conv2Mode.value === 'deep' ? '確認並開始深度分析 →' : '確認並產出初步分析報告 →';
+    const btnLabel = conv2Mode.value === 'deep' ? '確認並開始深度分析' : '確認並產出初步分析報告';
     c2Push({ agent: 'productAssistant', msg: `<div class="conv2-product-card">
   <div class="conv2-pc-head">
     <img class="conv2-pc-thumb" src="${DEMO_IMG}"/>
@@ -2575,8 +2604,8 @@ function conv2ConfirmProduct() {
   </div>
 </div>
 <div class="conv2-next-action-row">
-  <button class="conv2-fp-sec-btn" data-action="init-to-deep">深度分析 →</button>
-  <button class="conv2-action-btn" data-action="init-to-direct">直接生成報告 →</button>
+  <button class="conv2-fp-sec-btn" data-action="init-to-deep">深度分析</button>
+  <button class="conv2-action-btn" data-action="init-to-direct">直接生成報告</button>
 </div>` });
       c2Scroll();
     }, 1000);

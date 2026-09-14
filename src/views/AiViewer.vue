@@ -50,18 +50,21 @@
     @wheel="stopWhellZoomEvent($event)"
     @touchmove="stopTouchpadZoomEvent($event)">
 
-    <img class="AiViewer-topbar-logo" src="@/assets/logo.svg" alt="JustAgent" v-tooltip="'回首頁'"
-      @click="goHome" />
+    <!-- 身分識別浮貼底：畫布上不管疊什麼內容，logo/標題文字都要維持可讀 -->
+    <div class="AiViewer-topbar-identity">
+      <img class="AiViewer-topbar-logo" src="@/assets/logo.svg" alt="JustAgent" v-tooltip="'回首頁'"
+        @click="goHome" />
 
-    <!-- 專案名稱／對話標題：專案名稱目前是靜態佔位文字（app 尚未有專案資料來源），
-         之後若接上真實專案系統，換掉 topbarProjectName 這個 ref 即可 -->
-    <div class="AiViewer-topbar-titles">
-      <span class="AiViewer-topbar-project" v-tooltip.bottom="topbarProjectName">{{ topbarProjectName }}</span>
-      <span class="AiViewer-topbar-title" v-tooltip.bottom="topbarProjectTitle">{{ topbarProjectTitle }}</span>
+      <!-- 專案名稱／對話標題：專案名稱目前是靜態佔位文字（app 尚未有專案資料來源），
+           之後若接上真實專案系統，換掉 topbarProjectName 這個 ref 即可 -->
+      <div class="AiViewer-topbar-titles">
+        <span class="AiViewer-topbar-project" v-tooltip.bottom="topbarProjectName">{{ topbarProjectName }}</span>
+        <span class="AiViewer-topbar-title" v-tooltip.bottom="topbarProjectTitle">{{ topbarProjectTitle }}</span>
+      </div>
+
+      <i class="material-symbols-outlined AiViewer-topbar-more" v-tooltip="'more'"
+        @click="isOpenProjMoreOptions = !isOpenProjMoreOptions">keyboard_arrow_down</i>
     </div>
-
-    <i class="material-symbols-outlined AiViewer-topbar-more" v-tooltip="'more'"
-      @click="isOpenProjMoreOptions = !isOpenProjMoreOptions">keyboard_arrow_down</i>
 
     <!-- 更多選項選單 -->
     <div class="more-options-box next-option-box AiViewer-topbar-menu" ref="projectMoreOptionsBox" v-show="isOpenProjMoreOptions">

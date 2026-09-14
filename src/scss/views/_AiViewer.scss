@@ -1,5 +1,28 @@
 @use "sass:color";
 
+// 小型分節眉標（大寫、拉開字距）：hr-section-label／hrf-lbl／jcd-rows-title
+// 原本各自獨立宣告一份幾乎相同的樣式，統一成一份共用的，之後要調整字距/顏色只要改一處
+%eyebrow-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+// 懸浮在畫布上、需要在任意畫布內容上都維持可讀性的「玻璃感」底：半透明底色＋
+// 模糊＋細邊框陰影。.AiViewr-ctrl-box 系列（縮放/小地圖/主功能）跟頂部身分
+// 識別區（.AiViewer-topbar-identity）共用同一份，不各自重複宣告
+%floating-glass-surface {
+  background: var(--surface-a90);
+  border: 1px solid var(--primary-a20);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 2px 12px rgba(var(--shadow), 0.07),
+    0 0 0 1px var(--primary-a08);
+}
+
 // 固定頂部工具列：使用者身分／專案識別＋專案層級選單，常駐在畫布最上方，
 // 不隨畫布縮放/平移一起動——畫布操作（縮放/上傳/資源庫/搜尋/旅程）
 // 刻意不收進來，維持懸浮在畫布上的沉浸感
@@ -12,9 +35,8 @@
   z-index: 15; // 高於一般懸浮控制球(8)/選單(9)，低於全螢幕檢視器(100)跟旅程面板(900)
   display: flex;
   align-items: center;
-  gap: 10px;
   padding: 0 14px;
-  background: transparent; // 不做背景色塊/分隔線，讓身分識別列直接浮在畫布上
+  background: transparent; // 列本身維持透明，空白區域才能直接點擊/拖曳下方畫布
   font-family: $font-family;
   @include user-select-none;
   // 透明區域讓滑鼠事件穿透到下方畫布，避免整條 44px 高的隱形列擋住畫布卡片的點擊/拖曳範圍
@@ -22,6 +44,24 @@
   > * {
     pointer-events: auto;
   }
+}
+
+// 左上角身分識別（logo＋專案/對話標題＋more）：原本整條頂部列都是全透明，
+// 畫布上如果剛好有內容（圖片/圖表/深色區塊）疊在底下，文字會直接糊進去看不清楚。
+// 改成跟其他懸浮控制介面（.AiViewr-ctrl-box：縮放/小地圖/主功能）同一種「玻璃感」
+// 浮貼底；頂部列本身仍是透明+pointer-events:none，空白區域不受影響。
+// 用 position:absolute + top:10px 讓它脫離頂部列的 44px flex 置中，改跟右邊
+// .zoom-ctrl-box 同一條 top:10px 基準線對齊，兩顆浮貼膠囊才會是同一排
+.AiViewer-topbar-identity {
+  @extend %floating-glass-surface;
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px 5px 10px;
+  border-radius: 100px;
 }
 
 // 頂部列 logo：取代原本的頭像圓圈，點擊回首頁（合併原 home 圖示的功能）
@@ -119,9 +159,11 @@
   // 讓卡片看起來是真的浮在畫布上，不是浮在一塊獨立的灰底色塊上）
   // 兩層點點：96px 間距的大點做定位參考，24px 間距的小點做細部對齊
   background-color: var(--page-bg);
+  // 原本用 rgba($black, X) 寫死黑色網點，深色模式下網點會跟深色底疊在一起看不見；
+  // 改用 --text（本來就會隨主題在深/淺色間切換）搭配 color-mix 做半透明，兩種主題都看得到
   background-image:
-    radial-gradient(rgba($black, 0.16) 1.5px, transparent 1.6px),
-    radial-gradient(rgba($black, 0.09) 1px, transparent 1.1px);
+    radial-gradient(color-mix(in srgb, var(--text) 16%, transparent) 1.5px, transparent 1.6px),
+    radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1.1px);
   background-size: 96px 96px, 24px 24px; // js 會覆蓋此值（見 centerBoxStyle）
   background-position: 0 0;
 
@@ -252,7 +294,7 @@
       padding: 10px;
       margin: 10px 5px;
       border-radius: 5px;
-      box-shadow: 0 2px 8px rgba($grey-shadow, 0.1);
+      box-shadow: 0 2px 8px rgba(var(--shadow), 0.1); // 原本用 $grey-shadow 寫死顏色，深色模式不會跟著調整
     }
   }
   // 左側是除錯/屬性面板，貼齊畫布維持原本的分隔線樣式
@@ -264,7 +306,7 @@
     // 懸浮卡片：跟視窗上/右/下三邊留白，四角圓角＋陰影，貼近參考圖的浮動感
     margin: 12px 12px 12px 0;
     border: 1px solid var(--divider);
-    border-radius: 16px;
+    border-radius: $radius-lg;
     box-shadow: var(--shadow-lg);
     display: grid;
     grid-template-rows: 56px 1fr auto auto;
@@ -421,7 +463,7 @@
       padding: 12px;
       // box-shadow: 0 1px 12px rgba(var(--shadow),0.3);
       // box-shadow: 0 1px 12px rgba(var(--shadow),0.2);
-      border-radius: 16px;
+      border-radius: $radius-lg;
       z-index: 1;
       // 進入快速罐頭任務模式的特殊樣式
       &.enterCannedTask {
@@ -840,7 +882,7 @@
         .block-more-btn {
           font-size: 20px;
           padding: 2px;
-          border-radius: 4px;
+          border-radius: $radius-sm;
           cursor: pointer;
           &:hover,
           &.active {
@@ -927,8 +969,10 @@
   &.AiViewer {
     // 中間主要區塊給予內陰影和邊框提示
     .center-box {
-      box-shadow: inset 0 0 8px rgba($color-wise-green, 1);
-      border: 0px solid rgba($color-wise-green, 0.8);
+      // 原本用舊版 SCSS 常數 $color-wise-green 寫死，跟正下面選取單一區塊時
+      // 用 --primary-a20/a40 token 的方式不一致；改用真正的主題色 token
+      box-shadow: inset 0 0 8px var(--primary);
+      border: 0px solid var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -938,13 +982,13 @@
         text-align: center;
         font-size: 12px;
         color: var(--primary-fg);
-        background-color: rgba($color-wise-green, 0.7);
+        background-color: var(--accent-a70);
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(2px);
         position: absolute;
         top: 4px;
         padding: 5px 15px;
-        border-radius: 8px;
+        border-radius: $radius;
         z-index: 9999;
       }
     }
@@ -953,19 +997,13 @@
 
 // ● 各種框架層級的控制小介面
 .AiViewr-ctrl-box {
+  @extend %floating-glass-surface;
   font-family: $font-family;
   position: absolute;
   top: calc($header-AiViewer-height + 11px);
   z-index: 8;
-  background: var(--surface-a90);
-  border: 1px solid var(--primary-a20);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   padding: 0 8px;
   border-radius: 28px;
-  box-shadow:
-    0 2px 12px rgba(var(--shadow), 0.07),
-    0 0 0 1px var(--primary-a08);
   color: var(--text);
   @include user-select-none;
 
@@ -1141,7 +1179,7 @@
   // 單一個選項項目樣式
   .option-item {
     padding: 6px 8px;
-    border-radius: 8px;
+    border-radius: $radius;
     display: flex;
     align-items: center;
     justify-content: start;
@@ -1161,7 +1199,7 @@
 // ● 主場景小地圖
 .StageMap {
   border: 1px solid var(--divider);
-  box-shadow: 0 0 10px rgba($grey-shadow, 0.13);
+  box-shadow: 0 0 10px rgba(var(--shadow), 0.13); // 原本用 $grey-shadow 寫死顏色，深色模式不會跟著調整
   position: fixed;
   bottom: 10px;
   left: 10px;
@@ -1691,7 +1729,7 @@
   left: calc(100% - 38px);
   background-color: var(--page-bg);
   border: 1px solid var(--divider);
-  border-radius: 16px;
+  border-radius: $radius-lg;
   font-size: 14px;
   font-family: $font-family;
   // color: $grey-font; // 不受瀏覽器主題影響
@@ -1776,7 +1814,7 @@
     margin: 12px;
     padding: 8px 10px;
     border: 1px solid var(--divider);
-    border-radius: 8px;
+    border-radius: $radius;
 
     .create-memo-textarea {
       resize: none;
@@ -1989,13 +2027,7 @@
   }
 
   .ahd-side {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 100px;
-    font-weight: 600;
-    white-space: nowrap;
+    @extend %badge-shape; // 跟 .agent-name-label 共用同一份 pill 形狀，不再各自重複宣告
 
     > i { font-size: 14px; }
 
@@ -2045,17 +2077,16 @@
     &.tag-rose   { background: var(--tag-rose-bg);   color: var(--tag-rose-text);   border-color: transparent; }
   }
 
-  // 發話 agent 名稱：跟頭像同一份色票，只取文字色（不加底色），維持輕量
+  // 發話 agent 名稱：跟交接分隔線的 .ahd-side 是同一種「agent 身分標籤」，
+  // 共用 %badge-shape 才會長得一樣（而不是各自宣告一份、之後改一邊漏改另一邊）
   .agent-name-label {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.2;
+    @extend %badge-shape;
 
-    &.tag-violet { color: var(--tag-violet-text); }
-    &.tag-teal   { color: var(--tag-teal-text); }
-    &.tag-amber  { color: var(--tag-amber-text); }
-    &.tag-blue   { color: var(--tag-blue-text); }
-    &.tag-rose   { color: var(--tag-rose-text); }
+    &.tag-violet { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
+    &.tag-teal   { background: var(--tag-teal-bg);   color: var(--tag-teal-text); }
+    &.tag-amber  { background: var(--tag-amber-bg);  color: var(--tag-amber-text); }
+    &.tag-blue   { background: var(--tag-blue-bg);   color: var(--tag-blue-text); }
+    &.tag-rose   { background: var(--tag-rose-bg);   color: var(--tag-rose-text); }
   }
 
   .message-wrap {
@@ -2235,7 +2266,7 @@
   .tc-btn {
     flex: 1;
     padding: 7px 12px;
-    border-radius: 8px;
+    border-radius: $radius;
     border: none;
     font-size: 13px;
     font-weight: 500;
@@ -2436,7 +2467,7 @@
   .conv2-upload-img {
     width: 80px;
     height: 80px;
-    border-radius: 8px;
+    border-radius: $radius;
     object-fit: contain;
     border: 1px solid var(--divider);
     flex-shrink: 0;
@@ -2484,7 +2515,7 @@
     .conv2-pc-thumb {
       width: 48px;
       height: 48px;
-      border-radius: 8px;
+      border-radius: $radius;
       object-fit: contain;
       border: 1px solid var(--divider);
       flex-shrink: 0;
@@ -2498,9 +2529,7 @@
 }
 
 .conv2-tag {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
+  @extend %badge-shape;
   background-color: var(--surface);
   border: 1px solid var(--divider);
   color: var(--text-a70);
@@ -2511,11 +2540,7 @@
   font-size: 13px;
 
   .hr-section-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--text-faint);
+    @extend %eyebrow-label;
     margin: 14px 0 7px;
     &:first-child { margin-top: 0; }
   }
@@ -2534,7 +2559,7 @@
     padding: 7px 10px;
     background: var(--page-bg);
     border: 1px solid var(--divider);
-    border-radius: 8px;
+    border-radius: $radius;
     .hr-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
@@ -2544,7 +2569,7 @@
     .hr-sku { font-size: 11px; color: var(--text-faint); font-family: monospace; }
     .hr-tag {
       font-size: 10px; font-weight: 600;
-      padding: 1px 6px; border-radius: 4px;
+      padding: 1px 6px; border-radius: $radius-sm;
       &.tag-m { background: var(--tag-blue-bg); color: var(--tag-blue-text); }
       &.tag-w { background: var(--tag-violet-bg); color: var(--tag-violet-text); }
     }
@@ -2606,8 +2631,8 @@
     .hrf-item {
       padding: 8px 10px;
       background: var(--surface);
-      border-radius: 8px;
-      .hrf-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 3px; }
+      border-radius: $radius;
+      .hrf-lbl { @extend %eyebrow-label; margin-bottom: 3px; }
       .hrf-val { font-size: 14px; font-weight: 700; color: var(--text); }
       .hrf-sub { font-size: 10px; color: var(--text-faint); margin-top: 1px; }
     }
@@ -2812,7 +2837,7 @@
   margin-top: 6px;
   padding: 10px;
   background: var(--surface);
-  border-radius: 8px;
+  border-radius: $radius;
   border: 1px solid var(--divider);
 }
 .conv2-url-demo-item {
@@ -2834,16 +2859,11 @@
 
 // @知識庫引用 chip（inline 使用）
 .conv2-kb-ref {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 7px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 500;
+  @extend %badge-shape;
+  font-weight: 500; // 引用 chip 刻意比其他 pill 字重輕一點，行內文字裡才不會太搶眼，保留原設計
   background-color: var(--tag-blue-bg);
   color: var(--tag-blue-text);
   border: 1px solid var(--tag-blue-text);
-  white-space: nowrap;
 }
 
 // 貨號輸入示範卡片
@@ -2888,7 +2908,7 @@
     .conv2-report-icon {
       width: 32px;
       height: 32px;
-      border-radius: 8px;
+      border-radius: $radius;
       background: var(--tag-teal-bg);
       border: 1px solid var(--tag-teal-text);
       display: flex;
@@ -3120,7 +3140,7 @@
     background: var(--tag-blue-bg);
     color: var(--tag-blue-text);
     border: 0.5px solid var(--tag-blue-text);
-    border-radius: 4px;
+    border-radius: $radius-sm;
     padding: 0 5px;
     font-size: 11px;
     font-weight: 500;
@@ -3164,7 +3184,7 @@
     width: 190px; flex-shrink: 0;
     overflow-y: auto;
     border: 0.5px solid var(--divider);
-    border-radius: 8px;
+    border-radius: $radius;
     @include use-scroll-bar(var(--scrollbar));
   }
   .conv2-ci-row {
@@ -3177,7 +3197,7 @@
     &.blocked { opacity: .35; pointer-events: none; }
   }
   .conv2-ci-ic {
-    width: 22px; height: 22px; border-radius: 4px;
+    width: 22px; height: 22px; border-radius: $radius-sm;
     background: var(--surface);
     border: 0.5px solid var(--divider);
     display: flex; align-items: center; justify-content: center;
@@ -3190,7 +3210,7 @@
   .conv2-prev-col-fp {
     flex: 1; min-width: 0;
     display: flex; flex-direction: column;
-    border: 0.5px solid var(--divider); border-radius: 8px; overflow: hidden;
+    border: 0.5px solid var(--divider); border-radius: $radius; overflow: hidden;
   }
   .conv2-prev-img-area-fp {
     flex: 1; background: var(--surface);
@@ -3739,7 +3759,7 @@
   width: 100%;
   margin-top: auto; // 把輸入框推到 .conv1-empty-content 這個直向 flex 的最底部
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: $radius-lg;
   padding: 16px;
   box-sizing: border-box;
   box-shadow: 0 4px 20px rgba(var(--shadow), 0.08);
@@ -3914,7 +3934,7 @@
   display: flex;
   flex-direction: column;
   z-index: 900;
-  font-family: 'Helvetica Neue', 'PingFang TC', sans-serif;
+  font-family: $font-family; // 原本另外寫死字體，跟全站其他地方（$font-family）不一致
   // ── Header ──
   .jcd-hdr {
     padding: 10px 14px;
@@ -3957,7 +3977,7 @@
 
   // ── Section 容器（hover 互動範圍）──
   .jcd-section {
-    border-radius: 8px;
+    border-radius: $radius;
     border: 1.5px solid transparent;
     padding: 4px 4px 2px;
     transition: background 0.2s, border-color 0.2s;
@@ -3999,7 +4019,7 @@
   .jcd-locate-chip {
     font-size: 9px;
     font-weight: 700;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     padding: 2px 5px;
     opacity: 0;
     transition: opacity 0.2s;
@@ -4022,7 +4042,7 @@
     display: flex;
     background: var(--page-bg);
     border: 1px solid var(--divider);
-    border-radius: 8px;
+    border-radius: $radius;
     padding: 7px 6px;
     gap: 2px;
   }
@@ -4091,11 +4111,7 @@
 
   // ── Individual rows sub-title ──
   .jcd-rows-title {
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: .06em;
+    @extend %eyebrow-label;
     padding-top: 2px;
   }
   .jcd-rows-more {
@@ -4215,7 +4231,7 @@
     justify-content: center;
     padding: 0 4px;
     border: 2px solid var(--surface);
-    font-family: 'Helvetica Neue', 'PingFang TC', sans-serif;
+    font-family: $font-family; // 原本另外寫死字體，跟全站其他地方（$font-family）不一致
   }
 }
 .jcd-fab-pop-enter-active,
