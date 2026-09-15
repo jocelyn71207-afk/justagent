@@ -173,7 +173,7 @@ export function useSkillStudioConversation() {
   function startCreate(): void
   function loadSkill(skillId: string): boolean   // false = 找不到
   async function send(text: string): Promise<void>
-  function save(): string                         // 回傳 skillId
+  function save(): string | null                  // 回傳 skillId；canSave 為 false 時回 null 且不寫入
   function updateFiles(files: SkillFile[]): void
 }
 ```
@@ -193,6 +193,8 @@ export function useSkillStudioConversation() {
 | 訊息含「觸發」 | `triggerHint` = 原句去掉「觸發條件」等前綴 | 「觸發條件已更新為：{triggerHint}」 |
 | 訊息含「步驟」「加一步」「補一步」「補充步驟」（不含單獨的「補」，避免「補貨」誤判） | `instructions` 追加一行「{n}. {原句去前綴}」 | 「已追加第 {n} 步。」 |
 | 訊息含「能力」「還能」 | `capabilities` push `{ name: 原句去前綴, description: '' }` | 「已新增一項覆蓋能力。」 |
+| 訊息等於動作 chip「觸發條件要更精準」 | 無 patch | 「好，直接告訴我在什麼情況下要觸發這個技能，例如「觸發條件改成當使用者提到缺貨或補貨時」。」 |
+| 訊息等於動作 chip「再補一個步驟」 | `instructions` 追加「{n}. 檢查輸出結果，必要時補充說明」 | 「已追加第 {n} 步。」 |
 | 訊息等於動作 chip「看起來沒問題，儲存」 | 無 patch | 「請按右側「儲存為個人技能」，儲存後就能在「測試」tab 驗證。」（不代替使用者按儲存——儲存是明確動作，維持由使用者觸發） |
 | 其他 | `instructions` 追加「（依對話更新）{原句}」（沿用 `sendEditChatMessage` 既有行為） | 「已根據你的描述更新技能指令，右側可以看到變更。」 |
 
@@ -203,7 +205,7 @@ export function useSkillStudioConversation() {
 | 項目 | 變更 |
 |---|---|
 | `createPersonalSkill(data)` | 回傳型別 `void` → `string`（新建 id）；`CreateSkillPayload` 新增選填 `creationMethod?: 'ai_assisted' \| 'manual'`，寫進 Skill（未帶預設 `'manual'`） |
-| 新增 `applyStudioPatch(skillId, patch: Partial<Pick<Skill, 'name' \| 'description' \| 'instructions' \| 'triggerHint' \| 'capabilities'>>)` | 只對個人技能生效（`zone !== 'personal'` 直接 return）；合併欄位；`skillName` 同步 `name`；`personalStatus === 'draft'` 且內容與 `derivedFrom` 不同時轉 `available`（搬自 `sendEditChatMessage` 的既有規則） |
+| 新增 `applyStudioPatch(skillId, patch: Partial<Pick<Skill, 'name' \| 'description' \| 'instructions' \| 'triggerHint' \| 'capabilities'>>)` | 只對個人技能生效（`zone !== 'personal'` 直接 return）；合併欄位；`skillName` 同步 `name`；`personalStatus === 'draft'` 且 `instructions` 與 `derivedFrom` 來源不同時轉 `available`（只比對 instructions，與原 `sendEditChatMessage` 規則一致）（搬自 `sendEditChatMessage` 的既有規則） |
 | 移除 `editChatHistory`、`editChatIsRunning`、`resetEditChat`、`sendEditChatMessage` | 唯一消費者 `SkillEditChatModal` 退役；對應測試改測 `applyStudioPatch` |
 
 其他既有 action（`updateSkillFiles`、`hasSkillNameConflict` 等）不動。
@@ -300,8 +302,10 @@ conv4 腳本完成報告 → skillSuggestion.offer() → SkillSuggestCard(ask)
 
 - `?skillId` 找不到技能：toast「找不到這個技能」，退回建立模式，不拋錯。
 - `?skillId` 指向 Library 技能（`zone !== 'personal'`）：toast「Library 技能請先在技能管理複製為個人技能」，退回建立模式。
-- 儲存時名稱與既有個人技能重複：沿用 `store.hasSkillNameConflict` 邏輯顯示非阻擋提示條（比照 `SkillEditChatModal` 的 `name-conflict-banner`），仍允許儲存。
+- 儲存時名稱與既有個人技能重複：在頁面以 `myPersonalSkills` 比對（排除自身 id）顯示非阻擋提示條（沿用 `_SkillEditor.scss` 已有的 `.name-conflict-banner` 樣式），仍允許儲存。
 - 離開頁面（`onBeforeRouteLeave`）有未儲存變更：`popDialog.confirm`「有未儲存的變更，確定離開？」。
+- 同路由 query 變更（`onBeforeRouteUpdate`，例如修改模式中點側邊選單「AI 賦能」）：重新套用 query 決定模式與 tab；有未儲存變更時先 `popDialog.confirm`，取消則留在原狀態。
+- `?tab=test` 搭配無效的 `skillId`：退回建立模式時一併切回「技能預覽」tab。
 - `SkillSuggestCard` 收到未知 `stage`：不渲染任何按鈕，只顯示文字。
 
 ## 12. 樣式
