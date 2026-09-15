@@ -98,7 +98,7 @@ page-banner：AppBreadcrumb（AI 技能 / AI 賦能）＋ banner-title「AI 賦�
 - **訊息區**：氣泡沿用 `SkillTestChat` 的 `.bubble--agent`／`.bubble--user`（含 `bubble-label`「AI Agent」）；Agent 訊息可帶 **動作 chip**（`actions`），點擊等同送出該文字。處理中顯示三點 typing。
 - **空狀態建議 chip**
   - 建立模式：固定三則，例：「幫我建立一個能查 ERP 庫存的技能」「把每週會議逐字稿整理成週報」「依部門報告規範自動產出月報」。
-  - 修改模式：沿用 `SkillEditChatModal.suggestionChips` 的邏輯（依技能實際有的區塊動態產生：改觸發條件／補一個步驟／調整名稱），這段邏輯搬進新 composable。
+  - 修改模式：沿用 `SkillEditChatModal.suggestionChips` 的邏輯（依技能實際有沒有內容切換動詞），三顆分別對應 技能指令／覆蓋能力／觸發條件（原本的「使用情境」不在草稿欄位裡，對話改不到，改為觸發條件），這段邏輯搬進新 composable。
   - 點 chip 帶入輸入框、不自動送出（與現有慣例一致）。
 - **輸入列**：`custom-input` ＋ 送出按鈕，處理中 disabled。
 
@@ -188,7 +188,7 @@ export function useSkillStudioConversation() {
 
 | 條件 | patch | 回覆 |
 |---|---|---|
-| 建立模式、草稿 `name` 為空（第一句） | `name` = 取訊息中「建立／幫我做／需要」之後、「的技能／的 Skill」之前的片段，超過 12 字截斷，取不到則「新技能」；`description` = 原句；`triggerHint` = 「當使用者提到「{name}」相關需求時」；`instructions` = 三步驟範本（1. 釐清輸入 2. 執行 {name} 3. 依格式回覆結果）；`capabilities` = 兩項（「{name}」＋「結果格式化輸出」） | 「我先幫你擬了一版設定，右側可以看到。名稱、觸發條件和步驟都可以再跟我說要怎麼調。」actions：`看起來沒問題，儲存`、`觸發條件要更精準`、`再補一個步驟` |
+| 建立模式、草稿 `name` 為空（第一句） | `name` = 取訊息中「建立／幫我做／需要」之後、「的技能／的 Skill」之前的片段，超過 12 字截斷；沒有關鍵字時取第一個子句（標點前）前 12 字，仍為空才退回「新技能」；`description` = 原句；`triggerHint` = 「當使用者提到「{name}」相關需求時」；`instructions` = 三步驟範本（1. 釐清輸入 2. 執行 {name} 3. 依格式回覆結果）；`capabilities` = 兩項（「{name}」＋「結果格式化輸出」） | 「我先幫你擬了一版設定，右側可以看到。名稱、觸發條件和步驟都可以再跟我說要怎麼調。」actions：`看起來沒問題，儲存`、`觸發條件要更精準`、`再補一個步驟` |
 | 訊息含「名稱」「叫」「改名」 | `name` = 引號內文字，沒有引號則取「叫／名稱是」之後的片段 | 「已把名稱改成「{name}」。」 |
 | 訊息含「觸發」 | `triggerHint` = 原句去掉「觸發條件」等前綴 | 「觸發條件已更新為：{triggerHint}」 |
 | 訊息含「步驟」「加一步」「補」 | `instructions` 追加一行「{n}. {原句去前綴}」 | 「已追加第 {n} 步。」 |
