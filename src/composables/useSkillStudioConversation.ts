@@ -215,8 +215,8 @@ export function useSkillStudioConversation() {
         triggerHint: d.triggerHint,
         isEnabled: true,
         assignedAgents: [],
-        capabilities: d.capabilities,
-        files: d.files,
+        capabilities: d.capabilities.map(c => ({ ...c })),
+        files: [...d.files],
         creationMethod: 'ai_assisted',
       })
       mode.value = 'edit'

@@ -120,6 +120,7 @@ function handleSend() {
 function onSwitch(e: Event) {
   const id = (e.target as HTMLSelectElement).value
   if (id) emit('switch-skill', id)
+  ;(e.target as HTMLSelectElement).value = props.savedSkillId ?? ''
 }
 
 watch(() => props.messages.length, async () => {

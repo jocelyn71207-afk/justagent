@@ -20,6 +20,9 @@
     <!-- ── 技能預覽 ── -->
     <template v-if="props.activeTab === 'preview'">
       <div class="ssp-body">
+        <div v-if="props.nameConflict" class="name-conflict-banner">
+          <i class="material-symbols-outlined">info</i>你已經有一個同名的個人技能，建議修改名稱以便區分。
+        </div>
         <div class="ssp-title-row">
           <div :class="['ssp-title', { 'is-empty': !props.draft.name }]">
             {{ props.draft.name || '尚未命名的技能' }}
@@ -48,7 +51,7 @@
         <div class="ssp-section">
           <div class="ssp-section-label">覆蓋能力</div>
           <div v-if="props.draft.capabilities.length" class="ssp-caps">
-            <span v-for="cap in props.draft.capabilities" :key="cap.name" class="ssp-cap-chip">{{ cap.name }}</span>
+            <span v-for="(cap, i) in props.draft.capabilities" :key="`${cap.name}-${i}`" class="ssp-cap-chip">{{ cap.name }}</span>
           </div>
           <p v-else class="ssp-empty">尚未拆解覆蓋能力項目</p>
         </div>
@@ -128,6 +131,7 @@ const props = defineProps<{
   isDirty: boolean
   canSave: boolean
   activeTab: 'preview' | 'test'
+  nameConflict?: boolean
 }>()
 
 const emit = defineEmits<{

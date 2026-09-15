@@ -2420,7 +2420,7 @@ function handleChatAreaClick(e: MouseEvent) {
   }
 
   // 建議建立成個人技能（任何 convN 共用）：data-id 是哪一則建議
-  if (action?.startsWith('skill-suggest-') && skillSuggestion.handleAction(action, el.dataset.id ?? '')) {
+  if (action.startsWith('skill-suggest-') && skillSuggestion.handleAction(action, el.dataset.id ?? '')) {
     return;
   }
   if (action === 'goto-skill-studio') {

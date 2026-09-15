@@ -31,6 +31,7 @@
             :saved-skill-id="conv.savedSkillId.value"
             :is-dirty="conv.isDirty.value"
             :can-save="conv.canSave.value"
+            :name-conflict="nameConflict"
             @save="onSave"
             @update:files="conv.updateFiles"
           />
@@ -41,8 +42,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, onBeforeRouteLeave } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import type { LocationQuery } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillStudioChat from '@/components/Skill/SkillStudioChat.vue'
 import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
@@ -55,9 +57,15 @@ const store = useSkillStore()
 const conv = useSkillStudioConversation()
 const activeTab = ref<'preview' | 'test'>(route.query.tab === 'test' ? 'test' : 'preview')
 
+const nameConflict = computed(() => {
+  const n = conv.draft.value.name.trim()
+  return !!n && store.myPersonalSkills.some(s => s.id !== conv.savedSkillId.value && s.name === n)
+})
+
 // ?skillId= 進修改模式；找不到／不是個人技能都退回建立模式，不拋錯
-onMounted(() => {
-  const skillId = typeof route.query.skillId === 'string' ? route.query.skillId : ''
+function applyQuery(query: LocationQuery) {
+  activeTab.value = query.tab === 'test' ? 'test' : 'preview'
+  const skillId = typeof query.skillId === 'string' ? query.skillId : ''
   if (skillId) {
     const skill = store.findSkill(skillId)
     if (!skill) {
@@ -69,6 +77,22 @@ onMounted(() => {
     }
   }
   conv.startCreate()
+  activeTab.value = 'preview'
+}
+
+onMounted(() => {
+  applyQuery(route.query)
+})
+
+onBeforeRouteUpdate((to, _from, next) => {
+  if (!conv.isDirty.value) {
+    applyQuery(to.query)
+    return next()
+  }
+  popDialog.confirm('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', () => {
+    applyQuery(to.query)
+    next()
+  }, () => next(false))
 })
 
 // 有未儲存變更時，切換／新建／離開前都要確認；沒有變更就直接做

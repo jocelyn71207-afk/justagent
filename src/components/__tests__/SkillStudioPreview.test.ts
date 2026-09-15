@@ -95,4 +95,12 @@ describe('SkillStudioPreview', () => {
     await w.findAll('.ssp-tab-btn')[1].trigger('click')
     expect(w.emitted('update:activeTab')?.[0]).toEqual(['test'])
   })
+
+  it('nameConflict 為 true 時顯示同名提示 banner，預設不顯示', () => {
+    const w1 = mountPreview()
+    expect(w1.find('.name-conflict-banner').exists()).toBe(false)
+    const w2 = mountPreview({ nameConflict: true })
+    expect(w2.find('.name-conflict-banner').exists()).toBe(true)
+    expect(w2.text()).toContain('你已經有一個同名的個人技能，建議修改名稱以便區分。')
+  })
 })

@@ -6,8 +6,8 @@
         我留意到「{{ props.suggestion.reason }}」這類流程你之後可能會重複用到。要不要我把它建立成你的個人技能？
       </p>
       <div class="conv1-quick-btns">
-        <span class="conv1-quick-btn" data-action="skill-suggest-build" :data-id="props.suggestion.id">是，建立成個人技能</span>
-        <span class="conv1-quick-btn" data-action="skill-suggest-skip" :data-id="props.suggestion.id">不用了</span>
+        <span class="conv1-quick-btn" :data-action="SKILL_SUGGEST_ACTIONS.build" :data-id="props.suggestion.id">是，建立成個人技能</span>
+        <span class="conv1-quick-btn" :data-action="SKILL_SUGGEST_ACTIONS.skip" :data-id="props.suggestion.id">不用了</span>
       </div>
     </template>
 
@@ -28,7 +28,7 @@
         </div>
       </div>
       <div class="conv1-quick-btns">
-        <span class="conv1-quick-btn" data-action="skill-suggest-confirm" :data-id="props.suggestion.id">確認並建立</span>
+        <span class="conv1-quick-btn" :data-action="SKILL_SUGGEST_ACTIONS.confirm" :data-id="props.suggestion.id">確認並建立</span>
       </div>
     </template>
 
@@ -56,6 +56,7 @@
 // 「建議建立成個人技能」卡片，純呈現：三個階段的內容都由 stage 決定，
 // 按鈕不 emit、只掛 data-action／data-id，交給 AiViewerRightBox 的
 // handleChatAreaClick 事件委派（跟 .conv1-quick-btn／DelegateStatusCard 同一套機制）
+import { SKILL_SUGGEST_ACTIONS } from '@/composables/useSkillSuggestion'
 import type { SkillSuggestion, SkillSuggestStage } from '@/composables/useSkillSuggestion'
 
 const props = defineProps<{
