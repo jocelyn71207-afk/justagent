@@ -104,6 +104,24 @@ describe('useSkillSuggestion', () => {
     expect(store.myPersonalSkills.length).toBe(before + 2)
   })
 
+  it('skip 之後 confirm 無效：不建立技能、不推 saved 卡', () => {
+    const store = useSkillStore()
+    const before = store.myPersonalSkills.length
+    const { msgs, ctx } = makeCtx()
+    const s = useSkillSuggestion()
+    s.offer(ctx, SUGGESTION)
+    s.handleAction('skill-suggest-skip', SUGGESTION.id)
+    vi.advanceTimersByTime(500)
+    const len = msgs.length
+    const skillCount = store.myPersonalSkills.length
+    expect(s.handleAction('skill-suggest-confirm', SUGGESTION.id)).toBe(true)
+    vi.advanceTimersByTime(500)
+    expect(msgs.length).toBe(len)
+    expect(store.myPersonalSkills.length).toBe(skillCount)
+    expect(store.myPersonalSkills.length).toBe(before)
+    expect(msgs.some(m => m.stage === 'saved')).toBe(false)
+  })
+
   it('非 skill-suggest- 開頭的 action 或未知 id 回 false', () => {
     const s = useSkillSuggestion()
     expect(s.handleAction('conv7-satisfied', 'x')).toBe(false)

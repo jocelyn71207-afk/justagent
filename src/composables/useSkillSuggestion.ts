@@ -25,6 +25,7 @@ interface SuggestionState {
   ctx: SuggestionCtx
   suggestion: SkillSuggestion
   choiceMade: boolean
+  built: boolean
   confirmed: boolean
 }
 
@@ -39,7 +40,7 @@ export function useSkillSuggestion() {
   const states = new Map<string, SuggestionState>()
 
   function offer(ctx: SuggestionCtx, suggestion: SkillSuggestion): void {
-    states.set(suggestion.id, { ctx, suggestion, choiceMade: false, confirmed: false })
+    states.set(suggestion.id, { ctx, suggestion, choiceMade: false, built: false, confirmed: false })
     ctx.push({ agent: 'brain', cardType: 'skillSuggest', suggestion, stage: 'ask' as SkillSuggestStage })
     ctx.scroll()
   }
@@ -47,6 +48,7 @@ export function useSkillSuggestion() {
   function build(st: SuggestionState) {
     if (st.choiceMade) return
     st.choiceMade = true
+    st.built = true
     st.ctx.push({ forUser: true, msg: '是，建立成個人技能' })
     st.ctx.scroll()
     setTimeout(() => {
@@ -67,7 +69,7 @@ export function useSkillSuggestion() {
   }
 
   function confirm(st: SuggestionState) {
-    if (!st.choiceMade || st.confirmed) return
+    if (!st.built || st.confirmed) return
     st.confirmed = true
     st.ctx.push({ forUser: true, msg: '確認並建立' })
     st.ctx.scroll()
