@@ -573,6 +573,70 @@ describe('skillStore', () => {
     })
   })
 
+  describe('AI 賦能：createPersonalSkill 回傳 id 與 applyStudioPatch', () => {
+    it('createPersonalSkill 回傳新技能 id，且可用 findSkill 找到、creationMethod 依 payload 寫入', () => {
+      const store = useSkillStore()
+      const id = store.createPersonalSkill({
+        name: 'ERP 庫存查詢',
+        description: '查詢 ERP 即時庫存',
+        instructions: '1. 釐清品項\n2. 查詢庫存',
+        triggerHint: '當使用者提到庫存時',
+        isEnabled: true,
+        assignedAgents: [],
+        creationMethod: 'ai_assisted',
+      })
+      expect(typeof id).toBe('string')
+      const skill = store.findSkill(id)
+      expect(skill).toBeDefined()
+      expect(skill!.zone).toBe('personal')
+      expect(skill!.creationMethod).toBe('ai_assisted')
+      expect(store.myPersonalSkills[0].id).toBe(id)
+    })
+
+    it('createPersonalSkill 未帶 creationMethod 時預設 manual；連續建立兩顆 id 不重複', () => {
+      const store = useSkillStore()
+      const base = { instructions: 'x', triggerHint: 'y', isEnabled: true, assignedAgents: [] as string[] }
+      const a = store.createPersonalSkill({ name: 'A', ...base })
+      const b = store.createPersonalSkill({ name: 'B', ...base })
+      expect(a).not.toBe(b)
+      expect(store.findSkill(a)!.creationMethod).toBe('manual')
+    })
+
+    it('applyStudioPatch 合併欄位、同步 skillName，並回傳 true', () => {
+      const store = useSkillStore()
+      const id = store.createPersonalSkill({ name: '舊名', instructions: '舊指令', triggerHint: '舊觸發', isEnabled: true, assignedAgents: [] })
+      const ok = store.applyStudioPatch(id, {
+        name: '新名',
+        instructions: '新指令',
+        capabilities: [{ name: '能力一', description: '說明' }],
+      })
+      expect(ok).toBe(true)
+      const s = store.findSkill(id)!
+      expect(s.name).toBe('新名')
+      expect(s.skillName).toBe('新名')
+      expect(s.instructions).toBe('新指令')
+      expect(s.triggerHint).toBe('舊觸發') // 未帶的欄位不動
+      expect(s.capabilities).toEqual([{ name: '能力一', description: '說明' }])
+    })
+
+    it('applyStudioPatch 對 draft 狀態的複本改了 instructions 後 personalStatus 轉 available', () => {
+      const store = useSkillStore()
+      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
+      expect(copy.personalStatus).toBe('draft')
+      store.applyStudioPatch(copy.id, { instructions: `${copy.instructions ?? ''}\n4. 新步驟`.trim() })
+      expect(store.findSkill(copy.id)!.personalStatus).toBe('available')
+    })
+
+    it('applyStudioPatch 對 Library 技能或不存在的 id 不作用並回傳 false', () => {
+      const store = useSkillStore()
+      const lib = store.findSkill('sys-cs-001')!
+      const before = lib.name
+      expect(store.applyStudioPatch('sys-cs-001', { name: '亂改' })).toBe(false)
+      expect(store.findSkill('sys-cs-001')!.name).toBe(before)
+      expect(store.applyStudioPatch('nope-000', { name: 'x' })).toBe(false)
+    })
+  })
+
   describe('覆蓋能力 capabilities', () => {
     it('createSkill 帶入 capabilities 會存到新技能上', () => {
       const store = useSkillStore()

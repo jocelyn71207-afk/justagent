@@ -140,6 +140,7 @@ export interface CreateSkillPayload {
   scope?: 'enterprise' | 'team'
   files?: SkillFile[]
   capabilities?: SkillCapability[]
+  creationMethod?: 'ai_assisted' | 'manual'
 }
 
 export interface UpdateSkillPayload {
@@ -152,6 +153,9 @@ export interface UpdateSkillPayload {
   files?: SkillFile[]
   capabilities?: SkillCapability[]
 }
+
+// AI 賦能對話修改用：只允許動這五個內容欄位，不碰狀態／版本／來源關係
+export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities'>>
 
 export interface DraftSkill {
   id: string
@@ -1179,18 +1183,22 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  let personalSeq = 0
+
   // 手寫建立技能的正式入口（SkillEditor.vue 的「全新建立」）：一律先建立成個人技能，
   // 不需要送審就能個人使用，跟 duplicateAsPersonalSkill() 同一套「寫進
   // myPersonalSkillsRef」模式，只是沒有 derivedFrom（沒有來源可比對，personalStatus
   // 直接是 available，不是 draft）。createSkill() 保留給送審通過、正式發佈進 Library
   // 用（submitDraft()），不再由這裡呼叫。
-  function createPersonalSkill(data: CreateSkillPayload): void {
+  function createPersonalSkill(data: CreateSkillPayload): string {
+    const id = `personal-${Date.now()}-${++personalSeq}`
     myPersonalSkillsRef.value.unshift({
-      id: `personal-${Date.now()}`,
+      id,
       name: data.name,
       description: data.description ?? '',
       type: 'extension',
       origin: 'manually_created',
+      creationMethod: data.creationMethod ?? 'manual',
       zone: 'personal',
       personalStatus: 'available',
       skillName: data.name,
@@ -1205,6 +1213,30 @@ export const useSkillStore = defineStore('skillStore', () => {
       files: data.files ?? [],
       capabilities: data.capabilities ?? [],
     })
+    return id
+  }
+
+  // AI 賦能（SkillStudio）修改模式的儲存：只對個人技能生效。draft 複本內容一旦跟
+  // 來源不同就轉 available（規則同原 sendEditChatMessage）。skillName 只在非衍生
+  // 技能同步——衍生技能的 skillName 記的是 Library 來源名稱，不能被改名蓋掉
+  function applyStudioPatch(skillId: string, patch: StudioPatch): boolean {
+    const skill = findSkill(skillId)
+    if (!skill || skill.zone !== 'personal') return false
+    if (patch.name !== undefined) {
+      skill.name = patch.name
+      if (!skill.derivedFrom) skill.skillName = patch.name
+    }
+    if (patch.description !== undefined) skill.description = patch.description
+    if (patch.instructions !== undefined) skill.instructions = patch.instructions
+    if (patch.triggerHint !== undefined) skill.triggerHint = patch.triggerHint
+    if (patch.capabilities !== undefined) skill.capabilities = patch.capabilities.map(c => ({ ...c }))
+    if (
+      skill.personalStatus === 'draft' &&
+      skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions
+    ) {
+      skill.personalStatus = 'available'
+    }
+    return true
   }
 
   function createSkill(data: CreateSkillPayload): void {
@@ -1811,6 +1843,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     permanentlyDeleteSkill,
     createSkill,
     createPersonalSkill,
+    applyStudioPatch,
     updateSkill,
     updateSkillFiles,
     toggleSkill,
