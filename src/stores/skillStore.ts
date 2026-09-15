@@ -78,6 +78,12 @@ export interface TestRun {
 
 export type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
 
+export const AVAILABLE_AGENTS = [
+  '通用助理', '客服中心助理', '電商小幫手',
+  '知識管理助理', '會議記錄助理', '工程助理',
+  '業務分析助理', '倉儲管理助理',
+] as const
+
 export interface Skill {
   id: string
   name: string

@@ -15,15 +15,15 @@
         <ul class="assign-agent-list">
           <li
             v-for="agent in filteredAgents"
-            :key="agent.id"
-            :class="['assign-agent-item', { 'assign-agent-item--assigned': isAssigned(agent.id) }]"
-            @click="!isAssigned(agent.id) && onAssign(agent.id)"
+            :key="agent"
+            :class="['assign-agent-item', { 'assign-agent-item--assigned': isAssigned(agent) }]"
+            @click="!isAssigned(agent) && onAssign(agent)"
           >
-            <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
-              <i class="material-symbols-outlined">{{ agent.icon }}</i>
+            <div class="assign-agent-icon">
+              <i class="material-symbols-outlined">smart_toy</i>
             </div>
-            <span class="assign-agent-name">{{ agent.name }}</span>
-            <span v-if="isAssigned(agent.id)" class="assign-agent-status">已裝入</span>
+            <span class="assign-agent-name">{{ agent }}</span>
+            <span v-if="isAssigned(agent)" class="assign-agent-status">已裝入</span>
           </li>
         </ul>
       </div>
@@ -39,8 +39,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import compModal from '@/components/compModal/compModal.vue'
-import { useExploreStore } from '@/stores/exploreStore'
-import { useSkillStore } from '@/stores/skillStore'
+import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
 import type { Skill } from '@/stores/skillStore'
 import popDialog from '@/services/popDialog'
 
@@ -53,24 +52,22 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
 }>()
 
-const exploreStore = useExploreStore()
 const skillStore = useSkillStore()
 
 const keyword = ref('')
 
 const filteredAgents = computed(() =>
-  exploreStore.agents.filter(a => !keyword.value.trim() || a.name.includes(keyword.value.trim()))
+  AVAILABLE_AGENTS.filter(a => !keyword.value.trim() || a.includes(keyword.value.trim()))
 )
 
-function isAssigned(agentId: string): boolean {
-  return !!props.skill?.assignedAgents?.includes(agentId)
+function isAssigned(agentName: string): boolean {
+  return !!props.skill?.assignedAgents?.includes(agentName)
 }
 
-function onAssign(agentId: string) {
+function onAssign(agentName: string) {
   if (!props.skill) return
-  const agent = exploreStore.agents.find(a => a.id === agentId)
-  skillStore.assignSkillToAgent(props.skill.id, agentId)
-  popDialog.toast(`已將「${props.skill.name}」加入「${agent?.name ?? ''}」`)
+  skillStore.assignSkillToAgent(props.skill.id, agentName)
+  popDialog.toast(`已將「${props.skill.name}」加入「${agentName}」`)
   emit('update:modelValue', false)
 }
 </script>

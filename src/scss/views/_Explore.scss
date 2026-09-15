@@ -814,6 +814,21 @@
   overflow-y: auto;
 }
 
+.assign-agent-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tag-slate-bg);
+
+  i {
+    font-size: 18px;
+    color: var(--tag-slate-text);
+  }
+}
+
 .assign-agent-item {
   display: flex;
   align-items: center;
@@ -824,19 +839,6 @@
 
   &:hover {
     background: var(--hint);
-  }
-
-  .agent-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-      font-size: 18px;
-    }
   }
 
   .assign-agent-name {
