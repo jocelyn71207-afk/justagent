@@ -788,3 +788,72 @@
   }
 }
 
+.assign-agent-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  margin-bottom: 12px;
+
+  input {
+    border: none;
+    outline: none;
+    background: transparent;
+    flex: 1;
+    color: var(--text);
+  }
+}
+
+.assign-agent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.assign-agent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--hint);
+  }
+
+  .agent-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 18px;
+    }
+  }
+
+  .assign-agent-name {
+    flex: 1;
+  }
+
+  .assign-agent-status {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  &--assigned {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
