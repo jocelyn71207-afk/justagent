@@ -13,7 +13,6 @@
         <div class="src-title-block">
           <div class="src-name-row">
             <span class="src-name">{{ skill.name }}</span>
-            <span class="skill-tag tag--reviewing src-status-tag">審核中</span>
           </div>
           <div class="src-tag-row">
             <span :class="['src-mode-tag', submitMode === 'version_update' ? 'src-mode-tag--update' : 'src-mode-tag--new']">

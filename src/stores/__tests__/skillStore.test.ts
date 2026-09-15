@@ -54,6 +54,33 @@ describe('skillStore', () => {
       expect(skill.description).toBe(target.description)
     })
 
+    it('deleteSkillVersion 刪除非生效中的版本', () => {
+      const store = useSkillStore()
+      // team-marketing-001：v1.0.0 history、v1.1.0 active
+      const before = store.getSkillVersions('team-marketing-001')
+      const target = before.find(v => v.status === 'history')!
+      expect(target).toBeDefined()
+
+      store.deleteSkillVersion('team-marketing-001', target.id)
+
+      const after = store.getSkillVersions('team-marketing-001')
+      expect(after.length).toBe(before.length - 1)
+      expect(after.find(v => v.id === target.id)).toBeUndefined()
+    })
+
+    it('deleteSkillVersion 不能刪除生效中的版本', () => {
+      const store = useSkillStore()
+      const before = store.getSkillVersions('team-marketing-001')
+      const active = before.find(v => v.status === 'active')!
+      expect(active).toBeDefined()
+
+      store.deleteSkillVersion('team-marketing-001', active.id)
+
+      const after = store.getSkillVersions('team-marketing-001')
+      expect(after.length).toBe(before.length)
+      expect(after.find(v => v.id === active.id)).toBeDefined()
+    })
+
     it('rejectSkillVersion 將版本設為 rejected', () => {
       const store = useSkillStore()
       const reviewing = store.getSkillVersions('ext-cs-return-001').find(v => v.status === 'reviewing')
@@ -543,6 +570,77 @@ describe('skillStore', () => {
       const updated = store.findSkill(copy.id)
       expect(updated?.personalStatus).toBe('available')
       expect(updated?.instructions).toContain('請幫我調整語氣')
+    })
+  })
+
+  describe('覆蓋能力 capabilities', () => {
+    it('createSkill 帶入 capabilities 會存到新技能上', () => {
+      const store = useSkillStore()
+      const cap = { name: '問題分類', description: '依語意自動分類問題類型' }
+      store.createSkill({
+        name: '測試技能',
+        instructions: '',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+        capabilities: [cap],
+      })
+      const created = store.flatSkills.find(s => s.name === '測試技能')
+      expect(created?.capabilities).toEqual([cap])
+    })
+
+    it('createSkill 未帶 capabilities 時，新技能的 capabilities 是空陣列', () => {
+      const store = useSkillStore()
+      store.createSkill({
+        name: '無能力技能',
+        instructions: '',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      const created = store.flatSkills.find(s => s.name === '無能力技能')
+      expect(created?.capabilities).toEqual([])
+    })
+
+    it('createPersonalSkill 帶入 capabilities 會存到新的個人技能上', () => {
+      const store = useSkillStore()
+      const cap = { name: 'FAQ 查詢', description: '比對知識庫回覆常見問題' }
+      store.createPersonalSkill({
+        name: '測試個人技能',
+        instructions: '',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+        capabilities: [cap],
+      })
+      const created = store.myPersonalSkills.find(s => s.name === '測試個人技能')
+      expect(created?.capabilities).toEqual([cap])
+    })
+
+    it('updateSkill 帶入 capabilities 會覆蓋技能的 capabilities', () => {
+      const store = useSkillStore()
+      const cap = { name: '情緒分析', description: '識別對話中客戶的情緒起伏' }
+      store.updateSkill('ext-cs-return-001', {
+        name: '客服機器人 (退貨版)',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+        capabilities: [cap],
+      })
+      expect(store.findSkill('ext-cs-return-001')?.capabilities).toEqual([cap])
+    })
+
+    it('updateSkill 未帶 capabilities 時，技能的 capabilities 被清空為空陣列', () => {
+      const store = useSkillStore()
+      store.updateSkill('ext-cs-return-001', {
+        name: '客服機器人 (退貨版)',
+        instructions: '測試指令',
+        triggerHint: '',
+        isEnabled: true,
+        assignedAgents: [],
+      })
+      expect(store.findSkill('ext-cs-return-001')?.capabilities).toEqual([])
     })
   })
 

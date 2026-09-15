@@ -7,7 +7,7 @@
     <!-- conv1 空白開始狀態全螢幕遮罩 -->
     <div class="conv1-empty-overlay" v-if="currentConversationId === 'conv1' && conv1Msgs.length === 0"
       @click.stop @wheel.stop @touchmove.stop>
-      <div class="conv1-empty-content">
+      <div class="conv1-empty-content" @click="isShowConv1MoreSuggestions = false">
         <div class="conv1-empty-header">
           <img class="conv1-empty-logo" src="@/assets/logo.svg" alt="JustAgent" />
           <div class="conv1-empty-title">Hi，我是你的AI工作助理</div>
@@ -15,7 +15,7 @@
         </div>
 
         <div class="conv1-suggest-list">
-          <button class="conv1-suggest-card" v-for="item in conv1VisibleSuggestions" :key="item.title"
+          <button class="conv1-suggest-card" v-for="item in conv1PrimarySuggestions" :key="item.title"
             @click="useConv1Suggestion(item.prompt)">
             <div class="conv1-suggest-text">
               <div class="conv1-suggest-title">{{ item.title }}</div>
@@ -25,11 +25,23 @@
               <i class="material-symbols-outlined">{{ item.icon }}</i>
             </div>
           </button>
-        </div>
 
-        <button class="conv1-suggest-refresh" @click="cycleConv1Suggestions">
-          <i class="material-symbols-outlined">autorenew</i> 切換
-        </button>
+          <!-- 其他選項：只顯示前 3 個常用類型在畫面上，其餘收進下拉選單，
+               避免卡片撐爆面板高度、要捲動才找得到輸入框 -->
+          <div class="conv1-suggest-more-wrap">
+            <button class="conv1-suggest-more-btn" @click.stop="isShowConv1MoreSuggestions = !isShowConv1MoreSuggestions">
+              <i class="material-symbols-outlined">{{ isShowConv1MoreSuggestions ? 'expand_less' : 'expand_more' }}</i>
+              其他選項
+            </button>
+            <div class="AiViewer-next-option-box conv1-suggest-more-menu" v-show="isShowConv1MoreSuggestions">
+              <div class="option-item" v-for="item in conv1MoreSuggestions" :key="item.title"
+                @click="useConv1Suggestion(item.prompt); isShowConv1MoreSuggestions = false">
+                <i class="material-symbols-outlined">{{ item.icon }}</i>
+                {{ item.title }}
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="conv1-empty-input-box">
           <textarea
@@ -127,20 +139,23 @@
     <!-- 對話訊息大區域 wrapper -->
     <div class="rbox-main-wrapper">
 
-    <!-- 對話訊息大區域 -->
-    <VirtualList class="AiAgentChatArea"
+    <!-- 對話訊息大區域
+         注意：這裡刻意不用 vue3-virtual-scroll-list（套件跟目前 Vue 版本不相容，
+         渲染函式裡對 hoisted vnode 用 ref 的寫法會導致清單永遠畫不出任何一筆訊息，
+         見 AiAgentChatArea 前身 <VirtualList> 用法的 git 歷史）。demo 對話訊息數量
+         不大，直接用 v-for 全量渲染即可，不需要真正的虛擬捲動。 -->
+    <div class="AiAgentChatArea"
       ref="AiAgentChatList"
-      :data-key="'id'"
-      :data-sources="testMsgs"
-      :data-component="AiViewerRecord"
-      :keeps="99999999"
-      :footer-class="'AiAgentChatArea-footer-box'"
-      @totop="scrollCall('DESC')"
-      @tobottom="scrollCall('ASC')"
       @click="handleChatAreaClick($event)"
     >
-      <template #footer></template>
-    </VirtualList>
+      <div class="wrap">
+        <template v-for="(item, idx) in testMsgs" :key="item.id">
+          <AgentHandoffDivider v-if="messageHandoffs[item.id]" :from="messageHandoffs[item.id].from" :to="messageHandoffs[item.id].to" />
+          <AiViewerRecord :source="item" :index="idx" />
+        </template>
+      </div>
+      <div class="AiAgentChatArea-footer-box"></div>
+    </div>
 
     </div><!-- /rbox-main-wrapper -->
 
@@ -169,7 +184,7 @@
               <textarea class="conv2-up-ta" v-model="conv2UploadDesc" rows="3" @click.stop="conv2FillDemoDesc()"></textarea>
               <div :class="['conv2-up-status', {'conv2-up-status--ready': conv2UploadImgLoaded || conv2UploadDesc}]">
                 <template v-if="conv2UploadImgLoaded || conv2UploadDesc">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   {{ conv2UploadImgLoaded && conv2UploadDesc ? '圖片已上傳・描述已填寫' : conv2UploadImgLoaded ? '圖片已上傳' : '描述已填寫' }}
                 </template>
                 <template v-else>圖片或描述至少填一項</template>
@@ -177,7 +192,7 @@
             </div>
           </div>
           <div class="conv2-fp-btn-row">
-            <button class="conv2-fp-submit-btn" @click.stop="conv2StartAnalysis()">開始分析 →</button>
+            <button class="conv2-fp-submit-btn" @click.stop="conv2StartAnalysis()">開始分析</button>
           </div>
         </div>
       </div>
@@ -227,7 +242,7 @@
             </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
               <button class="conv2-fp-sec-btn" @click.stop="conv2DirectFpStep = 1"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitSku()">確認送出 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitSku()">確認送出</button>
             </div>
           </div>
           <!-- Step 3: 輸入競品網址 -->
@@ -236,7 +251,7 @@
             <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2DirectUrlInput" rows="4" @click.stop="conv2FillDemoUrls()"
               placeholder="每行一個網址&#10;e.g. https://shopee.tw/..." style="margin-top:8px"></textarea>
             <div class="conv2-fp-btn-row" style="margin-top:8px">
-              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitUrls()">開始分析 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="conv2DirectSubmitUrls()">開始分析</button>
             </div>
           </div>
         </div>
@@ -284,11 +299,11 @@
               <div><div class="conv2-fl">品牌 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Brand" @click.stop="!conv2S2Brand && (conv2S2Brand = 'UGG')" /></div>
               <div><div class="conv2-fl">定價 <span style="font-size:10px;color:var(--color-text-alpha50)">選填</span></div><input class="conv2-fi" v-model="conv2S2Price" @click.stop="!conv2S2Price && (conv2S2Price = 'NT$5,980')" /></div>
             </div>
-            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--color-error,#dc2626)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop="!conv2S2Name && (conv2S2Name = DEMO_NAME)" /></div>
-            <div><div class="conv2-fl">商品描述 <span style="color:var(--color-error,#dc2626)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop="!conv2S2Desc && (conv2S2Desc = DEMO_DESC)"></textarea></div>
+            <div style="margin-bottom:7px"><div class="conv2-fl">商品名稱 <span style="color:var(--danger)">*</span></div><input class="conv2-fi conv2-fi--full" v-model="conv2S2Name" @click.stop="!conv2S2Name && (conv2S2Name = DEMO_NAME)" /></div>
+            <div><div class="conv2-fl">商品描述 <span style="color:var(--danger)">*</span></div><textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv2S2Desc" rows="2" @click.stop="!conv2S2Desc && (conv2S2Desc = DEMO_DESC)"></textarea></div>
             <div class="conv2-err">{{ conv2S2Err }}</div>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep1to2()">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep1to2()">確認</button>
             </div>
           </div>
           <!-- Step 2: 商品類別 -->
@@ -302,7 +317,7 @@
             <input class="conv2-fi conv2-fi--full" v-model="conv2S1Custom" placeholder="找不到，自行輸入…" @click.stop style="margin-top:4px" />
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(1)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(3)">確認</button>
             </div>
           </div>
           <!-- Step 3: 分析特徵 -->
@@ -312,7 +327,7 @@
               :class="['conv2-feat-item', {sel: f.sel}]"
               @click.stop="conv2TogFeat(f)">
               <div class="conv2-fcb">
-                <svg v-if="f.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg v-if="f.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="var(--tag-blue-text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div><div class="conv2-ft">{{ f.title }}</div><div class="conv2-fd">{{ f.desc }}</div></div>
             </div>
@@ -320,7 +335,7 @@
             <div class="conv2-fp-btn-row">
               <span class="conv2-cbadge">已選 {{ conv2S3Features.filter(f => f.sel).length }} / {{ conv2S3Features.length }}</span>
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(2)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep(4)">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep(4)">確認</button>
             </div>
           </div>
           <!-- Step 4: 搜索範圍 -->
@@ -336,7 +351,7 @@
             <div style="font-size:11px;color:var(--color-text-alpha50);margin-top:8px">確認後進入設定審核，無誤後 DeepAgent 開始搜索</div>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(3)"><i class="material-symbols-outlined">arrow_back</i>返回</button>
-              <button class="conv2-fp-btn" @click.stop="conv2GoStep('45')">確認 →</button>
+              <button class="conv2-fp-btn" @click.stop="conv2GoStep('45')">確認</button>
             </div>
           </div>
           <!-- Step 45: 確認設定 -->
@@ -350,7 +365,7 @@
             </div>
             <div class="conv2-fp-btn-row" style="margin-top:10px">
               <button class="conv2-fp-sec-btn" @click.stop="conv2GoStep(4)"><i class="material-symbols-outlined">arrow_back</i>返回修改</button>
-              <button class="conv2-fp-btn conv2-fp-btn--green" @click.stop="conv2StartSearch()">確認無誤，開始搜索 →</button>
+              <button class="conv2-fp-btn conv2-fp-btn--green" @click.stop="conv2StartSearch()">確認無誤，開始搜索</button>
             </div>
           </div>
           <!-- Step 5: 確認競品 -->
@@ -390,7 +405,7 @@
             <div class="conv2-err">{{ conv2S5Err }}</div>
             <div class="conv2-fp-btn-row">
               <button class="conv2-fp-sec-btn" @click.stop="conv2ResetComps()">重設</button>
-              <button class="conv2-fp-btn" :disabled="conv2S5SelComps.size < 1" @click.stop="conv2DoneComps()">產出報告 →</button>
+              <button class="conv2-fp-btn" :disabled="conv2S5SelComps.size < 1" @click.stop="conv2DoneComps()">產出報告</button>
             </div>
           </div>
         </div>
@@ -427,7 +442,7 @@
             </div>
           </div>
           <div class="conv2-fp-btn-row">
-            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理 →</button>
+            <button class="conv2-fp-submit-btn" :disabled="conv3UploadedFiles.length === 0" @click.stop="conv3ConfirmUpload()">確認附加，開始整理</button>
           </div>
         </div>
       </div>
@@ -446,14 +461,14 @@
             :class="['conv2-feat-item', {sel: d.sel}]"
             @click.stop="conv3TogDim(d)">
             <div class="conv2-fcb">
-              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg v-if="d.sel" width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="var(--tag-blue-text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="conv2-ft">{{ d.title }}</div>
           </div>
           <div class="conv2-err">{{ conv3DimErr }}</div>
           <div class="conv2-fp-btn-row">
             <span class="conv2-cbadge">已選 {{ conv3Dims.filter(d => d.sel).length }} / {{ conv3Dims.length }}</span>
-            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認 →</button>
+            <button class="conv2-fp-btn" @click.stop="conv3ConfirmDims()">確認</button>
           </div>
         </div>
       </div>
@@ -471,7 +486,7 @@
           <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv3TaggingConcernInput" rows="3" @click.stop
             placeholder="例如：某個 SKU 的材質標籤好像貼錯了..."></textarea>
           <div class="conv2-fp-btn-row">
-            <button class="conv2-fp-submit-btn" @click.stop="submitConv3TaggingConcern()">確認送出 →</button>
+            <button class="conv2-fp-submit-btn" @click.stop="submitConv3TaggingConcern()">確認送出</button>
           </div>
         </div>
       </div>
@@ -662,7 +677,7 @@
             <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="journeyModifyInput" rows="3" @click.stop
               placeholder="例如：旅程過於單一，我需要更豐富的旅程設計..."></textarea>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="submitJourneyModify()">確認送出</button>
             </div>
           </div>
         </div>
@@ -679,7 +694,7 @@
             <textarea class="conv2-fi conv2-fi--full conv2-fi--ta" v-model="conv5ConcernInput" rows="3" @click.stop
               placeholder="例如：主打商品的庫存足夠支撐大量曝光嗎？"></textarea>
             <div class="conv2-fp-btn-row">
-              <button class="conv2-fp-submit-btn" @click.stop="submitConv5Concern()">確認送出 →</button>
+              <button class="conv2-fp-submit-btn" @click.stop="submitConv5Concern()">確認送出</button>
             </div>
           </div>
         </div>
@@ -814,14 +829,15 @@ import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
 import type { ToolboxItem } from '@/types/AiViewer';
-import VirtualList from 'vue3-virtual-scroll-list';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
+import AgentHandoffDivider from '@/components/AiViewer/AgentHandoffDivider.vue';
 import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
 import commentListArea from '@/components/AiViewer/commentListArea.vue';
 import fileListArea from '@/components/AiViewer/fileListArea.vue';
 import blockListArea from '@/components/AiViewer/blockListArea.vue';
 import popDialog from '@/services/popDialog';
 import { formatFileSize, getFileMimeType, validateUploadFiles, acceptedFileExtensions, fileTypeMeta } from '@/utils/file';
+import type { AgentKey } from '@/utils/agentPersona';
 
 // 對話訊息裡用純字串拼出來的 HTML 報告檔案圖示：跟共用資源庫同一套 file-icon-tile，
 // 取代舊的 fileTypeIcon/html.png（這裡是塞進 v-html 的原始字串，不是 Vue 樣板，
@@ -920,7 +936,7 @@ onMounted(() => {
 // 使用者輸入參考
 const { userInputModal } = storeToRefs(aiviewerStore);
 const fireUploadRef = ref<HTMLInputElement|null>(null);
-const AiAgentChatList = ref<InstanceType<typeof VirtualList>|null>(null);
+const AiAgentChatList = ref<HTMLDivElement|null>(null);
 
 // 目前選擇的罐頭任務  TODO... 格式暫定, TODO... 是否要拔到 store 裡？
 const isShowCannedTaskListBox = ref(false);
@@ -1132,33 +1148,40 @@ function handleAccessoryFileSelect(event: Event) {
 // 調整 textarea 高度
 const userInputRef = ref<HTMLTextAreaElement|null>(null);
 async function adjustTextareaHeight() {
-  if (!userInputRef.value) {
-    userInputRef.value!.style.height = 'auto';
+  // 元素目前不存在（尚未掛載，或被 v-if="!inputAreaHidden" 暫時移除）時沒有東西可以調整，
+  // 直接返回即可。
+  // 注意：下面先把元素存到區域變數 el，而不是每次都重新讀 userInputRef.value——
+  // 這個函式中間有 await（60ms），在等待期間輸入框有可能因為畫面切換（例如切換對話、
+  // 快速任務面板開啟）被 v-if 移除、userInputRef.value 變成 null；如果 await 之後
+  // 繼續用 userInputRef.value! 存取 .style，就會對 null 取值而丟出例外。el 是一般的
+  // DOM 節點參照，就算後來從畫面上被移除也不會變成 null，可以安全繼續操作。
+  const el = userInputRef.value;
+  if (!el) {
     return;
   }
 
   // 取得舊高度
-  const oldHeight = userInputRef.value!.style.height;
+  const oldHeight = el.style.height;
 
   // 先重置高度，以便正確計算 scrollHeight
-  userInputRef.value!.style.height = 'auto';
+  el.style.height = 'auto';
 
   // 取得新高度
-  const newHeight = userInputRef.value!.scrollHeight + 2; // 加一些額外空間
+  const newHeight = el.scrollHeight + 2; // 加一些額外空間
 
   // 回復舊高度以觸發動畫效果
-  userInputRef.value!.style.height = oldHeight;
+  el.style.height = oldHeight;
   await new Promise(resolve => setTimeout(resolve, 60));
 
   // 設定新高度
-  userInputRef.value!.style.height = `${newHeight}px`;
+  el.style.height = `${newHeight}px`;
 
   // 如果高度超過最大高度，則添加滾動條
   const maxHeight = 110; // 最大高度
   if (newHeight > maxHeight) {
-    userInputRef.value!.classList.add('useScrollBar');
+    el.classList.add('useScrollBar');
   } else {
-    userInputRef.value!.classList.remove('useScrollBar');
+    el.classList.remove('useScrollBar');
   }
 }
 watch(() => userInputModal.value.msg, () => {
@@ -1212,16 +1235,14 @@ function submitJourneyModify() {
   processConv1Msg('旅程過於單一');
 }
 
-// virtual-list 滾動到頂部或底部的回呼
-function scrollCall(direction: 'ASC' | 'DESC') {
-  console.log('scrollCall 觸發: ', direction);
-}
-// virtual-list 執行滾動到頂部或底部
+// 對話河道捲動到頂部或底部（AiAgentChatList 改成純 v-for 渲染後，直接操作 scrollTop 即可）
 function AiAgentChatListScrollTo(direction: 'ASC' | 'DESC') {
+  const el = AiAgentChatList.value;
+  if (!el) return;
   if (direction === 'DESC') {
-    AiAgentChatList.value?.scrollToIndex(0);
+    el.scrollTop = 0;
   } else {
-    AiAgentChatList.value?.scrollToBottom();
+    el.scrollTop = el.scrollHeight;
   }
 }
 
@@ -1299,8 +1320,10 @@ watch(
 const conv1OverlayInput = ref('');
 
 // ── 歡迎畫面的建議提示卡：對應 AiViewer 實際會處理的文件/數據類型，
-//    點擊直接把 prompt 帶入輸入框（由使用者按下送出，不是自動觸發假的 AI 回覆）；
-//    共 6 組，「切換」每次從剩下的裡面換一批 3 組上來 ──
+//    點擊直接把 prompt 帶入輸入框（由使用者按下送出，不是自動觸發假的 AI 回覆）。
+//    只在畫面上放前 3 個最常用的完整卡片，其餘收進「其他選項」下拉選單——
+//    6 張卡片全部展開會把輸入框擠到要捲動才看得到，所以固定卡片數量、
+//    用下拉選單裝其餘選項，兩個問題一次解決 ──
 const CONV1_SUGGESTIONS = [
   { icon: 'monitoring', tag: 'tag-teal', title: '銷售數據分析報告', desc: '上傳銷售數據，幫你抓出趨勢與異常', prompt: '請幫我分析這份銷售數據，找出趨勢與異常。' },
   { icon: 'translate', tag: 'tag-blue', title: '文件格式互譯', desc: '支援 Excel、PPT、Word 等格式互譯', prompt: '請幫我把這份文件翻譯成英文，格式維持不變。' },
@@ -1309,14 +1332,9 @@ const CONV1_SUGGESTIONS = [
   { icon: 'school', tag: 'tag-green', title: '教育訓練教材彙整', desc: '把多份簡報整理成教材大綱', prompt: '請幫我把這幾份簡報彙整成一份教育訓練教材大綱。' },
   { icon: 'verified', tag: 'tag-rust', title: '簽核流程設計方案', desc: '協助撰寫技術規格與流程文件', prompt: '請幫我撰寫一份簽核流程的技術規格文件。' },
 ];
-const conv1SuggestOffset = ref(0);
-const conv1VisibleSuggestions = computed(() => {
-  const n = CONV1_SUGGESTIONS.length;
-  return [0, 1, 2].map((i) => CONV1_SUGGESTIONS[(conv1SuggestOffset.value + i) % n]);
-});
-function cycleConv1Suggestions() {
-  conv1SuggestOffset.value = (conv1SuggestOffset.value + 3) % CONV1_SUGGESTIONS.length;
-}
+const conv1PrimarySuggestions = CONV1_SUGGESTIONS.slice(0, 3);
+const conv1MoreSuggestions = CONV1_SUGGESTIONS.slice(3);
+const isShowConv1MoreSuggestions = ref(false);
 function useConv1Suggestion(prompt: string) {
   conv1OverlayInput.value = prompt;
 }
@@ -1358,6 +1376,7 @@ function pushConv1NextStepPrompt(doneKey: string) {
   if (remaining.length === 0) return;
   conv1Msgs.value.push({
     id: 'next-step-' + Date.now(),
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     cardType: 'nextStepPrompt',
     msg: '請問接下來還有什麼我可以為您服務的嗎？',
     nextSteps: remaining,
@@ -1373,10 +1392,12 @@ function c1PushThinkingThenReply(
   reportUrl: string,
   reportName: string,
   doneKey: string,
+  agent: AgentKey,
 ) {
   const thinkingId = 'thinking-' + Date.now();
   conv1Msgs.value.push({
     id: thinkingId,
+    agent: 'brain', // 思考中＝AI大腦正在判斷任務、還沒分派
     isThinking: true,
     thinkingSteps: MOCK_THINKING_STEPS,
     sources: MOCK_SOURCES,
@@ -1387,6 +1408,7 @@ function c1PushThinkingThenReply(
     if (idx !== -1) conv1Msgs.value.splice(idx, 1);
     conv1Msgs.value.push({
       id: 'ai-reply-' + Date.now(),
+      agent, // 分派完成，實際輸出結果由對應 agent 呈現
       finishResponse: true,
       cardType: 'translationComplete',
       msg: replyMsg,
@@ -1400,17 +1422,106 @@ function c1PushThinkingThenReply(
   }, thinkingDelay);
 }
 
+// 「行銷報告」任務：示範一個請求依序經過 3 個專責 agent 接力完成——
+// 產品助理先取得商品系列資料，交給數據經理調閱相關銷售數據，
+// 最後由行銷經理整合成行銷活動成效報告。AI大腦→產品助理→數據經理→行銷經理→
+// AI大腦 之間的交接列由河道的 messageHandoffs 機制自動顯示，這裡只需要
+// 依序把每個 agent 的訊息帶上正確的 agent 欄位。
+// 行銷報告多 agent 協作流程的持續進度卡片：跟下面既有的逐則訊息用同一組
+// setTimeout 時間點同步推進，讓使用者不用自己從對話內容拼湊「現在跑到哪一步」
+// ──沿用 DelegateStatusCard（conv2 委派流程已經在用的同一顆純展示元件，
+// 元件自己的註解就寫著「方便未來其他 conv 流程重用」），不用另外做新元件
+const MR_PIPELINE_ID = 'mr-pipeline';
+const MR_PIPELINE_LABELS = ['產品助理・彙整商品資料', '數據經理・分析銷售數據', '行銷經理・生成行銷報告'];
+function advanceMrPipeline(doneUpToIndex: number) {
+  const idx = conv1Msgs.value.findIndex((m: any) => m.id === MR_PIPELINE_ID);
+  if (idx === -1) return;
+  const cur = conv1Msgs.value[idx];
+  const nextSteps = cur.delegateSteps.map((s: any, i: number) => {
+    if (i <= doneUpToIndex) return { ...s, status: 'done' };
+    if (i === doneUpToIndex + 1) return { ...s, status: 'active' };
+    return s;
+  });
+  conv1Msgs.value[idx] = { ...cur, delegateSteps: nextSteps };
+}
+
+function conv1MarketingReportFlow() {
+  const thinkingId = 'thinking-' + Date.now();
+  conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+  nextTick(() => AiAgentChatListScrollTo('ASC'));
+
+  setTimeout(() => {
+    const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId);
+    if (idx !== -1) conv1Msgs.value.splice(idx, 1);
+    conv1Msgs.value.push({
+      id: MR_PIPELINE_ID,
+      agent: 'brain',
+      cardType: 'delegateStatus',
+      bookend: '產品助理 → 數據經理 → 行銷經理',
+      delegateSteps: MR_PIPELINE_LABELS.map((label, i) => ({ label, status: i === 0 ? 'active' : 'wait' })),
+      msg: '',
+    });
+    conv1Msgs.value.push({ id: 'mr-1', agent: 'productAssistant', isProcessing: true, msg: '收到！正在查詢商品文件，彙整 Hurricane Trailsetter 系列資料⋯' });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 1200);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'mr-2',
+      agent: 'productAssistant',
+      msg: '已找到 Hurricane Trailsetter AW26 系列完整商品資料：共 <strong>4 款鞋型</strong>（Sandal 男/女、Mid 男/女），<strong>8 種配色</strong>，建議售價帶 NT$2,480–NT$3,280，核心賣點為防滑大底、快乾材質與 Gore-Tex® 防水膜。已交給數據經理調閱相關銷售數據⋯',
+    });
+    advanceMrPipeline(0);
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 2100);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({ id: 'mr-3', agent: 'dataManager', isProcessing: true, msg: '正在調閱 Hurricane Trailsetter 相關銷售數據⋯' });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 3000);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'mr-4',
+      agent: 'dataManager',
+      msg: '已調閱近 3 年銷售數據：系列 2025 年銷量達 <strong>2,310 雙</strong>，連續三年成長 20%+，其中 <strong>Sandal 女款貢獻最高</strong>（809 雙，占系列 35%），Mid 款則相對成長較緩。已交給行銷經理整合成行銷活動成效報告⋯',
+    });
+    advanceMrPipeline(1);
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 3900);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({ id: 'mr-5', agent: 'marketingManager', isProcessing: true, msg: '正在整合商品資料與銷售數據，生成行銷活動成效報告⋯' });
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+  }, 4800);
+
+  setTimeout(() => {
+    conv1Msgs.value.push({
+      id: 'mr-6',
+      agent: 'marketingManager',
+      finishResponse: true,
+      cardType: 'translationComplete',
+      msg: '✅ 已整合商品系列資料與銷售數據，完成 Hurricane Trailsetter 行銷活動成效報告：本季 ROAS 達 4.2 倍，建議加碼 Sandal 女款的社群曝光預算，並針對 Mid 款規劃健行場景內容以拉近銷量差距。報告已加入畫布，可直接查看或下載。',
+      files: [{ name: 'hurricane_trailsetter_campaign_performance.html', type: 'HTML', size: 8996 }],
+    });
+    advanceMrPipeline(2);
+    try { addReportBlock('/justagent/hurricane_trailsetter_campaign_performance.html', 'hurricane_trailsetter_campaign_performance.html'); } catch (e) { /* ignore */ }
+    nextTick(() => AiAgentChatListScrollTo('ASC'));
+    pushConv1NextStepPrompt('行銷報告');
+  }, 6000);
+}
+
 function processConv1Msg(msg: string) {
   // 初始翻譯請求：對話尚未開始（id_3 尚未出現）
   if (!conv1Msgs.value.some((m: any) => m.cardType === 'translationConfirm')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Title.value = '2026商品文件翻譯'
-      conv1Msgs.value.push({ id: 'id_2', msg: '當然可以，麻煩你幫我確認 以下翻譯條件內容，確認後我會立刻開工 💪' })
+      conv1Msgs.value.push({ id: 'id_2', agent: 'brain', msg: '當然可以，麻煩你幫我確認 以下翻譯條件內容，確認後我會立刻開工 💪' })
       conv1Msgs.value.push({
         id: 'id_3',
         forUser: true,
@@ -1428,9 +1539,13 @@ function processConv1Msg(msg: string) {
     }, 1000)
     return
   }
-  if (msg.includes('圖表')) {
+  if (msg.includes('行銷報告') || msg.includes('行銷活動成效')) {
+    // 注意：這個判斷必須排在「圖表」之前——「行銷活動成效報告」快捷卡的 prompt
+    // 文字本身也包含「圖表」兩個字，如果順序相反會被下面的圖表分支先攔截。
+    conv1MarketingReportFlow();
+  } else if (msg.includes('圖表')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
@@ -1481,6 +1596,7 @@ function processConv1Msg(msg: string) {
 
       conv1Msgs.value.push({
         id: 'ai-charts-' + Date.now(),
+        agent: 'dataManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '📊 已幫你產出 <strong>3 張銷售分析圖表</strong>，已加到右側畫布：<br>・年度銷售量（長條圖）<br>・年成長率趨勢（折線圖）<br>・各鞋款銷售拆分（堆疊長條圖）<br><br>可直接在畫布上調整大小、截圖使用。',
@@ -1503,6 +1619,7 @@ function processConv1Msg(msg: string) {
       '/justagent/hurricane_trailsetter_marketing_strategy.html',
       'hurricane_trailsetter_marketing_strategy.html',
       '行銷策略',
+      'marketingManager',
     );
   } else if (msg.includes('用戶畫像')) {
     c1PushThinkingThenReply(
@@ -1512,16 +1629,18 @@ function processConv1Msg(msg: string) {
       '/justagent/hurricane_trailsetter_user_persona.html',
       'hurricane_trailsetter_user_persona.html',
       '用戶畫像',
+      'marketingManager',
     );
   } else if (msg.includes('行銷自動化旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已根據 AW26 銷售數據與用戶行為分析，完成 Hurricane Trailsetter 行銷自動化旅程規劃。旅程涵蓋 D0–D30 共 6 個節點，整合 Email、LINE、廣告、SMS 四大渠道，請在畫布中查閱。',
@@ -1538,13 +1657,14 @@ function processConv1Msg(msg: string) {
     }, 5000)
   } else if (msg.includes('旅程過於單一') || msg.includes('更豐富的旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已重新設計旅程架構，D3 節點升級為三階行為分流（高參與 / 低參與 / 未開啟），新增 Web Push、SMS 觸點，整體旅程觸及率預升 35%，請查看畫布中的「旅程總覽-1」，確認後可啟動旅程。',
@@ -1557,13 +1677,14 @@ function processConv1Msg(msg: string) {
     }, 5000)
   } else if (msg.includes('壽星') || msg.includes('生日旅程')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '已從 CDP 篩選出台北地區 <strong>1,284 位 5 月壽星</strong>，完成專屬行銷自動化旅程設計。旅程從生日前 7 天預熱啟動，整合 Email、LINE、SMS 三大渠道，並在 D+1 依兌換行為進行分流，預估轉換提升 38%，請在畫布中查閱。',
@@ -1576,13 +1697,14 @@ function processConv1Msg(msg: string) {
     }, 5000)
   } else if (msg.includes('廣告文案')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '以下是 3 條 Hurricane Trailsetter AW26 品牌曝光廣告文案：<br><br>① <strong>「山路之王，秋冬出擊」</strong><br>Hurricane Trailsetter — 專為台灣山林設計，防滑耐磨，陪你征服每一條步道。<br><br>② <strong>「戶外不將就，腳感決定一切」</strong><br>全新 AW26 系列登場，Vibram 大底 × 防水鞋面，由內而外的戶外自信。<br><br>③ <strong>「你的下一段旅程，從這裡開始」</strong><br>Hurricane Trailsetter AW26，限時優惠倒數中。',
       });
@@ -1590,13 +1712,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('歡迎 Email 模板')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '📧 <strong>歡迎 Email 模板</strong><br><br><strong>主旨：</strong>歡迎加入 Hurricane Trailsetter 探險家族 🏔️<br><br><strong>內文：</strong><br>Hi [姓名]，<br><br>感謝你關注 Hurricane Trailsetter！我們為 AW26 秋冬系列注入了全新工藝——<br>・Vibram® 大底，抓地力提升 30%<br>・Gore-Tex® 防水膜，惡劣天氣也不妥協<br>・符合台灣山林地形設計的鞋楦<br><br>身為我們的新朋友，這裡有一份 <strong>專屬 9 折優惠碼：WELCOME26</strong>，有效期 7 天。<br><br>[立即選購] 按鈕<br><br>期待在每條步道上看見你的足跡。<br>Hurricane Trailsetter 團隊',
       });
@@ -1604,13 +1727,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('LINE 腳本')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '💬 <strong>LINE 歡迎訊息腳本</strong><br><br><strong>主訊息：</strong><br>嗨！感謝加入 Hurricane Trailsetter 官方帳號 🏔️<br>AW26 秋冬新品現正上市，加好友限定 85 折！<br><br><strong>快速回覆按鈕（建議設定 3 個）：</strong><br>・🛒 立即選購<br>・📦 查看新品<br>・🎁 領取優惠碼<br><br><strong>備注：</strong>按鈕點擊後導向官網商品頁，搭配 UTM 參數追蹤轉換。',
       });
@@ -1618,13 +1742,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('再行銷受眾')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '🎯 <strong>再行銷受眾設定建議</strong><br><br><strong>受眾條件（Meta Ads Manager）：</strong><br>・行為事件：<code>ViewContent</code>（商品頁停留 &gt; 15 秒）<br>・時間窗口：過去 <strong>7 天</strong>內瀏覽但未購買<br>・排除條件：過去 30 天內已購買者<br><br><strong>廣告素材建議：</strong><br>・動態商品廣告（DPA）自動帶入瀏覽商品<br>・文案：「還在考慮嗎？限時優惠只剩 2 天 ⏳」<br>・預算：日預算 NT$500，CPM 目標 ≤ NT$180',
       });
@@ -1632,13 +1757,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('穿搭指南')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '📝 <strong>戶外穿搭指南 Email 內容草稿</strong><br><br><strong>主旨：</strong>這個秋冬，跟著 Hurricane 這樣穿出門 🍂<br><br><strong>Section 1 — 日系機能風</strong><br>Hurricane Trailsetter Mid + 寬版工作褲 + 薄羽絨背心，輕量機能感十足。<br><br><strong>Section 2 — 城市健走風</strong><br>Hurricane Trailsetter Sandal + 修身長褲 + 連帽外套，從捷運到步道無縫接軌。<br><br><strong>Section 3 — 週末山林風</strong><br>Hurricane Trailsetter Mid + 快乾長褲 + 防風外層，應對台灣 2000m 以下山徑全制霸。<br><br>每段附產品連結與 UTM 追蹤參數。',
       });
@@ -1646,13 +1772,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('棄單 SMS')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '📱 <strong>棄單 SMS 提醒文案（2 條）</strong><br><br><strong>版本 A（優惠導向，70 字以內）：</strong><br>「Hurricane Trailsetter 購物車提醒：你的 AW26 鞋款還在等你！現在結帳享 85 折，限今日。點此完成購買：[短網址]」<br><br><strong>版本 B（稀缺感導向，70 字以內）：</strong><br>「你選的 Hurricane Trailsetter 剩最後幾雙，明天可能就沒了！點此立即結帳：[短網址]  回覆 TD 退訂」<br><br><strong>建議發送時間：</strong>棄單後 1 小時，若未購買再於 24 小時後發版本 B。',
       });
@@ -1660,13 +1787,14 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('忠誠計畫')) {
     const thinkingId = 'thinking-' + Date.now();
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES });
     nextTick(() => AiAgentChatListScrollTo('ASC'));
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex(m => m.id === thinkingId);
       if (idx !== -1) conv1Msgs.value.splice(idx, 1);
       conv1Msgs.value.push({
         id: 'ai-reply-' + Date.now(),
+        agent: 'marketingManager',
         finishResponse: true,
         msg: '⭐ <strong>購後忠誠計畫建議</strong><br><br><strong>積分規則：</strong><br>・每消費 NT$1 = 1 點<br>・開箱影片投稿 = 500 點<br>・成功推薦好友 = 300 點（雙方各得）<br><br><strong>會員等級（3 級）：</strong><br>・🥾 <strong>Trail Starter</strong>（0–2,999 點）：生日禮 + 新品早鳥 5% off<br>・🏔️ <strong>Trail Explorer</strong>（3,000–9,999 點）：免運 + 季末特賣 10% off<br>・🦅 <strong>Trail Master</strong>（10,000 點以上）：專屬客服 + 限定商品優先購 + 15% off<br><br><strong>升級通知：</strong>LINE 推播 + Email 雙管道，搭配升級限定優惠碼刺激下一單。',
       });
@@ -1674,17 +1802,18 @@ function processConv1Msg(msg: string) {
     }, 5000);
   } else if (msg.includes('日文')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
-      conv1Msgs.value.push({ id: 'id_4b', isProcessing: true, msg: '收到！正在啟動日文翻譯引擎，針對品牌術語與敬語表達進行優化處理，請稍候⋯' })
+      conv1Msgs.value.push({ id: 'id_4b', agent: 'productAssistant', isProcessing: true, msg: '收到！正在啟動日文翻譯引擎，針對品牌術語與敬語表達進行優化處理，請稍候⋯' })
       nextTick(() => AiAgentChatListScrollTo('ASC'))
     }, 900)
     setTimeout(() => {
       conv1Msgs.value.push({
         id: 'id_7',
+        agent: 'productAssistant',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '🇯🇵 日文版翻譯完成！同樣處理了 <strong>143 個欄位</strong>，針對日本市場慣用的敬語表達進行了調整與優化，建議確認品牌術語的語氣風格是否符合需求後即可使用。📋 <strong>AW26 Product Descriptions_日本語.xlsx</strong> 已加入左側畫布，請點開查閱。',
@@ -1712,17 +1841,18 @@ function processConv1Msg(msg: string) {
     }, 3200)
   } else if (msg.includes('Hurricane') || msg.includes('鞋款') || msg.includes('銷售數據')) {
     const thinkingId = 'thinking-' + Date.now()
-    conv1Msgs.value.push({ id: thinkingId, isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
+    conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true, thinkingSteps: MOCK_THINKING_STEPS, sources: MOCK_SOURCES })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
     setTimeout(() => {
       const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
       if (idx !== -1) conv1Msgs.value.splice(idx, 1)
-      conv1Msgs.value.push({ id: 'id_8b', msg: '正在從商品文件中提取 Hurricane Trailsetter 系列資料，並比對歷年銷售數據⋯' })
+      conv1Msgs.value.push({ id: 'id_8b', agent: 'dataManager', msg: '正在從商品文件中提取 Hurricane Trailsetter 系列資料，並比對歷年銷售數據⋯' })
       nextTick(() => AiAgentChatListScrollTo('ASC'))
     }, 900)
     setTimeout(() => {
       conv1Msgs.value.push({
         id: 'id_9',
+        agent: 'dataManager',
         finishResponse: true,
         cardType: 'translationComplete',
         msg: '📊 找到了！Hurricane Trailsetter 共 <strong>4 個鞋款</strong>（Sandal 男女 + Mid 男女），2022 年起連續三年成長 20%+。<br>完整數據與 2026 預測報告已加到右側畫布，點一下就能展開看。',
@@ -1966,19 +2096,20 @@ function conv1StartTranslation() {
   const lang = record.lang || conv1TranslLang.value
 
   const thinkingId = 'thinking-' + Date.now()
-  conv1Msgs.value.push({ id: thinkingId, isThinking: true })
+  conv1Msgs.value.push({ id: thinkingId, agent: 'brain', isThinking: true })
   nextTick(() => AiAgentChatListScrollTo('ASC'))
 
   setTimeout(() => {
     const idx = conv1Msgs.value.findIndex((m: any) => m.id === thinkingId)
     if (idx !== -1) conv1Msgs.value.splice(idx, 1)
-    conv1Msgs.value.push({ id: 'id_4', isProcessing: true, msg: '收到！✅ 檔案讀取成功，正在開始處理。<br><br>將依照以下順序進行：<br>① 載入產品文件翻譯的專業規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式並輸出對齊版本<br><br>請稍候，即將為您完成 ⚡' })
+    conv1Msgs.value.push({ id: 'id_4', agent: 'productAssistant', isProcessing: true, msg: '收到！✅ 檔案讀取成功，正在開始處理。<br><br>將依照以下順序進行：<br>① 載入產品文件翻譯的專業規範<br>② 逐欄比對商品術語與品牌用語<br>③ 保留原始格式並輸出對齊版本<br><br>請稍候，即將為您完成 ⚡' })
     nextTick(() => AiAgentChatListScrollTo('ASC'))
   }, 900)
 
   setTimeout(() => {
     conv1Msgs.value.push({
       id: 'id_5',
+      agent: 'productAssistant',
       finishResponse: true,
       cardType: 'translationComplete',
       msg: `✅ 翻譯完成！此次共處理 <strong>143 個產品欄位</strong>，品牌術語已保留原文並附上對照表，另外也為您標出了 <strong>12 個商標詞</strong>，整理在 .txt 檔中方便核對。<br><br>📋 <strong>AW26 Product Descriptions_${lang}.xlsx</strong> 已加入左側畫布，隨時可點開查閱。`,
@@ -2013,6 +2144,7 @@ function conv1StartTranslation() {
   setTimeout(() => {
     conv1Msgs.value.push({
       id: 'id_5b',
+      agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
       finishResponse: true,
       msg: '請問接下來還有什麼可以為您服務的嗎？',
     })
@@ -2124,31 +2256,41 @@ function conv2DoneComps() {
   conv2StepFpVisible.value = false;
   conv2ShowStepPill.value = false;
   c2Push({ forUser: true, msg: `確認以上 ${names.length} 個競品，請生成分析報告。` });
-  c2Push({ msg: `已確認 ${names.length} 個競品，開始生成報告⋯<div class="conv2-search-card" style="margin-top:8px">
-  <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取競品頁面資料</div>
-  <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對與評分中</div>
-  <div class="conv2-ss conv2-ss--wait">ReportGenerator 產出 HTML 報告</div>
-</div>` });
-  c2Scroll();
-  setTimeout(() => { conv2ShowReport(); c2Scroll(); }, 2200);
+  runDelegateSteps({
+    agent: 'productManager',
+    msg: `已確認 ${names.length} 個競品，開始生成報告⋯`,
+    bookend: '產品經理（競品分析 Agent）→ DeepAgent',
+    labels: [
+      'ProductExtractor 爬取競品頁面資料',
+      'FeatureAnalyzer 特徵比對與評分中',
+      'ReportGenerator 產出 HTML 報告',
+    ],
+    totalMs: 2200,
+    onDone: () => { conv2ShowReport(); c2Scroll(); },
+  });
 }
 function conv2StartSearch() {
   conv2StepFpVisible.value = false;
   c2Push({ forUser: true, msg: '確認無誤，開始搜索。' });
-  c2Push({ msg: `設定已確認，DeepAgent 開始深度搜索⋯<div class="conv2-search-card" style="margin-top:8px">
-  <div class="conv2-ss conv2-ss--done">SearchStrategist 產生深度搜索任務</div>
-  <div class="conv2-ss conv2-ss--done">GoogleSearchEngine 搜索並過濾關鍵字</div>
-  <div class="conv2-ss conv2-ss--active">ImageSimilarityFilter 圖片相似度篩選中</div>
-  <div class="conv2-ss conv2-ss--wait">篩選完成，產出備選競品清單</div>
-</div>` });
-  c2Scroll();
-  setTimeout(() => {
-    c2Push({ msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
-    c2Scroll();
-    conv2CurStep.value = 5;
-    conv2S5SelComps.value = new Set([1, 2, 3, 4]);
-    conv2StepFpVisible.value = true;
-  }, 1800);
+  runDelegateSteps({
+    agent: 'productManager',
+    msg: '設定已確認，DeepAgent 開始深度搜索⋯',
+    bookend: '產品經理（競品分析 Agent）→ DeepAgent',
+    labels: [
+      'SearchStrategist 產生深度搜索任務',
+      'GoogleSearchEngine 搜索並過濾關鍵字',
+      'ImageSimilarityFilter 圖片相似度篩選中',
+      '篩選完成，產出備選競品清單',
+    ],
+    totalMs: 1800,
+    onDone: () => {
+      c2Push({ agent: 'productManager', msg: `✅ 搜索完成，找到 <strong>12 個備選競品</strong>，請在下方面板確認要納入報告的競品。` });
+      c2Scroll();
+      conv2CurStep.value = 5;
+      conv2S5SelComps.value = new Set([1, 2, 3, 4]);
+      conv2StepFpVisible.value = true;
+    },
+  });
 }
 
 const CONV2_MODE_CARD_MSG = `你好！請選擇想要的分析模式：
@@ -2187,7 +2329,7 @@ function conv2InitFlow() {
   conv2Title.value = '商品競品分析';
   c2Push({ forUser: true, msg: '商品競品分析' });
   setTimeout(() => {
-    c2Push({ msg: CONV2_MODE_CARD_MSG });
+    c2Push({ agent: 'brain', msg: CONV2_MODE_CARD_MSG });
     c2Scroll();
   }, 300);
 }
@@ -2197,6 +2339,45 @@ function c2Push(msg: any) {
 }
 function c2Scroll() {
   nextTick(() => AiAgentChatListScrollTo('ASC'));
+}
+
+// Orchestrator 單層委派下，競品分析 Agent ↔ DeepAgent 的委派狀態卡片：
+// push 一則 cardType:'delegateStatus' 訊息，並逐步把每個 step 從
+// wait → active → done（取代舊版整包 setTimeout 才換一次的假動畫），
+// 總時長跟原本的等待時間一致，跑完才呼叫 onDone 接續原本的流程。
+function runDelegateSteps(opts: {
+  msg: string;
+  bookend: string;
+  labels: string[];
+  totalMs: number;
+  onDone: () => void;
+  agent?: AgentKey;
+}) {
+  const delegateSteps = opts.labels.map((label, i) => ({
+    label,
+    status: (i === 0 ? 'active' : 'wait') as 'done' | 'active' | 'wait',
+  }));
+  c2Push({ msg: opts.msg, agent: opts.agent ?? 'productAssistant', cardType: 'delegateStatus', bookend: opts.bookend, delegateSteps });
+  c2Scroll();
+
+  const idx = conv2Msgs.value.length - 1;
+  const stepMs = Math.max(1, Math.round(opts.totalMs / opts.labels.length));
+  let i = 0;
+  const timer = setInterval(() => {
+    const cur = conv2Msgs.value[idx];
+    if (!cur) { clearInterval(timer); return; }
+    const nextSteps = cur.delegateSteps.map((s: any, si: number) => {
+      if (si <= i) return { ...s, status: 'done' };
+      if (si === i + 1) return { ...s, status: 'active' };
+      return s;
+    });
+    conv2Msgs.value[idx] = { ...cur, delegateSteps: nextSteps };
+    i++;
+    if (i >= opts.labels.length) {
+      clearInterval(timer);
+      opts.onDone();
+    }
+  }, stepMs);
 }
 
 function handleChatAreaClick(e: MouseEvent) {
@@ -2323,7 +2504,7 @@ function conv2SelectMode(mode: string) {
 
   if (mode === 'direct') {
     setTimeout(() => {
-      c2Push({ msg: '好的！請在下方面板填寫商品與競品資訊。' });
+      c2Push({ agent: 'productAssistant', msg: '好的！請在下方面板填寫商品與競品資訊。' });
       c2Scroll();
       conv2DirectFpStep.value = 1;
       conv2DirectFpVisible.value = true;
@@ -2334,7 +2515,7 @@ function conv2SelectMode(mode: string) {
 
   if (mode === 'deep') {
     setTimeout(() => {
-      c2Push({ msg: '好的！請在下方面板完成深度分析設定。' });
+      c2Push({ agent: 'productManager', msg: '好的！請在下方面板完成深度分析設定。' });
       c2Scroll();
       conv2CurStep.value = 1;
       conv2S1ShowSkuInput.value = false;
@@ -2347,7 +2528,7 @@ function conv2SelectMode(mode: string) {
 
   // init: 開啟上傳懸浮面板
   setTimeout(() => {
-    c2Push({ msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請在下方面板上傳商品資訊。` });
+    c2Push({ agent: 'productAssistant', msg: `需要你提供一些商品的圖片或詳細文字描述，才能進行${labels[mode]}，請在下方面板上傳商品資訊。` });
     c2Scroll();
     conv2UploadFpVisible.value = true;
     conv2ShowUploadPill.value = true;
@@ -2358,15 +2539,15 @@ function conv2StartAnalysis() {
   conv2UploadFpVisible.value = false;
   conv2ShowUploadPill.value = false;
   conv2Title.value = "競品分析 · UGG Women's Elea Pooch Slip-on 冬季室內拖鞋";
-  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--color-border)" src="${DEMO_IMG}"/><span>${conv2UploadDesc.value}</span></div>` });
-  c2Push({ isThinking: true, msg: 'AI 正在思考中...' });
+  c2Push({ forUser: true, msg: `<div style="display:flex;align-items:center;gap:8px"><img style="width:44px;height:44px;border-radius:6px;object-fit:contain;border:1px solid var(--divider)" src="${DEMO_IMG}"/><span>${conv2UploadDesc.value}</span></div>` });
+  c2Push({ agent: 'brain', isThinking: true, msg: 'AI 正在思考中...' });
   c2Scroll();
   setTimeout(() => {
     const idx = conv2Msgs.value.findIndex((m) => m.isThinking);
     if (idx !== -1) conv2Msgs.value.splice(idx, 1);
-    c2Push({ msg: `已識別為<strong>毛絨動物臉室內拖鞋</strong>，捕捉到以下特徵：` });
-    const btnLabel = conv2Mode.value === 'deep' ? '確認並開始深度分析 →' : '確認並產出初步分析報告 →';
-    c2Push({ msg: `<div class="conv2-product-card">
+    c2Push({ agent: 'productAssistant', msg: `已識別為<strong>毛絨動物臉室內拖鞋</strong>，捕捉到以下特徵：` });
+    const btnLabel = conv2Mode.value === 'deep' ? '確認並開始深度分析' : '確認並產出初步分析報告';
+    c2Push({ agent: 'productAssistant', msg: `<div class="conv2-product-card">
   <div class="conv2-pc-head">
     <img class="conv2-pc-thumb" src="${DEMO_IMG}"/>
     <div>
@@ -2386,11 +2567,11 @@ function conv2StartAnalysis() {
 
 function conv2ConfirmProduct() {
   if (conv2Mode.value === 'init') {
-    c2Push({ msg: '正在產出初步分析報告⋯' });
+    c2Push({ agent: 'productAssistant', msg: '正在產出初步分析報告⋯' });
     c2Scroll();
     setTimeout(() => {
       const extIco = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V7M8 1h3m0 0v3m0-3L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      c2Push({ msg: `初步分析完成，共找到 <strong>5 個直接競品</strong>、<strong>1 個功能競品</strong>：<div class="conv2-init-list">
+      c2Push({ agent: 'productAssistant', msg: `初步分析完成，共找到 <strong>5 個直接競品</strong>、<strong>1 個功能競品</strong>：<div class="conv2-init-list">
   <div class="conv2-comp-item conv2-comp-item--rank">
     <span class="conv2-comp-rank">1</span>
     <div class="conv2-comp-body"><div class="conv2-comp-brand-lbl">ZARA</div><div class="conv2-comp-title">CAPYFUN 室內拖鞋 - 粉色</div><div class="conv2-comp-feat">毛絨材質・動物臉設計・室內防滑底・NT$890</div></div>
@@ -2423,8 +2604,8 @@ function conv2ConfirmProduct() {
   </div>
 </div>
 <div class="conv2-next-action-row">
-  <button class="conv2-fp-sec-btn" data-action="init-to-deep">深度分析 →</button>
-  <button class="conv2-action-btn" data-action="init-to-direct">直接生成報告 →</button>
+  <button class="conv2-fp-sec-btn" data-action="init-to-deep">深度分析</button>
+  <button class="conv2-action-btn" data-action="init-to-direct">直接生成報告</button>
 </div>` });
       c2Scroll();
     }, 1000);
@@ -2436,7 +2617,9 @@ function conv2ConfirmProduct() {
 function conv2InitToDeep() {
   conv2Mode.value = 'deep';
   c2Push({ forUser: true, msg: '深度分析' });
-  c2Push({ msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
+  // 產品助理的初步分析到此結束，直接交給產品經理接手深度分析——
+  // 這是同一個任務內的自然延伸，不是新的分派決策，所以不繞回 AI大腦。
+  c2Push({ agent: 'productManager', msg: '好的，切換至深度分析模式，請在下方面板完成設定。' });
   c2Scroll();
   conv2CurStep.value = 1;
   conv2S1ShowSkuInput.value = false;
@@ -2448,7 +2631,7 @@ function conv2InitToDeep() {
 function conv2InitToDirect() {
   conv2Mode.value = 'direct';
   c2Push({ forUser: true, msg: '直接生成報告' });
-  c2Push({ msg: '好的，商品資訊已取得，請在下方面板提供競品網址。' });
+  c2Push({ agent: 'productAssistant', msg: '好的，商品資訊已取得，請在下方面板提供競品網址。' });
   c2Scroll();
   conv2DirectFpStep.value = 3;
   conv2DirectFpVisible.value = true;
@@ -2473,7 +2656,7 @@ function conv2DirectSelectMethod(method: string) {
 function conv2DirectSubmitSku() {
   conv2DirectFpStep.value = 3;
   c2Push({ forUser: true, msg: `UG1166915BLK @2025產品總表-Q3` });
-  c2Push({ msg: `收到！正在讀取知識庫並查詢商品資料⋯<div class="conv2-search-card" style="margin-top:8px">
+  c2Push({ agent: 'productAssistant', msg: `收到！正在讀取知識庫並查詢商品資料⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">KnowledgeReader 讀取知識庫：2025產品總表-Q3</div>
   <div class="conv2-ss conv2-ss--active">ProductLookup 查詢貨號：UG1166915BLK</div>
   <div class="conv2-ss conv2-ss--wait">識別商品資訊完成</div>
@@ -2491,7 +2674,7 @@ function conv2DirectSubmitSku() {
           .replace('conv2-ss--wait', 'conv2-ss--done'),
       };
     }
-    c2Push({ msg: `✅ 已從知識庫找到商品資料：<strong>UGG Women's Elea Pooch Slip-on</strong>（UG1166915BLK）` });
+    c2Push({ agent: 'productAssistant', msg: `✅ 已從知識庫找到商品資料：<strong>UGG Women's Elea Pooch Slip-on</strong>（UG1166915BLK）` });
     c2Scroll();
   }, 1800);
 }
@@ -2504,7 +2687,7 @@ function conv2DirectSubmitUrls() {
     try { return `${i + 1}. ${new URL(u).hostname}`; } catch { return `${i + 1}. ${u}`; }
   }).join('<br>');
   c2Push({ forUser: true, msg: `提供 ${urls.length} 個競品網址：<br>${urlListHtml}` });
-  c2Push({ msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
+  c2Push({ agent: 'productAssistant', msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取商品資料中</div>
   <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對分析中</div>
   <div class="conv2-ss conv2-ss--wait">ReportGenerator 生成競品報告</div>
@@ -2515,7 +2698,7 @@ function conv2DirectSubmitUrls() {
 
 function conv2SubmitUrls() {
   c2Push({ forUser: true, msg: '提供 3 個競品網址：<br>1. shopee.tw — 日光手感-小狗立體保暖毛絨拖鞋<br>2. paidal.com.tw — 野生喵喵怪毛絨室內拖鞋<br>3. zara.com/tw — CAPYFUN 室內拖鞋' });
-  c2Push({ msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
+  c2Push({ agent: 'productAssistant', msg: `收到，開始爬取並分析⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">ProductExtractor 爬取商品資料中</div>
   <div class="conv2-ss conv2-ss--active">FeatureAnalyzer 特徵比對分析中</div>
   <div class="conv2-ss conv2-ss--wait">ReportGenerator 生成競品報告</div>
@@ -2532,8 +2715,8 @@ function conv2ShowReport() {
       'competitor_analysis_report.html'
     );
   } catch (e) { /* canvas may not be initialized in this context */ }
-  c2Push({ msg: '✅ 報告已生成完畢，可下載 HTML 檔案。' });
-  c2Push({ finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
+  c2Push({ agent: 'brain', msg: '✅ 報告已生成完畢，可下載 HTML 檔案。<span class="conv2-orchestrator-chip">任務完成 · 控制權交還 Orchestrator</span>' });
+  c2Push({ agent: 'brain', finishResponse: true, msg: `<div class="oneFileItem" style="cursor:pointer">
   ${HTML_FILE_ICON_HTML}
   <div class="file-info-box">
     <div class="file-name">competitor_analysis_report.html</div>
@@ -2607,7 +2790,7 @@ function conv3InitFlow() {
   conv3Title.value = 'TEVA新品特徵貼標';
   c3Push({ forUser: true, msg: '請整理這批 TEVA 新品原廠文件，依顏色、款式、材質、尺碼、風格完成特徵貼標' });
   setTimeout(() => {
-    c3Push({ msg: '收到，請先在下方面板附加要整理的原廠文件。' });
+    c3Push({ agent: 'brain', msg: '收到，請先在下方面板附加要整理的原廠文件。' });
     c3Scroll();
     conv3UploadFpVisible.value = true;
     conv3ShowUploadPill.value = true;
@@ -2660,7 +2843,7 @@ function conv4InitFlow() {
   conv4Title.value = '產品銷售報告整理';
   c4Push({ forUser: true, msg: '請幫我整理上個月的產品銷售報告，相關資料請幫我查詢 @2026Q1產品銷售，輸出格式請參考 @三諾產品部輸出報告規範' });
   setTimeout(() => {
-    c4Push({ msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card" style="margin-top:8px">
+    c4Push({ agent: 'dataManager', msg: `收到，我先查詢資料並套用指定的輸出格式規範⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SalesDataQuery 查詢 2026Q1 產品銷售數據</div>
   <div class="conv2-ss conv2-ss--wait">ReportFormatter 套用三諾產品部輸出報告規範</div>
 </div>` });
@@ -2671,6 +2854,7 @@ function conv4InitFlow() {
         addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '2026年6月產品銷售報告.html');
       } catch { /* 畫布可能尚未初始化 */ }
       c4Push({
+        agent: 'dataManager',
         finishResponse: true,
         msg: `✅ 已完成上個月（6月）產品銷售報告，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2711,14 +2895,14 @@ function conv3ConfirmUpload() {
   conv3ShowUploadPill.value = false;
   const fileListHtml = conv3UploadedFiles.value.map((f, i) => `${i + 1}. ${f.name}`).join('<br>');
   c3Push({ forUser: true, msg: `已附加 ${conv3UploadedFiles.value.length} 份文件：<br>${fileListHtml}` });
-  c3Push({ msg: `收到，這批原廠文件看起來版本蠻雜亂的，我先掃描並整併這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
+  c3Push({ agent: 'productManager', msg: `收到，這批原廠文件看起來版本蠻雜亂的，我先掃描並整併這批檔案⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">DocumentParser 解析原廠型錄與規格表</div>
   <div class="conv2-ss conv2-ss--wait">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
 </div>` });
   c3Scroll();
   setTimeout(() => {
     conv3FlipSearchCard(['conv2-ss--active', 'conv2-ss--wait'], ['conv2-ss--done', 'conv2-ss--done']);
-    c3Push({ msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
+    c3Push({ agent: 'productManager', msg: `已解析 4 份文件，合併雜亂命名後共識別 <strong>12 個 SKU</strong>。請在下方面板確認要貼標的特徵維度。` });
     c3Scroll();
     conv3DimFpVisible.value = true;
     conv3ShowDimPill.value = true;
@@ -2738,7 +2922,7 @@ function conv3ConfirmDims() {
   conv3ShowDimPill.value = false;
   const dimNames = conv3Dims.value.filter(d => d.sel).map(d => d.title).join('、');
   c3Push({ forUser: true, msg: `確認以 ${dimNames} 進行貼標，開始執行。` });
-  c3Push({ msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
+  c3Push({ agent: 'productManager', msg: `設定已確認，開始貼標⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--done">DocumentParser 解析原廠型錄與規格表</div>
   <div class="conv2-ss conv2-ss--done">SkuNormalizer 合併重複／雜亂命名的商品資料</div>
   <div class="conv2-ss conv2-ss--active">FeatureTagger 依 ${dimNames} 進行特徵貼標中</div>
@@ -2754,8 +2938,9 @@ function conv3ShowResult(dimNames: string) {
   try {
     addReportBlock('/justagent/teva_feature_tagging_report.html', 'TEVA_特徵貼標報告.html');
   } catch (e) { /* 畫布可能尚未初始化 */ }
-  c3Push({ msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
+  c3Push({ agent: 'productManager', msg: `✅ 貼標完成！12 個 SKU 已依 ${dimNames} 完成特徵貼標，報告已加入畫布，可直接查看或下載。` });
   c3Push({
+    agent: 'productManager',
     finishResponse: true,
     msg: `<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2795,7 +2980,7 @@ function submitConv3TaggingConcern() {
 
 function conv3ReviseTagging() {
   setTimeout(() => {
-    c3Push({ msg: `您說得對，我重新比對一次原廠規格表⋯<div class="conv2-search-card" style="margin-top:8px">
+    c3Push({ agent: 'productManager', msg: `您說得對，我重新比對一次原廠規格表⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">QualityReview 重新交叉比對命名與規格一致性</div>
 </div>` });
     c3Scroll();
@@ -2806,6 +2991,7 @@ function conv3ReviseTagging() {
         addReportBlock('/justagent/teva_feature_tagging_report-1.html', 'TEVA_特徵貼標報告（修正版）.html');
       } catch { /* 畫布可能尚未初始化 */ }
       c3Push({
+        agent: 'productManager',
         finishResponse: true,
         msg: `已修正：TEV-AW26-011（Original Universal Premier）因命名與 TEV-AW26-002（Original Universal）相近，先前合併時誤套用了 002 的材質規格，已重新比對原廠規格表更正為頭層牛皮材質，材質維度分佈也同步由 10 種組合修正為 11 種組合。修正版報告已加入畫布。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2823,6 +3009,7 @@ function conv3ReviseTagging() {
 
 function conv3AskBuildKnowledgeBase() {
   c3Push({
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     msg: `這批商品已完成特徵貼標，要不要把整理好的商品資料建成知識庫，方便之後快速查詢與再利用？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv3-build-kb">是，建立知識庫</span>
@@ -2839,6 +3026,7 @@ function conv3BuildKnowledgeBase() {
   c3Scroll();
   setTimeout(() => {
     c3Push({
+      agent: 'dataManager', // 建立知識庫＝把貼標結果實際存進資料庫/索引，屬於數據經理的職責範圍
       finishResponse: true,
       msg: `<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
   <span style="font-size:20px;line-height:1">📚</span>
@@ -2858,7 +3046,7 @@ function conv3SkipKnowledgeBase() {
   c3Push({ forUser: true, msg: '不用了' });
   c3Scroll();
   setTimeout(() => {
-    c3Push({ msg: '好的，這批貼標結果已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c3Push({ agent: 'brain', msg: '好的，這批貼標結果已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
     c3Scroll();
   }, 500);
 }
@@ -2866,6 +3054,7 @@ function conv3SkipKnowledgeBase() {
 
 function conv4AskBuildSkill() {
   c4Push({
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存起來，之後產品部同仁都能快速套用？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv4-build-skill">是，幫我建立 Skill</span>
@@ -2882,6 +3071,7 @@ function conv4BuildSkill() {
   c4Scroll();
   setTimeout(() => {
     c4Push({
+      agent: 'brain',
       msg: `好的，我先整理這個流程的設定，請確認以下內容是否正確：
 <div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
   <span style="font-size:20px;line-height:1">🧩</span>
@@ -2906,6 +3096,7 @@ function conv4ConfirmSaveSkill() {
   c4Scroll();
   setTimeout(() => {
     c4Push({
+      agent: 'brain',
       finishResponse: true,
       msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到<span data-action="goto-skill-management" style="color:var(--primary);text-decoration:underline;cursor:pointer;font-weight:600">Skill 管理</span>頁面查看或調整這個 Skill 的細節設定。`,
     });
@@ -2919,7 +3110,7 @@ function conv4SkipSkill() {
   c4Push({ forUser: true, msg: '不用了' });
   c4Scroll();
   setTimeout(() => {
-    c4Push({ msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
+    c4Push({ agent: 'brain', msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
     c4Scroll();
   }, 500);
 }
@@ -2964,7 +3155,7 @@ function conv5InitFlow() {
   c5Push({ forUser: true, msg: '換季檔期快到了，幫我提供一份 Teva 的促銷方案，記得先看一下目前庫存，也了解一下現在社群、時尚雜誌跟趨勢報告在流行什麼，最後整理成行銷策略和風險評估。' });
 
   setTimeout(() => {
-    c5Push({ msg: `收到，我先查詢目前的商品庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+    c5Push({ agent: 'marketingManager', msg: `收到，我先查詢目前的商品庫存⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">InventoryQuery 查詢 Teva 商品線即時庫存</div>
 </div>` });
     c5Scroll();
@@ -2975,6 +3166,7 @@ function conv5InitFlow() {
         addReportBlock('/justagent/teva_inventory_snapshot.html', 'Teva 商品庫存即時資料.html');
       } catch { /* 畫布可能尚未初始化 */ }
       c5Push({
+        agent: 'marketingManager',
         finishResponse: true,
         msg: `📦 庫存查詢完成：Hurricane XLT2、Hurricane Verge、新品 Ridgeview 庫存皆充足；Original Universal 是 6 月熱銷品之一。庫存資料已加入畫布，可直接查看。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -2988,7 +3180,7 @@ function conv5InitFlow() {
       c5Scroll();
 
       setTimeout(() => {
-        c5Push({ msg: `<div class="conv2-search-card" style="margin-top:8px">
+        c5Push({ agent: 'marketingManager', msg: `<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
   <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
   <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
@@ -3004,6 +3196,7 @@ function conv5InitFlow() {
             addReportBlock('/justagent/teva_seasonal_promotion_strategy.html', 'Teva 2026 換季促銷方案.html', false);
           } catch { /* 畫布可能尚未初始化 */ }
           c5Push({
+            agent: 'marketingManager',
             finishResponse: true,
             msg: `✅ 已完成 Teva 換季促銷方案，主打商品鎖定 6 月銷售亮眼的 Original Universal，並依 Gorpcore／機能穿搭趨勢規劃社群與雜誌曝光。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3044,7 +3237,7 @@ function conv5Approve() {
   c5Push({ forUser: true, msg: '沒問題，可以啟動' });
   c5Scroll();
   setTimeout(() => {
-    c5Push({ msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
+    c5Push({ agent: 'marketingManager', msg: '太好了，方案已確認，8/15 檔期啟動前我會再提醒相關單位備貨與素材上架！' });
     c5Scroll();
   }, 500);
 }
@@ -3063,7 +3256,7 @@ function submitConv5Concern() {
 
 function conv5ReviseStrategy() {
   setTimeout(() => {
-    c5Push({ msg: `您說得對，我重新核對一次庫存⋯<div class="conv2-search-card" style="margin-top:8px">
+    c5Push({ agent: 'marketingManager', msg: `您說得對，我重新核對一次庫存⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">InventoryQuery 重新核對 Teva 商品線即時庫存</div>
 </div>` });
     c5Scroll();
@@ -3074,6 +3267,7 @@ function conv5ReviseStrategy() {
         addReportBlock('/justagent/teva_seasonal_promotion_strategy-1.html', 'Teva 2026 換季促銷方案（修正版）.html', false);
       } catch { /* 畫布可能尚未初始化 */ }
       c5Push({
+        agent: 'marketingManager',
         finishResponse: true,
         msg: `已修正：Original Universal 現貨僅剩 18 件，不適合作為大量曝光的主打商品，已改由庫存充足（320 件）、同樣熱銷的 Hurricane XLT2 接手主打，60% 廣告預算同步轉移；Original Universal 改包裝為「限量珍藏款」，用低庫存做稀缺感話題操作，風險評估表也已同步更新。修正版報告已加入畫布。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3112,7 +3306,7 @@ const CONV6_STRATEGY_SOURCES: KnowledgeSource[] = [...CONV6_SOURCES, ...CONV6_TR
 
 function processConv6Msg(msg: string) {
   if (conv6FlowStarted.value) {
-    setTimeout(() => { c6Push({ msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
+    setTimeout(() => { c6Push({ agent: 'brain', msg: '這個對話目前僅示範單一分析情境，如需查看其他洞察，歡迎開新對話 🙌' }); c6Scroll(); }, 400);
     return;
   }
   const hasTeva = msg.includes('TEVA');
@@ -3123,12 +3317,12 @@ function processConv6Msg(msg: string) {
     conv6RunAnalysis();
     return;
   }
-  setTimeout(() => { c6Push({ msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
+  setTimeout(() => { c6Push({ agent: 'brain', msg: '目前僅能協助 TEVA 涼鞋相關的銷售與會員輪廓分析，請描述您想了解的通路或會員面向 🙏' }); c6Scroll(); }, 400);
 }
 
 function conv6RunAnalysis() {
   setTimeout(() => {
-    c6Push({ msg: `收到，我先透過 MCP 串接 Adobe Commerce 查詢並比對會員資料⋯<div class="conv2-search-card" style="margin-top:8px">
+    c6Push({ agent: 'dataManager', msg: `收到，我先透過 MCP 串接 Adobe Commerce 查詢並比對會員資料⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">AdobeCommerceConnector（MCP）建立連線</div>
   <div class="conv2-ss conv2-ss--wait">MagentoSalesAPI 查詢 TEVA 涼鞋各通路銷售數據</div>
   <div class="conv2-ss conv2-ss--wait">MemberSegmentAnalyzer 交叉比對會員輪廓</div>
@@ -3162,6 +3356,7 @@ function conv6RunAnalysis() {
         }, '會員輪廓分布.json');
       } catch (e) { /* 畫布可能尚未初始化 */ }
       c6Push({
+        agent: 'dataManager',
         finishResponse: true,
         msg: `✅ 已完成 TEVA 涼鞋 2026Q2 各通路銷售與會員輪廓分析，圖表已加入畫布。<br><br>重點洞察：實體門市貢獻最高但年減 4%，天貓旗艦店成長最快（+32%）；會員回購占比達 68%，顯示既有會員貢獻穩定。`,
         sources: CONV6_SOURCES,
@@ -3187,6 +3382,7 @@ function conv6FlipSearchCard(from: string[], to: string[]) {
 
 function conv6AskReportChoice() {
   c6Push({
+    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
     msg: `要不要我把這次的分析整理成一份洞察報告？你想要哪一種？
 <div class="conv1-quick-btns" style="margin-top:8px">
   <span class="conv1-quick-btn" data-action="conv6-report-channel">通路銷售深度分析報告</span>
@@ -3214,6 +3410,7 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
         addReportBlock('/justagent/teva_channel_sales_report.html', '通路銷售深度分析報告.html');
       } catch (e) { /* 畫布可能尚未初始化 */ }
       c6Push({
+        agent: 'dataManager',
         finishResponse: true,
         msg: `✅ 已完成「通路銷售深度分析報告」，報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3228,14 +3425,14 @@ function conv6ChooseReport(kind: 'channel' | 'member' | 'strategy') {
     } else if (kind === 'strategy') {
       conv6RunStrategyDeepResearch();
     } else {
-      c6Push({ msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
+      c6Push({ agent: 'dataManager', msg: `「${CONV6_REPORT_LABELS[kind]}」功能即將推出，敬請期待 🚀` });
       c6Scroll();
     }
   }, 500);
 }
 
 function conv6RunStrategyDeepResearch() {
-  c6Push({ msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，存入外部市場趨勢庫後再結合通路與會員數據，運用 RAG 產出策略與風險評估⋯<div class="conv2-search-card" style="margin-top:8px">
+  c6Push({ agent: 'marketingManager', msg: `好，我先透過 Deep Research 蒐集目前社群、時尚雜誌與趨勢報告，存入外部市場趨勢庫後再結合通路與會員數據，運用 RAG 產出策略與風險評估⋯<div class="conv2-search-card" style="margin-top:8px">
   <div class="conv2-ss conv2-ss--active">SocialTrendScan 社群輿情掃描</div>
   <div class="conv2-ss conv2-ss--wait">MagazineTrendScan 時尚雜誌趨勢彙整</div>
   <div class="conv2-ss conv2-ss--wait">IndustryReportScan 產業趨勢報告彙整</div>
@@ -3253,6 +3450,7 @@ function conv6RunStrategyDeepResearch() {
       addReportBlock('/justagent/teva_channel_marketing_strategy_report.html', '行銷策略與風險評估報告.html');
     } catch { /* 畫布可能尚未初始化 */ }
     c6Push({
+      agent: 'marketingManager',
       finishResponse: true,
       msg: `✅ 已完成「行銷策略與風險評估報告」：Deep Research 蒐集到的 Gorpcore 機能穿搭風潮、大地色系＋螢光點綴色彩偏好、產業年增率 11% 等外部趨勢已存入外部市場趨勢庫，並生成優化關鍵字；再透過 RAG 綜合這些外部資料與天貓旗艦店成長最快（+32%）、實體門市年減 4%、會員回購率 68% 等內部數據，產出對應的行銷策略建議與風險評估。報告已加入畫布，可直接查看或下載。<div class="oneFileItem">
   ${HTML_FILE_ICON_HTML}
@@ -3278,6 +3476,28 @@ const testMsgs = computed(() => {
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
+});
+
+// 工作任務交接提示：標注 testMsgs 裡「這一則跟前一則實際顯示的 AI 訊息比較，
+// agent 換人了」的訊息 id，交接列會插在這些訊息前面。
+// 使用者訊息、思考中訊息不列入比較（沒有意義的形象、也不會實際顯示頭像），
+// 對話中第一則 AI 訊息不算交接（沒有「前一個」可以比較）。
+// 注意：這裡純粹是「跟前一則比對」，不要求中間一定要經過 AI大腦——同一個任務
+// 內的自然延伸（例如 conv2 產品助理做完初步分析、使用者選深度分析，直接交給
+// 產品經理），agent 可以互相直接交接，不必每次都繞回 AI大腦再分派一次。
+// AI大腦只在真正的分派/決策時刻（任務一開始、或任務完全結束要問下一步）出現。
+const messageHandoffs = computed(() => {
+  const result: Record<string, { from: AgentKey; to: AgentKey }> = {};
+  let lastAgent: AgentKey | undefined;
+  for (const m of testMsgs.value) {
+    if (m.forUser || m.isThinking) continue;
+    const agent: AgentKey = m.agent ?? 'brain';
+    if (lastAgent && agent !== lastAgent) {
+      result[m.id] = { from: lastAgent, to: agent };
+    }
+    lastAgent = agent;
+  }
+  return result;
 });
 
 function resetConversation() {

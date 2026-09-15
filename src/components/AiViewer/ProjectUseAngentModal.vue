@@ -78,23 +78,3 @@ watch(
 );
 
 </script>
-
-<style lang="scss">
-.ProjectUseAngentModal {
-  .agent-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    > div {
-      border-radius: 8px;
-      padding: 6px 8px;
-      background-color: var(--color-background-1);
-    }
-  }
-  .remark {
-    color: var(--color-text-alpha50);
-    font-size: 14px;
-    margin-top: 14px;
-  }
-}
-</style>

@@ -42,7 +42,7 @@ describe('knowledgeStore — pipeline actions', () => {
   })
 
   describe('markPipelineDone', () => {
-    it('pipeline 完成後 item status 變 reviewing，version status 變 reviewing', () => {
+    it('pipeline 完成後 item status 變 pending，version 停在 draft 並標記 aiGenerated（先落到草稿區，由人工決定是否送審）', () => {
       const store = useKnowledgeStore()
       const id = store.createFromUpload({ fileName: 'test.pdf', category: '測試', tags: [] })
       store.updatePipelineProgress(id, 'indexing', 100)
@@ -52,10 +52,11 @@ describe('knowledgeStore — pipeline actions', () => {
       ])
 
       const item = store.knowledgeList.find(k => k.id === id)!
-      expect(item.status).toBe('reviewing')
+      expect(item.status).toBe('pending')
       expect(item.pipelineProgress).toBe(100)
       expect(item.pipelineStage).toBeNull()
-      expect(item.versions[0].status).toBe('reviewing')
+      expect(item.versions[0].status).toBe('draft')
+      expect(item.versions[0].aiGenerated).toBe(true)
       expect(item.versions[0].chunks.length).toBe(1)
     })
   })

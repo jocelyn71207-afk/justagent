@@ -98,11 +98,13 @@ const props = defineProps({
 
 const aiviewerStore = useAiviewerStore();
 
+// 分類色沿用專案既有的分類色票（--tag-*-text，跟 agent 身分色同一組），
+// 不另外寫死 hex，深色模式才會自動跟著調整
 const CATEGORIES: ReportCategory[] = [
-  { id: 'promo', label: '行銷活動成效', color: '#c2703d' },
-  { id: 'ta', label: 'TA 用戶畫像', color: '#3f7cac' },
-  { id: 'member', label: '會員留存與流失', color: '#ba4a56' },
-  { id: 'product', label: '商品深度分析', color: '#4f9d69' },
+  { id: 'promo', label: '行銷活動成效', color: 'var(--tag-rust-text)' },
+  { id: 'ta', label: 'TA 用戶畫像', color: 'var(--tag-blue-text)' },
+  { id: 'member', label: '會員留存與流失', color: 'var(--tag-rose-text)' },
+  { id: 'product', label: '商品深度分析', color: 'var(--tag-green-text)' },
 ];
 
 const SECTIONS: ReportSection[] = [
@@ -137,8 +139,8 @@ function sectionDesc(sectionId: string): string {
 }
 function categoryColor(sectionId: string): string {
   const section = SECTION_MAP[sectionId];
-  if (!section) return '#c7c9d1';
-  return CATEGORY_MAP[section.categoryId]?.color ?? '#c7c9d1';
+  if (!section) return 'var(--text-faint)';
+  return CATEGORY_MAP[section.categoryId]?.color ?? 'var(--text-faint)';
 }
 function sectionsByCategory(categoryId: string): ReportSection[] {
   return SECTIONS.filter(s => s.categoryId === categoryId);

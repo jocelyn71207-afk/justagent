@@ -139,6 +139,7 @@ export interface CreateSkillPayload {
   assignedAgents: string[]
   scope?: 'enterprise' | 'team'
   files?: SkillFile[]
+  capabilities?: SkillCapability[]
 }
 
 export interface UpdateSkillPayload {
@@ -149,6 +150,7 @@ export interface UpdateSkillPayload {
   isEnabled: boolean
   assignedAgents: string[]
   files?: SkillFile[]
+  capabilities?: SkillCapability[]
 }
 
 export interface DraftSkill {
@@ -1201,6 +1203,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       triggerHint: data.triggerHint,
       assignedAgents: data.assignedAgents,
       files: data.files ?? [],
+      capabilities: data.capabilities ?? [],
     })
   }
 
@@ -1221,6 +1224,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       testPassRate: 0,
       avgLatencyMs: 0,
       files: data.files ?? [],
+      capabilities: data.capabilities ?? [],
     })
   }
 
@@ -1234,6 +1238,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.isEnabled = data.isEnabled
     skill.assignedAgents = data.assignedAgents
     skill.files = data.files ?? []
+    skill.capabilities = data.capabilities ?? []
     if (skill.personalStatus === 'draft' && skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions) {
       skill.personalStatus = 'available'
     }
@@ -1467,6 +1472,16 @@ export const useSkillStore = defineStore('skillStore', () => {
   function deletePersonalSkill(id: string): void {
     const idx = myPersonalSkillsRef.value.findIndex(s => s.id === id)
     if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
+  }
+
+  // 版本會隨時間越積越多，管理者可以清掉不需要的舊版本；生效中的版本
+  // 不能刪，要刪之前得先用 setLibraryActiveVersion 切換到別的版本
+  function deleteSkillVersion(skillId: string, versionId: string): void {
+    const skill = _findAny(skillId)
+    if (!skill?.versions) return
+    const version = skill.versions.find(v => v.id === versionId)
+    if (!version || version.status === 'active') return
+    skill.versions = skill.versions.filter(v => v.id !== versionId)
   }
 
   function duplicateAsPersonalSkill(sourceId: string, nameOverride?: string): Skill {
@@ -1816,6 +1831,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     hasSkillNameConflict,
     wouldSkillNameConflict,
     setLibraryActiveVersion,
+    deleteSkillVersion,
     approvePersonalSkill,
     rejectPersonalSkill,
     hasPendingReview,

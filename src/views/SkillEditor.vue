@@ -104,6 +104,12 @@
           </div>
 
           <div class="se-section">
+            <label class="se-label">覆蓋能力（選填）</label>
+            <p class="se-hint">拆解這個技能具體涵蓋哪些能力，例如「問題分類」「情緒分析」，方便之後在技能詳情快速掌握技能範圍。</p>
+            <SkillCapabilityEditor v-model="form.capabilities" />
+          </div>
+
+          <div class="se-section">
             <label class="se-label">指派 Agent（選填）</label>
             <p class="se-hint">選擇哪些 Agent 可以調用此技能。未指派時技能仍可建立，之後可再補充。</p>
             <div class="se-agent-grid lively-stagger">
@@ -147,6 +153,13 @@
                 <span class="se-confirm-val">
                   <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
                   <span v-else class="se-empty">（未上傳）</span>
+                </span>
+              </div>
+              <div class="se-confirm-row">
+                <span class="se-confirm-key">覆蓋能力</span>
+                <span class="se-confirm-val">
+                  <span v-if="form.capabilities.length">{{ form.capabilities.length }} 項能力</span>
+                  <span v-else class="se-empty">（未填寫）</span>
                 </span>
               </div>
             </div>
@@ -217,8 +230,9 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
+import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { DraftSkill, SkillFile } from '@/stores/skillStore'
+import type { DraftSkill, SkillFile, SkillCapability } from '@/stores/skillStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -262,6 +276,7 @@ const form = reactive({
       : [] as string[],
   isEnabled: existingSkill?.isEnabled ?? true,
   files: existingSkill?.files ?? existingDraft?.files ?? [] as SkillFile[],
+  capabilities: existingSkill?.capabilities ?? [] as SkillCapability[],
 })
 
 const fillWidth = computed(() => `${(currentStep.value / (STEPS.length - 1)) * 100}%`)
@@ -291,6 +306,10 @@ function handleSubmit() {
     assignedAgents: [...form.assignedAgents],
     isEnabled: form.isEnabled,
     files: [...form.files],
+    // 只保留有填名稱的能力，使用者點了「新增能力」卻沒填就送出的空白列不用存
+    capabilities: form.capabilities
+      .filter(c => c.name.trim())
+      .map(c => ({ name: c.name.trim(), description: c.description.trim() })),
   }
   if (isDraftMode && draftId) {
     store.updateDraft(draftId, payload)

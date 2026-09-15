@@ -1412,42 +1412,6 @@
     @include use-scroll-bar(var(--divider-a50));
   }
 
-  // ── 建立版本 Modal 版本類型選擇 ──
-  // 跨頁共用：CreateVersionModal 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
-  // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）
-  .version-type-btn {
-    border: 1.5px solid var(--divider-a50);
-    border-radius: 12px;
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--surface);
-
-    &:hover {
-      border-color: var(--primary-hover);
-      background: rgba($color-wise-green, 0.03);
-    }
-
-    &.active {
-      border-color: var(--primary-hover);
-      background: rgba($color-wise-green, 0.06);
-      color: var(--primary-hover);
-
-      .version-type-title { color: var(--primary-hover); }
-    }
-
-    .version-type-title {
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .version-type-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-  }
-
   // ── ReviewDrawer 審核抽屜 ──
   // 跨頁共用：ReviewDrawer 同時被 KnowledgeBase.vue 與 KnowledgeDetail.vue 開啟
   // （已用 grep 確認，不可只 rescope 到 .KnowledgeDetail，否則從 KnowledgeBase 列表頁開啟時會遺失樣式）

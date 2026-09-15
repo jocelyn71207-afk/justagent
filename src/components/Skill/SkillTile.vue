@@ -11,7 +11,7 @@
       {{ skill.name }}
     </div>
     <div class="tile-scope">{{ scopeLabel }}</div>
-    <div v-if="skill.description" class="tile-desc">{{ skill.description }}</div>
+    <div v-if="tileDesc" class="tile-desc">{{ tileDesc }}</div>
 
     <div class="tile-foot">
       <div class="tile-actions" @click.stop>
@@ -56,4 +56,8 @@ const scopeLabel = computed(() => {
   if (props.skill.scope === 'team') return `團隊技能${props.skill.teamName ? '（' + props.skill.teamName + '）' : ''}`
   return '系統技能'
 })
+
+// 用第一筆使用情境的標題取代原本的技能描述，讓卡片一眼看出「什麼時候會用到」
+// 而不是技能本身的功能說明；沒有使用情境的技能（例如剛手動建立的）才退回顯示描述
+const tileDesc = computed(() => props.skill.usageScenarios?.[0]?.title || props.skill.description)
 </script>

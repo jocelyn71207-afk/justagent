@@ -562,7 +562,7 @@ function simulateJustkaGeneration(id: string, bot: { id: string; name: string; c
 function simulatePipeline(id: string) {
   knowledgeStore.startPipelineSimulation(id)
   setTimeout(() => {
-    popDialog.toast('Pipeline 處理完成！請前往「開始審核」確認 AI 生成的內容後批准發佈', 4000)
+    popDialog.toast('Pipeline 處理完成！請前往草稿確認 AI 生成的內容後送出審核', 4000)
   }, 4500)
 }
 </script>

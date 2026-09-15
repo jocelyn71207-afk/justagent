@@ -23,6 +23,16 @@
   &.no-team-panel {
     width: $railWidth;
   }
+
+  // 第二層收合成迷你圖示條時，最外層容器也要跟著縮寬——.side-panel 自己
+  // 縮寬只是內層元件的事，這個外層容器是獨立的固定寬度（flex: none），
+  // 不會因為裡面的子元素變窄就自動跟著縮小，沒同步改的話畫面會留一塊
+  // 空白區域，看起來像收合沒生效。注意：side-panel 收合後還在（只是變窄
+  // 成 rail 寬度），不是整個消失，所以這裡要用 $collapsedMenuWidth（兩個
+  // rail 寬度相加），不能誤用只給「side-panel 根本不存在」情境的 $railWidth
+  &.is-panel-collapsed {
+    width: $collapsedMenuWidth;
+  }
 }
 
 .rail {
@@ -235,8 +245,57 @@
   background: var(--surface);
   border-right: 1px solid var(--divider);
   padding: 20px 10px;
-  overflow-y: auto;
-  @include use-scroll-bar(var(--scrollbar-a50));
+  // 不能設 overflow-y: auto（原本就有、不是這次加的）——只要這個容器有任何一
+  // 軸不是 visible，瀏覽器就會把「往右彈出去」的浮層（.rail-popover、團隊
+  // 切換清單、收合後的 flyout）一起裁掉，浮層在 DOM 裡明明已經 display 出
+  // 來，畫面上卻整個看不到。目前面板內容（單一團隊的導覽項目）高度不會超
+  // 出正常螢幕，先拿掉捲動；如果之後項目多到真的需要捲動，要改成把浮層
+  // 用 Teleport 移出這個容器再處理定位，不能簡單加回 overflow
+  transition: width $menutransition ease, padding $menutransition ease;
+
+  // 收合成迷你圖示條，跟 rail 同寬——兩條圖示條並排視覺上不會忽寬忽窄
+  &.is-collapsed {
+    width: $railWidth;
+    padding: 20px 8px;
+  }
+}
+
+// 收合按鈕跟團隊切換器並排同一列，不是浮動把手也不是另外自成一列
+.side-panel-collapse-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+
+  i { font-size: 17px; }
+
+  &:hover { background: var(--sidebar-hover); color: var(--text); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+.side-panel.is-collapsed .side-panel-switcher {
+  justify-content: center;
+}
+.side-panel.is-collapsed .side-panel-collapse-toggle {
+  margin-left: 0;
+}
+
+// 收合後所有導覽項目置中顯示圖示（文字用 v-if 移除，不是 CSS 藏起來）
+.side-panel.is-collapsed .side-panel-item {
+  justify-content: center;
+  padding: 9px 0;
+}
+
+// 群組（AI 技能／共享資源庫）的容器：收合後靠這個當 .rail-popover flyout 的定位基準
+.side-panel-nav-group {
+  position: relative;
 }
 
 .side-panel-title {
@@ -348,6 +407,15 @@
     outline: 2px solid var(--accent);
     outline-offset: -2px;
   }
+}
+
+// 收合後「AI 技能／共享資源庫」的懸浮子選單：跟 .company-rail-list／
+// .team-switch-list 一樣要自己補 width/padding，.rail-popover 本身沒有，
+// 不然內容會貼著卡片邊緣、看起來很擠
+.side-panel-flyout {
+  top: -6px;
+  min-width: 180px;
+  padding: 6px;
 }
 
 // popover 標題：讓使用者一打開就知道這份清單的範疇是「企業」還是「團隊」，

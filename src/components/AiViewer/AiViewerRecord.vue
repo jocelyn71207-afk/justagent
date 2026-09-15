@@ -4,10 +4,17 @@
     isThinking: props.source.isThinking,
     feedback: props.source.finishResponse
   }]">
-    <!-- AI 頭像 (非使用者、非 thinking 狀態) -->
-    <div class="ai-avatar" v-if="!props.source.forUser && !props.source.isThinking">AI</div>
+    <!-- AI 頭像 (非使用者、非 thinking 狀態)：依訊息的 agent 欄位顯示對應形象，
+         沒有帶欄位時 fallback 成 AI大腦（見 agentPersonaMeta） -->
+    <div class="ai-avatar" :class="agentPersona.tag" v-if="!props.source.forUser && !props.source.isThinking"
+      v-tooltip="agentPersona.name">
+      <i class="material-symbols-outlined">{{ agentPersona.icon }}</i>
+    </div>
 
     <div class="message-wrap">
+      <!-- 發話 agent 名稱：跟頭像同一份 agentPersona，文字取代滑鼠移過去才看得到的 tooltip -->
+      <div class="agent-name-label" :class="agentPersona.tag" v-if="!props.source.forUser && !props.source.isThinking">{{ agentPersona.name }}</div>
+
       <!-- 思維鏈卡片：AI 訊息且有 thinkingSteps 或正在 thinking 時顯示 -->
       <ThinkingChainCard
         v-if="!props.source.forUser && (props.source.isThinking || props.source.thinkingSteps?.length)"
@@ -88,6 +95,15 @@
           </div>
         </template>
 
+        <!-- 委派狀態卡片（Orchestrator → 產品助理 Subagent → DeepAgent） -->
+        <template v-else-if="props.source.cardType === 'delegateStatus'">
+          <div v-html="displayMsg"></div>
+          <DelegateStatusCard
+            :steps="props.source.delegateSteps ?? []"
+            :bookend="props.source.bookend"
+          />
+        </template>
+
         <!-- 處理中訊息（含 loading 動畫） -->
         <template v-else-if="props.source.isProcessing">
           <div v-html="displayMsg"></div>
@@ -134,9 +150,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watchEffect, inject } from 'vue'
+import { ref, computed, watchEffect, inject } from 'vue'
 import { formatFileSize, fileTypeMeta } from '@/utils/file'
+import { agentPersonaMeta } from '@/utils/agentPersona'
 import ThinkingChainCard from '@/components/AiViewer/ThinkingChainCard.vue'
+import DelegateStatusCard from '@/components/AiViewer/DelegateStatusCard.vue'
 
 interface KnowledgeSource {
   knowledgeId: string
@@ -150,6 +168,9 @@ const props = defineProps<{
 }>()
 
 const openDrawer = inject<(sources: KnowledgeSource[]) => void>('openDrawer')!
+
+// 訊息的發話 agent 形象（沒有 agent 欄位時 fallback 成 AI大腦）
+const agentPersona = computed(() => agentPersonaMeta(props.source.agent))
 
 const displayMsg = ref('')
 

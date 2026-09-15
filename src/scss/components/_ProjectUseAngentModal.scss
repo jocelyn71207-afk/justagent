@@ -1,0 +1,17 @@
+.ProjectUseAngentModal {
+  .agent-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    > div {
+      border-radius: 8px;
+      padding: 6px 8px;
+      background-color: var(--sidebar-bg); // 原本 var(--color-background-1) 從未定義過
+    }
+  }
+  .remark {
+    color: var(--text-faint); // 原本 var(--color-text-alpha50) 從未定義過
+    font-size: 14px;
+    margin-top: 14px;
+  }
+}

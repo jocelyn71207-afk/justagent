@@ -22,14 +22,28 @@
   align-items: center;
   justify-content: center;
 
+  // 查看目前技能內容時面板變寬、分成左右兩欄，而不是蓋一個 Modal
+  // 蓋住整個對話框——這樣看內容的同時，對話框（訊息／輸入框）還是
+  // 可以正常打字、捲動
   .secm-panel {
     width: min(560px, 92vw);
     height: min(70vh, 620px);
     background: var(--surface);
     border-radius: 16px;
     display: flex;
-    flex-direction: column;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+    transition: width 0.2s ease;
+
+    &.has-side {
+      width: min(880px, 94vw);
+    }
+  }
+
+  .secm-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .secm-head {
@@ -39,6 +53,13 @@
     gap: 12px;
     padding: 18px 20px;
     border-bottom: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+  }
+
+  .secm-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex-shrink: 0;
   }
 
@@ -142,8 +163,8 @@
     }
   }
 
+  // 附加檔案預設收合，只留一行摘要，展開才佔空間，不會固定擠壓對話區
   .secm-files-panel {
-    padding: 12px 20px;
     border-top: 1px solid var(--divider-a50);
     flex-shrink: 0;
     max-height: 40%;
@@ -151,13 +172,150 @@
     @include use-scroll-bar(var(--scrollbar-a50));
   }
 
+  .secm-files-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+
+    .material-symbols-outlined { font-size: 18px; }
+    &:hover { color: var(--text-muted); }
+  }
+
   .secm-files-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .SkillFileUpload { padding: 0 20px 12px; }
+
+  // ── 查看目前技能內容：標頭裡的切換按鈕，開關右側的並排欄位 ──
+  .secm-view-original-btn {
+    gap: 6px;
+    color: var(--text-faint);
+    font-size: 12.5px;
+    white-space: nowrap;
+
+    .material-symbols-outlined { font-size: 16px; }
+
+    &.is-active {
+      color: $color_main_1;
+      border-color: $color_main_3;
+      background: $color_main_5;
+    }
+  }
+
+  // ── 目前技能內容：並排側欄，不是蓋住整個對話框的 Modal，看內容的
+  //    同時對話框還是可以正常互動 ─────────────────
+  .secm-side {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--divider-a50);
+    background: var(--page-bg);
+    border-radius: 0 16px 16px 0;
+  }
+
+  .secm-side-head {
+    flex-shrink: 0;
+    padding: 18px 18px 10px;
     font-size: 11px;
     font-weight: 600;
     color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+  }
+
+  .secm-side-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 18px 18px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+
+    .markdown-body {
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      line-height: 1.7;
+      font-family: inherit;
+
+      h2 {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 14px 0 6px;
+        &:first-child { margin-top: 0; }
+      }
+
+      p, ul, ol { margin: 0 0 8px; }
+      ul, ol { padding-left: 18px; }
+      li { margin-bottom: 3px; }
+      strong { color: var(--text); }
+    }
+  }
+
+  .secm-empty-hint {
+    color: var(--text-faint);
+    font-size: 12.5px;
+    margin: 0;
+  }
+
+  // 窄螢幕放不下並排欄位，側欄疊到對話框下面
+  @media (max-width: 760px) {
+    .secm-panel.has-side {
+      width: min(560px, 92vw);
+      height: min(88vh, 720px);
+      flex-direction: column;
+    }
+
+    .secm-side {
+      width: 100%;
+      border-left: none;
+      border-top: 1px solid var(--divider-a50);
+      border-radius: 0 0 16px 16px;
+      max-height: 220px;
+    }
+  }
+
+  // ── 建議 chip：依技能實際有的內容區塊動態產生，取代原本一句固定、
+  //    跟這顆技能無關的通用範例 ───────────────────
+  .secm-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .secm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover {
+      background: var(--accent-soft);
+      border-color: $color_main_3;
+      color: $color_main_1;
+    }
   }
 
   .secm-input-row {

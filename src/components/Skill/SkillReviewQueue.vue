@@ -19,7 +19,6 @@
             {{ flowLabel(skill) }}<template v-if="skill.submittedBy"> · {{ skill.submittedBy }}</template>
           </div>
         </div>
-        <span class="skill-tag tag--reviewing">審核中</span>
       </div>
     </div>
 

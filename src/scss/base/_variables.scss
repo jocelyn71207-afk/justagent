@@ -8,6 +8,10 @@ $header-AiViewer-height: 44px; // AiViewer 固定頂部工具列（身分/專案
 $railWidth: 64px;
 $sidePanelWidth: 216px;
 $menuWidth: $railWidth + $sidePanelWidth;
+// side-panel 收合後不是消失，是縮成跟 rail 一樣寬的迷你圖示條——兩欄都還在，
+// 所以收合後的總寬度是「兩個 $railWidth」，不是單一個 $railWidth（那個值只
+// 適用於 side-panel 整個不存在的 no-team-panel 情境，兩者不能共用）
+$collapsedMenuWidth: $railWidth * 2;
 $menuHeaderHeight: 216px;
 $menuFooterHeight: 50px;
 $menutransition: 0.2s;
