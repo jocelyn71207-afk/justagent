@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { SkillFunctionType } from './skillStore'
+import type { SkillFunctionType } from '@/stores/skillStore'
 
 export type ColorKey = 'violet' | 'blue' | 'amber' | 'teal' | 'green' | 'rust' | 'rose'
 
