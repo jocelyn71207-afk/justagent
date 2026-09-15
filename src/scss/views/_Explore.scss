@@ -610,6 +610,17 @@
     background: var(--tag-slate-bg);
     color: var(--tag-slate-text);
   }
+
+  // 找不到符合條件的空狀態：跟 .skill-function-badge 同樣的理由，Skill 探索頁的
+  // .skill-grid 空狀態與 AssignSkillToAgentModal 的 Agent 選擇器都要用得到，
+  // 而 Modal 根層 .Explore.explore-modal-box 跟頁面 .Explore.views-page 是平行子樹，
+  // 所以不掛在 .views-page 之下，直接掛在 .Explore
+  .explore-empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 0;
+    font-size: 14px;
+  }
 }
 
 .Explore.views-page {
@@ -675,13 +686,6 @@
 
     h4 { margin: 10px 0 4px; font-size: 15px; }
     p { font-size: 13px; color: var(--text-muted); margin: 0; }
-  }
-
-  .explore-empty-state {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 40px 0;
-    font-size: 14px;
   }
 }
 
