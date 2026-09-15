@@ -106,8 +106,11 @@
 - 專案垃圾桶 → 3.7 ProjectTrashCans
 
 ### 3.9 探索（Explore）
-- 側邊選單 rail 上的全域項目，尚未整理進本文件
-- 待補：功能範圍與 `src/views/Explore.vue` 的詳細說明
+- 導覽欄上的全域項目（`src/views/Explore.vue`），跟 3.1 ProjectDashboard 一樣不需要先選定團隊、不會觸發團隊選單面板
+- 分「Agent 探索」與「Skill 探索」兩個分頁籤：
+  - **Agent 探索**：搜尋、Hero 精選、熱門 Agent（頒獎台+次要列）、個人化推薦。資料來源是 `src/stores/exploreStore.ts` 的本機 Agent 清單（非真實後端）；點擊卡片開啟詳情 Modal，可「加入常用清單」（收藏狀態存在瀏覽器 localStorage）
+  - **Skill 探索**：搜尋 + 功能類型 chip 篩選，資料來源接真正的技能管理資料（`src/stores/skillStore.ts` 的 `skills`，只列出非個人草稿且啟用中的技能）；點擊卡片可透過「加入我的技能」把該技能實際裝到選定的 Agent 上（寫入該技能的 `assignedAgents`）——這裡的「加入我的技能」選單列的是 `skillStore` 的 `AVAILABLE_AGENTS`（跟 `SkillEditor.vue` 指派 chip 用的同一份固定清單），**不是** Agent 探索分頁的 Agent 目錄（`exploreStore.agents`），兩者剛好都叫「Agent」但是不同詞彙表，不要混淆
+- 詳見 `docs/superpowers/specs/2026-09-15-explore-real-data-redesign-design.md`
 
 ### 3.10 技能管理（SkillManagement／SkillTest）
 - 側邊選單 side-panel 裡「技能管理」群組底下的子功能，尚未整理進本文件
