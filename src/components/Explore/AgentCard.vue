@@ -8,12 +8,6 @@
     @click="emit('click')"
   >
     <div v-if="rank !== undefined" class="rank-badge">{{ rank }}</div>
-    <span
-      v-else-if="agent.badge"
-      :class="['agent-badge', `agent-badge--${agent.badge.type}`]"
-    >
-      {{ agent.badge.label }}
-    </span>
     <i v-if="isFavorite" class="material-symbols-outlined material-fill agent-favorite-mark">star</i>
     <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
       <i class="material-symbols-outlined">{{ agent.icon }}</i>

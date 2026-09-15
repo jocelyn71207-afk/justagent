@@ -12,7 +12,8 @@
           <i class="material-symbols-outlined">search</i>
           <input type="text" v-model="keyword" placeholder="搜尋 Agent..." />
         </div>
-        <ul class="assign-agent-list">
+        <div v-if="!filteredAgents.length" class="explore-empty-state">找不到符合條件的 Agent</div>
+        <ul v-else class="assign-agent-list">
           <li
             v-for="agent in filteredAgents"
             :key="agent"

@@ -1,32 +1,5 @@
 // ── Explore 頁面 Wise 設計系統 ─────────────────────────────────────────────────
 
-// 「熱門/新上架/高滿意度」角標：原本在 .agent-card/.podium-card 與 .explore-skill-card
-// 兩處各自重複宣告一模一樣的樣式，這裡收斂成一份共用 placeholder
-%explore-agent-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 9999px;
-
-  &--new {
-    background: var(--hint);
-    color: var(--primary-hover);
-  }
-
-  &--hot {
-    background: var(--color-wise-badge-hot-bg);
-    color: var(--color-wise-badge-hot-text);
-  }
-
-  &--sat {
-    background: var(--hint);
-    color: var(--primary);
-  }
-}
-
 .Explore.views-page {
   background: var(--page-bg);
   position: relative;
@@ -274,16 +247,6 @@
     }
   }
 
-  // ── Agent 卡片網格 ────────────────────────────────
-  .agent-grid {
-    display: grid;
-    gap: 10px;
-
-    &--4 {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
   // Agent 圖示色系：對應 --tag-*-bg/text token（light/dark 都有定義），
   // 用固定色票取代每個 agent 各自寫死的 hex，深色模式才會正確換色
   .agent-icon,
@@ -303,48 +266,6 @@
     left: 14px;
     font-size: 16px;
     color: var(--tag-amber-text);
-  }
-
-  .agent-card {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 20px;
-    padding: 18px;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-
-    .agent-badge {
-      @extend %explore-agent-badge;
-    }
-
-    .agent-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      border: 1px solid var(--divider);
-
-      i {
-        font-size: 22px;
-      }
-    }
-
-    h4 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 5px;
-    }
-
-    p {
-      font-size: 12px;
-      color: var(--text-faint);
-      line-height: 1.55;
-    }
   }
 
   // ── 使用熱度榜：頒獎台版型 ──────────────────────────
@@ -686,8 +607,8 @@
   // .Explore 子樹，因此不掛在 .explore-skill-card 或 .views-page 之下，直接掛在 .Explore）
   .skill-function-badge {
     @extend %badge-shape;
-    background: var(--page-bg);
-    color: var(--text-muted);
+    background: var(--tag-slate-bg);
+    color: var(--tag-slate-text);
   }
 }
 
@@ -735,8 +656,8 @@
     padding: 16px;
     cursor: pointer;
 
-    // .agent-icon/.agent-badge 的共用規則原本只掛在 .agent-card/.podium-card/
-    // .ranking-more 底下，這裡補上同一份 box-model，讓 Skill 卡片也能正確呈現
+    // .agent-icon 的共用規則原本只掛在 .podium-card/.ranking-more 底下，
+    // 這裡補上同一份 box-model，讓 Skill 卡片也能正確呈現
     .agent-icon {
       width: 44px;
       height: 44px;
@@ -750,10 +671,6 @@
       i {
         font-size: 22px;
       }
-    }
-
-    .agent-badge {
-      @extend %explore-agent-badge;
     }
 
     h4 { margin: 10px 0 4px; font-size: 15px; }

@@ -78,6 +78,11 @@ export interface TestRun {
 
 export type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
 
+// 這是 Skill.assignedAgents 的唯一正式詞彙表，`SkillEditor.vue`（指派 chip 選擇器）與
+// `AssignSkillToAgentModal.vue`（探索頁「加入我的技能」流程）都只認這份清單。
+// 刻意跟 `exploreStore.ts` 的 Agent 目錄（探索頁「Agent 探索」分頁瀏覽的 10 筆 Agent
+// 卡片，有自己的 id/icon/colorKey）完全脫鉤——兩者剛好都叫「Agent」但是不同概念，
+// 絕對不要把兩份清單混用或互相替換（先前已經在這個分支上修正過一次這種混淆）。
 export const AVAILABLE_AGENTS = [
   '通用助理', '客服中心助理', '電商小幫手',
   '知識管理助理', '會議記錄助理', '工程助理',
@@ -1162,12 +1167,12 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
-  function assignSkillToAgent(skillId: string, agentId: string): void {
+  function assignSkillToAgent(skillId: string, agentName: string): void {
     const skill = findSkill(skillId)
     if (!skill) return
     skill.assignedAgents ??= []
-    if (!skill.assignedAgents.includes(agentId)) {
-      skill.assignedAgents.push(agentId)
+    if (!skill.assignedAgents.includes(agentName)) {
+      skill.assignedAgents.push(agentName)
     }
   }
 

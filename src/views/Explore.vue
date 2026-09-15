@@ -241,7 +241,7 @@ const activeSkillChip = ref<'全部' | SkillFunctionType>('全部')
 const skillSearchKeyword = ref('')
 
 const publicSkills = computed(() =>
-  skillStore.skills.filter(s => s.zone !== 'personal' && s.isEnabled)
+  skillStore.skills.filter(s => s.zone !== 'personal' && s.isEnabled && !s.deletedAt)
 )
 
 const filteredExploreSkills = computed(() =>
