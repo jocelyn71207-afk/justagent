@@ -561,16 +561,6 @@ describe('skillStore', () => {
       })
       expect(store.findSkill(skill!.id)?.personalStatus).toBe('has_library')
     })
-
-    it('sendEditChatMessage 對草稿狀態的個人技能對話修改後，personalStatus 轉為 available', async () => {
-      const store = useSkillStore()
-      const copy = store.duplicateAsPersonalSkill('sys-cs-001')
-      expect(copy.personalStatus).toBe('draft')
-      await store.sendEditChatMessage(copy.id, '請幫我調整語氣')
-      const updated = store.findSkill(copy.id)
-      expect(updated?.personalStatus).toBe('available')
-      expect(updated?.instructions).toContain('請幫我調整語氣')
-    })
   })
 
   describe('AI 賦能：createPersonalSkill 回傳 id 與 applyStudioPatch', () => {

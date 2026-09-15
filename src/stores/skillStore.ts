@@ -1218,8 +1218,8 @@ export const useSkillStore = defineStore('skillStore', () => {
   }
 
   // AI 賦能（SkillStudio）修改模式的儲存：只對個人技能生效。draft 複本內容一旦跟
-  // 來源不同就轉 available（規則同原 sendEditChatMessage）。skillName 只在非衍生
-  // 技能同步——衍生技能的 skillName 記的是 Library 來源名稱，不能被改名蓋掉
+  // 來源不同就轉 available。skillName 只在非衍生技能同步——衍生技能的 skillName
+  // 記的是 Library 來源名稱，不能被改名蓋掉
   function applyStudioPatch(skillId: string, patch: StudioPatch): boolean {
     const skill = findSkill(skillId)
     if (!skill || skill.zone !== 'personal') return false
@@ -1754,14 +1754,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     testIsRunning.value = false
   }
 
-  // 複製後跟 Agent 對話修改技能：mock 版，把使用者描述的異動附加到 instructions 上
-  const editChatHistory = ref<ChatMessage[]>([])
-  const editChatIsRunning = ref(false)
-
-  function resetEditChat(): void {
-    editChatHistory.value = []
-  }
-
   // 送審時的「AI 建議版本名稱」：優先參考使用者已經填的說明文字摘要成短標題，
   // 沒填說明時退回用技能名稱＋送審模式給一個泛用建議。使用者仍可自行編輯，
   // 這裡只是預填草稿，不是強制採用
@@ -1778,31 +1770,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
     const baseName = skill?.skillName ?? skill?.name ?? '技能'
     return mode === 'version_update' ? `${baseName}功能更新` : `${baseName}首次發布`
-  }
-
-  async function sendEditChatMessage(skillId: string, message: string): Promise<void> {
-    editChatIsRunning.value = true
-    editChatHistory.value.push({
-      id: `edit-msg-${Date.now()}`,
-      role: 'user',
-      content: message,
-    })
-    await new Promise(r => setTimeout(r, 900))
-
-    const skill = findSkill(skillId)
-    if (skill) {
-      skill.instructions = `${skill.instructions ?? ''}\n\n（依對話更新）${message}`.trim()
-      if (skill.personalStatus === 'draft' && skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions) {
-        skill.personalStatus = 'available'
-      }
-    }
-
-    editChatHistory.value.push({
-      id: `edit-msg-${Date.now() + 1}`,
-      role: 'agent',
-      content: `（Mock）已根據你的描述更新技能指令。你可以繼續補充，或關閉視窗完成修改。`,
-    })
-    editChatIsRunning.value = false
   }
 
   return {
@@ -1879,9 +1846,5 @@ export const useSkillStore = defineStore('skillStore', () => {
     runAllAITests,
     resetConversation,
     sendChatMessage,
-    editChatHistory,
-    editChatIsRunning,
-    resetEditChat,
-    sendEditChatMessage,
   }
 })

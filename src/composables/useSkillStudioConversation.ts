@@ -35,7 +35,7 @@ const CREATE_SUGGESTIONS: StudioSuggestion[] = [
   { icon: 'description', label: '依部門報告規範自動產出月報', prefill: '依部門報告規範自動產出月報' },
 ]
 
-// 依技能實際有沒有內容決定動詞（已經有 vs. 還沒有），搬自原 SkillEditChatModal
+// 依技能實際有沒有內容決定動詞（已經有 vs. 還沒有）
 function editSuggestions(draft: SkillDraft): StudioSuggestion[] {
   return [
     draft.instructions
