@@ -165,7 +165,7 @@
         <div class="side-panel-item side-panel-group"
           role="button" tabindex="0"
           :aria-expanded="selectedTeam!.isSkillOpen"
-          :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
+          :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillStudio' || route.path === '/view/SkillTest' }"
           @click="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
           @keydown.enter.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen"
           @keydown.space.prevent="selectedTeam!.isSkillOpen = !selectedTeam!.isSkillOpen">
@@ -177,6 +177,10 @@
             class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
             <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
           </RouterLink>
+          <RouterLink to="/view/SkillStudio"
+            class="side-panel-item" :class="{ active: route.path === '/view/SkillStudio' }">
+            <i class="material-symbols-outlined">auto_fix_high</i><span class="side-panel-item-label">AI 賦能</span>
+          </RouterLink>
           <RouterLink to="/view/SkillTest"
             class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
             <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
@@ -186,6 +190,9 @@
           <div class="rail-popover-label">AI 技能</div>
           <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
             <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
+          </RouterLink>
+          <RouterLink to="/view/SkillStudio" class="side-panel-item" :class="{ active: route.path === '/view/SkillStudio' }">
+            <i class="material-symbols-outlined">auto_fix_high</i><span class="side-panel-item-label">AI 賦能</span>
           </RouterLink>
           <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
             <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
@@ -310,6 +317,9 @@
       <div class="side-panel-sub" v-show="selectedTeam!.isSkillOpen">
         <RouterLink to="/view/Skills" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">auto_awesome</i>技能管理
+        </RouterLink>
+        <RouterLink to="/view/SkillStudio" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
+          <i class="material-symbols-outlined">auto_fix_high</i>AI 賦能
         </RouterLink>
         <RouterLink to="/view/SkillTest" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">science</i>技能測試沙盒

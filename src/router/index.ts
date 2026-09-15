@@ -128,6 +128,12 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/SkillEditor.vue'),
         meta: { title: '建立技能', parentName: 'SkillManagement' },
       },
+      {
+        path: '/view/SkillStudio',
+        name: 'SkillStudio',
+        component: () => import('@/views/SkillStudio.vue'),
+        meta: { title: 'AI 賦能', parentLabel: 'AI 技能' },
+      },
     ]
   },
 ]
