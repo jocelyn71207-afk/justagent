@@ -86,6 +86,7 @@ Full.vue（主框架，/view/* 路由的容器）
   ├── AiViewer             → AI 畫布編輯器 (meta: hideMenuTree: true)
   ├── CompanyTeamSettings  → 企業/團隊設定
   ├── ProjectTrashCans     → 專案垃圾桶 (?teamId=&teamName=)
+  ├── SkillStudio          → AI 賦能：對話式建立／修改／測試技能 (meta.parentLabel: 'AI 技能')
   └── GUI                  → 元件展示/測試頁（開發用）
 ```
 
