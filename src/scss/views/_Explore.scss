@@ -1,5 +1,32 @@
 // ── Explore 頁面 Wise 設計系統 ─────────────────────────────────────────────────
 
+// 「熱門/新上架/高滿意度」角標：原本在 .agent-card/.podium-card 與 .explore-skill-card
+// 兩處各自重複宣告一模一樣的樣式，這裡收斂成一份共用 placeholder
+%explore-agent-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 9999px;
+
+  &--new {
+    background: var(--hint);
+    color: var(--primary-hover);
+  }
+
+  &--hot {
+    background: var(--color-wise-badge-hot-bg);
+    color: var(--color-wise-badge-hot-text);
+  }
+
+  &--sat {
+    background: var(--hint);
+    color: var(--primary);
+  }
+}
+
 .Explore.views-page {
   background: var(--page-bg);
   position: relative;
@@ -288,28 +315,7 @@
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
     .agent-badge {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 9999px;
-
-      &--new {
-        background: var(--hint);
-        color: var(--primary-hover);
-      }
-
-      &--hot {
-        background: var(--color-wise-badge-hot-bg);
-        color: var(--color-wise-badge-hot-text);
-      }
-
-      &--sat {
-        background: var(--hint);
-        color: var(--primary);
-      }
+      @extend %explore-agent-badge;
     }
 
     .agent-icon {
@@ -679,14 +685,9 @@
   // （Modal 根層 .Explore.explore-modal-box 與頁面 .Explore.views-page 是兩個平行的
   // .Explore 子樹，因此不掛在 .explore-skill-card 或 .views-page 之下，直接掛在 .Explore）
   .skill-function-badge {
-    display: inline-block;
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 5px;
+    @extend %badge-shape;
     background: var(--page-bg);
     color: var(--text-muted);
-    border: 1px solid var(--divider-a50);
-    margin-top: 8px;
   }
 }
 
@@ -752,28 +753,7 @@
     }
 
     .agent-badge {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 9999px;
-
-      &--new {
-        background: var(--hint);
-        color: var(--primary-hover);
-      }
-
-      &--hot {
-        background: var(--color-wise-badge-hot-bg);
-        color: var(--color-wise-badge-hot-text);
-      }
-
-      &--sat {
-        background: var(--hint);
-        color: var(--primary);
-      }
+      @extend %explore-agent-badge;
     }
 
     h4 { margin: 10px 0 4px; font-size: 15px; }
