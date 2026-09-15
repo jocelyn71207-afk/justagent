@@ -8,7 +8,7 @@ function mountExplore() {
   return mount(Explore, { global: { stubs: { compModal: true } } })
 }
 
-describe('Explore 使用熱度榜頒獎台版型', () => {
+describe('Explore 熱門 Agent（頒獎台＋次要列）', () => {
   it('頒獎台顯示前 3 名，套用對應的 rank 樣式 class', () => {
     const wrapper = mountExplore()
     const podiumCards = wrapper.findAll('.podium-card')
@@ -29,23 +29,17 @@ describe('Explore 使用熱度榜頒獎台版型', () => {
     expect(wrapper.findAll('.podium-card')).toHaveLength(3)
   })
 
-  it('「大家都在用」網格維持 4 張等大卡片，不受頒獎台版型影響', () => {
+  it('不再重複顯示「大家都在用」區塊——同一份排名資料只呈現一次', () => {
     const wrapper = mountExplore()
-    const popularCards = wrapper.findAll('.agent-grid--4 .agent-card')
-    expect(popularCards).toHaveLength(4)
-    popularCards.forEach(card => {
-      expect(card.classes()).not.toContain('podium-card')
-    })
+    expect(wrapper.find('.agent-grid--4').exists()).toBe(false)
   })
 })
 
 describe('Explore 活潑感套用', () => {
-  it('頒獎台、大家都在用、為你推薦都套用 lively-stagger/lively-card', () => {
+  it('頒獎台、為你推薦都套用 lively-stagger/lively-card', () => {
     const wrapper = mountExplore()
     expect(wrapper.find('.ranking-podium').classes()).toContain('lively-stagger')
     wrapper.findAll('.podium-card').forEach(c => expect(c.classes()).toContain('lively-card'))
-    expect(wrapper.find('.agent-grid--4').classes()).toContain('lively-stagger')
-    wrapper.findAll('.agent-grid--4 .agent-card').forEach(c => expect(c.classes()).toContain('lively-card'))
     expect(wrapper.find('.recs-grid').classes()).toContain('lively-stagger')
     wrapper.findAll('.rec-card').forEach(c => expect(c.classes()).toContain('lively-card'))
   })

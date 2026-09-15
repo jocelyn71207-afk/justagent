@@ -18,13 +18,9 @@ function makeRouter() {
   })
 }
 
-function findRailBtn(wrapper: ReturnType<typeof mount>, icon: string) {
-  return wrapper.findAll('.rail-btn').find(b => b.find('i').text() === icon)!
-}
-
 async function switchToSecondCompany(wrapper: ReturnType<typeof mount>) {
-  await findRailBtn(wrapper, 'domain').trigger('click')
-  const companyRows = wrapper.findAll('.company-rail-list .team-switch-item--company')
+  await wrapper.find('.nav-company-selector').trigger('click')
+  const companyRows = wrapper.findAll('.nav-inline-list .team-switch-item--company')
   await companyRows[1].trigger('click')
   await flushPromises()
 }
@@ -59,8 +55,8 @@ describe('AppMenuTree 切換企業後的導覽行為', () => {
     await router.push({ path: '/view/KnowledgeBase', query: { teamId: 'testTeam1', teamName: 'UGG電子商務' } })
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await findRailBtn(wrapper, 'domain').trigger('click')
-    const companyRows = wrapper.findAll('.company-rail-list .team-switch-item--company')
+    await wrapper.find('.nav-company-selector').trigger('click')
+    const companyRows = wrapper.findAll('.nav-inline-list .team-switch-item--company')
     await companyRows[0].trigger('click') // 目前就是第一間企業
     await flushPromises()
 

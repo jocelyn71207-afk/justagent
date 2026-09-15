@@ -76,6 +76,19 @@ export interface TestRun {
   passRate: number
 }
 
+export type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
+
+// 這是 Skill.assignedAgents 的唯一正式詞彙表，`SkillEditor.vue`（指派 chip 選擇器）與
+// `AssignSkillToAgentModal.vue`（探索頁「加入我的技能」流程）都只認這份清單。
+// 刻意跟 `exploreStore.ts` 的 Agent 目錄（探索頁「Agent 探索」分頁瀏覽的 10 筆 Agent
+// 卡片，有自己的 id/icon/colorKey）完全脫鉤——兩者剛好都叫「Agent」但是不同概念，
+// 絕對不要把兩份清單混用或互相替換（先前已經在這個分支上修正過一次這種混淆）。
+export const AVAILABLE_AGENTS = [
+  '通用助理', '客服中心助理', '電商小幫手',
+  '知識管理助理', '會議記錄助理', '工程助理',
+  '業務分析助理', '倉儲管理助理',
+] as const
+
 export interface Skill {
   id: string
   name: string
@@ -95,6 +108,7 @@ export interface Skill {
   instructions?: string
   triggerHint?: string
   capabilities?: SkillCapability[]
+  functionType?: SkillFunctionType   // 探索頁分類/篩選用，選填不影響既有消費者
   usageScenarios?: UsageScenario[]
   assignedAgents?: string[]
   testCases?: SkillTestCase[]
@@ -198,6 +212,7 @@ const MOCK_SKILLS: Skill[] = [
     id: 'sys-cs-001',
     name: '通用客服機器人',
     description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
+    functionType: '溝通協作',
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
@@ -358,6 +373,7 @@ const MOCK_SKILLS: Skill[] = [
     id: 'sys-doc-001',
     name: '文件摘要生成',
     description: '自動摘要長文件，支援 PDF / Word / Markdown',
+    functionType: '文字生成',
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
@@ -422,6 +438,7 @@ const MOCK_SKILLS: Skill[] = [
     id: 'sys-meeting-001',
     name: '會議摘要',
     description: '會議錄音轉文字並生成摘要與 action items',
+    functionType: '文字生成',
     type: 'system',
     origin: 'platform_created',
     scope: 'system',
@@ -523,6 +540,7 @@ const MOCK_SKILLS: Skill[] = [
     id: 'ext-erp-001',
     name: 'ERP 庫存查詢',
     description: '根據產品 ID 查詢即時庫存量，支援多個倉庫',
+    functionType: '資料查詢',
     type: 'extension',
     origin: 'manually_created',
     creationMethod: 'manual',
@@ -605,6 +623,7 @@ const MOCK_SKILLS: Skill[] = [
     id: 'team-weekly-001',
     name: '業績週報生成',
     description: '根據本週銷售數據自動整理業績摘要，含商品排行與目標達成率分析',
+    functionType: '分析報表',
     type: 'extension',
     origin: 'manually_created',
     creationMethod: 'manual',
@@ -659,6 +678,7 @@ const MOCK_SKILLS: Skill[] = [
     id: 'team-marketing-001',
     name: '行銷文案生成',
     description: '根據活動主題與目標受眾，自動生成社群貼文、EDM 標題與 CTA 文案',
+    functionType: '文字生成',
     type: 'extension',
     origin: 'manually_created',
     creationMethod: 'ai_assisted',
@@ -1146,6 +1166,15 @@ export const useSkillStore = defineStore('skillStore', () => {
         time: new Date().toISOString(),
       })
       if (skill.auditLog.length > 20) skill.auditLog.length = 20
+    }
+  }
+
+  function assignSkillToAgent(skillId: string, agentName: string): void {
+    const skill = findSkill(skillId)
+    if (!skill) return
+    skill.assignedAgents ??= []
+    if (!skill.assignedAgents.includes(agentName)) {
+      skill.assignedAgents.push(agentName)
     }
   }
 
@@ -1814,6 +1843,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     updateSkill,
     updateSkillFiles,
     toggleSkill,
+    assignSkillToAgent,
     mergeUpstreamUpdate,
     ignoreUpstreamUpdate,
     submitSkillForReview,

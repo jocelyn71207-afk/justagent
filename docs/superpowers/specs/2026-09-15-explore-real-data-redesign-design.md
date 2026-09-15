@@ -2,6 +2,12 @@
 
 日期：2026-09-15
 
+## 修訂說明（2026-09-15，實作完成後補充）
+
+本文件下方「資料流」章節原本描述 `AssignSkillToAgentModal` 會讀 `exploreStore.agents` 來列出可選的 Agent（`→ AssignSkillToAgentModal（讀 exploreStore.agents）` 那一行），這個假設在實作階段被推翻了：實際動手串接時發現，`skillStore.ts` 裡的 mock 技能資料早就已經預先塞好 `assignedAgents`，用的是一套跟 `exploreStore.agents` 完全脫鉤的名稱字串詞彙（`AVAILABLE_AGENTS`，同一份清單也是 `SkillEditor.vue` 指派 chip 選擇器在用的），而不是 `exploreStore` 的 Agent id。如果照原設計讀 `exploreStore.agents`，選出來的會是 id（例如 `agent-content-creator`），寫入 `assignedAgents` 後會跟既有 mock 資料裡已經存在的名稱字串（例如 `'知識管理助理'`）格式不一致、互相對不上，等於弄壞既有資料。
+
+因此最終上線的實作改成讀寫 `skillStore.ts` 自己的 `AVAILABLE_AGENTS`，不讀 `exploreStore.agents`。下面「資料流」章節裡 `AssignSkillToAgentModal（讀 exploreStore.agents）` 那一行、以及緊接著「兩個 store 之間唯一的耦合點是 `AssignSkillToAgentModal`」那段描述，都已被本說明取代，請以此處為準。
+
 ## 背景
 
 `src/views/Explore.vue`（476 行）是側邊選單 rail 上的全域頁面，分「Agent 探索」與「Skill 探索」兩個分頁籤，出自 [`2026-08-18-explore-agent-skill-split-design.md`](./2026-08-18-explore-agent-skill-split-design.md)。該份 spec 當時明確把以下兩件事列為非目標：

@@ -231,7 +231,7 @@ import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
-import { useSkillStore } from '@/stores/skillStore'
+import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
 import type { DraftSkill, SkillFile, SkillCapability } from '@/stores/skillStore'
 
 const router = useRouter()
@@ -240,12 +240,6 @@ const store = useSkillStore()
 
 const STEPS = ['基本資訊', '技能指令', '確認'] as const
 const currentStep = ref(0)
-
-const AVAILABLE_AGENTS = [
-  '通用助理', '客服中心助理', '電商小幫手',
-  '知識管理助理', '會議記錄助理', '工程助理',
-  '業務分析助理', '倉儲管理助理',
-]
 
 const editSkillId = route.query.skillId as string | undefined
 const draftId = route.query.draftId as string | undefined
