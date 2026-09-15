@@ -779,6 +779,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
+    triggerHint: '週報、會議紀錄、任務清單、彙整',
     capabilities: [
       { name: '資料整合', description: '彙整本週會議記錄與任務清單，去除重複與過時資訊。' },
       { name: '週報格式輸出', description: '依範本格式輸出結構化週報摘要，段落與條列比例固定。' },
