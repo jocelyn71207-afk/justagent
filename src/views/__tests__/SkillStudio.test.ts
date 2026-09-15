@@ -3,6 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import SkillStudio from '@/views/SkillStudio.vue'
+import popDialog from '@/services/popDialog'
+import { useSkillStore } from '@/stores/skillStore'
 
 vi.mock('@/services/popDialog', () => ({
   default: { toast: vi.fn(), confirm: vi.fn(), alert: vi.fn() },
@@ -21,20 +23,86 @@ async function mountAt(query: Record<string, string> = {}) {
   })
   await router.push({ path: '/view/SkillStudio', query })
   await router.isReady()
-  const wrapper = mount(SkillStudio, {
-    global: { plugins: [router], stubs: { AppBreadcrumb: true, SkillTestAI: true } },
-  })
+  // 掛在 <router-view/> 之下，讓 SkillStudio.vue 裡的 onBeforeRouteLeave() 能拿到有效的
+  // matched route record（直接 mount(SkillStudio, ...) 不經過 router-view 會觸發 vue-router 的
+  // 「No active route record was found」警告）。
+  const wrapper = mount(
+    { template: '<router-view />' },
+    { global: { plugins: [router], stubs: { AppBreadcrumb: true, SkillTestAI: true } } },
+  )
   await flushPromises()
   return { wrapper, router }
 }
 
 describe('SkillStudio', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
 
   it('渲染 banner 標題「AI 賦能」與左右兩欄版面', async () => {
     const { wrapper } = await mountAt()
     expect(wrapper.find('.banner-title').text()).toBe('AI 賦能')
     expect(wrapper.find('.skill-studio-layout .studio-chat-col').exists()).toBe(true)
     expect(wrapper.find('.skill-studio-layout .studio-side-col').exists()).toBe(true)
+  })
+
+  it('無 query：建立模式，左側 chip「建立新技能」，右側預覽空狀態', async () => {
+    const { wrapper } = await mountAt()
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+    expect(wrapper.text()).toContain('尚未命名的技能')
+  })
+
+  it('?skillId= 個人技能：修改模式，預覽帶入該技能內容', async () => {
+    const { wrapper } = await mountAt({ skillId: 'personal-001' })
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
+    expect(wrapper.find('.ssp-title').text()).toBe('週報自動生成')
+  })
+
+  it('?skillId= Library 技能：toast 提示並退回建立模式', async () => {
+    const { wrapper } = await mountAt({ skillId: 'sys-cs-001' })
+    expect(popDialog.toast).toHaveBeenCalledWith('Library 技能請先在技能管理複製為個人技能')
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+  })
+
+  it('?skillId= 不存在：toast「找不到這個技能」並退回建立模式', async () => {
+    const { wrapper } = await mountAt({ skillId: 'nope-999' })
+    expect(popDialog.toast).toHaveBeenCalledWith('找不到這個技能')
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+  })
+
+  it('?tab=test 預設切到測試 tab', async () => {
+    const { wrapper } = await mountAt({ skillId: 'personal-001', tab: 'test' })
+    expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
+  })
+
+  it('送出訊息 → 草稿更新 → 儲存 → 建立個人技能、toast、自動切到測試 tab', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper } = await mountAt()
+      const store = useSkillStore()
+      const before = store.myPersonalSkills.length
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      await input.setValue('幫我建立一個能查 ERP 庫存的技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.find('.ssp-title').text()).toBe('查 ERP 庫存')
+      await wrapper.find('.ssp-save-btn').trigger('click')
+      await flushPromises()
+      expect(store.myPersonalSkills.length).toBe(before + 1)
+      expect(popDialog.toast).toHaveBeenCalledWith('已儲存為個人技能，可到「測試」tab 驗證')
+      expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
+      expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：查 ERP 庫存')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('切換技能下拉：無未儲存變更時直接切換', async () => {
+    const { wrapper } = await mountAt()
+    await wrapper.find('.ssc-skill-select').setValue('personal-001')
+    await flushPromises()
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
   })
 })
