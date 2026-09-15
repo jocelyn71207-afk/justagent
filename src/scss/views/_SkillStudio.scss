@@ -212,3 +212,198 @@
     .custom-input { flex: 1; }
   }
 }
+
+// ── 右側：預覽／測試 ──
+.SkillStudioPreview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  .ssp-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider-a50);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .ssp-tab-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 12px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    .material-symbols-outlined { font-size: 17px; }
+
+    &.is-active {
+      color: $color_main_1;
+      border-bottom-color: $color_main_1;
+    }
+  }
+
+  .ssp-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+  }
+
+  .ssp-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .ssp-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-empty { color: var(--text-faint); font-weight: 500; }
+  }
+
+  .ssp-status-badge {
+    @extend %badge-shape;
+    font-size: 11px;
+    flex-shrink: 0;
+
+    &--amber { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
+    &--slate { background: var(--tag-slate-bg); color: var(--tag-slate-text); }
+  }
+
+  .ssp-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .ssp-files-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    .material-symbols-outlined { font-size: 18px; }
+  }
+
+  .ssp-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .ssp-empty {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  .ssp-markdown.markdown-body {
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: inherit;
+    p, ul, ol { margin: 0 0 6px; }
+    ul, ol { padding-left: 18px; }
+    strong { color: var(--text); }
+  }
+
+  .ssp-caps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .ssp-cap-chip {
+    @extend %badge-shape;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--tag-teal-bg);
+    color: var(--tag-teal-text);
+  }
+
+  .ssp-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--divider-a50);
+    background: var(--surface);
+    flex-shrink: 0;
+
+    .custom-btn { gap: 4px; .material-symbols-outlined { font-size: 16px; } }
+  }
+
+  .ssp-test-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+
+    .material-symbols-outlined { font-size: 40px; opacity: 0.35; }
+    p { margin: 0; }
+  }
+
+  .ssp-test-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .SkillTestAI { flex: 1; min-height: 0; }
+  }
+
+  .ssp-stale-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 18px 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+    .material-symbols-outlined { font-size: 16px; }
+  }
+
+  .ssp-test-foot {
+    padding: 10px 18px;
+    border-top: 1px solid var(--divider-a50);
+    font-size: 12.5px;
+    color: var(--text-muted);
+    a { color: $color_main_1; text-decoration: underline; }
+  }
+}
