@@ -71,6 +71,19 @@ describe('interpretStudioMessage', () => {
     const reply = interpretStudioMessage('語氣要親切一點', draft, 'edit')
     expect(reply.patch?.instructions).toBe('1. a\n\n（依對話更新）語氣要親切一點')
   })
+
+  it('一般領域句子含「叫」不誤判成改名：附加到 instructions，name 不變', () => {
+    const draft = { ...emptyDraft(), name: 'x', instructions: '1. a' }
+    const reply = interpretStudioMessage('庫存不足時要自動叫貨', draft, 'edit')
+    expect(reply.patch?.name).toBeUndefined()
+    expect(reply.patch?.instructions).toBe('1. a\n\n（依對話更新）庫存不足時要自動叫貨')
+  })
+
+  it('一般領域句子含「補」不誤判成加步驟：附加到 instructions，不新增編號步驟', () => {
+    const draft = { ...emptyDraft(), name: 'x', instructions: '1. a' }
+    const reply = interpretStudioMessage('補貨流程要通知採購', draft, 'edit')
+    expect(reply.patch?.instructions).toBe('1. a\n\n（依對話更新）補貨流程要通知採購')
+  })
 })
 
 describe('useSkillStudioConversation', () => {

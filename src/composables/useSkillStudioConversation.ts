@@ -108,9 +108,9 @@ export function interpretStudioMessage(text: string, draft: SkillDraft, mode: St
     }
   }
 
-  if (/名稱|改名|叫/.test(t)) {
+  if (/名稱|改名|叫做|取名|命名/.test(t)) {
     const quoted = t.match(/[「"'『]([^」"'』]+)[」"'』]/)
-    const name = quoted?.[1] ?? stripLead(t, /^.*?(叫做?|名稱(是|改成|改為)?|改名(成|為)?)/)
+    const name = quoted?.[1] ?? stripLead(t, /^.*?(叫做|名稱(是|改成|改為)?|改名(成|為)?|取名(為|成)?|命名(為|成)?)/)
     if (name) return { patch: { name }, content: `已把名稱改成「${name}」。` }
   }
 
@@ -119,9 +119,9 @@ export function interpretStudioMessage(text: string, draft: SkillDraft, mode: St
     return { patch: { triggerHint: hint }, content: `觸發條件已更新為：${hint}` }
   }
 
-  if (/步驟|加一步|補/.test(t)) {
+  if (/步驟|加一步|補一步|補充步驟/.test(t)) {
     const n = countSteps(draft.instructions) + 1
-    const body = stripLead(t, /^.*?(步驟|加一步|補(上|充)?)(：|:|，)?/) || t
+    const body = stripLead(t, /^.*?(步驟|加一步|補一步|補充步驟)(：|:|，)?/) || t
     return { patch: { instructions: `${draft.instructions}\n${n}. ${body}`.trim() }, content: `已追加第 ${n} 步。` }
   }
 
