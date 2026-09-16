@@ -2,6 +2,8 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useSkillStore } from '@/stores/skillStore'
 import {
+  DEFAULT_OPENING_MESSAGE,
+  deriveFromSections,
   emptyDraft,
   extractSkillName,
   interpretStudioMessage,
@@ -93,13 +95,13 @@ describe('useSkillStudioConversation', () => {
   })
   afterEach(() => vi.useRealTimers())
 
-  it('startCreate 是建立模式、草稿空白、只有一則 Agent 開場訊息、canSave 為 false', () => {
+  it('startCreate() 無 prefill：建立模式、method 為 null、沒有訊息、canSave 為 false', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     expect(c.mode.value).toBe('create')
     expect(c.draft.value).toEqual(emptyDraft())
-    expect(c.messages.value).toHaveLength(1)
-    expect(c.messages.value[0].role).toBe('agent')
+    expect(c.draft.value.method).toBe(null)
+    expect(c.messages.value).toHaveLength(0)
     expect(c.canSave.value).toBe(false)
     expect(c.isDirty.value).toBe(false)
   })
@@ -107,6 +109,7 @@ describe('useSkillStudioConversation', () => {
   it('send 推入使用者訊息、800ms 後套用 patch 並推入 Agent 回覆', async () => {
     const c = useSkillStudioConversation()
     c.startCreate()
+    c.chooseMethod('chat')
     const p = c.send('幫我建立一個能查 ERP 庫存的技能')
     expect(c.isRunning.value).toBe(true)
     expect(c.messages.value.at(-1)?.role).toBe('user')
@@ -124,6 +127,7 @@ describe('useSkillStudioConversation', () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()
     c.startCreate()
+    c.chooseMethod('chat')
     const p = c.send('幫我建立一個能查 ERP 庫存的技能')
     await vi.advanceTimersByTimeAsync(800)
     await p
@@ -166,6 +170,7 @@ describe('useSkillStudioConversation', () => {
     const before = store.myPersonalSkills.length
     const c = useSkillStudioConversation()
     c.startCreate()
+    c.chooseMethod('chat')
     expect(c.save()).toBeNull()
     expect(store.myPersonalSkills.length).toBe(before)
   })
@@ -173,6 +178,7 @@ describe('useSkillStudioConversation', () => {
   it('suggestionChips：建立模式三則固定；修改模式依內容有無切換動詞', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
+    c.chooseMethod('chat')
     expect(c.suggestionChips.value).toHaveLength(3)
     expect(c.suggestionChips.value[0].label).toBe('幫我建立一個能查 ERP 庫存的技能')
     c.loadSkill('personal-001')
@@ -190,6 +196,7 @@ describe('useSkillStudioConversation', () => {
     expect(c.mode.value).toBe('create')
     expect(c.draft.value.name).toBe('產品銷售報告整理')
     expect(c.draft.value.description).toBe('')
+    expect(c.draft.value.method).toBe('chat')
     expect(c.isDirty.value).toBe(true)
     expect(c.canSave.value).toBe(true)
     expect(c.messages.value).toHaveLength(1)
@@ -209,6 +216,7 @@ describe('useSkillStudioConversation', () => {
   it('toSnapshot / hydrate 往返：內容一致、create 模式下 hydrate 後 isDirty=true（內容與空白不同）、之後新訊息 id 不重複', async () => {
     const a = useSkillStudioConversation()
     a.startCreate()
+    a.chooseMethod('chat')
     const p = a.send('幫我建立一個能查 ERP 庫存的技能')
     await vi.advanceTimersByTimeAsync(800)
     await p
@@ -257,5 +265,76 @@ describe('useSkillStudioConversation', () => {
     expect(c.mode.value).toBe('create')
     expect(c.isDirty.value).toBe(true)
     expect(c.draft.value.name).toBe('週報自動生成') // 草稿內容保留
+  })
+
+  it('chooseMethod(chat) 推開場訊息；chooseMethod(blocks) 不推訊息且 suggestionChips 為空', () => {
+    const a = useSkillStudioConversation()
+    a.startCreate()
+    a.chooseMethod('chat')
+    expect(a.draft.value.method).toBe('chat')
+    expect(a.messages.value).toHaveLength(1)
+    expect(a.messages.value[0].content).toBe(DEFAULT_OPENING_MESSAGE)
+    const b = useSkillStudioConversation()
+    b.startCreate()
+    b.chooseMethod('blocks')
+    expect(b.draft.value.method).toBe('blocks')
+    expect(b.messages.value).toHaveLength(0)
+    expect(b.suggestionChips.value).toEqual([])
+  })
+
+  it('deriveFromSections：編號步驟、分類觸發條件、每章一項能力；空清單全空', () => {
+    const d = deriveFromSections(['promo_kpi', 'ta_gender'])
+    expect(d.instructions).toBe('依序產出以下章節：\n1. 促銷核心 KPI：完成訂單數、GMV、折扣總額、折扣佔比、規則數。\n2. 性別分布：會員性別分布資料，圖表自動生成。')
+    expect(d.triggerHint).toBe('當使用者要求產出行銷報告，或提到「TA 用戶畫像、行銷活動成效」相關分析時')
+    expect(d.capabilities.map(c => c.name)).toEqual(['促銷核心 KPI', '性別分布'])
+    expect(deriveFromSections([])).toEqual({ instructions: '', triggerHint: '', capabilities: [] })
+    expect(deriveFromSections(['nope']).instructions).toBe('')
+  })
+
+  it('updateBlocks：只在 blocks 方式生效；sectionIds 變動才重推導；isDirty/canSave 隨之變化', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('blocks')
+    expect(c.canSave.value).toBe(false)
+    c.updateBlocks({ name: '行銷週報' })
+    expect(c.canSave.value).toBe(false) // 還沒有章節
+    c.updateBlocks({ sectionIds: ['promo_kpi'] })
+    expect(c.draft.value.instructions).toContain('1. 促銷核心 KPI')
+    expect(c.draft.value.capabilities).toHaveLength(1)
+    expect(c.canSave.value).toBe(true)
+    expect(c.isDirty.value).toBe(true)
+    c.updateBlocks({ description: '每週一產出' })
+    expect(c.draft.value.description).toBe('每週一產出')
+    expect(c.draft.value.instructions).toContain('1. 促銷核心 KPI') // 未重推導、未清空
+
+    const chat = useSkillStudioConversation()
+    chat.startCreate()
+    chat.chooseMethod('chat')
+    chat.updateBlocks({ sectionIds: ['promo_kpi'] })
+    expect(chat.draft.value.sectionIds).toEqual([])
+  })
+
+  it('save（blocks）：寫入 composition 與 creationMethod manual；loadSkill 還原 method 與 sectionIds 且不推訊息', () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('blocks')
+    c.updateBlocks({ name: '行銷週報', sectionIds: ['promo_kpi', 'ch_kpi'] })
+    const id = c.save()!
+    const s = store.findSkill(id)!
+    expect(s.composition).toEqual({ sectionIds: ['promo_kpi', 'ch_kpi'] })
+    expect(s.creationMethod).toBe('manual')
+
+    const d = useSkillStudioConversation()
+    expect(d.loadSkill(id)).toBe(true)
+    expect(d.draft.value.method).toBe('blocks')
+    expect(d.draft.value.sectionIds).toEqual(['promo_kpi', 'ch_kpi'])
+    expect(d.messages.value).toHaveLength(0)
+    expect(d.isDirty.value).toBe(false)
+
+    const e = useSkillStudioConversation()
+    e.loadSkill('personal-001')
+    expect(e.draft.value.method).toBe('chat')
+    expect(e.messages.value).toHaveLength(1)
   })
 })

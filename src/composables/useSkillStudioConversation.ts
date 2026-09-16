@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { ChatMessage, Skill, SkillCapability, SkillFile } from '@/stores/skillStore'
+import { REPORT_CATEGORIES, SECTION_MAP } from '@/constants/reportSections'
 
 // AI 賦能（SkillStudio）的對話狀態與規則式 mock 回覆。
 // 這裡是頁面唯一的狀態來源：左側對話、右側預覽都只讀這裡的 draft／messages。
 
 export type StudioMode = 'create' | 'edit'
+export type StudioMethod = 'chat' | 'blocks'
 
 export interface SkillDraft {
   name: string
@@ -14,6 +16,8 @@ export interface SkillDraft {
   triggerHint: string
   capabilities: SkillCapability[]
   files: SkillFile[]
+  method: StudioMethod | null   // null = 尚未選擇建立方式
+  sectionIds: string[]          // 積木方式的已選章節（依序）
 }
 
 export interface StudioAction { id: string; label: string }
@@ -32,7 +36,7 @@ export interface StudioSnapshot {
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
 
 export function emptyDraft(): SkillDraft {
-  return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [] }
+  return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [], method: null, sectionIds: [] }
 }
 
 // 由已儲存的技能還原出一份草稿（loadSkill／hydrate 基準共用，避免兩處各寫一次欄位對應）
@@ -44,6 +48,22 @@ export function draftFromSkill(s: Skill): SkillDraft {
     triggerHint: s.triggerHint ?? '',
     capabilities: (s.capabilities ?? []).map(c => ({ ...c })),
     files: [...(s.files ?? [])],
+    method: s.composition ? 'blocks' : 'chat',
+    sectionIds: [...(s.composition?.sectionIds ?? [])],
+  }
+}
+
+// 積木 → 草稿：步驟＝章節依序編號，能力＝章節，觸發條件＝涵蓋到的分類
+export function deriveFromSections(sectionIds: string[]): Pick<SkillDraft, 'instructions' | 'triggerHint' | 'capabilities'> {
+  const sections = sectionIds.map(id => SECTION_MAP[id]).filter((s): s is NonNullable<typeof s> => !!s)
+  if (sections.length === 0) return { instructions: '', triggerHint: '', capabilities: [] }
+  const lines = sections.map((s, i) => `${i + 1}. ${s.name}：${s.description}`)
+  const catIds = new Set(sections.map(s => s.categoryId))
+  const labels = REPORT_CATEGORIES.filter(c => catIds.has(c.id)).map(c => c.label).join('、')
+  return {
+    instructions: `依序產出以下章節：\n${lines.join('\n')}`,
+    triggerHint: `當使用者要求產出行銷報告，或提到「${labels}」相關分析時`,
+    capabilities: sections.map(s => ({ name: s.name, description: s.description })),
   }
 }
 
@@ -178,15 +198,17 @@ export function useSkillStudioConversation() {
 
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
-  const suggestionChips = computed<StudioSuggestion[]>(() =>
-    mode.value === 'create' ? CREATE_SUGGESTIONS : editSuggestions(draft.value)
-  )
+  const suggestionChips = computed<StudioSuggestion[]>(() => {
+    if (draft.value.method !== 'chat') return []
+    return mode.value === 'create' ? CREATE_SUGGESTIONS : editSuggestions(draft.value)
+  })
 
   function push(m: Omit<StudioMessage, 'id'>) {
     messages.value.push({ id: `studio-${++seq}`, ...m })
   }
 
-  // prefill：由 Agent 建議放上 block 時帶入的預填內容。snapshot 基準刻意維持空草稿，
+  // 無 prefill：等使用者選建立方式（method null、沒有訊息）。
+  // 有 prefill（Agent 建議）：一律對話方式，直接推開場。snapshot 基準刻意維持空草稿，
   // 讓預填一開始就是「有未儲存變更」，使用者得按儲存才會寫進技能
   function startCreate(prefill?: Partial<SkillDraft>, openingMessage?: string): void {
     mode.value = 'create'
@@ -197,11 +219,31 @@ export function useSkillStudioConversation() {
       ...prefill,
       capabilities: (prefill?.capabilities ?? base.capabilities).map(c => ({ ...c })),
       files: [...(prefill?.files ?? base.files)],
+      sectionIds: [...(prefill?.sectionIds ?? base.sectionIds)],
+      method: prefill ? 'chat' : null,
     }
     snapshot.value = serialize(emptyDraft())
     messages.value = []
     seq = 0
-    push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
+    if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
+  }
+
+  function chooseMethod(method: StudioMethod): void {
+    draft.value = { ...draft.value, method }
+    if (method === 'chat' && messages.value.length === 0) push({ role: 'agent', content: DEFAULT_OPENING_MESSAGE })
+  }
+
+  // 積木方式的輸入：名稱／說明直接寫；章節變動就重推導步驟／能力／觸發條件
+  function updateBlocks(patch: { name?: string; description?: string; sectionIds?: string[] }): void {
+    if (draft.value.method !== 'blocks') return
+    const next: SkillDraft = { ...draft.value }
+    if (patch.name !== undefined) next.name = patch.name
+    if (patch.description !== undefined) next.description = patch.description
+    if (patch.sectionIds !== undefined) {
+      next.sectionIds = [...patch.sectionIds]
+      Object.assign(next, deriveFromSections(next.sectionIds))
+    }
+    draft.value = next
   }
 
   function loadSkill(skillId: string): boolean {
@@ -212,7 +254,7 @@ export function useSkillStudioConversation() {
     draft.value = draftFromSkill(s)
     snapshot.value = serialize(draft.value)
     messages.value = []
-    push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
+    if (draft.value.method === 'chat') push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
     return true
   }
 
@@ -241,7 +283,8 @@ export function useSkillStudioConversation() {
         assignedAgents: [],
         capabilities: d.capabilities.map(c => ({ ...c })),
         files: [...d.files],
-        creationMethod: 'ai_assisted',
+        composition: d.method === 'blocks' ? { sectionIds: [...d.sectionIds] } : undefined,
+        creationMethod: d.method === 'blocks' ? 'manual' : 'ai_assisted',
       })
       mode.value = 'edit'
       savedSkillId.value = id
@@ -252,6 +295,7 @@ export function useSkillStudioConversation() {
         instructions: d.instructions,
         triggerHint: d.triggerHint,
         capabilities: d.capabilities,
+        composition: d.method === 'blocks' ? { sectionIds: [...d.sectionIds] } : undefined,
       })
       store.updateSkillFiles(savedSkillId.value, d.files)
     }
@@ -295,6 +339,6 @@ export function useSkillStudioConversation() {
 
   return {
     mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips,
-    startCreate, loadSkill, send, save, updateFiles, toSnapshot, hydrate, detachSavedSkill,
+    startCreate, chooseMethod, updateBlocks, loadSkill, send, save, updateFiles, toSnapshot, hydrate, detachSavedSkill,
   }
 }
