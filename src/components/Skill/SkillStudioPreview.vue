@@ -86,6 +86,10 @@
           <button type="button" class="custom-btn" @click="router.push({ path: '/view/Skills' })">
             <i class="material-symbols-outlined">auto_awesome</i>到技能管理
           </button>
+          <!-- 對話測試、版本比較留在沙盒；這裡只放入口，不把沙盒整套搬進來 -->
+          <button type="button" class="custom-btn" @click="goSandbox">
+            <i class="material-symbols-outlined">science</i>測試沙盒
+          </button>
         </template>
       </div>
     </template>
@@ -106,8 +110,10 @@
         </div>
         <SkillTestAI :skill-id="props.savedSkillId" />
         <div class="ssp-test-foot">
-          想手動對話測試？
-          <a href="#" @click.prevent="router.push({ path: '/view/SkillTest', query: { skillId: props.savedSkillId } })">到技能測試沙盒</a>
+          <span class="ssp-test-foot-text">想手動模擬使用者對話，或比較不同版本？</span>
+          <button type="button" class="custom-btn ssp-sandbox-btn" @click="goSandbox">
+            <i class="material-symbols-outlined">science</i>到技能測試沙盒
+          </button>
         </div>
       </div>
     </template>
@@ -143,6 +149,12 @@ const emit = defineEmits<{
 const router = useRouter()
 const md = new MarkdownIt({ html: false, breaks: true, linkify: false })
 const filesExpanded = ref(false)
+
+// 兩個 tab 共用的沙盒入口：帶著目前這顆技能過去，沙盒側欄會直接選中它
+function goSandbox() {
+  if (!props.savedSkillId) return
+  router.push({ path: '/view/SkillTest', query: { skillId: props.savedSkillId } })
+}
 
 const instructionsHtml = computed(() =>
   props.draft.instructions.trim() ? md.render(props.draft.instructions) : ''

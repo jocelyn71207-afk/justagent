@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -73,6 +73,23 @@ describe('SkillStudioPreview', () => {
     await w.setProps({ isDirty: true })
     expect(w.find('.ssp-save-btn').attributes('disabled')).toBeUndefined()
     expect(w.find('.ssp-status-badge').text()).toBe('有未儲存變更')
+  })
+
+  it('已儲存後兩個 tab 都有「技能測試沙盒」入口，點擊導向 /view/SkillTest?skillId=', async () => {
+    const w = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true })
+    const push = vi.spyOn((w.vm as any).$router, 'push')
+    const footBtn = w.findAll('.ssp-footer button').find(b => b.text().includes('測試沙盒'))
+    expect(footBtn).toBeDefined()
+    await footBtn!.trigger('click')
+    expect(push).toHaveBeenCalledWith({ path: '/view/SkillTest', query: { skillId: 'p1' } })
+
+    await w.setProps({ activeTab: 'test' })
+    const sandboxBtn = w.find('.ssp-sandbox-btn')
+    expect(sandboxBtn.exists()).toBe(true)
+    expect(sandboxBtn.text()).toContain('到技能測試沙盒')
+    await sandboxBtn.trigger('click')
+    expect(push).toHaveBeenCalledTimes(2)
+    expect(push).toHaveBeenLastCalledWith({ path: '/view/SkillTest', query: { skillId: 'p1' } })
   })
 
   it('測試 tab：未儲存顯示空狀態與儲存鈕；已儲存掛載 SkillTestAI 並帶 skillId', async () => {
