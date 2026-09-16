@@ -180,4 +180,68 @@ describe('useSkillStudioConversation', () => {
     expect(labels).toContain('調整技能指令')
     expect(labels).toContain('調整觸發條件')
   })
+
+  it('startCreate(prefill, openingMessage)：草稿預填、isDirty 為 true、canSave 依內容、開場訊息採用指定文字', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate(
+      { name: '產品銷售報告整理', instructions: '1. 查詢\n2. 套用規範', triggerHint: '偵測到整理需求' },
+      '這顆技能來自本對話的「查詢銷售資料」流程。'
+    )
+    expect(c.mode.value).toBe('create')
+    expect(c.draft.value.name).toBe('產品銷售報告整理')
+    expect(c.draft.value.description).toBe('')
+    expect(c.isDirty.value).toBe(true)
+    expect(c.canSave.value).toBe(true)
+    expect(c.messages.value).toHaveLength(1)
+    expect(c.messages.value[0].content).toBe('這顆技能來自本對話的「查詢銷售資料」流程。')
+  })
+
+  it('預填後的第一句走改名規則，不會被「第一句擬草稿」規則覆寫', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate({ name: '舊名', instructions: '1. a' })
+    const p = c.send('名稱改成「新名」')
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+    expect(c.draft.value.name).toBe('新名')
+    expect(c.draft.value.instructions).toBe('1. a')
+  })
+
+  it('toSnapshot / hydrate 往返：內容一致、hydrate 後 isDirty=false、之後新訊息 id 不重複', async () => {
+    const a = useSkillStudioConversation()
+    a.startCreate()
+    const p = a.send('幫我建立一個能查 ERP 庫存的技能')
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+    const snap = a.toSnapshot()
+    expect(snap.mode).toBe('create')
+    expect(snap.draft.name).toBe('查 ERP 庫存')
+    expect(snap.messages).toHaveLength(3)
+
+    const b = useSkillStudioConversation()
+    b.hydrate(snap)
+    expect(b.draft.value).toEqual(snap.draft)
+    expect(b.messages.value.map(m => m.id)).toEqual(snap.messages.map(m => m.id))
+    expect(b.isDirty.value).toBe(false)
+    // 深拷貝：改 b 不影響 snap
+    b.updateFiles([])
+    b.draft.value.capabilities.push({ name: 'x', description: '' })
+    expect(snap.draft.capabilities).toHaveLength(2)
+
+    const q = b.send('再補一個步驟')
+    await vi.advanceTimersByTimeAsync(800)
+    await q
+    const ids = b.messages.value.map(m => m.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('detachSavedSkill：清掉 savedSkillId、退回 create、isDirty 為 true', () => {
+    const c = useSkillStudioConversation()
+    c.loadSkill('personal-001')
+    expect(c.isDirty.value).toBe(false)
+    c.detachSavedSkill()
+    expect(c.savedSkillId.value).toBeNull()
+    expect(c.mode.value).toBe('create')
+    expect(c.isDirty.value).toBe(true)
+    expect(c.draft.value.name).toBe('週報自動生成') // 草稿內容保留
+  })
 })

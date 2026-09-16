@@ -21,6 +21,16 @@ export interface StudioMessage extends ChatMessage { actions?: StudioAction[] }
 export interface StudioReply { content: string; patch?: Partial<SkillDraft>; actions?: StudioAction[] }
 export interface StudioSuggestion { icon: string; label: string; prefill: string }
 
+// block 存放／還原用的可序列化快照
+export interface StudioSnapshot {
+  mode: StudioMode
+  savedSkillId: string | null
+  draft: SkillDraft
+  messages: StudioMessage[]
+}
+
+export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
+
 export function emptyDraft(): SkillDraft {
   return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [] }
 }
@@ -164,13 +174,22 @@ export function useSkillStudioConversation() {
     messages.value.push({ id: `studio-${++seq}`, ...m })
   }
 
-  function startCreate(): void {
+  // prefill：由 Agent 建議放上 block 時帶入的預填內容。snapshot 基準刻意維持空草稿，
+  // 讓預填一開始就是「有未儲存變更」，使用者得按儲存才會寫進技能
+  function startCreate(prefill?: Partial<SkillDraft>, openingMessage?: string): void {
     mode.value = 'create'
     savedSkillId.value = null
-    draft.value = emptyDraft()
-    snapshot.value = serialize(draft.value)
+    const base = emptyDraft()
+    draft.value = {
+      ...base,
+      ...prefill,
+      capabilities: (prefill?.capabilities ?? base.capabilities).map(c => ({ ...c })),
+      files: [...(prefill?.files ?? base.files)],
+    }
+    snapshot.value = serialize(emptyDraft())
     messages.value = []
-    push({ role: 'agent', content: '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。' })
+    seq = 0
+    push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
   function loadSkill(skillId: string): boolean {
@@ -239,8 +258,35 @@ export function useSkillStudioConversation() {
     draft.value = { ...draft.value, files }
   }
 
+  function toSnapshot(): StudioSnapshot {
+    return JSON.parse(JSON.stringify({
+      mode: mode.value,
+      savedSkillId: savedSkillId.value,
+      draft: draft.value,
+      messages: messages.value,
+    }))
+  }
+
+  function hydrate(snap: StudioSnapshot): void {
+    const copy: StudioSnapshot = JSON.parse(JSON.stringify(snap))
+    mode.value = copy.mode
+    savedSkillId.value = copy.savedSkillId
+    draft.value = copy.draft
+    messages.value = copy.messages
+    snapshot.value = serialize(draft.value)
+    // 接續既有訊息 id，避免之後 push 撞號
+    seq = copy.messages.reduce((max, m) => Math.max(max, Number(m.id.replace('studio-', '')) || 0), 0)
+  }
+
+  // block 指到的技能已被刪除時：草稿保留，但退回建立模式，下次儲存會建立新技能
+  function detachSavedSkill(): void {
+    savedSkillId.value = null
+    mode.value = 'create'
+    snapshot.value = serialize(emptyDraft())
+  }
+
   return {
     mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips,
-    startCreate, loadSkill, send, save, updateFiles,
+    startCreate, loadSkill, send, save, updateFiles, toSnapshot, hydrate, detachSavedSkill,
   }
 }
