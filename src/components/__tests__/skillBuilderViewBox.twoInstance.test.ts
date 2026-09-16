@@ -105,4 +105,22 @@ describe('two skillBuilderViewBox instances on one block', () => {
       vi.useRealTimers()
     }
   })
+
+  it('A 選了「積木」方式但還沒填內容，B hydrate 同一份快照 -> B 不應該被判定成有未儲存變更', async () => {
+    const store = useAiviewerStore()
+    const id = store.addSkillBuilderBlock()
+    const block = store.aiViewerBlocks.find((b: any) => b.id === id)
+
+    const A = mountOn(id, block) // 空白建立，只選方式，還沒有任何內容
+    await A.findAll('.smc-card')[1].trigger('click')
+    await flushPromises()
+    expect(block.data.data.snapshot.draft.method).toBe('blocks')
+
+    const B = mountOn(id, block) // 另一個實例掛載，hydrate 同一份快照
+    await flushPromises()
+    store.updateSkillBuilderBlock(id, { activeTab: 'preview' })
+    await flushPromises()
+    expect(B.find('.ssp-status-badge').text()).toContain('未儲存草稿')
+    expect(B.find('.ssp-status-badge').text()).not.toContain('有未儲存變更')
+  })
 })

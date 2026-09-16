@@ -282,6 +282,34 @@ describe('useSkillStudioConversation', () => {
     expect(b.suggestionChips.value).toEqual([])
   })
 
+  it('method 不列入 dirty 比對：光選方式不算未儲存變更，選完再改內容才算', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('blocks')
+    expect(c.isDirty.value).toBe(false)
+    c.updateBlocks({ sectionIds: ['promo_kpi'] })
+    expect(c.isDirty.value).toBe(true)
+  })
+
+  it('只選了方式的快照被另一個實例 hydrate：isDirty 仍為 false（method 差異不該跨實例變成未儲存變更）', () => {
+    const a = useSkillStudioConversation()
+    a.startCreate()
+    a.chooseMethod('blocks')
+    const snap = a.toSnapshot()
+
+    const b = useSkillStudioConversation()
+    b.hydrate(snap)
+    expect(b.draft.value.method).toBe('blocks')
+    expect(b.isDirty.value).toBe(false)
+  })
+
+  it('loadSkill 後 isDirty 仍為 false（method 由有無 composition 推得，不影響 dirty 基準）', () => {
+    const c = useSkillStudioConversation()
+    expect(c.loadSkill('personal-001')).toBe(true)
+    expect(c.draft.value.method).toBe('chat') // personal-001 無 composition
+    expect(c.isDirty.value).toBe(false)
+  })
+
   it('deriveFromSections：編號步驟、分類觸發條件、每章一項能力；空清單全空', () => {
     const d = deriveFromSections(['promo_kpi', 'ta_gender'])
     expect(d.instructions).toBe('依序產出以下章節：\n1. 促銷核心 KPI：完成訂單數、GMV、折扣總額、折扣佔比、規則數。\n2. 性別分布：會員性別分布資料，圖表自動生成。')

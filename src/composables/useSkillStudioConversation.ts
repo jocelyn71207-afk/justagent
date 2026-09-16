@@ -181,8 +181,10 @@ export function interpretStudioMessage(text: string, draft: SkillDraft, mode: St
   }
 }
 
+// method 不算「內容」，故不列入 dirty 比對：它只是建立方式的選擇，只有 startCreate()（整份
+// 草稿重置）才會再變，選了方式本身不該讓草稿變成「有未儲存變更」
 function serialize(d: SkillDraft): string {
-  return JSON.stringify({ ...d, files: d.files.map(f => f.id) })
+  return JSON.stringify({ ...d, method: undefined, files: d.files.map(f => f.id) })
 }
 
 export function useSkillStudioConversation() {
@@ -228,12 +230,8 @@ export function useSkillStudioConversation() {
     if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
-  // 選方式本身不算「有內容變更」：草稿還乾淨（沒有未儲存變更）時，把基準線一併帶上
-  // method，避免使用者才剛選完方式、什麼都還沒填，切技能／建立新技能就跳「放棄變更」確認
   function chooseMethod(method: StudioMethod): void {
-    const wasClean = !isDirty.value
     draft.value = { ...draft.value, method }
-    if (wasClean) snapshot.value = serialize(draft.value)
     if (method === 'chat' && messages.value.length === 0) push({ role: 'agent', content: DEFAULT_OPENING_MESSAGE })
   }
 
