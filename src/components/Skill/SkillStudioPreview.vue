@@ -1,6 +1,6 @@
 <template>
   <div class="SkillStudioPreview">
-    <div class="ssp-tabs">
+    <div class="ssp-tabs" v-if="!props.hideTabs">
       <button
         type="button"
         :class="['ssp-tab-btn', { 'is-active': props.activeTab === 'preview' }]"
@@ -138,6 +138,7 @@ const props = defineProps<{
   canSave: boolean
   activeTab: 'preview' | 'test'
   nameConflict?: boolean
+  hideTabs?: boolean
 }>()
 
 const emit = defineEmits<{

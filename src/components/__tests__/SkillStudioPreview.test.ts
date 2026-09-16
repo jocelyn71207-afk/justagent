@@ -120,4 +120,12 @@ describe('SkillStudioPreview', () => {
     expect(w2.find('.name-conflict-banner').exists()).toBe(true)
     expect(w2.text()).toContain('你已經有一個同名的個人技能，建議修改名稱以便區分。')
   })
+
+  it('hideTabs：不渲染 .ssp-tabs，但 activeTab 仍決定內容', () => {
+    const w = mountPreview({ hideTabs: true, activeTab: 'test' })
+    expect(w.find('.ssp-tabs').exists()).toBe(false)
+    expect(w.text()).toContain('先儲存技能')
+    const normal = mountPreview()
+    expect(normal.find('.ssp-tabs').exists()).toBe(true)
+  })
 })

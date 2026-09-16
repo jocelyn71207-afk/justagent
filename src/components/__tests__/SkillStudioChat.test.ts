@@ -84,4 +84,14 @@ describe('SkillStudioChat', () => {
     await w.find('.ssc-new-btn').trigger('click')
     expect(w.emitted('new-skill')).toHaveLength(1)
   })
+
+  it('compact：隱藏切換技能與建立新技能，根元素帶 is-compact；預設不隱藏', () => {
+    const normal = mountChat()
+    expect(normal.find('.ssc-head-actions').exists()).toBe(true)
+    expect(normal.classes()).not.toContain('is-compact')
+    const w = mountChat({ compact: true })
+    expect(w.find('.ssc-head-actions').exists()).toBe(false)
+    expect(w.find('.ssc-mode-chip').exists()).toBe(true)
+    expect(w.classes()).toContain('is-compact')
+  })
 })

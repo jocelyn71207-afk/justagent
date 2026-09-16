@@ -211,6 +211,16 @@
 
     .custom-input { flex: 1; }
   }
+
+  // 放進畫布 block 時的緊湊版：一顆技能一個 block，不需要切換技能；寬度只有 640，建議 chip 直排
+  &.is-compact {
+    .chat-bubble { max-width: 90%; }
+    .ssc-suggestions {
+      flex-direction: column;
+      align-items: stretch;
+      .ssc-chip { justify-content: center; }
+    }
+  }
 }
 
 // ── 右側：預覽／測試 ──

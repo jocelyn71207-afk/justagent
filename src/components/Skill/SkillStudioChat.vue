@@ -1,11 +1,11 @@
 <template>
-  <div class="SkillStudioChat">
+  <div :class="['SkillStudioChat', { 'is-compact': props.compact }]">
     <div class="ssc-head">
       <span :class="['ssc-mode-chip', `ssc-mode-chip--${props.mode}`]">
         <i class="material-symbols-outlined">{{ props.mode === 'create' ? 'auto_fix_high' : 'person' }}</i>
         {{ props.mode === 'create' ? '建立新技能' : `修改：${props.skillName}` }}
       </span>
-      <div class="ssc-head-actions">
+      <div class="ssc-head-actions" v-if="!props.compact">
         <select
           class="custom-input ssc-skill-select"
           :value="props.savedSkillId ?? ''"
@@ -91,6 +91,7 @@ const props = defineProps<{
   isRunning: boolean
   suggestionChips: StudioSuggestion[]
   personalSkills: Skill[]
+  compact?: boolean
 }>()
 
 const emit = defineEmits<{
