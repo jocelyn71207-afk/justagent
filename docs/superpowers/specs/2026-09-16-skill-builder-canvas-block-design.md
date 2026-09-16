@@ -110,7 +110,7 @@ export interface StudioSnapshot {
 }
 
 function toSnapshot(): StudioSnapshot            // 深拷貝目前狀態
-function hydrate(snap: StudioSnapshot): void     // 還原狀態；snapshot 基準 = 還原後的 draft（所以還原後 isDirty=false）
+function hydrate(snap: StudioSnapshot): void     // 還原狀態；dirty 基準由「狀態」推導：有 savedSkillId 且技能存在 → 基準 = 該技能目前內容；否則 = 空草稿。所以 isDirty 在任何實例、任何時刻都代表「草稿與已儲存內容不同」，而不是「自上次 hydrate 以來有沒有改」
 ```
 
 block 每次 `draft`／`messages`／`mode`／`savedSkillId` 變動就 `toSnapshot()` 寫回 block data（`watch` + `updateSkillBuilderBlock`），block 重新 mount（拖曳、全螢幕切換、畫布重繪）時 `hydrate()` 回來。
@@ -287,7 +287,7 @@ conv4「是」 ─► addSkillBuilderBlock({prefill, origin}) ─┤
 
 - block 的 `snapshot.savedSkillId` 指向的技能已被刪（在技能管理刪掉）：`hydrate` 後 `store.findSkill` 找不到 → block 顯示提示條「這顆技能已不存在，儲存會建立新的個人技能」並把 `mode` 退回 `create`、`savedSkillId = null`。
 - 「前往區塊」時 block 已刪除：toast，不拋錯。
-- 全螢幕與畫布 block 同時存在同一份 snapshot：兩個 `skillBuilderViewBox` 實例各自 `hydrate`，寫回同一個 block data；全螢幕關閉後畫布上的實例重新 `hydrate` 最新 snapshot（在 `watch(() => props.source.data.snapshot)` 中處理外部變更：只在 `!isDirty` 或快照的 messages 長度大於自己時套用，避免打字中被覆寫）。
+- 全螢幕與畫布 block 同時存在同一份 snapshot：兩個 `skillBuilderViewBox` 實例各自 `hydrate`，寫回同一個 block data。同步規則是「最後寫入者贏、回音抑制」：外部快照只要與自己的 `toSnapshot()` 不同就套用（JSON 相等即忽略，避免自己的寫回再觸發一次 hydrate）。不用 isDirty 當閘門——正在輸入的文字存在對話元件的本地 input，不在快照裡，不會被覆寫；而閘門會擋掉另一個實例的「儲存」等不新增訊息的更新，造成重複建立技能。
 - 名稱與既有個人技能重複：非阻擋提示條（沿用 `.name-conflict-banner`）。
 
 ## 12. 樣式
