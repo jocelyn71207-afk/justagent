@@ -76,7 +76,7 @@ type SkillBlockOrigin = {
 type SkillBuilderBlockData = {
   snapshot: StudioSnapshot
   origin: SkillBlockOrigin | null
-  activeTab: 'chat' | 'preview' | 'test'
+  activeTab: 'chat' | 'blocks' | 'preview' | 'test'
 }
 
 /** 工具箱相關 */

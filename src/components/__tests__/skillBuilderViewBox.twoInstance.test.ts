@@ -38,6 +38,8 @@ describe('two skillBuilderViewBox instances on one block', () => {
       const block = store.aiViewerBlocks.find((b: any) => b.id === id)
 
       const A = mountOn(id, block) // canvas instance
+      await A.findAll('.smc-card')[0].trigger('click')
+      await flushPromises()
       const input = A.find('.SkillStudioChat input.custom-input')
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
       await input.trigger('keydown.enter')

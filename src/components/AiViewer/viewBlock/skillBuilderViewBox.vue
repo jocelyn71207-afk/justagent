@@ -1,9 +1,9 @@
 <template>
   <div :class="['skillBuilderViewBox', { 'is-full': props.isFullView }]">
     <div class="skb-toolbar">
-      <div class="skb-tabs">
+      <div class="skb-tabs" v-if="method">
         <button
-          v-for="t in TABS"
+          v-for="t in tabs"
           :key="t.id"
           type="button"
           :class="['skb-tab-btn', { 'is-active': activeTab === t.id }]"
@@ -12,6 +12,7 @@
           <i class="material-symbols-outlined">{{ t.icon }}</i>{{ t.label }}
         </button>
       </div>
+      <div v-else class="skb-tabs-placeholder">技能建立</div>
       <!-- 同一顆技能要做長時間調整就到 AI 賦能頁；沒儲存前沒有 skillId 可帶。
            tooltip 掛在外層 span：disabled 的 button 不會觸發 hover 事件，「先儲存技能」的提示就出不來 -->
       <span class="skb-open-studio-wrap" v-tooltip="conv.savedSkillId.value ? '在 AI 賦能開啟' : '先儲存技能'">
@@ -32,10 +33,17 @@
     <div v-if="missingSkill" class="skb-missing-bar">
       <i class="material-symbols-outlined">warning</i>這顆技能已不存在，儲存會建立新的個人技能
     </div>
+    <div v-if="showRunReport" class="skb-after-save-bar">
+      <span>技能已儲存。要不要現在用這顆技能產一份報告？</span>
+      <button type="button" class="custom-btn custom-main-btn skb-run-report-btn" @click="runReport">
+        <i class="material-symbols-outlined">play_arrow</i>產一份報告
+      </button>
+    </div>
 
     <div class="skb-body">
+      <SkillMethodChooser v-if="!method" @choose="onChooseMethod" />
       <SkillStudioChat
-        v-if="activeTab === 'chat'"
+        v-else-if="activeTab === 'chat'"
         compact
         :mode="conv.mode.value"
         :skill-name="conv.draft.value.name"
@@ -45,6 +53,17 @@
         :suggestion-chips="conv.suggestionChips.value"
         :personal-skills="[]"
         @send="conv.send"
+      />
+      <SkillBlockComposer
+        v-else-if="activeTab === 'blocks'"
+        compact
+        :name="conv.draft.value.name"
+        :description="conv.draft.value.description"
+        :section-ids="conv.draft.value.sectionIds"
+        :name-conflict="nameConflict"
+        @update:name="v => conv.updateBlocks({ name: v })"
+        @update:description="v => conv.updateBlocks({ description: v })"
+        @update:section-ids="ids => conv.updateBlocks({ sectionIds: ids })"
       />
       <SkillStudioPreview
         v-else
@@ -74,8 +93,10 @@ import { useRouter } from 'vue-router'
 import { useAiviewerStore } from '@/stores/AiViewerStore'
 import { useSkillStore } from '@/stores/skillStore'
 import { useSkillStudioConversation } from '@/composables/useSkillStudioConversation'
-import type { StudioSnapshot } from '@/composables/useSkillStudioConversation'
+import type { StudioSnapshot, StudioMethod } from '@/composables/useSkillStudioConversation'
 import type { SkillBuilderBlockData } from '@/types/AiViewer'
+import SkillMethodChooser from '@/components/Skill/SkillMethodChooser.vue'
+import SkillBlockComposer from '@/components/Skill/SkillBlockComposer.vue'
 import SkillStudioChat from '@/components/Skill/SkillStudioChat.vue'
 import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
 import popDialog from '@/services/popDialog'
@@ -88,11 +109,7 @@ const props = defineProps({
   isFullView: { type: Boolean, default: false },
 })
 
-const TABS: { id: BlockTab; icon: string; label: string }[] = [
-  { id: 'chat', icon: 'forum', label: '對話' },
-  { id: 'preview', icon: 'preview', label: '預覽' },
-  { id: 'test', icon: 'science', label: '測試' },
-]
+const REPORT_FILE = '/justagent/hurricane_trailsetter_campaign_performance.html'
 
 const aiviewerStore = useAiviewerStore()
 const skillStore = useSkillStore()
@@ -100,10 +117,34 @@ const router = useRouter()
 const conv = useSkillStudioConversation()
 
 const activeTab = computed<BlockTab>(() => props.source.data.activeTab)
-// SkillStudioPreview 的 activeTab 只收 'preview' | 'test'，這裡窄化掉 block 的 'chat'
+// SkillStudioPreview 的 activeTab 只收 'preview' | 'test'，這裡窄化掉 block 的 'chat'／'blocks'
 const previewTab = computed<'preview' | 'test'>(() => (activeTab.value === 'test' ? 'test' : 'preview'))
 const missingSkill = ref(false)
 let applyingExternal = false
+
+const method = computed(() => conv.draft.value.method)
+const tabs = computed<{ id: BlockTab; icon: string; label: string }[]>(() => [
+  method.value === 'blocks'
+    ? { id: 'blocks', icon: 'dashboard_customize', label: '積木' }
+    : { id: 'chat', icon: 'forum', label: '對話' },
+  { id: 'preview', icon: 'preview', label: '預覽' },
+  { id: 'test', icon: 'science', label: '測試' },
+])
+
+// 儲存後只提示一次「產一份報告」；再存一次會再出現
+const showRunReport = ref(false)
+
+function onChooseMethod(m: StudioMethod) {
+  conv.chooseMethod(m)
+  setTab(m === 'blocks' ? 'blocks' : 'chat')
+}
+
+function runReport() {
+  const name = conv.draft.value.name.trim() || '行銷報告'
+  aiviewerStore.addReportBlock(REPORT_FILE, `${name}.html`)
+  popDialog.toast('已把報告放到畫布上')
+  showRunReport.value = false
+}
 
 function setTab(tab: BlockTab) {
   aiviewerStore.updateSkillBuilderBlock(props.id, { activeTab: tab })
@@ -126,6 +167,11 @@ function applySnapshot(snap: StudioSnapshot) {
     aiviewerStore.updateSkillBuilderBlock(props.id, { snapshot: conv.toSnapshot() })
   } else {
     missingSkill.value = false
+  }
+  // hydrate 到的快照若方式是積木、但 block data 的 activeTab 還停在舊的 'chat'（例如較早版本的
+  // 快照），落到 SkillStudioPreview 會跟 tabs 顯示的「積木」錯位，這裡校正回 blocks
+  if (conv.draft.value.method === 'blocks' && props.source.data.activeTab === 'chat') {
+    setTab('blocks')
   }
   nextTick(() => { applyingExternal = false })
 }
@@ -160,6 +206,7 @@ function onSave() {
   const wasCreate = conv.mode.value === 'create'
   const id = conv.save()
   if (!id) return
+  showRunReport.value = conv.draft.value.method === 'blocks'
   missingSkill.value = false
   if (wasCreate) {
     popDialog.toast('已儲存為個人技能，可到「測試」tab 驗證')

@@ -20,7 +20,7 @@ describe('AiViewerStore - 技能建立 block', () => {
     expect(block.data.data.origin).toBeNull()
     expect(block.data.data.snapshot.mode).toBe('create')
     expect(block.data.data.snapshot.draft.name).toBe('')
-    expect(block.data.data.snapshot.messages).toHaveLength(1)
+    expect(block.data.data.snapshot.messages).toHaveLength(0)
     expect(store.panToTarget).toEqual({ x: block.x, y: block.y, width: 640, height: 750 })
     expect(store.nowChoiceAiViewerId).toBe(id)
   })

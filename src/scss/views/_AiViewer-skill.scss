@@ -59,6 +59,22 @@
   .skb-origin-bar { color: var(--text-muted); background: var(--tag-slate-bg); }
   .skb-missing-bar { color: var(--tag-amber-text); background: var(--tag-amber-bg); }
 
+  .skb-tabs-placeholder { font-size: 13px; font-weight: 600; color: var(--text-muted); padding: 6px 4px; }
+
+  .skb-after-save-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: var(--text);
+    background: var(--primary-a08);
+    border-bottom: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+    .skb-run-report-btn { gap: 4px; white-space: nowrap; .material-symbols-outlined { font-size: 16px; } }
+  }
+
   .skb-body {
     flex: 1;
     min-height: 0;
@@ -66,5 +82,7 @@
     flex-direction: column;
     .SkillStudioChat,
     .SkillStudioPreview { height: 100%; min-height: 0; }
+    .SkillBlockComposer,
+    .SkillMethodChooser { height: 100%; min-height: 0; overflow-y: auto; }
   }
 }

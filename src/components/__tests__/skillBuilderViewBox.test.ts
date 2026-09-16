@@ -32,15 +32,18 @@ function mountBlock(init?: Parameters<ReturnType<typeof useAiviewerStore>['addSk
 describe('skillBuilderViewBox', () => {
   beforeEach(() => { setActivePinia(createPinia()); vi.clearAllMocks() })
 
-  it('預設在對話 tab，顯示開場訊息；切 tab 寫回 block data', async () => {
+  it('空白 block：先顯示方式選擇、沒有 tab；選對話後出現 對話／預覽／測試 與開場訊息', async () => {
     const { wrapper, block } = mountBlock()
-    expect(wrapper.find('.SkillStudioChat').exists()).toBe(true)
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+    expect(wrapper.findAll('.skb-tab-btn')).toHaveLength(0)
+    await wrapper.findAll('.smc-card')[0].trigger('click')
+    await flushPromises()
+    expect(block.data.data.snapshot.draft.method).toBe('chat')
+    expect(block.data.data.activeTab).toBe('chat')
+    expect(wrapper.findAll('.skb-tab-btn').map(t => t.text())).toEqual([expect.stringContaining('對話'), expect.stringContaining('預覽'), expect.stringContaining('測試')])
     expect(wrapper.text()).toContain('技能建立助理')
-    const tabs = wrapper.findAll('.skb-tab-btn')
-    expect(tabs.map(t => t.text())).toEqual(['對話', '預覽', '測試'].map(s => expect.stringContaining(s)))
-    await tabs[1].trigger('click')
+    await wrapper.findAll('.skb-tab-btn')[1].trigger('click')
     expect(block.data.data.activeTab).toBe('preview')
-    expect(wrapper.find('.SkillStudioPreview').exists()).toBe(true)
     expect(wrapper.find('.ssp-tabs').exists()).toBe(false)
   })
 
@@ -61,6 +64,8 @@ describe('skillBuilderViewBox', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
       const { wrapper, block } = mountBlock()
+      await wrapper.findAll('.smc-card')[0].trigger('click')
+      await flushPromises()
       const input = wrapper.find('.SkillStudioChat input.custom-input')
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
       await input.trigger('keydown.enter')
@@ -113,5 +118,53 @@ describe('skillBuilderViewBox', () => {
     // detach 後的狀態要寫回 block data，不然其他實例／重新掛載仍看到指向已刪除技能的舊快照
     expect(block.data.data.snapshot.savedSkillId).toBeNull()
     expect(block.data.data.snapshot.mode).toBe('create')
+  })
+
+  it('選積木：tab 為 積木／預覽／測試；勾章節＋命名 → 預覽步驟 → 儲存寫入 composition → 出現「產一份報告」→ 點擊放上報告 block 且列消失', async () => {
+    const { wrapper, block, store } = mountBlock()
+    const skillStore = useSkillStore()
+    await wrapper.findAll('.smc-card')[1].trigger('click')
+    await flushPromises()
+    expect(block.data.data.snapshot.draft.method).toBe('blocks')
+    expect(wrapper.findAll('.skb-tab-btn').map(t => t.text())).toEqual([expect.stringContaining('積木'), expect.stringContaining('預覽'), expect.stringContaining('測試')])
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
+
+    await wrapper.find('.sbc-name-input').setValue('行銷週報')
+    const items = wrapper.findAll('.sbc-palette-item')
+    await items.find(i => i.text().includes('促銷核心 KPI'))!.find('.sbc-add-btn').trigger('click')
+    await items.find(i => i.text().includes('渠道核心 KPI'))!.find('.sbc-add-btn').trigger('click')
+    await flushPromises()
+    expect(block.data.data.snapshot.draft.sectionIds).toEqual(['promo_kpi', 'ch_kpi'])
+    expect(block.blockName).toBe('行銷週報')
+
+    await wrapper.findAll('.skb-tab-btn')[1].trigger('click')
+    expect(wrapper.find('.ssp-title').text()).toBe('行銷週報')
+    // markdown-it 把「1. …」轉成 <ol><li>，數字是瀏覽器產生的 ::marker，不在 textContent 裡，
+    // 這裡改驗證章節名稱＋說明確實被 deriveFromSections 帶進技能指令
+    expect(wrapper.text()).toContain('促銷核心 KPI：完成訂單數')
+    expect(wrapper.findAll('.ssp-cap-chip').map(c => c.text())).toEqual(['促銷核心 KPI', '渠道核心 KPI'])
+
+    const blocksBefore = store.aiViewerBlocks.length
+    await wrapper.find('.ssp-save-btn').trigger('click')
+    await flushPromises()
+    const saved = skillStore.myPersonalSkills[0]
+    expect(saved.composition).toEqual({ sectionIds: ['promo_kpi', 'ch_kpi'] })
+    expect(saved.creationMethod).toBe('manual')
+    expect(block.data.data.activeTab).toBe('test')
+    const bar = wrapper.find('.skb-after-save-bar')
+    expect(bar.exists()).toBe(true)
+    await bar.find('.skb-run-report-btn').trigger('click')
+    await flushPromises()
+    expect(store.aiViewerBlocks.length).toBe(blocksBefore + 1)
+    const report = store.aiViewerBlocks.find((b: any) => b.blockName === '行銷週報.html')
+    expect(report.data.blockType).toBe('HTML')
+    expect(report.data.data.fileUrl).toBe('/justagent/hurricane_trailsetter_campaign_performance.html')
+    expect(wrapper.find('.skb-after-save-bar').exists()).toBe(false)
+  })
+
+  it('conv4 預填 block（prefill）直接是對話 tab，沒有方式選擇畫面', () => {
+    const { wrapper } = mountBlock({ prefill: { name: 'x', instructions: '1. a' }, openingMessage: '開場' })
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.SkillStudioChat').exists()).toBe(true)
   })
 })
