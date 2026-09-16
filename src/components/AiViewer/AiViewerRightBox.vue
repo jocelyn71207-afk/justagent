@@ -1019,6 +1019,7 @@ const { getBlockTypeByFileMime } = aiviewerStore;
 // 工具箱選單資料（本輪只有「行銷報告生成」可點，其餘為即將推出的佔位項目）
 const toolboxItems: ToolboxItem[] = [
   { id: 'reportAssembly', icon: 'bar_chart', name: '行銷報告生成', description: '拖曳組裝行銷週報章節', enabled: true },
+  { id: 'skillBuilder', icon: 'auto_fix_high', name: '技能建立', description: '用對話建立、測試個人技能', enabled: true },
   { id: 'imageGen', icon: 'palette', name: '圖像生成', description: '即將推出', enabled: false },
   { id: 'musicGen', icon: 'music_note', name: '創作音樂', description: '即將推出', enabled: false },
   { id: 'deepSearch', icon: 'search', name: 'Deep Search', description: '即將推出', enabled: false },
@@ -1068,7 +1069,7 @@ const CONV4_SKILL_SUGGESTION = {
   reason: '查詢銷售資料＋套用部門報告規範',
 };
 
-// 點擊工具箱項目：目前只有「行銷報告生成」可用，其餘 enabled: false 不處理
+// 點擊工具箱項目：行銷報告生成／技能建立可用，其餘 enabled: false 不處理
 function openToolboxTool(item: ToolboxItem) {
   if (!item.enabled) return;
   isOpenToolboxFnBox.value = false;
@@ -1076,6 +1077,10 @@ function openToolboxTool(item: ToolboxItem) {
     currentConversationId.value = 'conv7';
     resetConversation();
     nextTick(() => conv7InitFlow());
+  }
+  if (item.id === 'skillBuilder') {
+    // 在畫布放一個空白技能建立 block；鏡頭移過去就是回饋，不另推河道訊息
+    aiviewerStore.addSkillBuilderBlock();
   }
 }
 
@@ -2433,6 +2438,17 @@ function handleChatAreaClick(e: MouseEvent) {
   }
   if (action === 'conv7-adjust') {
     conv7Adjust();
+    return;
+  }
+  // 河道卡片「前往區塊」：鏡頭移到指定 block 並選取它；block 已被刪就提示
+  if (action === 'pan-to-block') {
+    const target = aiViewerBlocks.value.find((b: any) => b.id === el.dataset.value);
+    if (!target) {
+      popDialog.toast('這個區塊已不在畫布上');
+      return;
+    }
+    panToTarget.value = { x: target.x, y: target.y, width: target.width, height: target.height };
+    nowChoiceAiViewerId.value = target.id;
     return;
   }
   if (action === 'goto-skill-management') {
