@@ -1,0 +1,409 @@
+// ── AI 賦能（SkillStudio）頁面佈局 ──
+.SkillStudio {
+  height: 100%;
+
+  .skill-studio-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    // 同 SkillTest：扣掉 .views-page 上下 padding 與 page-banner 實際佔高
+    height: calc(100vh - 172px);
+    overflow: hidden;
+    border: 1px solid var(--divider-a50);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .studio-chat-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .studio-side-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid var(--divider-a50);
+    background: var(--page-bg);
+  }
+
+  @media (max-width: 1023px) {
+    .skill-studio-layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(320px, 1fr) auto;
+      height: auto;
+      min-height: calc(100vh - 172px);
+    }
+
+    .studio-side-col {
+      border-left: none;
+      border-top: 1px solid var(--divider-a50);
+      max-height: 60vh;
+    }
+  }
+}
+
+// ── 左側：對話 ──
+.SkillStudioChat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  .ssc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+  }
+
+  .ssc-mode-chip {
+    @extend %badge-shape;
+    font-size: 12px;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &--create { background: var(--tag-teal-bg); color: var(--tag-teal-text); }
+    &--edit   { background: var(--tag-slate-bg); color: var(--tag-slate-text); }
+  }
+
+  .ssc-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .ssc-skill-select {
+    width: 160px;
+    font-size: 12.5px;
+    padding: 6px 10px;
+  }
+
+  .ssc-new-btn {
+    gap: 4px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    .material-symbols-outlined { font-size: 16px; }
+  }
+
+  .ssc-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+  }
+
+  .chat-bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.55;
+
+    &.bubble--user {
+      align-self: flex-end;
+      background: $color_main_1;
+      color: var(--text-invert, #fff);
+      border-bottom-right-radius: 4px;
+    }
+
+    &.bubble--agent {
+      align-self: flex-start;
+      background: var(--page-bg);
+      border: 1px solid var(--divider-a50);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: $color_main_2;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .bubble-content {
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+  }
+
+  .bubble-typing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+
+    span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typing-bounce 1.2s infinite ease-in-out;
+      &:nth-child(2) { animation-delay: 0.2s; }
+      &:nth-child(3) { animation-delay: 0.4s; }
+    }
+  }
+
+  .ssc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .ssc-action-chip,
+  .ssc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--divider-a50);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover:not(:disabled) {
+      background: var(--accent-soft);
+      border-color: $color_main_3;
+      color: $color_main_1;
+    }
+
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+
+  .ssc-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+  }
+
+  .ssc-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+
+    .custom-input { flex: 1; }
+  }
+}
+
+// ── 右側：預覽／測試 ──
+.SkillStudioPreview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  .ssp-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider-a50);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .ssp-tab-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 12px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    .material-symbols-outlined { font-size: 17px; }
+
+    &.is-active {
+      color: $color_main_1;
+      border-bottom-color: $color_main_1;
+    }
+  }
+
+  .ssp-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    @include use-scroll-bar(var(--scrollbar-a50));
+  }
+
+  .ssp-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .ssp-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-empty { color: var(--text-faint); font-weight: 500; }
+  }
+
+  .ssp-status-badge {
+    @extend %badge-shape;
+    font-size: 11px;
+    flex-shrink: 0;
+
+    &--amber { background: var(--tag-amber-bg); color: var(--tag-amber-text); }
+    &--slate { background: var(--tag-slate-bg); color: var(--tag-slate-text); }
+  }
+
+  .ssp-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .ssp-files-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    .material-symbols-outlined { font-size: 18px; }
+  }
+
+  .ssp-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .ssp-empty {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  .ssp-markdown.markdown-body {
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: inherit;
+    p, ul, ol { margin: 0 0 6px; }
+    ul, ol { padding-left: 18px; }
+    strong { color: var(--text); }
+  }
+
+  .ssp-caps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .ssp-cap-chip {
+    @extend %badge-shape;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--tag-teal-bg);
+    color: var(--tag-teal-text);
+  }
+
+  .ssp-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--divider-a50);
+    background: var(--surface);
+    flex-shrink: 0;
+
+    .custom-btn { gap: 4px; .material-symbols-outlined { font-size: 16px; } }
+  }
+
+  .ssp-test-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+
+    .material-symbols-outlined { font-size: 40px; opacity: 0.35; }
+    p { margin: 0; }
+  }
+
+  .ssp-test-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .SkillTestAI { flex: 1; min-height: 0; }
+  }
+
+  .ssp-stale-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 18px 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+    .material-symbols-outlined { font-size: 16px; }
+  }
+
+  .ssp-test-foot {
+    padding: 10px 18px;
+    border-top: 1px solid var(--divider-a50);
+    font-size: 12.5px;
+    color: var(--text-muted);
+    a { color: $color_main_1; text-decoration: underline; }
+  }
+}

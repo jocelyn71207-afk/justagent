@@ -281,7 +281,7 @@
     <Teleport to="body">
       <Transition name="confirm-fade">
         <div
-          v-if="editChoiceSkill && !showEditChatForDuplicate"
+          v-if="editChoiceSkill"
           class="drawer-confirm-overlay"
           @click.self="editChoiceSkill = null"
         >
@@ -309,12 +309,6 @@
         </div>
       </Transition>
     </Teleport>
-
-    <SkillEditChatModal
-      v-model="showEditChatForDuplicate"
-      :skill="editChoiceSkill"
-      @done="closeChatEdit"
-    />
 
     <!-- 送審 dialog -->
     <Teleport to="body">
@@ -469,7 +463,6 @@ import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
-import SkillEditChatModal from '@/components/Skill/SkillEditChatModal.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { Skill, ConflictResolution } from '@/stores/skillStore'
 
@@ -496,7 +489,6 @@ const showBatchUpdate = ref(false)
 const showLibraryModal = ref(false)
 const editChoiceSkill = ref<Skill | null>(null)
 const editChoiceIsFreshDuplicate = ref(false)
-const showEditChatForDuplicate = ref(false)
 
 // 建立副本第一步：先確認顯示名稱，確認後才真正建立副本（此時才會出現在「我的技能」列表）
 const pendingDuplicateSource = ref<Skill | null>(null)
@@ -637,21 +629,13 @@ function handleDirectEdit() {
   editChoiceSkill.value = null
 }
 
+// 對話修改改到「AI 賦能」頁進行：那裡有完整的預覽與測試面板，
+// 不再用 modal 擠在技能管理頁裡
 function handleChatEdit() {
-  showEditChatForDuplicate.value = true
-}
-
-// 對話修改完，直接引導去技能測試沙盒驗證改動有沒有生效——只在真的
-// 有送出過訊息（實際改了內容）才導頁，單純點進來看一眼就關掉的話
-// 不用打斷使用者，維持原本行為
-function closeChatEdit() {
-  const skill = editChoiceSkill.value
-  const hadEdits = store.editChatHistory.length > 0
-  showEditChatForDuplicate.value = false
+  if (!editChoiceSkill.value) return
+  const skillId = editChoiceSkill.value.id
   editChoiceSkill.value = null
-  if (skill && hadEdits) {
-    router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
-  }
+  router.push({ name: 'SkillStudio', query: { skillId } })
 }
 
 // ── 個人技能 handlers ──────────────────────────────

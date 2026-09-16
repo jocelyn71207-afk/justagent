@@ -828,6 +828,7 @@ import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
+import { useSkillSuggestion } from '@/composables/useSkillSuggestion';
 import type { ToolboxItem } from '@/types/AiViewer';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
 import AgentHandoffDivider from '@/components/AiViewer/AgentHandoffDivider.vue';
@@ -1055,6 +1056,17 @@ const {
   conv7Satisfied,
   conv7Adjust,
 } = useReportAssemblyConversation();
+
+// 專案內由 Agent 發起「建立成個人技能」：可重用流程，conv4 先接
+const skillSuggestion = useSkillSuggestion();
+const CONV4_SKILL_SUGGESTION = {
+  id: 'conv4-sales-report',
+  name: '產品銷售報告整理',
+  description: '查詢指定月份產品銷售數據，並依三諾產品部輸出報告規範自動產出報告',
+  triggerHint: '偵測到「查詢銷售資料＋套用部門報告規範」類型的整理需求',
+  steps: ['查詢指定月份產品銷售數據', '套用三諾產品部輸出報告規範自動產出報告'],
+  reason: '查詢銷售資料＋套用部門報告規範',
+};
 
 // 點擊工具箱項目：目前只有「行銷報告生成」可用，其餘 enabled: false 不處理
 function openToolboxTool(item: ToolboxItem) {
@@ -2407,17 +2419,12 @@ function handleChatAreaClick(e: MouseEvent) {
     return
   }
 
-  // conv4 是否建立 Skill 快速按鈕
-  if (action === 'conv4-build-skill') {
-    conv4BuildSkill();
+  // 建議建立成個人技能（任何 convN 共用）：data-id 是哪一則建議
+  if (action.startsWith('skill-suggest-') && skillSuggestion.handleAction(action, el.dataset.id ?? '')) {
     return;
   }
-  if (action === 'conv4-skip-skill') {
-    conv4SkipSkill();
-    return;
-  }
-  if (action === 'conv4-confirm-save-skill') {
-    conv4ConfirmSaveSkill();
+  if (action === 'goto-skill-studio') {
+    router.push({ name: 'SkillStudio', query: { skillId: el.dataset.value ?? '', tab: 'test' } });
     return;
   }
   if (action === 'conv7-satisfied') {
@@ -2823,8 +2830,6 @@ function conv3FlipSearchCard(from: string[], to: string[]) {
 const conv4Msgs = ref<any[]>([]);
 let conv4IdCounter = 2;
 const conv4Title = ref('');
-const conv4SkillChoiceMade = ref(false);
-const conv4SkillSaveConfirmed = ref(false);
 
 function c4Push(msg: any) {
   conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
@@ -2866,7 +2871,7 @@ function conv4InitFlow() {
         sources: CONV4_SOURCES,
       });
       c4Scroll();
-      setTimeout(() => conv4AskBuildSkill(), 600);
+      setTimeout(() => skillSuggestion.offer({ push: c4Push, scroll: c4Scroll }, CONV4_SKILL_SUGGESTION), 600);
     }, 1800);
   }, 300);
 }
@@ -3052,68 +3057,6 @@ function conv3SkipKnowledgeBase() {
 }
 // -------- end Conversation 3 流程 --------
 
-function conv4AskBuildSkill() {
-  c4Push({
-    agent: 'brain', // 詢問下一步 = 控制權交還 AI大腦
-    msg: `我留意到「查詢銷售資料＋套用部門報告規範」這類整理流程你之後可能會重複用到。要不要我把這個流程存起來，之後產品部同仁都能快速套用？
-<div class="conv1-quick-btns" style="margin-top:8px">
-  <span class="conv1-quick-btn" data-action="conv4-build-skill">是，幫我建立 Skill</span>
-  <span class="conv1-quick-btn" data-action="conv4-skip-skill">不用了</span>
-</div>`,
-  });
-  c4Scroll();
-}
-
-function conv4BuildSkill() {
-  if (conv4SkillChoiceMade.value) return;
-  conv4SkillChoiceMade.value = true;
-  c4Push({ forUser: true, msg: '是，幫我建立 Skill' });
-  c4Scroll();
-  setTimeout(() => {
-    c4Push({
-      agent: 'brain',
-      msg: `好的，我先整理這個流程的設定，請確認以下內容是否正確：
-<div style="border:1px solid #e4e7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
-  <span style="font-size:20px;line-height:1">🧩</span>
-  <div>
-    <div style="font-weight:700">產品銷售報告整理</div>
-    <div style="font-size:12px;color:#5c6370;margin-top:6px"><strong>觸發條件：</strong>偵測到「查詢銷售資料＋套用部門報告規範」類型的整理需求</div>
-    <div style="font-size:12px;color:#5c6370;margin-top:4px"><strong>執行步驟：</strong>1. 查詢指定月份產品銷售數據　2. 套用三諾產品部輸出報告規範自動產出報告</div>
-  </div>
-</div>
-<div class="conv1-quick-btns" style="margin-top:8px">
-  <span class="conv1-quick-btn" data-action="conv4-confirm-save-skill">✅ 確認無誤，儲存</span>
-</div>`,
-    });
-    c4Scroll();
-  }, 500);
-}
-
-function conv4ConfirmSaveSkill() {
-  if (conv4SkillSaveConfirmed.value) return;
-  conv4SkillSaveConfirmed.value = true;
-  c4Push({ forUser: true, msg: '✅ 確認無誤，儲存' });
-  c4Scroll();
-  setTimeout(() => {
-    c4Push({
-      agent: 'brain',
-      finishResponse: true,
-      msg: `✅ Skill「產品銷售報告整理」已建立，之後產品部同仁都能快速套用這個流程。你可以到<span data-action="goto-skill-management" style="color:var(--primary);text-decoration:underline;cursor:pointer;font-weight:600">Skill 管理</span>頁面查看或調整這個 Skill 的細節設定。`,
-    });
-    c4Scroll();
-  }, 500);
-}
-
-function conv4SkipSkill() {
-  if (conv4SkillChoiceMade.value) return;
-  conv4SkillChoiceMade.value = true;
-  c4Push({ forUser: true, msg: '不用了' });
-  c4Scroll();
-  setTimeout(() => {
-    c4Push({ agent: 'brain', msg: '好的，這次的報告已保留在畫布中，之後有需要歡迎再跟我說一聲！' });
-    c4Scroll();
-  }, 500);
-}
 // -------- end Conversation 4 流程 --------
 
 // -------- Conversation 5 流程 --------
@@ -3559,8 +3502,7 @@ function resetConversation() {
     conv4IdCounter = 2;
     conv4Title.value = '';
     conv4Msgs.value = [];
-    conv4SkillChoiceMade.value = false;
-    conv4SkillSaveConfirmed.value = false;
+    skillSuggestion.reset(CONV4_SKILL_SUGGESTION.id);
   }
   if (currentConversationId.value === 'conv5') {
     conv5IdCounter = 2;

@@ -154,6 +154,7 @@ export interface CreateSkillPayload {
   scope?: 'enterprise' | 'team'
   files?: SkillFile[]
   capabilities?: SkillCapability[]
+  creationMethod?: 'ai_assisted' | 'manual'
 }
 
 export interface UpdateSkillPayload {
@@ -166,6 +167,9 @@ export interface UpdateSkillPayload {
   files?: SkillFile[]
   capabilities?: SkillCapability[]
 }
+
+// AI 賦能對話修改用：只允許動這五個內容欄位，不碰狀態／版本／來源關係
+export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities'>>
 
 export interface DraftSkill {
   id: string
@@ -795,6 +799,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     testPassRate: 0,
     avgLatencyMs: 0,
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
+    triggerHint: '週報、會議紀錄、任務清單、彙整',
     capabilities: [
       { name: '資料整合', description: '彙整本週會議記錄與任務清單，去除重複與過時資訊。' },
       { name: '週報格式輸出', description: '依範本格式輸出結構化週報摘要，段落與條列比例固定。' },
@@ -1208,18 +1213,22 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  let personalSeq = 0
+
   // 手寫建立技能的正式入口（SkillEditor.vue 的「全新建立」）：一律先建立成個人技能，
   // 不需要送審就能個人使用，跟 duplicateAsPersonalSkill() 同一套「寫進
   // myPersonalSkillsRef」模式，只是沒有 derivedFrom（沒有來源可比對，personalStatus
   // 直接是 available，不是 draft）。createSkill() 保留給送審通過、正式發佈進 Library
   // 用（submitDraft()），不再由這裡呼叫。
-  function createPersonalSkill(data: CreateSkillPayload): void {
+  function createPersonalSkill(data: CreateSkillPayload): string {
+    const id = `personal-${Date.now()}-${++personalSeq}`
     myPersonalSkillsRef.value.unshift({
-      id: `personal-${Date.now()}`,
+      id,
       name: data.name,
       description: data.description ?? '',
       type: 'extension',
       origin: 'manually_created',
+      creationMethod: data.creationMethod ?? 'manual',
       zone: 'personal',
       personalStatus: 'available',
       skillName: data.name,
@@ -1234,6 +1243,30 @@ export const useSkillStore = defineStore('skillStore', () => {
       files: data.files ?? [],
       capabilities: data.capabilities ?? [],
     })
+    return id
+  }
+
+  // AI 賦能（SkillStudio）修改模式的儲存：只對個人技能生效。draft 複本內容一旦跟
+  // 來源不同就轉 available。skillName 只在非衍生技能同步——衍生技能的 skillName
+  // 記的是 Library 來源名稱，不能被改名蓋掉
+  function applyStudioPatch(skillId: string, patch: StudioPatch): boolean {
+    const skill = findSkill(skillId)
+    if (!skill || skill.zone !== 'personal') return false
+    if (patch.name !== undefined) {
+      skill.name = patch.name
+      if (!skill.derivedFrom) skill.skillName = patch.name
+    }
+    if (patch.description !== undefined) skill.description = patch.description
+    if (patch.instructions !== undefined) skill.instructions = patch.instructions
+    if (patch.triggerHint !== undefined) skill.triggerHint = patch.triggerHint
+    if (patch.capabilities !== undefined) skill.capabilities = patch.capabilities.map(c => ({ ...c }))
+    if (
+      skill.personalStatus === 'draft' &&
+      skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions
+    ) {
+      skill.personalStatus = 'available'
+    }
+    return true
   }
 
   function createSkill(data: CreateSkillPayload): void {
@@ -1750,14 +1783,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     testIsRunning.value = false
   }
 
-  // 複製後跟 Agent 對話修改技能：mock 版，把使用者描述的異動附加到 instructions 上
-  const editChatHistory = ref<ChatMessage[]>([])
-  const editChatIsRunning = ref(false)
-
-  function resetEditChat(): void {
-    editChatHistory.value = []
-  }
-
   // 送審時的「AI 建議版本名稱」：優先參考使用者已經填的說明文字摘要成短標題，
   // 沒填說明時退回用技能名稱＋送審模式給一個泛用建議。使用者仍可自行編輯，
   // 這裡只是預填草稿，不是強制採用
@@ -1774,31 +1799,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
     const baseName = skill?.skillName ?? skill?.name ?? '技能'
     return mode === 'version_update' ? `${baseName}功能更新` : `${baseName}首次發布`
-  }
-
-  async function sendEditChatMessage(skillId: string, message: string): Promise<void> {
-    editChatIsRunning.value = true
-    editChatHistory.value.push({
-      id: `edit-msg-${Date.now()}`,
-      role: 'user',
-      content: message,
-    })
-    await new Promise(r => setTimeout(r, 900))
-
-    const skill = findSkill(skillId)
-    if (skill) {
-      skill.instructions = `${skill.instructions ?? ''}\n\n（依對話更新）${message}`.trim()
-      if (skill.personalStatus === 'draft' && skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions) {
-        skill.personalStatus = 'available'
-      }
-    }
-
-    editChatHistory.value.push({
-      id: `edit-msg-${Date.now() + 1}`,
-      role: 'agent',
-      content: `（Mock）已根據你的描述更新技能指令。你可以繼續補充，或關閉視窗完成修改。`,
-    })
-    editChatIsRunning.value = false
   }
 
   return {
@@ -1840,6 +1840,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     permanentlyDeleteSkill,
     createSkill,
     createPersonalSkill,
+    applyStudioPatch,
     updateSkill,
     updateSkillFiles,
     toggleSkill,
@@ -1875,9 +1876,5 @@ export const useSkillStore = defineStore('skillStore', () => {
     runAllAITests,
     resetConversation,
     sendChatMessage,
-    editChatHistory,
-    editChatIsRunning,
-    resetEditChat,
-    sendEditChatMessage,
   }
 })

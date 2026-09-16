@@ -11,7 +11,7 @@ describe('SkillManagement 統計列', () => {
     setActivePinia(createPinia())
     const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
     const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true, SkillEditChatModal: true } },
+      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
     })
     // 目前 mock 角色為管理者且有待審核個人技能，所以會多一個「待審核」chip
     // 排在最前面；它是需要行動的實心 pill 徽章（icon，不是安靜的色點），

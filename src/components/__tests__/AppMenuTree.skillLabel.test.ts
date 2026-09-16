@@ -4,8 +4,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import AppMenuTree from '../AppMenuTree.vue'
 
-describe('AppMenuTree 桌機版技能子項目命名', () => {
-  it('展開「AI 技能」群組後，子項目應為明確的頁面名稱「技能管理」，不是與群組標題同義的「技能清單」', async () => {
+describe('AppMenuTree 桌機版「AI 技能」群組子項目', () => {
+  it('展開後依序為 技能管理 / AI 賦能 / 技能測試沙盒，且不再出現舊名「技能清單」', async () => {
     setActivePinia(createPinia())
     const router = createRouter({
       history: createWebHistory(),
@@ -19,8 +19,16 @@ describe('AppMenuTree 桌機版技能子項目命名', () => {
 
     await group.trigger('click')
     const sub = wrapper.findAll('.side-panel-sub')[0]
+    const text = sub.text()
 
-    expect(sub.text()).not.toContain('技能清單')
-    expect(sub.text()).toContain('技能管理')
+    expect(text).not.toContain('技能清單')
+    expect(text).toContain('技能管理')
+    expect(text).toContain('AI 賦能')
+    expect(text).toContain('技能測試沙盒')
+    expect(text.indexOf('技能管理')).toBeLessThan(text.indexOf('AI 賦能'))
+    expect(text.indexOf('AI 賦能')).toBeLessThan(text.indexOf('技能測試沙盒'))
+
+    const studioLink = sub.findAll('a').find(a => a.text().includes('AI 賦能'))
+    expect(studioLink?.attributes('href')).toBe('/view/SkillStudio')
   })
 })

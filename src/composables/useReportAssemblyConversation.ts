@@ -37,8 +37,10 @@ export function useReportAssemblyConversation() {
       c7Push({ forUser: true, msg: '我覺得上個月那個促銷活動好像沒什麼用' });
     }, 1200);
     setTimeout(() => {
-      // demo 階段沒有專門對應促銷主題的靜態報告檔，先借用既有的銷售報告檔頂著
-      aiviewerStore.addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '促銷活動成效報告.html');
+      // demo 階段沒有專門對應促銷主題的靜態報告檔，先借用既有的銷售報告檔頂著。
+      // pan:false——鏡頭已經停在使用者剛叫出來、正在互動的報告組裝 Block 上，
+      // 這個自動補推的靜態報告不該搶鏡頭把它擠出畫面外（沿用 conv5 同一個修法）
+      aiviewerStore.addReportBlock('/justagent/sanuo_2026_06_sales_report.html', '促銷活動成效報告.html', false);
       c7Push({
         finishResponse: true,
         msg: `報告已經放到畫布上了，這樣你滿意嗎？若有不滿意的區塊，可以用「行銷報告組裝」調整內容順序。

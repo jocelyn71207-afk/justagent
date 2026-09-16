@@ -104,6 +104,15 @@
           />
         </template>
 
+        <!-- 建議建立成個人技能（ask / preview / saved），見 useSkillSuggestion -->
+        <template v-else-if="props.source.cardType === 'skillSuggest'">
+          <SkillSuggestCard
+            :suggestion="props.source.suggestion"
+            :stage="props.source.stage"
+            :skill-id="props.source.skillId"
+          />
+        </template>
+
         <!-- 處理中訊息（含 loading 動畫） -->
         <template v-else-if="props.source.isProcessing">
           <div v-html="displayMsg"></div>
@@ -155,6 +164,7 @@ import { formatFileSize, fileTypeMeta } from '@/utils/file'
 import { agentPersonaMeta } from '@/utils/agentPersona'
 import ThinkingChainCard from '@/components/AiViewer/ThinkingChainCard.vue'
 import DelegateStatusCard from '@/components/AiViewer/DelegateStatusCard.vue'
+import SkillSuggestCard from '@/components/AiViewer/SkillSuggestCard.vue'
 
 interface KnowledgeSource {
   knowledgeId: string

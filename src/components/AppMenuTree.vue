@@ -175,7 +175,7 @@
         <div class="side-panel-item side-panel-group"
           role="button" tabindex="0"
           :aria-expanded="selectedTeam.isSkillOpen"
-          :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillTest' }"
+          :class="{ active: route.path === '/view/Skills' || route.path === '/view/SkillStudio' || route.path === '/view/SkillTest' }"
           @click="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen"
           @keydown.enter.prevent="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen"
           @keydown.space.prevent="selectedTeam.isSkillOpen = !selectedTeam.isSkillOpen">
@@ -185,6 +185,9 @@
         <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
           <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }" @click="closeTeamPanel">
             <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
+          </RouterLink>
+          <RouterLink to="/view/SkillStudio" class="side-panel-item" :class="{ active: route.path === '/view/SkillStudio' }" @click="closeTeamPanel">
+            <i class="material-symbols-outlined">auto_fix_high</i><span class="side-panel-item-label">AI 賦能</span>
           </RouterLink>
           <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }" @click="closeTeamPanel">
             <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
@@ -292,6 +295,9 @@
       <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
         <RouterLink to="/view/Skills" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">auto_awesome</i>技能管理
+        </RouterLink>
+        <RouterLink to="/view/SkillStudio" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
+          <i class="material-symbols-outlined">auto_fix_high</i>AI 賦能
         </RouterLink>
         <RouterLink to="/view/SkillTest" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">science</i>技能測試沙盒
@@ -441,7 +447,7 @@ function selectCompany(item: { id: string; name: string }) {
 // 直接用網址進入某個團隊的頁面（例如帶了 ?teamId=xxx，或重新整理停在
 // /view/Skills）時，同步選中對應的團隊，並自動展開包含目前路徑的群組，
 // 否則使用中的項目可能被收合藏起來，使用者會以為選單「跳走了」
-const SKILL_PATHS = ['/view/Skills', '/view/SkillTest'];
+const SKILL_PATHS = ['/view/Skills', '/view/SkillStudio', '/view/SkillTest'];
 const RESOURCE_PATHS = ['/view/ResourceLibrary', '/view/KnowledgeBase'];
 watch(() => route.fullPath, () => {
   const queryTeamId = route.query.teamId as string | undefined;

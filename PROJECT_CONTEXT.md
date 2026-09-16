@@ -96,8 +96,9 @@
 **團隊選單面板（點「團隊功能」才出現）**
 - 團隊切換器：下拉選擇要顯示哪個團隊的內容
 - 團隊專案 → 3.2 TeamProject
-- 技能管理（可展開群組，模組尚未整理進本文件，見 `src/views/SkillManagement.vue`、`SkillTest.vue`）
-  - 所有技能
+- AI 技能（可展開群組，見 3.10）
+  - 技能管理
+  - AI 賦能
   - 技能測試沙盒
 - 共享資源庫（可展開群組，非單一頁面）
   - 共用檔案管理 → 3.4 ResourceLibrary
@@ -112,9 +113,13 @@
   - **Skill 探索**：搜尋 + 功能類型 chip 篩選，資料來源接真正的技能管理資料（`src/stores/skillStore.ts` 的 `skills`，只列出非個人草稿且啟用中的技能）；點擊卡片可透過「加入我的技能」把該技能實際裝到選定的 Agent 上（寫入該技能的 `assignedAgents`）——這裡的「加入我的技能」選單列的是 `skillStore` 的 `AVAILABLE_AGENTS`（跟 `SkillEditor.vue` 指派 chip 用的同一份固定清單），**不是** Agent 探索分頁的 Agent 目錄（`exploreStore.agents`），兩者剛好都叫「Agent」但是不同詞彙表，不要混淆
 - 詳見 `docs/superpowers/specs/2026-09-15-explore-real-data-redesign-design.md`
 
-### 3.10 技能管理（SkillManagement／SkillTest）
-- 側邊選單 side-panel 裡「技能管理」群組底下的子功能，尚未整理進本文件
-- 待補：`src/views/SkillManagement.vue`（所有技能）與 `src/views/SkillTest.vue`（技能測試沙盒）的詳細說明
+### 3.10 AI 技能（SkillManagement／SkillStudio／SkillTest）
+側邊選單 side-panel 裡「AI 技能」群組底下的三個子功能：
+- **技能管理**（`src/views/SkillManagement.vue`）：我的技能（個人區）與團隊技能範本管理、送審／版本審核流程；詳情抽屜；「編輯」時可選「直接編輯」（SkillEditor 精靈）或「跟 Agent 對話修改」（導向 AI 賦能）
+- **AI 賦能**（`src/views/SkillStudio.vue`）：對話式建立／修改／測試技能。左側跟 Agent 對話（規則式 mock，`useSkillStudioConversation`），右側「技能預覽」即時反映草稿、「測試」tab 掛 AI 快速測試。只操作個人技能（zone personal）；`?skillId=` 進修改模式、`?tab=test` 直接切到測試
+- **技能測試沙盒**（`src/views/SkillTest.vue`）：對話測試與 AI 快速測試，可切換版本
+
+專案內（AiViewer）Agent 完成任務後可主動建議「把這個流程建立成個人技能」（`useSkillSuggestion` ＋ `SkillSuggestCard`，conv4 為第一個接入的腳本）；確認後真的寫入 `skillStore`（`creationMethod: 'ai_assisted'`），並附連結直達 AI 賦能繼續調整與測試。
 
 ### 3.11 知識庫管理（KnowledgeBase）
 - 側邊選單 side-panel 裡「共享資源庫」群組底下的子功能，跟 3.4 共用檔案管理是不同頁面
