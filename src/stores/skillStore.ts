@@ -134,6 +134,7 @@ export interface Skill {
   reviewFeedback?: string
   aiAnalysis?: string[]
   files?: SkillFile[]
+  composition?: { sectionIds: string[] }  // 由行銷積木組裝建立的技能；有這欄位就走積木方式
 }
 
 export interface SkillFile {
@@ -155,6 +156,7 @@ export interface CreateSkillPayload {
   files?: SkillFile[]
   capabilities?: SkillCapability[]
   creationMethod?: 'ai_assisted' | 'manual'
+  composition?: { sectionIds: string[] }
 }
 
 export interface UpdateSkillPayload {
@@ -169,7 +171,7 @@ export interface UpdateSkillPayload {
 }
 
 // AI 賦能對話修改用：只允許動這五個內容欄位，不碰狀態／版本／來源關係
-export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities'>>
+export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities' | 'composition'>>
 
 export interface DraftSkill {
   id: string
@@ -1242,6 +1244,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       assignedAgents: data.assignedAgents,
       files: data.files ?? [],
       capabilities: data.capabilities ?? [],
+      composition: data.composition ? { sectionIds: [...data.composition.sectionIds] } : undefined,
     })
     return id
   }
@@ -1260,6 +1263,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (patch.instructions !== undefined) skill.instructions = patch.instructions
     if (patch.triggerHint !== undefined) skill.triggerHint = patch.triggerHint
     if (patch.capabilities !== undefined) skill.capabilities = patch.capabilities.map(c => ({ ...c }))
+    if (patch.composition !== undefined) skill.composition = patch.composition ? { sectionIds: [...patch.composition.sectionIds] } : undefined
     if (
       skill.personalStatus === 'draft' &&
       skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions

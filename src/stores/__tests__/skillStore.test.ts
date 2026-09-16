@@ -625,6 +625,21 @@ describe('skillStore', () => {
       expect(store.findSkill('sys-cs-001')!.name).toBe(before)
       expect(store.applyStudioPatch('nope-000', { name: 'x' })).toBe(false)
     })
+
+    it('createPersonalSkill 與 applyStudioPatch 都能寫入 composition（深拷貝）', () => {
+      const store = useSkillStore()
+      const ids = ['promo_kpi', 'ta_gender']
+      const id = store.createPersonalSkill({
+        name: '行銷週報', instructions: '依序產出以下章節：\n1. 促銷核心 KPI', triggerHint: 't',
+        isEnabled: true, assignedAgents: [], composition: { sectionIds: ids }, creationMethod: 'manual',
+      })
+      const s = store.findSkill(id)!
+      expect(s.composition).toEqual({ sectionIds: ['promo_kpi', 'ta_gender'] })
+      ids.push('ch_kpi')
+      expect(s.composition!.sectionIds).toHaveLength(2)
+      expect(store.applyStudioPatch(id, { composition: { sectionIds: ['ch_kpi'] } })).toBe(true)
+      expect(store.findSkill(id)!.composition).toEqual({ sectionIds: ['ch_kpi'] })
+    })
   })
 
   describe('覆蓋能力 capabilities', () => {
