@@ -1,3 +1,5 @@
+import type { StudioSnapshot } from '@/composables/useSkillStudioConversation'
+
 /** Block 相關 */
 
 // 單一個 AiViewerBlock 的定義
@@ -36,6 +38,7 @@ type BlockDataMap = {
   WORD: any;
   OTHER: any;
   REPORT: ReportAssemblyBlockData; // 報告組裝（可拖曳排序、積木盒加入/移除章節）
+  SKILL: SkillBuilderBlockData; // 技能建立（block 內自帶對話／預覽／測試）
 }
 
 // block type 應該也是 file type 的定義, 實際還要同步於後端的定義
@@ -59,6 +62,21 @@ type SourceChart = {
 type ReportAssemblyBlockData = {
   sectionIds: string[]
   templateName: string | null
+}
+
+/** 技能建立 Block */
+
+// 由 Agent 建議放上 block 時的來源脈絡；工具箱空白建立時為 null
+type SkillBlockOrigin = {
+  conversationId: string
+  reason: string
+}
+
+// block 內對話與草稿的可序列化快照 + 目前 tab
+type SkillBuilderBlockData = {
+  snapshot: StudioSnapshot
+  origin: SkillBlockOrigin | null
+  activeTab: 'chat' | 'preview' | 'test'
 }
 
 /** 工具箱相關 */
@@ -95,6 +113,8 @@ export type {
   BlockType,
   SourceChart,
   ReportAssemblyBlockData,
+  SkillBlockOrigin,
+  SkillBuilderBlockData,
   ToolboxItem,
 
   MemoItem,

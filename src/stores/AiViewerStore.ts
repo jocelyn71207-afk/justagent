@@ -1,9 +1,11 @@
 import { ref, computed } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import { defineStore } from 'pinia'
-import type { AiViewerBlock, BlockTypeData, BlockType, MemoItem, ReportAssemblyBlockData } from '@/types/AiViewer'
+import type { AiViewerBlock, BlockTypeData, BlockType, MemoItem, ReportAssemblyBlockData, SkillBuilderBlockData, SkillBlockOrigin } from '@/types/AiViewer'
 import { isTouchDeviceFn } from '@/utils/utils'
 import popDialog from '@/services/popDialog';
+import { useSkillStudioConversation } from '@/composables/useSkillStudioConversation'
+import type { SkillDraft } from '@/composables/useSkillStudioConversation'
 import {
   imgFileTypes,
   pdfFileTypes,
@@ -1047,6 +1049,58 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     return true;
   }
 
+  // 建立技能建立 Block（功能型：block 內自帶對話／預覽／測試）。
+  // 初始快照借一個暫時的 composable 實例產生，讓 store 與 block 元件用同一套開場與預填規則
+  let _skillBuilderSeq = 0;
+  function addSkillBuilderBlock(init?: {
+    prefill?: Partial<SkillDraft>
+    openingMessage?: string
+    origin?: SkillBlockOrigin
+  }): string {
+    const BLOCK_W = 640;
+    const BLOCK_H = 750;
+    const GAP = 24;
+    const slot = aiViewerBlocks.value.filter((b: any) => b.id?.startsWith('skillbuilder-')).length;
+    const othersBottom = aiViewerBlocks.value
+      .filter((b: any) => !b.id?.startsWith('skillbuilder-'))
+      .reduce((max: number, b: any) => Math.max(max, (b.y ?? 0) + (b.height ?? 0)), centerSpaceY);
+    const seed = useSkillStudioConversation();
+    seed.startCreate(init?.prefill, init?.openingMessage);
+    const id = `skillbuilder-${Date.now()}-${++_skillBuilderSeq}`;
+    const data: SkillBuilderBlockData = {
+      snapshot: seed.toSnapshot(),
+      origin: init?.origin ?? null,
+      activeTab: 'chat',
+    };
+    const temp: AiViewerBlock = {
+      id,
+      x: centerSpaceX + slot * (BLOCK_W + GAP),
+      y: othersBottom + GAP,
+      width: BLOCK_W,
+      height: BLOCK_H,
+      blockName: init?.prefill?.name?.trim() || '技能建立',
+      z: calcNextZindex(),
+      data: { blockType: 'SKILL', data },
+    };
+    aiViewerBlocks.value.push(temp);
+    panToTarget.value = { x: temp.x, y: temp.y, width: temp.width, height: temp.height };
+    nowChoiceAiViewerId.value = id;
+    return id;
+  }
+
+  // block 元件把最新快照／tab 寫回；快照的名稱同步成 blockName
+  function updateSkillBuilderBlock(blockId: string, patch: Partial<SkillBuilderBlockData>): boolean {
+    const block = (aiViewerBlocks.value as AiViewerBlock[]).find((b) => b.id === blockId);
+    if (!block || block.data.blockType !== 'SKILL') return false;
+    if (patch.snapshot) {
+      block.data.data.snapshot = patch.snapshot;
+      block.blockName = patch.snapshot.draft.name.trim() || '技能建立';
+    }
+    if (patch.activeTab) block.data.data.activeTab = patch.activeTab;
+    if (patch.origin !== undefined) block.data.data.origin = patch.origin;
+    return true;
+  }
+
   // TODO... 開發測試用 end
 
 
@@ -1116,6 +1170,8 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     addReportAssemblyBlock,
     updateReportAssemblySections,
     saveReportAssemblyTemplate,
+    addSkillBuilderBlock,
+    updateSkillBuilderBlock,
 
     resetAiViewerState,
   }
