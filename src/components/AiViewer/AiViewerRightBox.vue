@@ -825,11 +825,11 @@ import { storeToRefs } from 'pinia'
 import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { useJourneyStore } from '@/stores/journeyStore'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
-import { useRouter } from 'vue-router';
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
 import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
 import { useSkillSuggestion } from '@/composables/useSkillSuggestion';
 import type { ToolboxItem } from '@/types/AiViewer';
+import { TOOL_BLOCK_META } from '@/constants/toolBlocks';
 import AiViewerRecord from '@/components/AiViewer/AiViewerRecord.vue';
 import AgentHandoffDivider from '@/components/AiViewer/AgentHandoffDivider.vue';
 import KnowledgeSourceDrawer from '@/components/AiViewer/KnowledgeSourceDrawer.vue';
@@ -866,7 +866,6 @@ const journeyStore = useJourneyStore()
 const { journeyStarted } = storeToRefs(journeyStore)
 const knowledgeStore = useKnowledgeStore();
 const { knowledgeList } = storeToRefs(knowledgeStore);
-const router = useRouter();
 const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
 const showJourneyModifyPill = ref(false)
@@ -1019,7 +1018,7 @@ const { getBlockTypeByFileMime } = aiviewerStore;
 // 工具箱選單資料（本輪只有「行銷報告生成」可點，其餘為即將推出的佔位項目）
 const toolboxItems: ToolboxItem[] = [
   { id: 'reportAssembly', icon: 'bar_chart', name: '行銷報告生成', description: '拖曳組裝行銷週報章節', enabled: true },
-  { id: 'skillBuilder', icon: 'auto_fix_high', name: '技能建立', description: '用對話建立、測試個人技能', enabled: true },
+  { id: 'skillBuilder', icon: TOOL_BLOCK_META.SKILL!.icon, name: TOOL_BLOCK_META.SKILL!.label, description: '用對話建立、測試個人技能', enabled: true },
   { id: 'imageGen', icon: 'palette', name: '圖像生成', description: '即將推出', enabled: false },
   { id: 'musicGen', icon: 'music_note', name: '創作音樂', description: '即將推出', enabled: false },
   { id: 'deepSearch', icon: 'search', name: 'Deep Search', description: '即將推出', enabled: false },
@@ -2443,12 +2442,10 @@ function handleChatAreaClick(e: MouseEvent) {
       popDialog.toast('這個區塊已不在畫布上');
       return;
     }
+    // 若正開著某個 block 的全螢幕，先關掉再平移鏡頭，不然目標 block 會被蓋在全螢幕底下看不到
+    fullAiViewerBlockId.value = null;
     panToTarget.value = { x: target.x, y: target.y, width: target.width, height: target.height };
     nowChoiceAiViewerId.value = target.id;
-    return;
-  }
-  if (action === 'goto-skill-management') {
-    router.push({ name: 'SkillManagement' });
     return;
   }
   if (action === 'conv6-report-channel') { conv6ChooseReport('channel'); return; }

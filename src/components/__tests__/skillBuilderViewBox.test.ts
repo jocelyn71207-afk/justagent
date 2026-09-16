@@ -110,5 +110,8 @@ describe('skillBuilderViewBox', () => {
     expect(wrapper.find('.skb-missing-bar').text()).toContain('這顆技能已不存在')
     expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
     expect(skillStore.findSkill('personal-gone')).toBeUndefined()
+    // detach 後的狀態要寫回 block data，不然其他實例／重新掛載仍看到指向已刪除技能的舊快照
+    expect(block.data.data.snapshot.savedSkillId).toBeNull()
+    expect(block.data.data.snapshot.mode).toBe('create')
   })
 })

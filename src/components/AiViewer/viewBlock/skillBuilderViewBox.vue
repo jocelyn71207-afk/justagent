@@ -12,16 +12,18 @@
           <i class="material-symbols-outlined">{{ t.icon }}</i>{{ t.label }}
         </button>
       </div>
-      <!-- 同一顆技能要做長時間調整就到 AI 賦能頁；沒儲存前沒有 skillId 可帶 -->
-      <button
-        type="button"
-        class="custom-btn skb-open-studio"
-        :disabled="!conv.savedSkillId.value"
-        v-tooltip="conv.savedSkillId.value ? '在 AI 賦能開啟' : '先儲存技能'"
-        @click="openStudio"
-      >
-        <i class="material-symbols-outlined">open_in_new</i>在 AI 賦能開啟
-      </button>
+      <!-- 同一顆技能要做長時間調整就到 AI 賦能頁；沒儲存前沒有 skillId 可帶。
+           tooltip 掛在外層 span：disabled 的 button 不會觸發 hover 事件，「先儲存技能」的提示就出不來 -->
+      <span class="skb-open-studio-wrap" v-tooltip="conv.savedSkillId.value ? '在 AI 賦能開啟' : '先儲存技能'">
+        <button
+          type="button"
+          class="custom-btn skb-open-studio"
+          :disabled="!conv.savedSkillId.value"
+          @click="openStudio"
+        >
+          <i class="material-symbols-outlined">open_in_new</i>在 AI 賦能開啟
+        </button>
+      </span>
     </div>
 
     <div v-if="props.source.data.origin && activeTab === 'chat'" class="skb-origin-bar">
@@ -119,6 +121,9 @@ function applySnapshot(snap: StudioSnapshot) {
   if (snap.savedSkillId && !skillStore.findSkill(snap.savedSkillId)) {
     missingSkill.value = true
     conv.detachSavedSkill()
+    // detach 後的狀態要寫回 block data，不然「已退回建立模式」只存在這個實例的記憶體裡，
+    // 其他實例、或這個 block 之後重新掛載時看到的仍是指向已刪除技能的舊快照
+    aiviewerStore.updateSkillBuilderBlock(props.id, { snapshot: conv.toSnapshot() })
   } else {
     missingSkill.value = false
   }
@@ -138,13 +143,15 @@ watch(
   { deep: true }
 )
 
-// 別的實例（全螢幕／畫布）寫回的快照 → 只在自己沒有未儲存變更、或對方訊息更多時套用，
-// 避免打字中被覆寫
+// 別的實例（全螢幕／畫布）寫回的快照 → 只要內容跟自己現在的不一樣就套用（last-write-wins）。
+// 舊版用「!isDirty || 對方訊息更多」擋，但 isDirty 的基準是「上次 hydrate」，不是「已存的技能」，
+// 會導致自己這邊還有未儲存變更時，永遠看不到對方剛儲存／改名的結果——JSON 相等比對已經
+// 足夠避免把自己剛寫出去的快照當成外部變動再套用一次（見下方 applyingExternal 視窗）
 watch(
   () => props.source.data.snapshot,
   (snap) => {
     if (JSON.stringify(snap) === JSON.stringify(conv.toSnapshot())) return
-    if (!conv.isDirty.value || snap.messages.length > conv.messages.value.length) applySnapshot(snap)
+    applySnapshot(snap)
   },
   { deep: true }
 )

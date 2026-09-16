@@ -206,7 +206,7 @@ describe('useSkillStudioConversation', () => {
     expect(c.draft.value.instructions).toBe('1. a')
   })
 
-  it('toSnapshot / hydrate 往返：內容一致、hydrate 後 isDirty=false、之後新訊息 id 不重複', async () => {
+  it('toSnapshot / hydrate 往返：內容一致、create 模式下 hydrate 後 isDirty=true（內容與空白不同）、之後新訊息 id 不重複', async () => {
     const a = useSkillStudioConversation()
     a.startCreate()
     const p = a.send('幫我建立一個能查 ERP 庫存的技能')
@@ -221,7 +221,8 @@ describe('useSkillStudioConversation', () => {
     b.hydrate(snap)
     expect(b.draft.value).toEqual(snap.draft)
     expect(b.messages.value.map(m => m.id)).toEqual(snap.messages.map(m => m.id))
-    expect(b.isDirty.value).toBe(false)
+    // 未儲存過（create 模式），基準是空草稿，所以 hydrate 後仍算「未儲存變更」
+    expect(b.isDirty.value).toBe(true)
     // 深拷貝：改 b 不影響 snap
     b.updateFiles([])
     b.draft.value.capabilities.push({ name: 'x', description: '' })
@@ -232,6 +233,19 @@ describe('useSkillStudioConversation', () => {
     await q
     const ids = b.messages.value.map(m => m.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('hydrate 基準取自已儲存技能：loadSkill 後 toSnapshot／新實例 hydrate，isDirty 應為 false；再改草稿才變 true', () => {
+    const a = useSkillStudioConversation()
+    a.loadSkill('personal-001')
+    const snap = a.toSnapshot()
+
+    const b = useSkillStudioConversation()
+    b.hydrate(snap)
+    expect(b.isDirty.value).toBe(false)
+
+    b.draft.value.name = '改個名字'
+    expect(b.isDirty.value).toBe(true)
   })
 
   it('detachSavedSkill：清掉 savedSkillId、退回 create、isDirty 為 true', () => {

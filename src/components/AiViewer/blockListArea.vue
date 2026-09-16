@@ -30,7 +30,7 @@
          }">
         <div class="block-info-box">
           <div class="block-name">{{ item.blockName }}</div>
-          <div class="block-size">{{ item.data.blockType }}．2026年2月23日 14:35建立</div>
+          <div class="block-size">{{ TOOL_BLOCK_META[item.data.blockType as BlockType]?.label ?? item.data.blockType }}．2026年2月23日 14:35建立</div>
         </div>
         <i :class="['material-symbols-outlined block-more-btn', { active: showMoreOptionsId === item.id }]"
           v-tooltip="'more'"
@@ -61,6 +61,8 @@ import { httpService } from '@/services/http';
 import popDialog from '@/services/popDialog';
 import { formatFileSize } from '@/utils/file';
 import {initClickOutsideListener } from "@/utils/utils";
+import { TOOL_BLOCK_META } from '@/constants/toolBlocks';
+import type { BlockType } from '@/types/AiViewer';
 
 const props = defineProps<{
   setMainStagePosition: (x: number, y: number) => void; // 設定畫布座標方法

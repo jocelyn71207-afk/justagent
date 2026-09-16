@@ -37,6 +37,8 @@
     &.is-active { background: var(--primary-a08); color: $color_main_1; }
   }
 
+  .skb-open-studio-wrap { display: inline-flex; }
+
   .skb-open-studio {
     gap: 4px;
     font-size: 12px;

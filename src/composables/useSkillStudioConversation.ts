@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { ChatMessage, SkillCapability, SkillFile } from '@/stores/skillStore'
+import type { ChatMessage, Skill, SkillCapability, SkillFile } from '@/stores/skillStore'
 
 // AI 賦能（SkillStudio）的對話狀態與規則式 mock 回覆。
 // 這裡是頁面唯一的狀態來源：左側對話、右側預覽都只讀這裡的 draft／messages。
@@ -33,6 +33,18 @@ export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描�
 
 export function emptyDraft(): SkillDraft {
   return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [] }
+}
+
+// 由已儲存的技能還原出一份草稿（loadSkill／hydrate 基準共用，避免兩處各寫一次欄位對應）
+export function draftFromSkill(s: Skill): SkillDraft {
+  return {
+    name: s.name,
+    description: s.description ?? '',
+    instructions: s.instructions ?? '',
+    triggerHint: s.triggerHint ?? '',
+    capabilities: (s.capabilities ?? []).map(c => ({ ...c })),
+    files: [...(s.files ?? [])],
+  }
 }
 
 const ACTION_CONFIRM: StudioAction = { id: 'confirm', label: '看起來沒問題，儲存' }
@@ -197,14 +209,7 @@ export function useSkillStudioConversation() {
     if (!s || s.zone !== 'personal') return false
     mode.value = 'edit'
     savedSkillId.value = skillId
-    draft.value = {
-      name: s.name,
-      description: s.description ?? '',
-      instructions: s.instructions ?? '',
-      triggerHint: s.triggerHint ?? '',
-      capabilities: (s.capabilities ?? []).map(c => ({ ...c })),
-      files: [...(s.files ?? [])],
-    }
+    draft.value = draftFromSkill(s)
     snapshot.value = serialize(draft.value)
     messages.value = []
     push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
@@ -273,7 +278,10 @@ export function useSkillStudioConversation() {
     savedSkillId.value = copy.savedSkillId
     draft.value = copy.draft
     messages.value = copy.messages
-    snapshot.value = serialize(draft.value)
+    // dirty 基準取自「目前已儲存的內容」而非「這份快照本身」：isDirty 才會是
+    // 「跟已存的技能（或空白，若還沒存過）不一樣」，而不是「跟上次 hydrate 不一樣」
+    const saved = copy.savedSkillId ? store.findSkill(copy.savedSkillId) : undefined
+    snapshot.value = saved ? serialize(draftFromSkill(saved)) : serialize(emptyDraft())
     // 接續既有訊息 id，避免之後 push 撞號
     seq = copy.messages.reduce((max, m) => Math.max(max, Number(m.id.replace('studio-', '')) || 0), 0)
   }
