@@ -10,7 +10,9 @@
 
       <div class="skill-studio-layout">
         <div class="studio-chat-col">
+          <SkillMethodChooser v-if="!conv.draft.value.method" @choose="conv.chooseMethod" />
           <SkillStudioChat
+            v-else-if="conv.draft.value.method === 'chat'"
             :mode="conv.mode.value"
             :skill-name="conv.draft.value.name"
             :saved-skill-id="conv.savedSkillId.value"
@@ -22,6 +24,25 @@
             @switch-skill="onSwitchSkill"
             @new-skill="onNewSkill"
           />
+          <div v-else class="studio-composer-col">
+            <div class="studio-composer-head">
+              <span class="ssc-mode-chip ssc-mode-chip--edit">
+                <i class="material-symbols-outlined">dashboard_customize</i>{{ conv.mode.value === 'create' ? '用行銷積木組裝' : `修改：${conv.draft.value.name}` }}
+              </span>
+              <button type="button" class="custom-btn studio-new-btn" @click="onNewSkill">
+                <i class="material-symbols-outlined">add</i>建立新技能
+              </button>
+            </div>
+            <SkillBlockComposer
+              :name="conv.draft.value.name"
+              :description="conv.draft.value.description"
+              :section-ids="conv.draft.value.sectionIds"
+              :name-conflict="nameConflict"
+              @update:name="v => conv.updateBlocks({ name: v })"
+              @update:description="v => conv.updateBlocks({ description: v })"
+              @update:section-ids="ids => conv.updateBlocks({ sectionIds: ids })"
+            />
+          </div>
         </div>
         <div class="studio-side-col">
           <SkillStudioPreview
@@ -48,6 +69,8 @@ import type { LocationQuery } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillStudioChat from '@/components/Skill/SkillStudioChat.vue'
 import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
+import SkillMethodChooser from '@/components/Skill/SkillMethodChooser.vue'
+import SkillBlockComposer from '@/components/Skill/SkillBlockComposer.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import { useSkillStudioConversation } from '@/composables/useSkillStudioConversation'
 import popDialog from '@/services/popDialog'

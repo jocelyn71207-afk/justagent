@@ -228,8 +228,12 @@ export function useSkillStudioConversation() {
     if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
+  // 選方式本身不算「有內容變更」：草稿還乾淨（沒有未儲存變更）時，把基準線一併帶上
+  // method，避免使用者才剛選完方式、什麼都還沒填，切技能／建立新技能就跳「放棄變更」確認
   function chooseMethod(method: StudioMethod): void {
+    const wasClean = !isDirty.value
     draft.value = { ...draft.value, method }
+    if (wasClean) snapshot.value = serialize(draft.value)
     if (method === 'chat' && messages.value.length === 0) push({ role: 'agent', content: DEFAULT_OPENING_MESSAGE })
   }
 

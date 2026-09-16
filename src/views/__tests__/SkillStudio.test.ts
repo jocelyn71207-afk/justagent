@@ -10,6 +10,11 @@ vi.mock('@/services/popDialog', () => ({
   default: { toast: vi.fn(), confirm: vi.fn(), alert: vi.fn() },
 }))
 
+async function chooseChat(wrapper: any) {
+  await wrapper.findAll('.smc-card')[0].trigger('click')
+  await flushPromises()
+}
+
 async function mountAt(query: Record<string, string> = {}) {
   const router = createRouter({
     history: createWebHistory(),
@@ -49,6 +54,9 @@ describe('SkillStudio', () => {
 
   it('無 query：建立模式，左側 chip「建立新技能」，右側預覽空狀態', async () => {
     const { wrapper } = await mountAt()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+    expect(wrapper.find('.ssc-mode-chip').exists()).toBe(false)
+    await chooseChat(wrapper)
     expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
     expect(wrapper.text()).toContain('尚未命名的技能')
   })
@@ -62,13 +70,13 @@ describe('SkillStudio', () => {
   it('?skillId= Library 技能：toast 提示並退回建立模式', async () => {
     const { wrapper } = await mountAt({ skillId: 'sys-cs-001' })
     expect(popDialog.toast).toHaveBeenCalledWith('Library 技能請先在技能管理複製為個人技能')
-    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
   })
 
   it('?skillId= 不存在：toast「找不到這個技能」並退回建立模式', async () => {
     const { wrapper } = await mountAt({ skillId: 'nope-999' })
     expect(popDialog.toast).toHaveBeenCalledWith('找不到這個技能')
-    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
   })
 
   it('?tab=test 預設切到測試 tab', async () => {
@@ -80,6 +88,7 @@ describe('SkillStudio', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
       const { wrapper } = await mountAt()
+      await chooseChat(wrapper)
       const store = useSkillStore()
       const before = store.myPersonalSkills.length
       const input = wrapper.find('.SkillStudioChat input.custom-input')
@@ -101,6 +110,7 @@ describe('SkillStudio', () => {
 
   it('切換技能下拉：無未儲存變更時直接切換', async () => {
     const { wrapper } = await mountAt()
+    await chooseChat(wrapper)
     await wrapper.find('.ssc-skill-select').setValue('personal-001')
     await flushPromises()
     expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
@@ -110,6 +120,7 @@ describe('SkillStudio', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
       const { wrapper } = await mountAt()
+      await chooseChat(wrapper)
       const input = wrapper.find('.SkillStudioChat input.custom-input')
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
       await input.trigger('keydown.enter')
@@ -139,12 +150,50 @@ describe('SkillStudio', () => {
     await router.push({ path: '/view/SkillStudio' })
     await flushPromises()
     expect(popDialog.confirm).not.toHaveBeenCalled()
-    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
   })
 
   it('同一路由 query 變化：找不到的 skillId 退回建立模式並強制回到預覽 tab', async () => {
     const { wrapper } = await mountAt({ skillId: 'nope-999', tab: 'test' })
     expect(popDialog.toast).toHaveBeenCalledWith('找不到這個技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
     expect(wrapper.findAll('.ssp-tab-btn')[0].classes()).toContain('is-active')
+  })
+
+  it('選「用行銷積木組裝」：左欄變成積木面板；勾章節、命名、儲存 → 個人技能有 composition', async () => {
+    const { wrapper } = await mountAt()
+    await wrapper.findAll('.smc-card')[1].trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.studio-chat-col .SkillBlockComposer').exists()).toBe(true)
+    expect(wrapper.find('.SkillStudioChat').exists()).toBe(false)
+    await wrapper.find('.sbc-name-input').setValue('行銷週報')
+    await wrapper.findAll('.sbc-palette-item').find(i => i.text().includes('活動排行'))!.find('.sbc-add-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.ssp-title').text()).toBe('行銷週報')
+    expect(wrapper.text()).toContain('活動排行：各促銷活動帶動效果排行')
+    await wrapper.find('.ssp-save-btn').trigger('click')
+    await flushPromises()
+    const store = useSkillStore()
+    expect(store.myPersonalSkills[0].composition).toEqual({ sectionIds: ['promo_ranking'] })
+    expect(wrapper.find('.skb-after-save-bar').exists()).toBe(false) // 頁面沒有畫布，不提供產報告
+  })
+
+  it('?skillId= 指向有 composition 的技能：左欄直接是積木面板且勾選還原', async () => {
+    setActivePinia(createPinia())
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '渠道週報', instructions: '依序產出以下章節：\n1. 渠道核心 KPI', triggerHint: 't', isEnabled: true, assignedAgents: [], composition: { sectionIds: ['ch_kpi'] } })
+    const { wrapper } = await mountAt({ skillId: id })
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
+    expect(wrapper.findAll('.sbc-list .sbc-item-name').map(n => n.text())).toEqual(['渠道核心 KPI'])
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+  })
+
+  it('積木方式的左欄也有「建立新技能」，點擊回到方式選擇', async () => {
+    const { wrapper } = await mountAt()
+    await wrapper.findAll('.smc-card')[1].trigger('click')
+    await flushPromises()
+    await wrapper.find('.studio-new-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
   })
 })
