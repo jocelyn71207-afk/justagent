@@ -5,52 +5,9 @@
     margin: 0 0 8px;
   }
 
-  .ssg-card {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    border: 1px solid var(--divider-a50);
-    border-radius: 10px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    background: var(--surface);
-  }
-
-  .ssg-icon {
-    font-size: 20px;
-    line-height: 1;
-    color: $color_main_1;
-    flex-shrink: 0;
-  }
-
-  .ssg-card-body {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
   .ssg-name {
     font-weight: 700;
     color: var(--text);
-  }
-
-  .ssg-row {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.55;
-  }
-
-  .ssg-label {
-    font-weight: 600;
-    color: var(--text);
-    margin-right: 6px;
-  }
-
-  .ssg-steps {
-    margin: 4px 0 0;
-    padding-left: 18px;
-    li { margin-bottom: 2px; }
   }
 
   .ssg-links {

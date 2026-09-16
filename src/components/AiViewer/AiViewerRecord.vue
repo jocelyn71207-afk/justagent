@@ -104,12 +104,12 @@
           />
         </template>
 
-        <!-- 建議建立成個人技能（ask / preview / saved），見 useSkillSuggestion -->
+        <!-- 建議建立成個人技能（ask / placed），見 useSkillSuggestion -->
         <template v-else-if="props.source.cardType === 'skillSuggest'">
           <SkillSuggestCard
             :suggestion="props.source.suggestion"
             :stage="props.source.stage"
-            :skill-id="props.source.skillId"
+            :block-id="props.source.blockId"
           />
         </template>
 

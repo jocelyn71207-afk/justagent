@@ -2428,10 +2428,6 @@ function handleChatAreaClick(e: MouseEvent) {
   if (action.startsWith('skill-suggest-') && skillSuggestion.handleAction(action, el.dataset.id ?? '')) {
     return;
   }
-  if (action === 'goto-skill-studio') {
-    router.push({ name: 'SkillStudio', query: { skillId: el.dataset.value ?? '', tab: 'test' } });
-    return;
-  }
   if (action === 'conv7-satisfied') {
     conv7Satisfied();
     return;
@@ -2887,7 +2883,7 @@ function conv4InitFlow() {
         sources: CONV4_SOURCES,
       });
       c4Scroll();
-      setTimeout(() => skillSuggestion.offer({ push: c4Push, scroll: c4Scroll }, CONV4_SKILL_SUGGESTION), 600);
+      setTimeout(() => skillSuggestion.offer({ push: c4Push, scroll: c4Scroll, conversationId: 'conv4' }, CONV4_SKILL_SUGGESTION), 600);
     }, 1800);
   }, 300);
 }
