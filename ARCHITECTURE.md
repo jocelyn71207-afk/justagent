@@ -283,6 +283,7 @@ onUnmounted(() => {
 - 每個 Block 用 `vue3-drag-resize` 包裝，綁定 store 中的 `x, y, width, height, z`
 - Block 內容依 `blockType` 渲染不同子元件（PDF / Excel / Image…）
 - 拖動 / 縮放結果直接更新 store 中的 block 物件
+- `blockType` 分兩類：檔案型（PDF/EXCEL/PPT/IMAGE/CHART/TXT/HTML/MD/WORD/OTHER）與功能型（REPORT、SKILL）。功能型的 icon／label 由 `src/constants/toolBlocks.ts` 的 `TOOL_BLOCK_META` 統一提供，`AiViewerContentBox` 依此掛 `is-tool` 樣式與 header 徽章；SKILL 區塊的狀態以 `StudioSnapshot` 存在 block data，由 `viewBlock/skillBuilderViewBox.vue` hydrate／寫回
 
 ### 碰撞偵測（createPos）
 

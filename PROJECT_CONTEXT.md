@@ -45,11 +45,12 @@
 
 ### 3.3 AI 畫布編輯器（AiViewer）
 - 核心功能：使用 Konva.js 的拖拉縮放畫布
-- 可建立多種內容**區塊（Block）**：PDF、Excel、PPT、圖片、Markdown、HTML、TXT、Word、Chart
+- 可建立多種內容**區塊（Block）**：檔案型 PDF、Excel、PPT、圖片、Markdown、HTML、TXT、Word、Chart；**功能型** REPORT（報告組裝）、SKILL（技能建立）。功能型區塊在畫布上以實色卡片＋header 徽章與檔案區塊區隔，代表「可操作的工具」而不是「一份檔案」
 - 區塊操作：建立、複製/貼上（Cmd+C/V）、刪除、重新命名、拖移、縮放
 - 多選模式（Multi-select）：可同時移動多個區塊
 - 便條紙（Memo）：區塊層級的評論 / 標記系統
 - 側邊面板：區塊列表、評論列表、檔案列表、對話紀錄
+- 工具箱（輸入區 ⚒）：「行銷報告生成」放 REPORT 區塊；「技能建立」放 SKILL 區塊。SKILL 區塊內自帶「對話／預覽／測試」三個 tab，重用 AI 賦能的零件，建立、修改、測試個人技能都在區塊內完成，並可「在 AI 賦能開啟」帶到獨立頁面
 
 ### 3.4 共用檔案管理（ResourceLibrary）
 - 側邊選單「共享資源庫」群組底下的子項目之一（另一個子項目是 3.11 知識庫管理），
@@ -119,7 +120,7 @@
 - **AI 賦能**（`src/views/SkillStudio.vue`）：對話式建立／修改／測試技能。左側跟 Agent 對話（規則式 mock，`useSkillStudioConversation`），右側「技能預覽」即時反映草稿、「測試」tab 掛 AI 快速測試。只操作個人技能（zone personal）；`?skillId=` 進修改模式、`?tab=test` 直接切到測試
 - **技能測試沙盒**（`src/views/SkillTest.vue`）：對話測試與 AI 快速測試，可切換版本
 
-專案內（AiViewer）Agent 完成任務後可主動建議「把這個流程建立成個人技能」（`useSkillSuggestion` ＋ `SkillSuggestCard`，conv4 為第一個接入的腳本）；確認後真的寫入 `skillStore`（`creationMethod: 'ai_assisted'`），並附連結直達 AI 賦能繼續調整與測試。
+專案內（AiViewer）Agent 完成任務後可主動建議「把這個流程建立成個人技能」（`useSkillSuggestion` ＋ `SkillSuggestCard`，conv4 為第一個接入的腳本）；使用者按「是」後直接在畫布放上一個已預填的 SKILL 區塊（含來源脈絡），確認、調整、儲存、測試都在區塊內進行，河道只回一則「已放上區塊」與「前往區塊」連結。
 
 ### 3.11 知識庫管理（KnowledgeBase）
 - 側邊選單 side-panel 裡「共享資源庫」群組底下的子功能，跟 3.4 共用檔案管理是不同頁面
