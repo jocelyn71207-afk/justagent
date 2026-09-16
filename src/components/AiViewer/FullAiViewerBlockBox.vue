@@ -46,6 +46,17 @@
         :id="fullAiViewerBlockId || ''"
         :source="blockData" />
 
+      <!-- 報告組裝（功能型） -->
+      <reportAssemblyViewBox v-if="blockData.blockType === 'REPORT'"
+        :id="fullAiViewerBlockId || ''"
+        :source="blockData" />
+
+      <!-- 技能建立（功能型） -->
+      <skillBuilderViewBox v-if="blockData.blockType === 'SKILL'"
+        :isFullView="true"
+        :id="fullAiViewerBlockId || ''"
+        :source="blockData" />
+
     </div>
   </div>
 </template>
@@ -62,6 +73,8 @@ import txtViewBox from '@/components/AiViewer/viewBlock/txtViewBox.vue';
 import htmlFileViewBox from '@/components/AiViewer/viewBlock/htmlFileViewBox.vue';
 import imageViewBox from '@/components/AiViewer/viewBlock/imageViewBox.vue';
 import markdownViewBox from '@/components/AiViewer/viewBlock/markdownViewBox.vue';
+import reportAssemblyViewBox from '@/components/AiViewer/viewBlock/reportAssemblyViewBox.vue';
+import skillBuilderViewBox from '@/components/AiViewer/viewBlock/skillBuilderViewBox.vue';
 
 const aiviewerStore = useAiviewerStore();
 const { fullAiViewerBlockId } = storeToRefs(aiviewerStore);  // 單一小區塊進入放大滿版

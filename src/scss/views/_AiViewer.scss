@@ -1442,6 +1442,30 @@
     }
   }
 
+  // 功能型 block（REPORT／SKILL）：實色卡片＋主色淺底 header＋徽章，
+  // 一眼看出「這是可以操作的工具」而不是「一份檔案」
+  &.is-tool {
+    background: var(--page-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: var(--primary-a20);
+
+    .content-header-box {
+      background-color: var(--primary-a08);
+      color: var(--text);
+    }
+  }
+
+  .tool-badge {
+    @extend %badge-shape;
+    flex-shrink: 0;
+    margin-right: 8px;
+    background: var(--tag-teal-bg);
+    color: var(--tag-teal-text);
+    font-size: 11px;
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
   // 內容區塊
   .content-box {
     // padding: 10px;
@@ -1468,7 +1492,8 @@
     &.for-PDF,
     &.for-TXT,
     &.for-HTML,
-    &.for-MD {
+    &.for-MD,
+    &.for-SKILL {
       padding: 0px;
     }
 
