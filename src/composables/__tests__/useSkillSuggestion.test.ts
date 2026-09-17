@@ -103,7 +103,7 @@ describe('useSkillSuggestion', () => {
   it('非 skill-suggest- 前綴、未知 id、或已移除的 confirm 動作回 false', () => {
     const { ctx } = makeCtx()
     const s = useSkillSuggestion()
-    expect(s.handleAction('conv7-satisfied', 'x')).toBe(false)
+    expect(s.handleAction('conv9-something', 'x')).toBe(false)
     expect(s.handleAction('skill-suggest-build', 'never-offered')).toBe(false)
     s.offer(ctx, SUGGESTION)
     expect(s.handleAction('skill-suggest-confirm', SUGGESTION.id)).toBe(false)

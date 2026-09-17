@@ -718,7 +718,7 @@
         <!-- fp 互動模式時完全移除輸入框 -->
         <textarea v-if="!inputAreaHidden" :class="['custom-textarea']"
           id="userInput"
-          :placeholder="currentConversationId === 'conv7' ? '描述您的行銷報告' : '請輸入您的需求'"
+          placeholder="請輸入您的需求"
           ref="userInputRef"
           v-model.trim="userInputModal.msg"
           @focus="inputFocus()"
@@ -826,7 +826,6 @@ import { useAiviewerStore } from '@/stores/AiViewerStore';
 import { useJourneyStore } from '@/stores/journeyStore'
 import { useKnowledgeStore } from '@/stores/knowledgeStore'
 import { handleContentWheel, stopWhellZoomEvent, stopTouchpadZoomEvent, handleEnterKeySubmit, initClickOutsideListener } from '@/utils/utils';
-import { useReportAssemblyConversation } from '@/composables/useReportAssemblyConversation';
 import { useSkillSuggestion } from '@/composables/useSkillSuggestion';
 import type { ToolboxItem } from '@/types/AiViewer';
 import { TOOL_BLOCK_META } from '@/constants/toolBlocks';
@@ -880,7 +879,6 @@ const currentConversationTitle = computed(() => {
   if (currentConversationId.value === 'conv4') return conv4Title.value || '產品銷售報告整理';
   if (currentConversationId.value === 'conv5') return conv5Title.value || 'Teva 換季促銷方案規劃';
   if (currentConversationId.value === 'conv6') return conv6Title.value || 'TEVA涼鞋銷售分析';
-  if (currentConversationId.value === 'conv7') return conv7Title.value || '行銷報告組裝';
   return conv1Title.value;
 });
 
@@ -896,8 +894,6 @@ watch(currentConversationId, (id) => {
   } else if (id === 'conv5') {
     aiViewerBlocks.value = [];
   } else if (id === 'conv6') {
-    aiViewerBlocks.value = [];
-  } else if (id === 'conv7') {
     aiViewerBlocks.value = [];
   }
 }, { immediate: true });
@@ -1015,9 +1011,8 @@ function inputBlur() {
 }
 
 const { getBlockTypeByFileMime } = aiviewerStore;
-// 工具箱選單資料（本輪只有「行銷報告生成」可點，其餘為即將推出的佔位項目）
+// 工具箱選單資料（本輪只有「技能建立」可點，其餘為即將推出的佔位項目）
 const toolboxItems: ToolboxItem[] = [
-  { id: 'reportAssembly', icon: 'bar_chart', name: '行銷報告生成', description: '拖曳組裝行銷週報章節', enabled: true },
   { id: 'skillBuilder', icon: TOOL_BLOCK_META.SKILL!.icon, name: TOOL_BLOCK_META.SKILL!.label, description: '用對話建立、測試個人技能', enabled: true },
   { id: 'imageGen', icon: 'palette', name: '圖像生成', description: '即將推出', enabled: false },
   { id: 'musicGen', icon: 'music_note', name: '創作音樂', description: '即將推出', enabled: false },
@@ -1048,15 +1043,6 @@ onMounted(() => {
   });
 });
 
-const {
-  conv7Msgs,
-  conv7Title,
-  resetConv7,
-  conv7InitFlow,
-  conv7Satisfied,
-  conv7Adjust,
-} = useReportAssemblyConversation();
-
 // 專案內由 Agent 發起「建立成個人技能」：可重用流程，conv4 先接
 const skillSuggestion = useSkillSuggestion();
 const CONV4_SKILL_SUGGESTION = {
@@ -1068,15 +1054,10 @@ const CONV4_SKILL_SUGGESTION = {
   reason: '查詢銷售資料＋套用部門報告規範',
 };
 
-// 點擊工具箱項目：行銷報告生成／技能建立可用，其餘 enabled: false 不處理
+// 點擊工具箱項目：目前只有「技能建立」可用，其餘 enabled: false 不處理
 function openToolboxTool(item: ToolboxItem) {
   if (!item.enabled) return;
   isOpenToolboxFnBox.value = false;
-  if (item.id === 'reportAssembly') {
-    currentConversationId.value = 'conv7';
-    resetConversation();
-    nextTick(() => conv7InitFlow());
-  }
   if (item.id === 'skillBuilder') {
     // 在畫布放一個空白技能建立 block；鏡頭移過去就是回饋，不另推河道訊息
     aiviewerStore.addSkillBuilderBlock();
@@ -2427,14 +2408,6 @@ function handleChatAreaClick(e: MouseEvent) {
   if (action.startsWith('skill-suggest-') && skillSuggestion.handleAction(action, el.dataset.id ?? '')) {
     return;
   }
-  if (action === 'conv7-satisfied') {
-    conv7Satisfied();
-    return;
-  }
-  if (action === 'conv7-adjust') {
-    conv7Adjust();
-    return;
-  }
   // 河道卡片「前往區塊」：鏡頭移到指定 block 並選取它；block 已被刪就提示
   if (action === 'pan-to-block') {
     const target = aiViewerBlocks.value.find((b: any) => b.id === el.dataset.value);
@@ -3424,7 +3397,6 @@ const testMsgs = computed(() => {
     : currentConversationId.value === 'conv4' ? conv4Msgs.value
     : currentConversationId.value === 'conv5' ? conv5Msgs.value
     : currentConversationId.value === 'conv6' ? conv6Msgs.value
-    : currentConversationId.value === 'conv7' ? conv7Msgs.value
     : conv1Msgs.value;
   // 未確認的 translationConfirm 不在河道上顯示任何泡泡
   return msgs.filter((m: any) => !(m.cardType === 'translationConfirm' && !m.confirmed));
@@ -3527,9 +3499,6 @@ function resetConversation() {
     conv6Msgs.value = [];
     conv6ReportChoiceMade.value = false;
     conv6FlowStarted.value = false;
-  }
-  if (currentConversationId.value === 'conv7') {
-    resetConv7();
   }
   nextTick(() => AiAgentChatListScrollTo('ASC'));
 }

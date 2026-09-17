@@ -54,7 +54,6 @@
         props.source.blockType === 'TXT' ||
         props.source.blockType === 'MD' ||
         props.source.blockType === 'CHART' ||
-        props.source.blockType === 'REPORT' ||
         props.source.blockType === 'SKILL'
       )
     )"
@@ -199,7 +198,6 @@
           'for-CHART': props.source.blockType === 'CHART',
           'for-MD': props.source.blockType === 'MD',
           'for-WORD': props.source.blockType === 'WORD',
-          'for-REPORT': props.source.blockType === 'REPORT',
           'for-SKILL': props.source.blockType === 'SKILL',
         }]"
         @wheel.stop="handleContentWheel($event); stopWhellZoomEvent($event);"
@@ -256,11 +254,6 @@
         <!-- WORD -->
         <wordViewBox v-if="props.source.blockType === 'WORD'"
           :id="props.id" :source="props.source"/>
-
-        <!-- REPORT -->
-        <reportAssemblyViewBox v-if="props.source.blockType === 'REPORT'"
-          :id="props.id"
-          :source="(props.source as { blockType: 'REPORT'; data: ReportAssemblyBlockData })"/>
 
         <!-- SKILL：技能建立（對話／預覽／測試） -->
         <skillBuilderViewBox v-if="props.source.blockType === 'SKILL'"
@@ -350,10 +343,9 @@ import imageViewBox from '@/components/AiViewer/viewBlock/imageViewBox.vue';
 import markdownViewBox from '@/components/AiViewer/viewBlock/markdownViewBox.vue';
 import chartViewBox from '@/components/AiViewer/viewBlock/chartViewBox.vue';
 import wordViewBox from '@/components/AiViewer/viewBlock/wordViewBox.vue';
-import reportAssemblyViewBox from '@/components/AiViewer/viewBlock/reportAssemblyViewBox.vue';
 import skillBuilderViewBox from '@/components/AiViewer/viewBlock/skillBuilderViewBox.vue';
 import { TOOL_BLOCK_META, isToolBlock } from '@/constants/toolBlocks';
-import type { ReportAssemblyBlockData, SkillBuilderBlockData, BlockType } from '@/types/AiViewer';
+import type { SkillBuilderBlockData, BlockType } from '@/types/AiViewer';
 
 const props = defineProps({
   source: {
@@ -427,7 +419,7 @@ const props = defineProps({
   },
 })
 
-// 功能型 block（REPORT／SKILL）：header 多徽章、卡片改實色，跟檔案 block 區隔
+// 功能型 block（SKILL）：header 多徽章、卡片改實色，跟檔案 block 區隔
 const toolMeta = computed(() => TOOL_BLOCK_META[props.source.blockType as BlockType]);
 
 const emit = defineEmits<{ (e: 'choice', id: string): void }>();

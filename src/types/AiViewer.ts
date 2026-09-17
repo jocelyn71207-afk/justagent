@@ -37,7 +37,6 @@ type BlockDataMap = {
   PPT: any;
   WORD: any;
   OTHER: any;
-  REPORT: ReportAssemblyBlockData; // 報告組裝（可拖曳排序、積木盒加入/移除章節）
   SKILL: SkillBuilderBlockData; // 技能建立（block 內自帶對話／預覽／測試）
 }
 
@@ -54,14 +53,6 @@ type SourceChart = {
   title?: string
   x_axis?: { title?: string }
   y_axis?: { title?: string }
-}
-
-/** 報告組裝相關 */
-
-// 報告組裝 Block 的資料結構，sectionIds 為已組裝章節（依排序），templateName 為存成模板後的名稱
-type ReportAssemblyBlockData = {
-  sectionIds: string[]
-  templateName: string | null
 }
 
 /** 技能建立 Block */
@@ -112,7 +103,6 @@ export type {
   BlockTypeData,
   BlockType,
   SourceChart,
-  ReportAssemblyBlockData,
   SkillBlockOrigin,
   SkillBuilderBlockData,
   ToolboxItem,

@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 // 「用行銷積木組裝」的輸入面板：純呈現，選了什麼一律 emit 回去由 composable 推導成草稿。
-// 拖曳排序沿用原生 HTML5 drag and drop（自 reportAssemblyViewBox 搬來，不引入新套件）
+// 拖曳排序沿用原生 HTML5 drag and drop，不引入新套件
 import { ref } from 'vue'
 import { REPORT_CATEGORIES, SECTION_MAP, sectionsByCategory } from '@/constants/reportSections'
 

@@ -64,7 +64,8 @@ describe('AiViewerStore - 技能建立 block', () => {
     store.updateSkillBuilderBlock(id, { snapshot: snap })
     expect(block.blockName).toBe('技能建立')
 
-    const reportId = store.addReportAssemblyBlock(['promo_kpi'])
+    store.addReportBlock('/justagent/x.html', 'x.html')
+    const reportId = store.aiViewerBlocks.find((b: any) => b.blockName === 'x.html').id
     expect(store.updateSkillBuilderBlock(reportId, { activeTab: 'test' })).toBe(false)
     expect(store.updateSkillBuilderBlock('nope', { activeTab: 'test' })).toBe(false)
   })
