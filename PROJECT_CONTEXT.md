@@ -45,12 +45,12 @@
 
 ### 3.3 AI 畫布編輯器（AiViewer）
 - 核心功能：使用 Konva.js 的拖拉縮放畫布
-- 可建立多種內容**區塊（Block）**：檔案型 PDF、Excel、PPT、圖片、Markdown、HTML、TXT、Word、Chart；**功能型** REPORT（報告組裝）、SKILL（技能建立）。功能型區塊在畫布上以實色卡片＋header 徽章與檔案區塊區隔，代表「可操作的工具」而不是「一份檔案」
+- 可建立多種內容**區塊（Block）**：檔案型 PDF、Excel、PPT、圖片、Markdown、HTML、TXT、Word、Chart；**功能型** SKILL（技能建立）。功能型區塊在畫布上以實色卡片＋header 徽章與檔案區塊區隔，代表「可操作的工具」而不是「一份檔案」
 - 區塊操作：建立、複製/貼上（Cmd+C/V）、刪除、重新命名、拖移、縮放
 - 多選模式（Multi-select）：可同時移動多個區塊
 - 便條紙（Memo）：區塊層級的評論 / 標記系統
 - 側邊面板：區塊列表、評論列表、檔案列表、對話紀錄
-- 工具箱（輸入區 ⚒）：「行銷報告生成」放 REPORT 區塊；「技能建立」放 SKILL 區塊。SKILL 區塊內自帶「對話／預覽／測試」三個 tab，重用 AI 賦能的零件，建立、修改、測試個人技能都在區塊內完成，並可「在 AI 賦能開啟」帶到獨立頁面
+- 工具箱（輸入區 ⚒）：只有「技能建立」，放一個 SKILL 區塊。區塊一開始先選建立方式——「用對話建立」（對話／預覽／測試三 tab）或「用行銷積木組裝」（積木／預覽／測試三 tab：勾選 TA 用戶畫像／行銷活動成效／渠道績效的報告章節、排序、命名）。兩種方式都以「儲存為個人技能」收尾；積木方式的技能帶 `composition`，儲存後可在區塊內「產一份報告」把報告放到畫布
 
 ### 3.4 共用檔案管理（ResourceLibrary）
 - 側邊選單「共享資源庫」群組底下的子項目之一（另一個子項目是 3.11 知識庫管理），
@@ -117,7 +117,7 @@
 ### 3.10 AI 技能（SkillManagement／SkillStudio／SkillTest）
 側邊選單 side-panel 裡「AI 技能」群組底下的三個子功能：
 - **技能管理**（`src/views/SkillManagement.vue`）：我的技能（個人區）與團隊技能範本管理、送審／版本審核流程；詳情抽屜；「編輯」時可選「直接編輯」（SkillEditor 精靈）或「跟 Agent 對話修改」（導向 AI 賦能）
-- **AI 賦能**（`src/views/SkillStudio.vue`）：對話式建立／修改／測試技能。左側跟 Agent 對話（規則式 mock，`useSkillStudioConversation`），右側「技能預覽」即時反映草稿、「測試」tab 掛 AI 快速測試。只操作個人技能（zone personal）；`?skillId=` 進修改模式、`?tab=test` 直接切到測試
+- **AI 賦能**（`src/views/SkillStudio.vue`）：對話式建立／修改／測試技能。左側跟 Agent 對話（規則式 mock，`useSkillStudioConversation`），右側「技能預覽」即時反映草稿、「測試」tab 掛 AI 快速測試。只操作個人技能（zone personal）；`?skillId=` 進修改模式、`?tab=test` 直接切到測試。建立模式一進來同樣先選「用對話建立／用行銷積木組裝」；有 `composition` 的技能開啟時直接是積木面板。
 - **技能測試沙盒**（`src/views/SkillTest.vue`）：對話測試與 AI 快速測試，可切換版本
 
 專案內（AiViewer）Agent 完成任務後可主動建議「把這個流程建立成個人技能」（`useSkillSuggestion` ＋ `SkillSuggestCard`，conv4 為第一個接入的腳本）；使用者按「是」後直接在畫布放上一個已預填的 SKILL 區塊（含來源脈絡），確認、調整、儲存、測試都在區塊內進行，河道只回一則「已放上區塊」與「前往區塊」連結。
