@@ -33,9 +33,8 @@
         >
           <span class="sbc-handle material-symbols-outlined">drag_indicator</span>
           <span class="sbc-dot" :style="{ '--dot-color': categoryColor(sectionId) }"></span>
-          <span class="sbc-item-body">
+          <span class="sbc-item-body" v-tooltip="sectionDesc(sectionId)">
             <span class="sbc-item-name">{{ sectionName(sectionId) }}</span>
-            <span class="sbc-item-desc">{{ sectionDesc(sectionId) }}</span>
           </span>
           <button type="button" class="sbc-remove" v-tooltip="'移除章節'" @click="removeSection(sectionId)">
             <i class="material-symbols-outlined">close</i>
@@ -48,17 +47,28 @@
     </div>
 
     <div class="sbc-palette">
-      <details v-for="category in REPORT_CATEGORIES" :key="category.id" class="sbc-category" open>
+      <details
+        v-for="category in REPORT_CATEGORIES"
+        :key="category.id"
+        class="sbc-category"
+        :open="isCategoryOpen(category.id)"
+        @toggle="handleToggle(category.id, $event)"
+      >
         <summary>
           <span class="sbc-dot" :style="{ '--dot-color': category.color }"></span>
           <span class="sbc-category-label">{{ category.label }}</span>
           <span class="sbc-category-count">{{ addedCountInCategory(category.id) }}/{{ sectionsByCategory(category.id).length }}</span>
         </summary>
         <div class="sbc-category-items">
-          <div v-for="section in sectionsByCategory(category.id)" :key="section.id" class="sbc-palette-item" :class="{ added: props.sectionIds.includes(section.id) }">
+          <div
+            v-for="section in sectionsByCategory(category.id)"
+            :key="section.id"
+            class="sbc-palette-item"
+            :class="{ added: props.sectionIds.includes(section.id) }"
+            v-tooltip="section.description"
+          >
             <span class="sbc-item-body">
               <span class="sbc-item-name">{{ section.name }}</span>
-              <span class="sbc-item-desc">{{ section.description }}</span>
             </span>
             <button type="button" class="sbc-add-btn" v-tooltip="props.sectionIds.includes(section.id) ? '已加入' : '加入章節'" @click="addSection(section.id)">
               <i class="material-symbols-outlined">{{ props.sectionIds.includes(section.id) ? 'check' : 'add' }}</i>
@@ -100,6 +110,20 @@ function categoryColor(id: string): string {
 }
 function addedCountInCategory(categoryId: string): number {
   return sectionsByCategory(categoryId).filter(s => props.sectionIds.includes(s.id)).length
+}
+
+// 分類預設收合，21 個章節不用一次全部攤開；已經有勾選章節的分類在掛載當下自動展開
+// （常見於重開一顆既有的積木技能），之後完全交由使用者點擊 summary 控制開合
+const openCategories = ref<Set<string>>(new Set(
+  REPORT_CATEGORIES.filter(c => sectionsByCategory(c.id).some(s => props.sectionIds.includes(s.id))).map(c => c.id)
+))
+function isCategoryOpen(categoryId: string): boolean {
+  return openCategories.value.has(categoryId)
+}
+function handleToggle(categoryId: string, event: Event) {
+  const isOpen = (event.target as HTMLDetailsElement).open
+  if (isOpen) openCategories.value.add(categoryId)
+  else openCategories.value.delete(categoryId)
 }
 
 function addSection(id: string) {

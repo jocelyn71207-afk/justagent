@@ -57,4 +57,31 @@ describe('SkillBlockComposer', () => {
     expect(mountComposer({ nameConflict: true }).find('.name-conflict-banner').exists()).toBe(true)
     expect(mountComposer({ compact: true }).classes()).toContain('is-compact')
   })
+
+  it('分類預設收合；已有勾選章節的分類掛載時自動展開', () => {
+    const w = mountComposer({ sectionIds: ['promo_kpi'] })
+    const cats = w.findAll('.sbc-category')
+    expect((cats[0].element as HTMLDetailsElement).open).toBe(false) // TA 用戶畫像，沒有勾選
+    expect((cats[1].element as HTMLDetailsElement).open).toBe(true)  // 行銷活動成效，有勾選
+    expect((cats[2].element as HTMLDetailsElement).open).toBe(false) // 渠道績效，沒有勾選
+  })
+
+  it('展開分類後，狀態由 openCategories 記住，不會被下一次重新渲染蓋掉', async () => {
+    const w = mountComposer()
+    const detailsEl = w.findAll('.sbc-category')[0].element as HTMLDetailsElement
+    expect(detailsEl.open).toBe(false)
+    detailsEl.open = true
+    await w.findAll('.sbc-category')[0].trigger('toggle')
+    expect(detailsEl.open).toBe(true)
+    // 強迫重新渲染：若 @toggle 沒有把狀態記進 openCategories，
+    // :open="isCategoryOpen(...)" 會在這次 patch 把它蓋回 false
+    await w.setProps({ name: '行銷週報' })
+    expect((w.findAll('.sbc-category')[0].element as HTMLDetailsElement).open).toBe(true)
+  })
+
+  it('章節列不再顯示說明文字（改為 tooltip）', () => {
+    const w = mountComposer({ sectionIds: ['promo_kpi'] })
+    expect(w.find('.sbc-list').text()).not.toContain('完成訂單數')
+    expect(w.find('.sbc-palette').text()).not.toContain('完成訂單數')
+  })
 })
