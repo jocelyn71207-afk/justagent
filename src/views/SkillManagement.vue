@@ -153,7 +153,7 @@
             <button class="custom-btn" @click="showLibraryModal = true">
               <i class="material-symbols-outlined">library_books</i>瀏覽 Library
             </button>
-            <button class="custom-btn custom-main-btn" @click="router.push('/view/SkillEditor')">
+            <button class="custom-btn custom-main-btn" @click="showCreateChoice = true">
               <i class="material-symbols-outlined">add</i>建立技能
             </button>
           </div>
@@ -270,6 +270,33 @@
                 @click="confirmPendingDuplicate"
               >
                 <i class="material-symbols-outlined">check_circle</i>確認
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 選擇建立方式：點「我的技能」頁的「建立技能」 -->
+    <Teleport to="body">
+      <Transition name="confirm-fade">
+        <div
+          v-if="showCreateChoice"
+          class="drawer-confirm-overlay"
+          @click.self="showCreateChoice = false"
+        >
+          <div class="drawer-confirm-dialog">
+            <div class="confirm-icon confirm-icon--update">
+              <i class="material-symbols-outlined">add_circle</i>
+            </div>
+            <h4>建立技能</h4>
+            <p>要用哪種方式建立這顆技能？</p>
+            <div class="confirm-actions confirm-actions--column">
+              <button class="custom-btn custom-main-btn" @click="handleCreateWithStudio">
+                <i class="material-symbols-outlined">auto_fix_high</i>用 AI 賦能建立
+              </button>
+              <button class="custom-btn" @click="handleCreateManually">
+                <i class="material-symbols-outlined">edit</i>手動建立
               </button>
             </div>
           </div>
@@ -480,6 +507,7 @@ import type { Skill, ConflictResolution } from '@/stores/skillStore'
 const router = useRouter()
 const store = useSkillStore()
 
+const showCreateChoice = ref(false)
 const detailSkillId = ref<string | null>(null)
 // 從 Library 技能庫瀏覽 Modal 點進來的唯讀情境：詳情抽屜不顯示版本歷史／待審核區塊
 const detailFromLibrary = ref(false)
@@ -581,6 +609,17 @@ const upstreamVersionForDetail = computed(() => {
 
 function handleTest(skill: Skill) {
   router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
+}
+
+// 「建立技能」選擇框：AI 賦能（對話或積木，建立模式一進去會再問一次方式）
+// 或手動走 SkillEditor 三步驟表單精靈，兩者都是空白建立，不帶 skillId
+function handleCreateWithStudio() {
+  showCreateChoice.value = false
+  router.push({ name: 'SkillStudio' })
+}
+function handleCreateManually() {
+  showCreateChoice.value = false
+  router.push('/view/SkillEditor')
 }
 
 function handleEdit(skill: Skill) {
