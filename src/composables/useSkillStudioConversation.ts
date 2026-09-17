@@ -231,6 +231,7 @@ export function useSkillStudioConversation() {
   }
 
   function chooseMethod(method: StudioMethod): void {
+    if (draft.value.method) return
     draft.value = { ...draft.value, method }
     if (method === 'chat' && messages.value.length === 0) push({ role: 'agent', content: DEFAULT_OPENING_MESSAGE })
   }

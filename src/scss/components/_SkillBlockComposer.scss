@@ -95,6 +95,8 @@
     line-height: 1.55;
   }
 
+  .sbc-item-name, .sbc-item-desc { display: block; }
+
   .sbc-remove {
     flex: 0 0 auto;
     border: none;
@@ -113,7 +115,7 @@
     }
 
     &:hover {
-      background: rgba(209, 68, 55, 0.12);
+      background: color-mix(in srgb, var(--danger) 12%, transparent);
       color: var(--danger);
     }
   }

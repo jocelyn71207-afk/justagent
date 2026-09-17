@@ -83,6 +83,8 @@ export interface SkillDraft {
 
 `emptyDraft()` → `method: null, sectionIds: []`。`serialize()` 含這兩個欄位，所以 `isDirty`／快照自然涵蓋。
 
+`method` 例外：`serialize()` 會把它設成 `undefined`，刻意排除在髒檢查之外——它是只能設定一次的模式選擇器（透過 `chooseMethod`，已加上「設過就不可再變」的 guard），設定後不會再被編輯，若納入髒檢查，中途曾造成兩個實例（block／全螢幕）同步時互相覆蓋對方 `method` 的 bug，已於分支中途修正。
+
 ### 4.2 `Skill`（`skillStore.ts`）
 
 ```ts

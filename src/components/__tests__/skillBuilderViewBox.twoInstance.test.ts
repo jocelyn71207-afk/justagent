@@ -118,6 +118,13 @@ describe('two skillBuilderViewBox instances on one block', () => {
 
     const B = mountOn(id, block) // 另一個實例掛載，hydrate 同一份快照
     await flushPromises()
+
+    // A 在積木庫加入一個章節 -> B（hydrate 同一份快照）的積木面板應該同步看到相同的 sectionIds
+    await A.find('.sbc-add-btn').trigger('click')
+    await flushPromises()
+    expect(block.data.data.snapshot.draft.sectionIds.length).toBe(1)
+    expect(B.find('.sbc-list .sbc-item-name').text()).toBe(A.find('.sbc-list .sbc-item-name').text())
+
     store.updateSkillBuilderBlock(id, { activeTab: 'preview' })
     await flushPromises()
     expect(B.find('.ssp-status-badge').text()).toContain('未儲存草稿')

@@ -1013,7 +1013,7 @@ function inputBlur() {
 const { getBlockTypeByFileMime } = aiviewerStore;
 // 工具箱選單資料（本輪只有「技能建立」可點，其餘為即將推出的佔位項目）
 const toolboxItems: ToolboxItem[] = [
-  { id: 'skillBuilder', icon: TOOL_BLOCK_META.SKILL!.icon, name: TOOL_BLOCK_META.SKILL!.label, description: '用對話建立、測試個人技能', enabled: true },
+  { id: 'skillBuilder', icon: TOOL_BLOCK_META.SKILL!.icon, name: TOOL_BLOCK_META.SKILL!.label, description: '用對話或行銷積木建立個人技能', enabled: true },
   { id: 'imageGen', icon: 'palette', name: '圖像生成', description: '即將推出', enabled: false },
   { id: 'musicGen', icon: 'music_note', name: '創作音樂', description: '即將推出', enabled: false },
   { id: 'deepSearch', icon: 'search', name: 'Deep Search', description: '即將推出', enabled: false },
