@@ -298,12 +298,23 @@
               {{ editChoiceIsFreshDuplicate ? '接下來想怎麼修改這份複本？' : `接下來想怎麼修改「${editChoiceSkill.name}」？` }}
             </p>
             <div class="confirm-actions confirm-actions--column">
-              <button class="custom-btn" @click="handleChatEdit">
-                <i class="material-symbols-outlined">forum</i>跟 Agent 對話修改
-              </button>
-              <button class="custom-btn custom-main-btn" @click="handleDirectEdit">
-                <i class="material-symbols-outlined">edit</i>直接編輯
-              </button>
+              <!-- 用行銷積木組裝出來的技能沒有「直接編輯」路徑：SkillEditor 是純文字
+                   三步驟精靈，不認得 composition，在那裡手改指令會讓文字跟已選章節
+                   悄悄脫勾（下次在積木面板加/減章節，推導出的內容會整段蓋掉手改的
+                   結果）。這類技能只給積木面板一個入口 -->
+              <template v-if="editChoiceSkill.composition">
+                <button class="custom-btn custom-main-btn" @click="handleChatEdit">
+                  <i class="material-symbols-outlined">dashboard_customize</i>用積木面板編輯
+                </button>
+              </template>
+              <template v-else>
+                <button class="custom-btn" @click="handleChatEdit">
+                  <i class="material-symbols-outlined">forum</i>跟 Agent 對話修改
+                </button>
+                <button class="custom-btn custom-main-btn" @click="handleDirectEdit">
+                  <i class="material-symbols-outlined">edit</i>直接編輯
+                </button>
+              </template>
             </div>
           </div>
         </div>

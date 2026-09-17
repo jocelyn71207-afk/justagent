@@ -1573,6 +1573,9 @@ export const useSkillStore = defineStore('skillStore', () => {
       instructions: source.instructions,
       triggerHint: source.triggerHint,
       capabilities: source.capabilities ? [...source.capabilities] : undefined,
+      // 來源若是用行銷積木組裝出來的技能，複本要保留 composition——否則複本重開時
+      // 會被 draftFromSkill() 誤判成對話建立，只給對話編輯介面，跟來源的建立方式不一致
+      composition: source.composition ? { sectionIds: [...source.composition.sectionIds] } : undefined,
     }
     myPersonalSkillsRef.value.unshift(copy)
     return copy
