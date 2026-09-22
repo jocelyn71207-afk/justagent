@@ -447,6 +447,41 @@ export function useSkillStudioConversation() {
       })
       return
     }
+
+    if (stage === 'clarify') {
+      if (CLARIFY_DONE_HINT.test(t)) {
+        gateStage.value = 'gate3'
+        push({
+          role: 'agent',
+          content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
+          actions: [GATE3_CONFIRM, GATE3_RETRY],
+        })
+        return
+      }
+      const reply = interpretStudioMessage(t, draft.value, mode.value)
+      if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
+      push({ role: 'agent', content: reply.content, actions: reply.actions })
+      return
+    }
+
+    if (stage === 'gate3') {
+      if (t === GATE3_CONFIRM.label) {
+        save()
+        gateStage.value = 'active'
+        return
+      }
+      if (t === GATE3_RETRY.label) {
+        gateStage.value = 'clarify'
+        push({ role: 'agent', content: '好，繼續說你想怎麼調整。' })
+        return
+      }
+      push({
+        role: 'agent',
+        content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
+        actions: [GATE3_CONFIRM, GATE3_RETRY],
+      })
+      return
+    }
   }
 
   // 無 prefill：等使用者選建立方式（method null、沒有訊息）。

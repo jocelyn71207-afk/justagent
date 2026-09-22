@@ -685,3 +685,91 @@ describe('關卡二與暫存草稿', () => {
     expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
   })
 })
+
+describe('CLARIFY 補齊與關卡三確認', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+    // Ensure the store has no matching skills for our test messages
+    const store = useSkillStore()
+    const hasSomeSkills = store.myPersonalSkills.length > 0
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+    // Re-add one non-matching skill if we need to preserve non-empty state (for "清單非空" flow)
+    if (hasSomeSkills) {
+      store.createPersonalSkill({
+        name: '簽核文件資訊',
+        description: '簽核企業檔案',
+        instructions: '檢視核簽狀況',
+        triggerHint: '需要簽核文件時',
+        assignedAgents: [],
+        capabilities: [{ name: 'test', description: 'test' }],
+        files: [],
+      })
+    }
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  it('clarify 階段一般描述：照既有 interpretStudioMessage 規則更新草稿，不轉關卡', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能') // 清單非空 → gate1
+    await sendAndWait(c, '改現有規定（走客製路線）') // 找不到相近 → clarify
+    expect(c.gateStage.value).toBe('clarify')
+    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    expect(c.gateStage.value).toBe('clarify')
+    expect(c.draft.value.name).toBeTruthy()
+    await sendAndWait(c, '觸發條件改成當使用者提到缺貨時')
+    expect(c.draft.value.triggerHint).toContain('缺貨')
+  })
+
+  it('clarify 階段說收尾語：轉關卡三，訊息帶草稿摘要', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能')
+    await sendAndWait(c, '改現有規定（走客製路線）')
+    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
+    expect(c.gateStage.value).toBe('gate3')
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain(c.draft.value.name)
+    expect(last.actions?.map(a => a.label)).toEqual(['這樣可以，存到個人技能', '不對，我要改'])
+  })
+
+  it('關卡三選「這樣可以，存到個人技能」：實際呼叫 save()，技能出現在 myPersonalSkills，gateStage 轉 active', async () => {
+    const store = useSkillStore()
+    const before = store.myPersonalSkills.length
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能')
+    await sendAndWait(c, '改現有規定（走客製路線）')
+    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
+    await sendAndWait(c, '這樣可以，存到個人技能')
+    expect(c.gateStage.value).toBe('active')
+    expect(store.myPersonalSkills.length).toBe(before + 1)
+    expect(c.savedSkillId.value).toBeTruthy()
+  })
+
+  it('關卡三選「不對，我要改」：退回 clarify，草稿內容不清空', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能')
+    await sendAndWait(c, '改現有規定（走客製路線）')
+    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    const nameBeforeRetry = c.draft.value.name
+    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
+    await sendAndWait(c, '不對，我要改')
+    expect(c.gateStage.value).toBe('clarify')
+    expect(c.draft.value.name).toBe(nameBeforeRetry)
+  })
+})
