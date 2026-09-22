@@ -102,6 +102,8 @@ export interface Skill {
   isEnabled: boolean
   usageCount: number
   testPassRate: number
+  aiTestPassRate?: number | null   // AI 快速測試（選擇題）最近一次的答對比例；null／未定義＝從沒測過
+  aiTestOverridden?: boolean       // 使用者是否曾在測試沒有全對的情況下，選擇「視為通過，直接啟用」
   avgLatencyMs: number
   forkSourceId?: string
   forkSourceVersion?: string
@@ -150,7 +152,9 @@ export interface CreateSkillPayload {
   description?: string
   instructions: string
   triggerHint: string
-  isEnabled: boolean
+  // 選填：createPersonalSkill() 不讀這個欄位（個人技能一律以停用落地，見該函式註解）；
+  // createSkill()（Library／企業技能發佈用）才會用到，沒帶時預設 true。
+  isEnabled?: boolean
   assignedAgents: string[]
   scope?: 'enterprise' | 'team'
   files?: SkillFile[]
@@ -201,15 +205,15 @@ export interface AITestScenario {
   tag: AITestTag
   input: string
   expectedBehavior: string
-  status: 'pending' | 'running' | 'pass' | 'fail'
-  agentReply?: string
-  aiJudgment?: string
+  expectedTrigger: boolean   // 正確答案：這句話該不該觸發這顆技能
+  status: 'pending' | 'correct' | 'incorrect'
+  userAnswer?: boolean       // 使用者選了「該」還是「不該」
 }
 
 export interface AITestReport {
   total: number
-  passed: number
-  byTag: Record<AITestTag, { total: number; passed: number }>
+  correct: number
+  byTag: Record<AITestTag, { total: number; correct: number }>
   summary: string
 }
 
@@ -736,50 +740,54 @@ type ScenarioTemplate = Omit<AITestScenario, 'id' | 'status'>
 
 const MOCK_AI_SCENARIO_TEMPLATES: Record<string, ScenarioTemplate[]> = {
   'sys-cs-001': [
-    { tag: 'normal', input: '我的訂單什麼時候會到？訂單號是 #20241201-0023', expectedBehavior: '技能觸發，查詢訂單狀態並回覆預計到貨時間' },
-    { tag: 'normal', input: '你們支援哪些付款方式？可以用信用卡分期嗎？', expectedBehavior: '技能觸發，列出支援付款方式並說明分期條件' },
-    { tag: 'normal', input: '我想退貨，請問流程是什麼？', expectedBehavior: '技能觸發，說明退貨步驟與所需文件' },
-    { tag: 'boundary', input: '你好！', expectedBehavior: '技能觸發一般問候回覆，不強制進入特定流程' },
-    { tag: 'boundary', input: '你這破客服都沒在聽！我等了三天！', expectedBehavior: '情緒分析觸發，識別高情緒並轉介人工客服' },
-    { tag: 'boundary', input: '幫我查 #99999999，是我朋友的訂單', expectedBehavior: '技能查詢但說明需驗證訂單歸屬' },
-    { tag: 'trigger_edge', input: '退款 換貨 保固', expectedBehavior: '關鍵字觸發，引導使用者說明具體問題' },
-    { tag: 'trigger_edge', input: 'I want to return my order please', expectedBehavior: '多語言觸發，以英文說明退貨流程' },
+    { tag: 'normal', input: '我的訂單什麼時候會到？訂單號是 #20241201-0023', expectedTrigger: true, expectedBehavior: '屬於客服核心情境：查詢訂單狀態並回覆預計到貨時間，應該觸發。' },
+    { tag: 'normal', input: '你們支援哪些付款方式？可以用信用卡分期嗎？', expectedTrigger: true, expectedBehavior: '屬於客服核心情境：列出支援付款方式並說明分期條件，應該觸發。' },
+    { tag: 'normal', input: '我想退貨，請問流程是什麼？', expectedTrigger: true, expectedBehavior: '屬於客服核心情境：說明退貨步驟與所需文件，應該觸發。' },
+    { tag: 'boundary', input: '你好！', expectedTrigger: false, expectedBehavior: '只是打招呼，沒有具體客服需求，不應該觸發，一般問候即可。' },
+    { tag: 'boundary', input: '你這破客服都沒在聽！我等了三天！', expectedTrigger: true, expectedBehavior: '帶有明顯客訴情緒與具體不滿，應該觸發並轉介人工客服。' },
+    { tag: 'boundary', input: '幫我查 #99999999，是我朋友的訂單', expectedTrigger: false, expectedBehavior: '查詢的是他人訂單，不符合本人身份查詢的情境，不應該直接觸發，需先引導身份驗證。' },
+    { tag: 'trigger_edge', input: '退款 換貨 保固', expectedTrigger: true, expectedBehavior: '雖然只有關鍵字沒有完整句子，但都是客服相關詞彙，應該觸發並引導使用者說明。' },
+    { tag: 'trigger_edge', input: 'I want to return my order please', expectedTrigger: true, expectedBehavior: '雖然是英文輸入，仍是明確的退貨需求，應該觸發。' },
   ],
   'ext-cs-return-001': [
-    { tag: 'normal', input: '我在 2024/11/15 購買了一件外套，現在可以退貨嗎？', expectedBehavior: '觸發退貨資格判斷，確認是否在 30 天內並給出建議' },
-    { tag: 'normal', input: '退貨後多久可以收到退款？', expectedBehavior: '觸發，說明退款時程' },
-    { tag: 'boundary', input: '我超過 30 天了，但商品真的有問題，有辦法嗎？', expectedBehavior: '觸發，提供超期但瑕疵品的彈性處理流程' },
-    { tag: 'boundary', input: '我是 VIP 客戶，退貨期限是幾天？', expectedBehavior: '觸發 VIP 識別，說明 45 天優惠退貨期' },
-    { tag: 'trigger_edge', input: '退貨 換貨 瑕疵 VIP', expectedBehavior: '關鍵字觸發，確認技能正確識別退貨相關意圖' },
+    { tag: 'normal', input: '我在 2024/11/15 購買了一件外套，現在可以退貨嗎？', expectedTrigger: true, expectedBehavior: '屬於退貨資格判斷的核心情境，應該觸發並確認是否在 30 天內。' },
+    { tag: 'normal', input: '退貨後多久可以收到退款？', expectedTrigger: true, expectedBehavior: '屬於退貨流程的延伸提問，應該觸發並說明退款時程。' },
+    { tag: 'boundary', input: '我超過 30 天了，但商品真的有問題，有辦法嗎？', expectedTrigger: true, expectedBehavior: '雖然超過一般期限，仍是瑕疵品退貨的合理延伸情境，應該觸發彈性處理流程。' },
+    { tag: 'boundary', input: '我是 VIP 客戶，退貨期限是幾天？', expectedTrigger: true, expectedBehavior: '仍是退貨期限的提問，應該觸發並識別 VIP 身份給出對應天數。' },
+    { tag: 'boundary', input: '我想換一台新手機，這台用了半年想換新的可以嗎？', expectedTrigger: false, expectedBehavior: '單純想換新機、非瑕疵或期限內退貨需求，不屬於這顆技能的退貨資格判斷範圍，不應該觸發。' },
+    { tag: 'trigger_edge', input: '退貨 換貨 瑕疵 VIP', expectedTrigger: true, expectedBehavior: '關鍵字都指向退貨相關意圖，應該觸發。' },
   ],
   'sys-doc-001': [
-    { tag: 'normal', input: '請幫我摘要以下季報重點：第三季營收較去年同期成長 12%...', expectedBehavior: '技能觸發，生成結構化摘要條列式重點' },
-    { tag: 'normal', input: '請從這份文件中提取 5 個最重要的關鍵字', expectedBehavior: '技能觸發，提取並列出 5 個核心關鍵字' },
-    { tag: 'normal', input: '請將這篇文章摘要成 JSON 格式，包含標題、重點列表與結論', expectedBehavior: '技能觸發，輸出 JSON 格式摘要' },
-    { tag: 'boundary', input: '這份文件只有一句話，請摘要', expectedBehavior: '技能觸發，對超短文件給出合理的摘要或說明' },
-    { tag: 'trigger_edge', input: '摘要 PDF Word Markdown 文件', expectedBehavior: '關鍵字觸發，確認多格式文件技能正確識別' },
+    { tag: 'normal', input: '請幫我摘要以下季報重點：第三季營收較去年同期成長 12%...', expectedTrigger: true, expectedBehavior: '屬於文件摘要核心情境，應該觸發並生成結構化重點。' },
+    { tag: 'normal', input: '請從這份文件中提取 5 個最重要的關鍵字', expectedTrigger: true, expectedBehavior: '屬於文件摘要的延伸功能，應該觸發並列出核心關鍵字。' },
+    { tag: 'normal', input: '請將這篇文章摘要成 JSON 格式，包含標題、重點列表與結論', expectedTrigger: true, expectedBehavior: '仍是摘要需求，只是指定輸出格式，應該觸發。' },
+    { tag: 'boundary', input: '這份文件只有一句話，請摘要', expectedTrigger: true, expectedBehavior: '雖然文件很短，仍是合理的摘要請求，應該觸發並給出對應說明。' },
+    { tag: 'boundary', input: '這句話文法對不對？可以幫我改嗎？', expectedTrigger: false, expectedBehavior: '是文法校對需求，不是摘要或關鍵字提取，不屬於這顆技能的範圍，不應該觸發。' },
+    { tag: 'trigger_edge', input: '摘要 PDF Word Markdown 文件', expectedTrigger: true, expectedBehavior: '關鍵字都指向多格式文件摘要意圖，應該觸發。' },
   ],
   'sys-meeting-001': [
-    { tag: 'normal', input: '本次週會決定將上線日期延後兩週，請整理決策事項', expectedBehavior: '技能觸發，識別並條列決策事項' },
-    { tag: 'normal', input: 'John 要在週五前完成 API 文件，Lisa 負責 QA，請列出 action items', expectedBehavior: '技能觸發，生成含負責人的 action item 清單' },
-    { tag: 'boundary', input: '今天的會議沒有結論，請摘要', expectedBehavior: '技能觸發，說明無明確決策並建議後續追蹤方式' },
-    { tag: 'trigger_edge', input: '會議 摘要 action items 決策', expectedBehavior: '關鍵字觸發，確認會議相關意圖被正確識別' },
+    { tag: 'normal', input: '本次週會決定將上線日期延後兩週，請整理決策事項', expectedTrigger: true, expectedBehavior: '屬於會議決策整理的核心情境，應該觸發並條列決策事項。' },
+    { tag: 'normal', input: 'John 要在週五前完成 API 文件，Lisa 負責 QA，請列出 action items', expectedTrigger: true, expectedBehavior: '屬於會議紀錄延伸的 action item 整理，應該觸發。' },
+    { tag: 'boundary', input: '今天的會議沒有結論，請摘要', expectedTrigger: true, expectedBehavior: '雖然沒有明確決策，仍是會議摘要的合理情境，應該觸發並說明後續追蹤方式。' },
+    { tag: 'boundary', input: '幫我訂明天下午三點跟客戶開會的會議室', expectedTrigger: false, expectedBehavior: '是行事曆／會議室預約需求，不是會議紀錄整理，不屬於這顆技能的範圍，不應該觸發。' },
+    { tag: 'trigger_edge', input: '會議 摘要 action items 決策', expectedTrigger: true, expectedBehavior: '關鍵字都指向會議相關意圖，應該觸發。' },
   ],
   'ext-erp-001': [
-    { tag: 'normal', input: '查詢 SKU-00123 目前在所有倉庫的庫存數量', expectedBehavior: '技能觸發，呼叫庫存查詢 tool 並回傳各倉庫數量' },
-    { tag: 'normal', input: '台北倉現在有多少 SKU-00456 的庫存？', expectedBehavior: '技能觸發，指定倉庫查詢並回傳結果' },
-    { tag: 'normal', input: '哪些產品目前庫存低於安全存量？請列出清單', expectedBehavior: '技能觸發，掃描並回傳低庫存清單' },
-    { tag: 'boundary', input: '我要查 SKU-99999，但我不確定這個 SKU 存不存在', expectedBehavior: '技能觸發，查詢後提示查無此 SKU' },
-    { tag: 'trigger_edge', input: '庫存 SKU 倉庫 查詢', expectedBehavior: '關鍵字觸發，確認庫存相關意圖被正確識別' },
+    { tag: 'normal', input: '查詢 SKU-00123 目前在所有倉庫的庫存數量', expectedTrigger: true, expectedBehavior: '屬於庫存查詢核心情境，應該觸發並呼叫庫存查詢 tool。' },
+    { tag: 'normal', input: '台北倉現在有多少 SKU-00456 的庫存？', expectedTrigger: true, expectedBehavior: '屬於指定倉庫的庫存查詢，應該觸發。' },
+    { tag: 'normal', input: '哪些產品目前庫存低於安全存量？請列出清單', expectedTrigger: true, expectedBehavior: '屬於庫存查詢的延伸情境，應該觸發並掃描低庫存清單。' },
+    { tag: 'boundary', input: '我要查 SKU-99999，但我不確定這個 SKU 存不存在', expectedTrigger: true, expectedBehavior: '仍是庫存查詢請求，應該觸發，查無結果時再提示即可。' },
+    { tag: 'boundary', input: '這個 SKU 的建議售價應該訂多少？', expectedTrigger: false, expectedBehavior: '是定價策略問題，不是庫存查詢，不屬於這顆技能的範圍，不應該觸發。' },
+    { tag: 'trigger_edge', input: '庫存 SKU 倉庫 查詢', expectedTrigger: true, expectedBehavior: '關鍵字都指向庫存查詢意圖，應該觸發。' },
   ],
 }
 
 const DEFAULT_AI_SCENARIOS: ScenarioTemplate[] = [
-  { tag: 'normal', input: '請執行這個技能的主要功能', expectedBehavior: '技能正確觸發並執行主要功能，回傳預期輸出' },
-  { tag: 'normal', input: '我需要協助處理一個標準任務', expectedBehavior: '技能觸發，提供清晰的處理結果' },
-  { tag: 'boundary', input: '這個任務有點不一樣，你能處理嗎？', expectedBehavior: '技能在邊界情境下仍給出合理回應或適當引導' },
-  { tag: 'boundary', input: '（空白輸入）', expectedBehavior: '技能不崩潰，主動引導使用者提供必要資訊' },
-  { tag: 'trigger_edge', input: '觸發關鍵詞測試', expectedBehavior: '關鍵字觸發測試，確認技能正確識別意圖' },
+  { tag: 'normal', input: '請執行這個技能的主要功能', expectedTrigger: true, expectedBehavior: '直接對應技能的主要功能，應該觸發並回傳預期輸出。' },
+  { tag: 'normal', input: '我需要協助處理一個標準任務', expectedTrigger: true, expectedBehavior: '屬於技能能處理的標準情境，應該觸發。' },
+  { tag: 'boundary', input: '這個任務有點不一樣，你能處理嗎？', expectedTrigger: true, expectedBehavior: '雖然措辭模糊，仍在技能可處理的邊界內，應該觸發並給出合理回應。' },
+  { tag: 'boundary', input: '今天天氣真好，你覺得呢？', expectedTrigger: false, expectedBehavior: '純聊天、與技能功能無關，不應該觸發。' },
+  { tag: 'trigger_edge', input: '觸發關鍵詞測試', expectedTrigger: true, expectedBehavior: '關鍵字直接對應技能觸發意圖，應該觸發。' },
 ]
 
 const MOCK_PERSONAL_SKILLS: Skill[] = [
@@ -986,6 +994,35 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
       { title: '月底報表自動彙整', description: '每月底自動彙整銷售、庫存、財務等模組數據，產出主管需要的週期性報表初稿。' },
     ],
   },
+  {
+    // 用「AI 賦能」(SkillStudio) 的「用行銷積木組裝」方式建立——composition
+    // 記錄選了哪些章節積木，instructions/triggerHint/capabilities 都是
+    // deriveFromSections() 依選中的章節依序組出來的內容，格式要跟那份邏輯一致
+    id: 'personal-007',
+    name: '行銷週報快篩',
+    description: '結合會員輪廓、促銷成效與渠道貢獻，一鍵產出行銷週報三大重點章節',
+    type: 'extension',
+    origin: 'manually_created',
+    creationMethod: 'manual',
+    zone: 'personal',
+    personalStatus: 'available',
+    skillName: '行銷週報快篩',
+    version: '初始版本',
+    isEnabled: true,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    instructions: '依序產出以下章節：\n1. 會員人物誌：性別 × 年齡層 × 主力購買品類 × RFM 行為分群的四維輪廓。\n2. 活動排行：各促銷活動帶動效果排行，並自動生成圖表。\n3. 渠道別流量與收益貢獻：各渠道流量佔比與收益貢獻對照，圖表自動生成。',
+    triggerHint: '當使用者要求產出行銷報告，或提到「TA 用戶畫像、行銷活動成效、渠道績效」相關分析時',
+    assignedAgents: [],
+    capabilities: [
+      { name: '會員人物誌', description: '性別 × 年齡層 × 主力購買品類 × RFM 行為分群的四維輪廓。' },
+      { name: '活動排行', description: '各促銷活動帶動效果排行，並自動生成圖表。' },
+      { name: '渠道別流量與收益貢獻', description: '各渠道流量佔比與收益貢獻對照，圖表自動生成。' },
+    ],
+    files: [],
+    composition: { sectionIds: ['ta_persona', 'promo_ranking', 'ch_traffic'] },
+  },
 ]
 
 const MOCK_DRAFTS: DraftSkill[] = [
@@ -1020,6 +1057,22 @@ const MOCK_DRAFTS: DraftSkill[] = [
   },
 ]
 
+// 個人技能是否可以啟用：AI 快速測試全對，或使用者已明確選擇「視為通過」。
+// Library／系統技能（zone 不是 'personal'）不受這條規則限制，一律視為可以啟用。
+export function canEnableSkill(skill: Skill): boolean {
+  if (skill.zone !== 'personal') return true
+  return skill.aiTestPassRate === 1 || !!skill.aiTestOverridden
+}
+
+// 啟用前的檢查沒過時，決策對話框要顯示的說明文字
+export function describeAiTestGateReason(skill: Skill): string {
+  if (skill.aiTestPassRate == null) {
+    return '這顆技能還沒有做過 AI 快速測試。'
+  }
+  const percent = Math.round(skill.aiTestPassRate * 100)
+  return `上次 AI 快速測試只有 ${percent}% 答對，還沒有全部答對。`
+}
+
 export const useSkillStore = defineStore('skillStore', () => {
   const skills = ref<Skill[]>(JSON.parse(JSON.stringify(MOCK_SKILLS)))
   const myDrafts = ref<DraftSkill[]>(JSON.parse(JSON.stringify(MOCK_DRAFTS)))
@@ -1048,7 +1101,6 @@ export const useSkillStore = defineStore('skillStore', () => {
   const aiTestScenarios = ref<AITestScenario[]>([])
   const aiTestReport = ref<AITestReport | null>(null)
   const aiTestIsGenerating = ref(false)
-  const aiTestIsRunning = ref(false)
 
   const flatSkills = computed<Skill[]>(() => {
     const result: Skill[] = []
@@ -1176,6 +1228,22 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  // 使用者在啟用前的決策對話框裡選「視為通過，直接啟用」：跳過 AI 快速測試全對的要求，
+  // 記下這個選擇（aiTestOverridden），並直接把技能設成啟用
+  function overrideAndEnableSkill(id: string): void {
+    const skill = findSkill(id)
+    if (!skill) return
+    skill.aiTestOverridden = true
+    skill.isEnabled = true
+    skill.auditLog ??= []
+    skill.auditLog.unshift({
+      action: 'ENABLED',
+      by: '管理員',
+      time: new Date().toISOString(),
+    })
+    if (skill.auditLog.length > 20) skill.auditLog.length = 20
+  }
+
   function assignSkillToAgent(skillId: string, agentName: string): void {
     const skill = findSkill(skillId)
     if (!skill) return
@@ -1222,6 +1290,9 @@ export const useSkillStore = defineStore('skillStore', () => {
   // myPersonalSkillsRef」模式，只是沒有 derivedFrom（沒有來源可比對，personalStatus
   // 直接是 available，不是 draft）。createSkill() 保留給送審通過、正式發佈進 Library
   // 用（submitDraft()），不再由這裡呼叫。
+  //
+  // isEnabled 不採用 data.isEnabled：個人技能建立時一律未啟用、未測試，要先通過
+  // AI 快速測試（或使用者明確選擇略過）才能開，見 canEnableSkill()／overrideAndEnableSkill()。
   function createPersonalSkill(data: CreateSkillPayload): string {
     const id = `personal-${Date.now()}-${++personalSeq}`
     myPersonalSkillsRef.value.unshift({
@@ -1235,7 +1306,9 @@ export const useSkillStore = defineStore('skillStore', () => {
       personalStatus: 'available',
       skillName: data.name,
       version: '初始版本',
-      isEnabled: data.isEnabled,
+      isEnabled: false,
+      aiTestPassRate: null,
+      aiTestOverridden: false,
       usageCount: 0,
       testPassRate: 0,
       avgLatencyMs: 0,
@@ -1285,7 +1358,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       origin: 'manually_created',
       scope: data.scope ?? 'enterprise',
       version: '初始版本',
-      isEnabled: data.isEnabled,
+      isEnabled: data.isEnabled ?? true,
       usageCount: 0,
       testPassRate: 0,
       avgLatencyMs: 0,
@@ -1679,7 +1752,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestScenarios.value = []
     aiTestReport.value = null
     aiTestIsGenerating.value = false
-    aiTestIsRunning.value = false
   }
 
   async function generateAITestScenarios(skillId: string): Promise<void> {
@@ -1698,72 +1770,45 @@ export const useSkillStore = defineStore('skillStore', () => {
 
   function _computeAITestReport(): void {
     const all = aiTestScenarios.value
-    const allDone = all.every(s => s.status === 'pass' || s.status === 'fail')
+    const allDone = all.every(s => s.status === 'correct' || s.status === 'incorrect')
     if (!allDone) return
 
     const byTag: AITestReport['byTag'] = {
-      normal: { total: 0, passed: 0 },
-      boundary: { total: 0, passed: 0 },
-      trigger_edge: { total: 0, passed: 0 },
+      normal: { total: 0, correct: 0 },
+      boundary: { total: 0, correct: 0 },
+      trigger_edge: { total: 0, correct: 0 },
     }
     let total = 0
-    let passed = 0
+    let correct = 0
     for (const s of all) {
       byTag[s.tag].total++
       total++
-      if (s.status === 'pass') { byTag[s.tag].passed++; passed++ }
+      if (s.status === 'correct') { byTag[s.tag].correct++; correct++ }
     }
 
-    const rate = total > 0 ? passed / total : 0
-    const failedBoundary = byTag.boundary.total - byTag.boundary.passed
+    const rate = total > 0 ? correct / total : 0
     let summary: string
     if (rate === 1) {
-      summary = '所有測試情境均通過，技能行為符合預期，可考慮擴大使用範圍。'
+      summary = '全部答對！你對這顆技能該不該觸發的時機掌握得很準確。'
     } else if (rate >= 0.7) {
-      summary = failedBoundary > 0
-        ? `技能在正常情境下穩定觸發，建議調整邊界情況的觸發描述（${failedBoundary} 個案例未達預期）以提高整體覆蓋率。`
-        : `技能整體表現良好，${total - passed} 個案例有改善空間，建議檢視對應的觸發描述。`
+      summary = `答對 ${correct} / ${total} 題，整體掌握不錯，可以再看看答錯的題目，確認 triggerHint 有沒有需要補充的地方。`
     } else {
-      summary = '技能觸發穩定性有待改善，建議重新審視 triggerHint 與 instructions 的設定。'
+      summary = `答對 ${correct} / ${total} 題，建議重新檢視這顆技能的 triggerHint 與說明，再挑戰一次。`
     }
 
-    aiTestReport.value = { total, passed, byTag, summary }
+    aiTestReport.value = { total, correct, byTag, summary }
   }
 
-  async function runSingleAITest(_skillId: string, scenarioId: string): Promise<void> {
+  // 使用者對某一題作答：這句話該不該觸發這顆技能？依 expectedTrigger 立刻計分。
+  // 已作答過的題目不再改動（one-shot，避免改答案影響報告）
+  function answerAITestScenario(scenarioId: string, userAnswer: boolean): void {
     const scenario = aiTestScenarios.value.find(s => s.id === scenarioId)
-    if (!scenario || scenario.status === 'running') return
+    if (!scenario || scenario.status !== 'pending') return
 
-    scenario.status = 'running'
-    await new Promise(r => setTimeout(r, 600 + Math.floor(Math.random() * 400)))
-
-    const idx = aiTestScenarios.value.findIndex(s => s.id === scenarioId)
-    // normal 和 trigger_edge 固定通過；boundary 每三個中第二個失敗（demo 效果）
-    const passes = scenario.tag !== 'boundary' || idx % 3 !== 1
-
-    const shortInput = scenario.input.length > 40
-      ? scenario.input.slice(0, 40) + '...'
-      : scenario.input
-
-    scenario.agentReply = passes
-      ? `（Mock）已處理您的請求：「${shortInput}」，並完成對應動作。`
-      : `（Mock）您好，這個問題需要更多資訊，請提供相關細節以便進一步協助。`
-    scenario.aiJudgment = passes
-      ? '技能正確觸發，回覆內容符合預期行為。'
-      : '技能未如預期觸發，回覆為一般性回應，未執行對應功能。'
-    scenario.status = passes ? 'pass' : 'fail'
+    scenario.userAnswer = userAnswer
+    scenario.status = userAnswer === scenario.expectedTrigger ? 'correct' : 'incorrect'
 
     _computeAITestReport()
-  }
-
-  async function runAllAITests(skillId: string): Promise<void> {
-    if (aiTestIsRunning.value) return
-    aiTestIsRunning.value = true
-    const pending = aiTestScenarios.value.filter(s => s.status === 'pending')
-    for (const scenario of pending) {
-      await runSingleAITest(skillId, scenario.id)
-    }
-    aiTestIsRunning.value = false
   }
 
   function resetConversation(): void {
@@ -1820,7 +1865,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestScenarios,
     aiTestReport,
     aiTestIsGenerating,
-    aiTestIsRunning,
     flatSkills,
     enabledCount,
     enterpriseExtensionCount,
@@ -1851,6 +1895,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     updateSkill,
     updateSkillFiles,
     toggleSkill,
+    overrideAndEnableSkill,
     assignSkillToAgent,
     mergeUpstreamUpdate,
     ignoreUpstreamUpdate,
@@ -1879,8 +1924,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     getTestRunHistory,
     setSelectedSkill,
     generateAITestScenarios,
-    runSingleAITest,
-    runAllAITests,
+    answerAITestScenario,
     resetConversation,
     sendChatMessage,
   }
