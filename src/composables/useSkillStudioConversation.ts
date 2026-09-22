@@ -35,6 +35,7 @@ export interface StudioSnapshot {
 }
 
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
+const GATE_OPENING_MESSAGE = '你好，我是這裡的助理。想記一個新做法、調整既有的，還是有其他問題，都可以直接跟我說。'
 
 export function emptyDraft(): SkillDraft {
   return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [], method: null, sectionIds: [] }
@@ -299,6 +300,11 @@ export function useSkillStudioConversation() {
   const isRunning = ref(false)
   let seq = 0
 
+  const gateStage = ref<GateStage>('active')
+  const pendingSimilarSkillId = ref<string | null>(null)
+  const pausedDraft = ref<PausedDraft | null>(null)
+  const lastBuildText = ref('')
+
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
   const suggestionChips = computed<StudioSuggestion[]>(() => {
@@ -308,6 +314,47 @@ export function useSkillStudioConversation() {
 
   function push(m: Omit<StudioMessage, 'id'>) {
     messages.value.push({ id: `studio-${++seq}`, ...m })
+  }
+
+  // 建立意圖確立後的路由：清單為空就直接進既有建立邏輯（用這句話當第一句描述），
+  // 清單非空就進關卡一問清楚要沿用、改、還是開新的
+  function routeBuildIntent(text: string): void {
+    if (store.myPersonalSkills.length === 0) {
+      gateStage.value = 'active'
+      const reply = interpretStudioMessage(text, draft.value, mode.value)
+      if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
+      push({ role: 'agent', content: reply.content, actions: reply.actions })
+      return
+    }
+    lastBuildText.value = text
+    gateStage.value = 'gate1'
+    push({
+      role: 'agent',
+      content: '你現在要照公司的規定處理眼前這件事，還是要改規定、或是記一份新的?',
+      actions: [GATE1_NEW, GATE1_CUSTOM, GATE1_FOLLOW],
+    })
+  }
+
+  // gateStage !== 'active' 時，每則訊息都先經過這裡；後續 Task 會繼續往這個函式加 if 分支
+  function handleGateMessage(text: string): void {
+    const t = text.trim()
+    const stage = gateStage.value
+
+    if (stage === 'intent') {
+      const kind = classifyIntent(t)
+      if (kind === 'build') {
+        routeBuildIntent(t)
+        return
+      }
+      if (kind === 'general') {
+        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
+        return
+      }
+      lastBuildText.value = t
+      gateStage.value = 'gate0'
+      push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？', actions: [GATE0_BUILD, GATE0_GENERAL] })
+      return
+    }
   }
 
   // 無 prefill：等使用者選建立方式（method null、沒有訊息）。
@@ -328,13 +375,18 @@ export function useSkillStudioConversation() {
     snapshot.value = serialize(emptyDraft())
     messages.value = []
     seq = 0
+    // 有 prefill：來源（例如方案三 conv4 交接）已經知道使用者要幹嘛，略過整套關卡
+    gateStage.value = prefill ? 'active' : 'intent'
     if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
   function chooseMethod(method: StudioMethod): void {
     if (draft.value.method) return
     draft.value = { ...draft.value, method }
-    if (method === 'chat' && messages.value.length === 0) push({ role: 'agent', content: DEFAULT_OPENING_MESSAGE })
+    if (method === 'chat' && messages.value.length === 0) {
+      gateStage.value = 'intent'
+      push({ role: 'agent', content: GATE_OPENING_MESSAGE })
+    }
   }
 
   // 積木方式的輸入：名稱／說明直接寫；章節變動就重推導步驟／能力／觸發條件
@@ -358,6 +410,7 @@ export function useSkillStudioConversation() {
     draft.value = draftFromSkill(s)
     snapshot.value = serialize(draft.value)
     messages.value = []
+    gateStage.value = 'active'  // 修改既有技能：已經知道要幹嘛，不用再問一輪
     if (draft.value.method === 'chat') push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
     return true
   }
@@ -368,9 +421,13 @@ export function useSkillStudioConversation() {
     push({ role: 'user', content: t })
     isRunning.value = true
     await new Promise(r => setTimeout(r, 800))
-    const reply = interpretStudioMessage(t, draft.value, mode.value)
-    if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
-    push({ role: 'agent', content: reply.content, actions: reply.actions })
+    if (gateStage.value === 'active') {
+      const reply = interpretStudioMessage(t, draft.value, mode.value)
+      if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
+      push({ role: 'agent', content: reply.content, actions: reply.actions })
+    } else {
+      handleGateMessage(t)
+    }
     isRunning.value = false
   }
 
@@ -443,7 +500,7 @@ export function useSkillStudioConversation() {
   }
 
   return {
-    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips,
+    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips, gateStage,
     startCreate, chooseMethod, updateBlocks, loadSkill, send, save, updateFiles, toSnapshot, hydrate, detachSavedSkill,
   }
 }

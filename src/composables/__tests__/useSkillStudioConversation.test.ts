@@ -112,6 +112,10 @@ describe('useSkillStudioConversation', () => {
   })
 
   it('send 推入使用者訊息、800ms 後套用 patch 並推入 Agent 回覆', async () => {
+    // 清單非空時，建立意圖的訊息會先卡在 gate1（見「意圖判斷」測試）；
+    // 這裡要測的是既有 interpretStudioMessage 擬草稿邏輯本身，所以先清空清單讓 gateStage 直接進 active
+    const store = useSkillStore()
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
@@ -130,6 +134,8 @@ describe('useSkillStudioConversation', () => {
 
   it('save 於建立模式呼叫 createPersonalSkill（ai_assisted）、轉成 edit 模式並清除 dirty', async () => {
     const store = useSkillStore()
+    // 清單非空時，建立意圖的訊息會先卡在 gate1；這裡要測的是 save 本身，先清空清單讓 gateStage 直接進 active
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
@@ -220,6 +226,9 @@ describe('useSkillStudioConversation', () => {
   })
 
   it('toSnapshot / hydrate 往返：內容一致、create 模式下 hydrate 後 isDirty=true（內容與空白不同）、之後新訊息 id 不重複', async () => {
+    // 清單非空時，建立意圖的訊息會先卡在 gate1；這裡要測的是 toSnapshot/hydrate 本身，先清空清單讓 gateStage 直接進 active
+    const store = useSkillStore()
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const a = useSkillStudioConversation()
     a.startCreate()
     a.chooseMethod('chat')
@@ -279,7 +288,9 @@ describe('useSkillStudioConversation', () => {
     a.chooseMethod('chat')
     expect(a.draft.value.method).toBe('chat')
     expect(a.messages.value).toHaveLength(1)
-    expect(a.messages.value[0].content).toBe(DEFAULT_OPENING_MESSAGE)
+    // 無 prefill 走意圖判斷關卡（見「gateStage：進入點」），開場白不是既有 DEFAULT_OPENING_MESSAGE
+    expect(a.messages.value[0].content).not.toBe(DEFAULT_OPENING_MESSAGE)
+    expect(a.gateStage.value).toBe('intent')
     const b = useSkillStudioConversation()
     b.startCreate()
     b.chooseMethod('blocks')
@@ -457,5 +468,84 @@ describe('formatDraftSummary', () => {
     const summary = formatDraftSummary(emptyDraft())
     expect(summary).not.toContain('名稱：\n')
     expect(summary).toContain('未命名')
+  })
+})
+
+describe('gateStage：進入點', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('全新對話（無 prefill）選「用對話建立」：gateStage 是 intent，且推一句開場白（不是既有 DEFAULT_OPENING_MESSAGE）', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value).toHaveLength(1)
+    expect(c.messages.value[0].role).toBe('agent')
+  })
+
+  it('有 prefill（例如方案三 conv4 交接）：gateStage 直接是 active，略過整套關卡', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate({ name: '產品銷售報告整理' }, '開場白')
+    expect(c.gateStage.value).toBe('active')
+  })
+
+  it('loadSkill（修改既有技能）：gateStage 直接是 active', () => {
+    const c = useSkillStudioConversation()
+    expect(c.loadSkill('personal-001')).toBe(true)
+    expect(c.gateStage.value).toBe('active')
+  })
+})
+
+describe('意圖判斷（gateStage intent）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  it('清單為空＋建立意圖：直接 gateStage=active，且用既有 interpretStudioMessage 邏輯把這句話當成第一句描述來擬草稿', async () => {
+    const store = useSkillStore()
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    expect(c.gateStage.value).toBe('active')
+    expect(c.draft.value.name).toBeTruthy()
+  })
+
+  it('清單非空＋建立意圖：gateStage 轉 gate1，推出三個選項', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能')
+    expect(c.gateStage.value).toBe('gate1')
+    const last = c.messages.value.at(-1)!
+    expect(last.actions?.map(a => a.label)).toEqual(['記一份新的', '改現有規定（走客製路線）', '照現有規定'])
+  })
+
+  it('一般問答意圖：推 TODO 佔位訊息，gateStage 維持 intent', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '現在庫存多少？')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('太模糊：gateStage 轉 gate0，推兩個選項', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
+    expect(c.gateStage.value).toBe('gate0')
+    const last = c.messages.value.at(-1)!
+    expect(last.actions?.map(a => a.label)).toEqual(['記技能', '單純問事情'])
   })
 })
