@@ -66,32 +66,11 @@
   }
 }
 
-.ai-progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  .ai-progress-text {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-
-  .ai-progress-bar {
-    width: 100px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--divider-a50);
-    overflow: hidden;
-  }
-
-  .ai-progress-fill {
-    height: 100%;
-    background: $color_main_1;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
+.ai-progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 // ── ② Scenario list ──
@@ -114,9 +93,8 @@
   gap: 8px;
   transition: border-color 0.2s;
 
-  &.status--pass { border-left: 3px solid $color_main_1; }
-  &.status--fail { border-left: 3px solid $color_red_1; }
-  &.status--running { opacity: 0.85; }
+  &.status--correct { border-left: 3px solid $color_main_1; }
+  &.status--incorrect { border-left: 3px solid $color_red_1; }
 }
 
 .scenario-header {
@@ -164,22 +142,6 @@
 
   .material-symbols-outlined { font-size: 16px; }
 
-  &.badge--running {
-    gap: 3px;
-    color: var(--text-muted);
-
-    .spinner-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: currentColor;
-      animation: ai-bounce 1.2s infinite ease-in-out;
-
-      &:nth-child(2) { animation-delay: 0.2s; }
-      &:nth-child(3) { animation-delay: 0.4s; }
-    }
-  }
-
   &.badge--pass { color: var(--success); }
   &.badge--fail { color: var(--danger); }
 }
@@ -190,64 +152,16 @@
   line-height: 1.5;
 }
 
-.scenario-expected {
-  font-size: 12px;
+.scenario-question {
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text-muted);
-  background: var(--page-bg);
-  border-radius: 6px;
-  padding: 6px 10px;
-  line-height: 1.5;
+  margin: 0;
 }
 
-// ── Result expansion ──
-.scenario-result {
-  margin-top: 4px;
-  border-top: 1px solid var(--divider-a50);
-  padding-top: 10px;
+.scenario-answer-btns {
   display: flex;
-  flex-direction: column;
   gap: 8px;
-}
-
-.result-reply {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  .result-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .reply-text {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-
-    &.is-expanded {
-      display: block;
-      -webkit-line-clamp: unset;
-    }
-  }
-
-  .expand-btn {
-    align-self: flex-start;
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 12px;
-    color: $color_main_1;
-    cursor: pointer;
-
-    &:hover { text-decoration: underline; }
-  }
 }
 
 .result-judgment {
