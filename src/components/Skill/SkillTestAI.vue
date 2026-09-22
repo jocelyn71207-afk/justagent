@@ -18,30 +18,13 @@
       </button>
     </div>
 
-    <!-- ② Scenarios -->
+    <!-- ② Scenarios：選擇題形式，AI 出題、使用者判斷該不該觸發 -->
     <template v-else>
       <div class="ai-toolbar">
         <div class="ai-toolbar-left">
-          <button
-            class="custom-btn"
-            :disabled="store.aiTestIsRunning || allDone"
-            @click="runAll"
-          >
-            <i class="material-symbols-outlined">rocket_launch</i>
-            全部執行
-          </button>
-          <div v-if="store.aiTestIsRunning" class="ai-progress">
-            <span class="ai-progress-text">{{ completedCount }} / {{ store.aiTestScenarios.length }}</span>
-            <div class="ai-progress-bar">
-              <div class="ai-progress-fill" :style="{ width: progressPct + '%' }"></div>
-            </div>
-          </div>
+          <span class="ai-progress-text">已作答 {{ answeredCount }} / {{ store.aiTestScenarios.length }}</span>
         </div>
-        <button
-          class="custom-btn"
-          :disabled="store.aiTestIsRunning"
-          @click="regenerate"
-        >
+        <button class="custom-btn" @click="regenerate">
           <i class="material-symbols-outlined">refresh</i>
           重新生成
         </button>
@@ -56,48 +39,29 @@
           <div class="scenario-header">
             <span :class="['scenario-tag', `tag--${sc.tag}`]">{{ tagLabel(sc.tag) }}</span>
             <div class="scenario-actions">
-              <button
-                v-if="sc.status === 'pending'"
-                class="custom-btn custom-btn--sm"
-                :disabled="store.aiTestIsRunning"
-                @click="runOne(sc.id)"
-              >
-                執行
-              </button>
-              <span v-else-if="sc.status === 'running'" class="status-badge badge--running">
-                <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span>
+              <span v-if="sc.status === 'correct'" class="status-badge badge--pass">
+                <i class="material-symbols-outlined">check_circle</i>答對了
               </span>
-              <span v-else-if="sc.status === 'pass'" class="status-badge badge--pass">
-                <i class="material-symbols-outlined">check_circle</i>通過
-              </span>
-              <span v-else-if="sc.status === 'fail'" class="status-badge badge--fail">
-                <i class="material-symbols-outlined">cancel</i>失敗
+              <span v-else-if="sc.status === 'incorrect'" class="status-badge badge--fail">
+                <i class="material-symbols-outlined">cancel</i>答錯了
               </span>
             </div>
           </div>
 
           <div class="scenario-input">{{ sc.input }}</div>
-          <div class="scenario-expected">{{ sc.expectedBehavior }}</div>
+          <p class="scenario-question">這句話該不該觸發這顆技能？</p>
 
-          <div v-if="sc.agentReply" class="scenario-result">
-            <div class="result-reply">
-              <span class="result-label">Agent 回覆</span>
-              <span :class="['reply-text', { 'is-expanded': expanded.has(sc.id) }]">
-                {{ sc.agentReply }}
-              </span>
-              <button
-                v-if="!expanded.has(sc.id)"
-                class="expand-btn"
-                @click="expand(sc.id)"
-              >展開</button>
-            </div>
-            <div :class="['result-judgment', sc.status === 'pass' ? 'judgment--pass' : 'judgment--fail']">
-              <i class="material-symbols-outlined">
-                {{ sc.status === 'pass' ? 'check_circle' : 'cancel' }}
-              </i>
-              <strong>{{ sc.status === 'pass' ? '通過' : '失敗' }}</strong>
-              <span>{{ sc.aiJudgment }}</span>
-            </div>
+          <div v-if="sc.status === 'pending'" class="scenario-answer-btns">
+            <button class="custom-btn custom-btn--sm" @click="answer(sc.id, true)">該觸發</button>
+            <button class="custom-btn custom-btn--sm" @click="answer(sc.id, false)">不該觸發</button>
+          </div>
+
+          <div v-else :class="['result-judgment', sc.status === 'correct' ? 'judgment--pass' : 'judgment--fail']">
+            <i class="material-symbols-outlined">
+              {{ sc.status === 'correct' ? 'check_circle' : 'cancel' }}
+            </i>
+            <strong>{{ sc.status === 'correct' ? '答對了' : '答錯了' }}</strong>
+            <span>正確答案是「{{ sc.expectedTrigger ? '該觸發' : '不該觸發' }}」。{{ sc.expectedBehavior }}</span>
           </div>
         </div>
 
@@ -106,7 +70,7 @@
           <div class="report-header">
             <span class="report-title">測試報告</span>
             <span class="report-rate">
-              {{ store.aiTestReport.passed }} / {{ store.aiTestReport.total }}
+              {{ store.aiTestReport.correct }} / {{ store.aiTestReport.total }} 答對
               <em>（{{ ratePercent }}%）</em>
             </span>
           </div>
@@ -118,14 +82,14 @@
             >
               <span :class="['scenario-tag', `tag--${tag}`]">{{ label }}</span>
               <span class="tag-stat">
-                {{ store.aiTestReport.byTag[tag as AITestTag].passed }}
+                {{ store.aiTestReport.byTag[tag as AITestTag].correct }}
                 / {{ store.aiTestReport.byTag[tag as AITestTag].total }}
               </span>
               <i
                 class="material-symbols-outlined tag-result-icon"
-                :class="store.aiTestReport.byTag[tag as AITestTag].passed === store.aiTestReport.byTag[tag as AITestTag].total && store.aiTestReport.byTag[tag as AITestTag].total > 0 ? 'icon--pass' : 'icon--fail'"
+                :class="store.aiTestReport.byTag[tag as AITestTag].correct === store.aiTestReport.byTag[tag as AITestTag].total && store.aiTestReport.byTag[tag as AITestTag].total > 0 ? 'icon--pass' : 'icon--fail'"
               >
-                {{ store.aiTestReport.byTag[tag as AITestTag].passed === store.aiTestReport.byTag[tag as AITestTag].total && store.aiTestReport.byTag[tag as AITestTag].total > 0 ? 'check_circle' : 'error' }}
+                {{ store.aiTestReport.byTag[tag as AITestTag].correct === store.aiTestReport.byTag[tag as AITestTag].total && store.aiTestReport.byTag[tag as AITestTag].total > 0 ? 'check_circle' : 'error' }}
               </i>
             </div>
           </div>
@@ -138,14 +102,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { AITestTag } from '@/stores/skillStore'
 
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
-
-const expanded = ref(new Set<string>())
 
 const TAG_LABELS: Record<AITestTag, string> = {
   normal: '正常流程',
@@ -157,24 +119,13 @@ function tagLabel(tag: AITestTag): string {
   return TAG_LABELS[tag]
 }
 
-const completedCount = computed(() =>
-  store.aiTestScenarios.filter(s => s.status === 'pass' || s.status === 'fail').length
-)
-
-const progressPct = computed(() =>
-  store.aiTestScenarios.length
-    ? Math.round((completedCount.value / store.aiTestScenarios.length) * 100)
-    : 0
-)
-
-const allDone = computed(() =>
-  store.aiTestScenarios.length > 0 &&
-  store.aiTestScenarios.every(s => s.status === 'pass' || s.status === 'fail')
+const answeredCount = computed(() =>
+  store.aiTestScenarios.filter(s => s.status !== 'pending').length
 )
 
 const ratePercent = computed(() => {
-  if (!store.aiTestReport) return 0
-  return Math.round((store.aiTestReport.passed / store.aiTestReport.total) * 100)
+  if (!store.aiTestReport || !store.aiTestReport.total) return 0
+  return Math.round((store.aiTestReport.correct / store.aiTestReport.total) * 100)
 })
 
 function generate() {
@@ -182,19 +133,10 @@ function generate() {
 }
 
 function regenerate() {
-  expanded.value.clear()
   store.generateAITestScenarios(props.skillId)
 }
 
-function runAll() {
-  store.runAllAITests(props.skillId)
-}
-
-function runOne(scenarioId: string) {
-  store.runSingleAITest(props.skillId, scenarioId)
-}
-
-function expand(id: string) {
-  expanded.value = new Set([...expanded.value, id])
+function answer(scenarioId: string, userAnswer: boolean) {
+  store.answerAITestScenario(props.skillId, scenarioId, userAnswer)
 }
 </script>

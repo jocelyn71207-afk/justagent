@@ -1766,9 +1766,16 @@ export const useSkillStore = defineStore('skillStore', () => {
       status: 'pending',
     }))
     aiTestIsGenerating.value = false
+    // 新一批題目，舊的測試結果不算數：重設這顆技能的測試狀態（不動 isEnabled，
+    // 已經啟用的技能不會因為重新出題就被打回停用，見 canEnableSkill 只管「切成啟用」這個動作本身）
+    const skill = findSkill(skillId)
+    if (skill) {
+      skill.aiTestPassRate = null
+      skill.aiTestOverridden = false
+    }
   }
 
-  function _computeAITestReport(): void {
+  function _computeAITestReport(skillId: string): void {
     const all = aiTestScenarios.value
     const allDone = all.every(s => s.status === 'correct' || s.status === 'incorrect')
     if (!allDone) return
@@ -1797,18 +1804,26 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
 
     aiTestReport.value = { total, correct, byTag, summary }
+
+    // 把這輪測驗的答對比例寫回技能記錄，供 canEnableSkill() 判斷能不能啟用；
+    // 全對的話順便把先前的「視為通過」覆蓋標記清掉——這次是真的靠自己過關，不需要再靠 override
+    const skill = findSkill(skillId)
+    if (skill) {
+      skill.aiTestPassRate = rate
+      if (rate === 1) skill.aiTestOverridden = false
+    }
   }
 
   // 使用者對某一題作答：這句話該不該觸發這顆技能？依 expectedTrigger 立刻計分。
   // 已作答過的題目不再改動（one-shot，避免改答案影響報告）
-  function answerAITestScenario(scenarioId: string, userAnswer: boolean): void {
+  function answerAITestScenario(skillId: string, scenarioId: string, userAnswer: boolean): void {
     const scenario = aiTestScenarios.value.find(s => s.id === scenarioId)
     if (!scenario || scenario.status !== 'pending') return
 
     scenario.userAnswer = userAnswer
     scenario.status = userAnswer === scenario.expectedTrigger ? 'correct' : 'incorrect'
 
-    _computeAITestReport()
+    _computeAITestReport(skillId)
   }
 
   function resetConversation(): void {
