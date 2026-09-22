@@ -787,24 +787,32 @@ describe('暫存草稿的接續判斷', () => {
     await p
   }
 
-  async function pauseWithDraft(c: ReturnType<typeof useSkillStudioConversation>, skillName: string) {
+  // 回傳暫停當下（「我要講別的」那句已計入）快照的訊息數，讓呼叫端能驗證
+  // 還原後的 messages.value 長度剛好是「暫停快照＋一句銜接語」，藉此鎖定
+  // 「接續觸發句不會混進最終還原的對話紀錄」這個行為（見 Step 3 code 下方的注意事項）
+  async function pauseWithDraft(c: ReturnType<typeof useSkillStudioConversation>, skillName: string): Promise<number> {
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, `幫我記一個${skillName}的做法`)
     await sendAndWait(c, '記一份新的')
+    const pausedMessageCount = c.messages.value.length + 1 // +1：即將送出、會被存進快照的「我要講別的」
     await sendAndWait(c, '我要講別的')
+    return pausedMessageCount
   }
 
-  it('訊息含接續關鍵字：還原暫停當下的 gateStage／messages／draft，推一句銜接語', async () => {
+  it('訊息含接續關鍵字：還原暫停當下的 gateStage／messages／draft，推一句銜接語，接續觸發句不會留在還原後的訊息裡', async () => {
     const store = useSkillStore()
     const target = store.myPersonalSkills[0]
     const c = useSkillStudioConversation()
-    await pauseWithDraft(c, target.name)
+    const pausedMessageCount = await pauseWithDraft(c, target.name)
     expect(c.gateStage.value).toBe('intent')
 
     await sendAndWait(c, '我們繼續剛才的')
 
     expect(c.gateStage.value).toBe('gate2')
+    // 還原後只多了一句銜接語：暫存快照本身的訊息數＋1，觸發句「我們繼續剛才的」沒有被塞進去
+    expect(c.messages.value.length).toBe(pausedMessageCount + 1)
+    expect(c.messages.value.some(m => m.content.includes('我們繼續剛才的'))).toBe(false)
     const last = c.messages.value.at(-1)!
     expect(last.content).toContain('繼續')
   })
