@@ -175,8 +175,8 @@
                   <span v-else class="se-empty">（未指派）</span>
                 </span>
               </div>
-              <div class="se-confirm-row se-confirm-row--toggle">
-                <span class="se-confirm-key">{{ isEditMode ? '啟用狀態' : '建立後立即啟用' }}</span>
+              <div v-if="isEditMode" class="se-confirm-row se-confirm-row--toggle">
+                <span class="se-confirm-key">啟用狀態</span>
                 <label class="se-toggle">
                   <input type="checkbox" v-model="form.isEnabled" />
                   <span class="se-toggle-track"></span>
@@ -187,7 +187,7 @@
 
           <p class="se-confirm-note">
             <i class="material-symbols-outlined">info</i>
-            {{ isEditMode ? '儲存後變更立即生效。' : '建立後可在技能管理頁隨時編輯或停用此技能。' }}
+            {{ isEditMode ? '儲存後變更立即生效。' : '建立後請先在「AI 快速測試」通過測試（或選擇略過）才能啟用。' }}
           </p>
         </template>
 
@@ -221,6 +221,34 @@
         </div>
       </div>
 
+      <!-- 啟用前的測試閘門：個人技能沒通過 AI 快速測試（或沒明確選擇略過）時，
+           勾了「啟用狀態」送出也不直接生效，改問清楚要怎麼處理 -->
+      <Teleport to="body">
+        <Transition name="confirm-fade">
+          <div
+            v-if="enableGateBlocked"
+            class="drawer-confirm-overlay"
+            @click.self="enableGateBlocked = false"
+          >
+            <div class="drawer-confirm-dialog enable-gate-dialog">
+              <div class="confirm-icon confirm-icon--update">
+                <i class="material-symbols-outlined">rule</i>
+              </div>
+              <h4>還不能啟用「{{ form.name }}」</h4>
+              <p>{{ existingSkill ? describeAiTestGateReason(existingSkill) : '' }}</p>
+              <div class="confirm-actions confirm-actions--column">
+                <button class="custom-btn" @click="handleEnableGateRevise">
+                  <i class="material-symbols-outlined">forum</i>去修改技能內容
+                </button>
+                <button class="custom-btn custom-main-btn" @click="handleEnableGateOverride">
+                  <i class="material-symbols-outlined">check_circle</i>視為通過，直接啟用
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
     </div>
   </div>
 </template>
@@ -231,7 +259,7 @@ import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
-import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
+import { useSkillStore, AVAILABLE_AGENTS, canEnableSkill, describeAiTestGateReason } from '@/stores/skillStore'
 import type { DraftSkill, SkillFile, SkillCapability } from '@/stores/skillStore'
 
 const router = useRouter()
@@ -248,6 +276,8 @@ const isDraftMode = !!draftId
 
 const existingSkill = editSkillId ? store.findSkill(editSkillId) : null
 const existingDraft = draftId ? (store.myDrafts as DraftSkill[]).find(d => d.id === draftId) ?? null : null
+
+const enableGateBlocked = ref(false)
 
 const hasNameConflict = computed(() => {
   if (!existingSkill || existingSkill.zone !== 'personal' || !existingSkill.derivedFrom) return false
@@ -291,9 +321,8 @@ function toggleAgent(agent: string) {
   else form.assignedAgents.splice(idx, 1)
 }
 
-function handleSubmit() {
-  if (!form.name.trim()) return
-  const payload = {
+function buildPayload() {
+  return {
     name: form.name.trim(),
     instructions: form.instructions.trim(),
     triggerHint: form.triggerHint.trim(),
@@ -305,6 +334,22 @@ function handleSubmit() {
       .filter(c => c.name.trim())
       .map(c => ({ name: c.name.trim(), description: c.description.trim() })),
   }
+}
+
+function handleSubmit() {
+  if (!form.name.trim()) return
+
+  // 編輯模式下，如果是「原本停用、這次要切成啟用」而且還沒過測試關卡，攔下整次送出，
+  // 不呼叫 updateSkill；只有 zone === 'personal' 的技能受這條規則限制
+  if (
+    isEditMode && editSkillId && existingSkill?.zone === 'personal' &&
+    form.isEnabled && !existingSkill.isEnabled && !canEnableSkill(existingSkill)
+  ) {
+    enableGateBlocked.value = true
+    return
+  }
+
+  const payload = buildPayload()
   if (isDraftMode && draftId) {
     store.updateDraft(draftId, payload)
   } else if (isEditMode && editSkillId) {
@@ -313,6 +358,22 @@ function handleSubmit() {
     // 全新建立一律先進個人技能區，不需要送審就能個人使用（跟「建立副本」同一套模式）
     store.createPersonalSkill(payload)
   }
+  router.push('/view/Skills')
+}
+
+function handleEnableGateRevise() {
+  enableGateBlocked.value = false
+  if (!editSkillId) return
+  router.push({ name: 'SkillStudio', query: { skillId: editSkillId } })
+}
+
+function handleEnableGateOverride() {
+  if (!editSkillId) return
+  store.overrideAndEnableSkill(editSkillId)
+  enableGateBlocked.value = false
+  // 覆蓋只處理 isEnabled；表單其餘欄位的變更照樣送出，isEnabled 明確帶 true
+  // （剛剛已經翻成 true 的現況），不要帶表單裡過期的 false 把它蓋回去
+  store.updateSkill(editSkillId, { ...buildPayload(), isEnabled: true })
   router.push('/view/Skills')
 }
 </script>
