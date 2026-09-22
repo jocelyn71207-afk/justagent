@@ -25,7 +25,6 @@ describe('AppMenuTree 團隊切換器依企業篩選', () => {
     await router.push('/view/TeamProject')
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const names = wrapper.findAll('.team-switch-list .team-switch-name').map(n => n.text())
 
@@ -45,7 +44,6 @@ describe('AppMenuTree 團隊切換器依企業篩選', () => {
     await companyRows[1].trigger('click') // 第二間企業
     await flushPromises()
 
-    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const names = wrapper.findAll('.team-switch-list .team-switch-name').map(n => n.text())
 
