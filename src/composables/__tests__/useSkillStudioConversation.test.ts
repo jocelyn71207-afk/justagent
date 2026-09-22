@@ -617,3 +617,71 @@ describe('關卡 0／關卡一／相似做法比對', () => {
     expect(c.gateStage.value).toBe('clarify')
   })
 })
+
+describe('關卡二與暫存草稿', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  async function reachGate2(c: ReturnType<typeof useSkillStudioConversation>, skillName: string) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, `幫我記一個${skillName}的做法`)
+    await sendAndWait(c, '記一份新的')
+  }
+
+  it('關卡二選「照現有規定做」：推 TODO 佔位，gateStage 轉 active，清掉 pendingSimilarSkillId', async () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    await reachGate2(c, store.myPersonalSkills[0].name)
+    expect(c.gateStage.value).toBe('gate2')
+    await sendAndWait(c, '照現有規定做')
+    expect(c.gateStage.value).toBe('active')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('關卡二選「改他」：帶入該技能內容進入修改模式，gateStage 轉 active', async () => {
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    await reachGate2(c, target.name)
+    await sendAndWait(c, '改他')
+    expect(c.gateStage.value).toBe('active')
+    expect(c.mode.value).toBe('edit')
+    expect(c.savedSkillId.value).toBe(target.id)
+    expect(c.draft.value.name).toBe(target.name)
+  })
+
+  it('關卡二選「另外新增一份」：空白開始，gateStage 轉 clarify，草稿沒有帶入相近技能的內容', async () => {
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    await reachGate2(c, target.name)
+    await sendAndWait(c, '另外新增一份')
+    expect(c.gateStage.value).toBe('clarify')
+    expect(c.draft.value.name).toBe('')
+    expect(c.draft.value.instructions).toBe('')
+  })
+
+  it('關卡二選「我要講別的」：暫存目前對話與草稿，gateStage 回 intent 處理新話題', async () => {
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    await reachGate2(c, target.name)
+    const messagesBeforePause = c.messages.value.length
+    await sendAndWait(c, '我要講別的')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.length).toBeLessThan(messagesBeforePause)
+    // 換個新話題照常走一輪意圖判斷
+    await sendAndWait(c, '現在庫存多少？')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+})

@@ -399,6 +399,54 @@ export function useSkillStudioConversation() {
       })
       return
     }
+
+    if (stage === 'gate2') {
+      if (t === GATE2_FOLLOW.label) {
+        pendingSimilarSkillId.value = null
+        gateStage.value = 'active'
+        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
+        return
+      }
+      if (t === GATE2_EDIT.label) {
+        const id = pendingSimilarSkillId.value
+        pendingSimilarSkillId.value = null
+        if (id) loadSkill(id)
+        return
+      }
+      if (t === GATE2_NEW.label) {
+        pendingSimilarSkillId.value = null
+        draft.value = emptyDraft()
+        gateStage.value = 'clarify'
+        push({ role: 'agent', content: '好，那我們重新開一份。請描述這份做法的內容。' })
+        return
+      }
+      if (t === GATE2_ELSE.label) {
+        pausedDraft.value = {
+          gateStage: 'gate2',
+          messages: [...messages.value],
+          draft: { ...draft.value },
+          pendingSimilarSkillId: pendingSimilarSkillId.value,
+        }
+        pendingSimilarSkillId.value = null
+        draft.value = emptyDraft()
+        messages.value = []
+        // 刻意不重設 seq：pausedDraft.messages 裡還留著用舊 seq 產生的訊息 id，
+        // 之後 Task 6 接回來時會把這些訊息原封不動塞回 messages.value；如果這裡把
+        // seq 歸零，接下來這段新話題（甚至同一輪還沒接回去前）推的新訊息就會產生
+        // 跟 paused.messages 撞號的 id（例如都從 studio-1 開始），SkillStudioChat.vue
+        // 用 :key="msg.id" 渲染會出問題。seq 只增不減才能保證任何時候都不撞號
+        gateStage.value = 'intent'
+        push({ role: 'agent', content: '好，你想問什麼或想做什麼？' })
+        return
+      }
+      const similar = pendingSimilarSkillId.value ? store.findSkill(pendingSimilarSkillId.value) : null
+      push({
+        role: 'agent',
+        content: `您已經有一份「${similar?.name ?? ''}」，這次要沿用他、改他還是記一份新的？`,
+        actions: [GATE2_FOLLOW, GATE2_EDIT, GATE2_NEW, GATE2_ELSE],
+      })
+      return
+    }
   }
 
   // 無 prefill：等使用者選建立方式（method null、沒有訊息）。
