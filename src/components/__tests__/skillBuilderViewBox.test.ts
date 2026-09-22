@@ -41,7 +41,9 @@ describe('skillBuilderViewBox', () => {
     expect(block.data.data.snapshot.draft.method).toBe('chat')
     expect(block.data.data.activeTab).toBe('chat')
     expect(wrapper.findAll('.skb-tab-btn').map(t => t.text())).toEqual([expect.stringContaining('對話'), expect.stringContaining('預覽'), expect.stringContaining('測試')])
-    expect(wrapper.text()).toContain('技能建立助理')
+    // 無 prefill 走意圖判斷關卡（見 useSkillStudioConversation 的 gateStage：進入點），
+    // 開場白不是既有的 DEFAULT_OPENING_MESSAGE（'...技能建立助理...'）
+    expect(wrapper.text()).toContain('這裡的助理')
     await wrapper.findAll('.skb-tab-btn')[1].trigger('click')
     expect(block.data.data.activeTab).toBe('preview')
     expect(wrapper.find('.ssp-tabs').exists()).toBe(false)
@@ -64,6 +66,10 @@ describe('skillBuilderViewBox', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
       const { wrapper, block } = mountBlock()
+      // 清單非空時，建立意圖的訊息會先卡在 gate1（見 useSkillStudioConversation 的意圖判斷關卡）；
+      // 這裡要測的是草稿變動寫回 snapshot 本身，先清空清單讓 chat 建立訊息直接進 active、照舊擬草稿
+      const skillStore = useSkillStore()
+      skillStore.myPersonalSkills.forEach(s => skillStore.deletePersonalSkill(s.id))
       await wrapper.findAll('.smc-card')[0].trigger('click')
       await flushPromises()
       const input = wrapper.find('.SkillStudioChat input.custom-input')

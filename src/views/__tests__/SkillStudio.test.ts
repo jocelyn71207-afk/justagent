@@ -90,6 +90,9 @@ describe('SkillStudio', () => {
       const { wrapper } = await mountAt()
       await chooseChat(wrapper)
       const store = useSkillStore()
+      // 清單非空時，建立意圖的訊息會先卡在 gate1（見 useSkillStudioConversation 的意圖判斷關卡）；
+      // 這裡要測的是送出訊息→草稿→儲存本身，先清空清單讓 chat 建立訊息直接進 active、照舊擬草稿
+      store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
       const before = store.myPersonalSkills.length
       const input = wrapper.find('.SkillStudioChat input.custom-input')
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
@@ -121,10 +124,18 @@ describe('SkillStudio', () => {
     try {
       const { wrapper } = await mountAt()
       await chooseChat(wrapper)
+      const store = useSkillStore()
+      // 清單非空時，建立意圖的訊息會先卡在 gate1（見 useSkillStudioConversation 的意圖判斷關卡）；
+      // 這裡要測的是名稱衝突 banner 本身，先清空清單讓 chat 建立訊息直接進 active、照舊擬草稿，
+      // 草稿擬好之後再直接呼叫 store 補回一顆同名（週報自動生成）的個人技能來觸發衝突判斷
+      store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
       const input = wrapper.find('.SkillStudioChat input.custom-input')
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
       await input.trigger('keydown.enter')
       await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      store.createPersonalSkill({ name: '週報自動生成', instructions: '', triggerHint: '', assignedAgents: [] })
       await flushPromises()
 
       await input.setValue('名稱改成「週報自動生成」')

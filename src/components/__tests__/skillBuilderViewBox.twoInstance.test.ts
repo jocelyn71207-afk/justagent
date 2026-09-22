@@ -33,6 +33,9 @@ describe('two skillBuilderViewBox instances on one block', () => {
     try {
       const store = useAiviewerStore()
       const skillStore = useSkillStore()
+      // 清單非空時，建立意圖的訊息會先卡在 gate1（見 useSkillStudioConversation 的意圖判斷關卡）；
+      // 這裡要測的是雙實例同步本身，先清空清單讓 chat 建立訊息直接進 active、照舊擬草稿
+      skillStore.myPersonalSkills.forEach(s => skillStore.deletePersonalSkill(s.id))
       const before = skillStore.myPersonalSkills.length
       const id = store.addSkillBuilderBlock()
       const block = store.aiViewerBlocks.find((b: any) => b.id === id)
