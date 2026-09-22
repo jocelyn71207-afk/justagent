@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { ChatMessage, Skill, SkillCapability, SkillFile } from '@/stores/skillStore'
+export type { Skill }
 import { REPORT_CATEGORIES, SECTION_MAP } from '@/constants/reportSections'
 
 // AI 賦能（SkillStudio）的對話狀態與規則式 mock 回覆。
