@@ -29,6 +29,25 @@ function mountBlock(init?: Parameters<ReturnType<typeof useAiviewerStore>['addSk
   return { wrapper, store, id, block, router }
 }
 
+// 掛第二個實例在同一顆 block 上（模擬全螢幕／畫布兩個實例同步），沿用同一顆 block.data
+// 讓它 hydrate 目前的 snapshot——用來驗證 gateStage 有沒有正確跟著快照一起還原（見下方測試）
+function mountOn(id: string, block: any) {
+  const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+      { path: '/', component: { template: '<div/>' } },
+      { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
+      { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
+      { path: '/view/SkillTest', name: 'SkillTest', component: { template: '<div/>' } },
+      { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
+    ],
+  })
+  return mount(skillBuilderViewBox, {
+    props: { id, source: block.data },
+    global: { plugins: [router], stubs: { SkillTestAI: true, SkillFileUpload: true }, directives: { tooltip: {} } },
+  })
+}
+
 describe('skillBuilderViewBox', () => {
   beforeEach(() => { setActivePinia(createPinia()); vi.clearAllMocks() })
 
@@ -172,5 +191,83 @@ describe('skillBuilderViewBox', () => {
     const { wrapper } = mountBlock({ prefill: { name: 'x', instructions: '1. a' }, openingMessage: '開場' })
     expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
     expect(wrapper.find('.SkillStudioChat').exists()).toBe(true)
+  })
+
+  // 不清空個人技能清單（故意跟本檔其他測試相反）：關卡流程只有在清單非空時才會走 gate1／gate2，
+  // 之前所有走到聊天建立流程的測試都先清空清單以繞開關卡、直接落到 active，導致 gateStage 不是
+  // 'active' 時聊天面板真的被掛載渲染這件事，從來沒有被任何一個元件層級的測試驗證過
+  it('對話建立走到關卡二：聊天面板全程保持掛載，chip 選「另外新增一份」後不會被方式選擇畫面取代；另一實例 hydrate 同一份 gate2 快照後，點同一顆 chip 仍走關卡路由（不會誤判成自由輸入把 chip 文字寫進技能名稱）', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const skillStore = useSkillStore()
+      const target = skillStore.myPersonalSkills[0]
+
+      // 訊息是累積的，舊訊息的 chip 也還留在 DOM 裡；只取「最後一則訊息」的 chip 才對得到
+      // 「現在這一輪」該顯示的選項
+      function lastChips(w: ReturnType<typeof mount>) {
+        return w.findAll('.chat-bubble').at(-1)!.findAll('.ssc-action-chip')
+      }
+
+      async function reachGate2(w: ReturnType<typeof mount>) {
+        await w.findAll('.smc-card')[0].trigger('click')
+        await flushPromises()
+        const input = w.find('.SkillStudioChat input.custom-input')
+        await input.setValue(`幫我記一個${target.name}的做法`)
+        await input.trigger('keydown.enter')
+        await vi.advanceTimersByTimeAsync(800)
+        await flushPromises()
+        // 關卡一：聊天面板還在，chip 正確
+        expect(w.find('.SkillStudioChat').exists()).toBe(true)
+        const gate1Chips = lastChips(w)
+        expect(gate1Chips.map(c => c.text())).toEqual(['記一份新的', '改現有規定（走客製路線）', '照現有規定'])
+        await gate1Chips.find(c => c.text() === '記一份新的')!.trigger('click')
+        await vi.advanceTimersByTimeAsync(800)
+        await flushPromises()
+        // 關卡二：找到相近做法，聊天面板還在、方式選擇畫面沒有出現，chip 帶技能名稱
+        expect(w.find('.SkillMethodChooser').exists()).toBe(false)
+        expect(w.find('.SkillStudioChat').exists()).toBe(true)
+        const gate2Chips = lastChips(w)
+        expect(gate2Chips.map(c => c.text())).toEqual(['照現有規定做', '改他', '另外新增一份', '我要講別的'])
+        expect(w.find('.ssc-messages').text()).toContain(target.name)
+      }
+
+      // ── Critical #1：draft.value = emptyDraft() 會把 method 也清成 null，
+      // SkillMethodChooser 就會取代掉正在推訊息進去的聊天面板 ──
+      const a = mountBlock()
+      await reachGate2(a.wrapper)
+      await lastChips(a.wrapper).find(c => c.text() === '另外新增一份')!.trigger('click')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(a.wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+      expect(a.wrapper.find('.SkillStudioChat').exists()).toBe(true)
+      expect(a.block.data.data.snapshot.draft.method).toBe('chat')
+      expect(a.wrapper.find('.ssc-messages').text()).toContain('好，那我們重新開一份。請描述這份做法的內容。')
+
+      // ── Important #2：另開一顆獨立的 block／實例，停在關卡二（不再往下點），
+      // 讓第二個實例 hydrate 這份「卡在 gate2」的快照，驗證 gateStage 有沒有跟著還原 ──
+      const b1 = mountBlock()
+      await reachGate2(b1.wrapper)
+
+      const b2 = mountOn(b1.id, b1.block)
+      await flushPromises()
+      const b2Gate2Chips = lastChips(b2)
+      expect(b2Gate2Chips.map(c => c.text())).toEqual(['照現有規定做', '改他', '另外新增一份', '我要講別的'])
+
+      // 在第二個實例點「另外新增一份」：若 hydrate 沒帶回 gateStage，第二個實例會停在預設值
+      // 'active'，這句話會被當成自由輸入丟進舊版 interpretStudioMessage，直接把 chip 的文字
+      // 寫進技能名稱；gateStage 正確還原成 'gate2' 的話，這裡應該正常走 GATE2_NEW：
+      // 草稿清空、名稱維持空白，而不是變成「另外新增一份」
+      await b2Gate2Chips.find(c => c.text() === '另外新增一份')!.trigger('click')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      expect(b2.find('.SkillMethodChooser').exists()).toBe(false)
+      expect(b2.find('.SkillStudioChat').exists()).toBe(true)
+      expect(b1.block.data.data.snapshot.draft.name).toBe('')
+      expect(b1.block.data.data.snapshot.draft.method).toBe('chat')
+      expect(b2.find('.ssc-messages').text()).toContain('好，那我們重新開一份。請描述這份做法的內容。')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

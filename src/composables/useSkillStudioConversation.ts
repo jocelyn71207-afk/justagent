@@ -32,6 +32,10 @@ export interface StudioSnapshot {
   savedSkillId: string | null
   draft: SkillDraft
   messages: StudioMessage[]
+  // 選填：關卡分流位置與待處理的相近技能 id。選填是為了向下相容舊快照（早於這兩個欄位
+  // 存在時寫入的），hydrate() 遇到 undefined 會分別退回 'active' 與 null
+  gateStage?: GateStage
+  pendingSimilarSkillId?: string | null
 }
 
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
@@ -415,7 +419,11 @@ export function useSkillStudioConversation() {
       }
       if (t === GATE2_NEW.label) {
         pendingSimilarSkillId.value = null
-        draft.value = emptyDraft()
+        // 保留 method：draft.value = emptyDraft() 會把 method 也清成 null，
+        // SkillStudio.vue／skillBuilderViewBox.vue 都用 !conv.draft.value.method 判斷要不要
+        // 顯示 SkillMethodChooser 取代掉聊天面板，這裡是在聊天面板裡回話，不能把它自己的
+        // 前提條件清掉
+        draft.value = { ...emptyDraft(), method: draft.value.method }
         gateStage.value = 'clarify'
         push({ role: 'agent', content: '好，那我們重新開一份。請描述這份做法的內容。' })
         return
@@ -428,7 +436,8 @@ export function useSkillStudioConversation() {
           pendingSimilarSkillId: pendingSimilarSkillId.value,
         }
         pendingSimilarSkillId.value = null
-        draft.value = emptyDraft()
+        // 同上：保留 method，否則這句話推出去的當下聊天面板就會被 SkillMethodChooser 取代
+        draft.value = { ...emptyDraft(), method: draft.value.method }
         messages.value = []
         // 刻意不重設 seq：pausedDraft.messages 裡還留著用舊 seq 產生的訊息 id，
         // 之後 Task 6 接回來時會把這些訊息原封不動塞回 messages.value；如果這裡把
@@ -466,8 +475,21 @@ export function useSkillStudioConversation() {
 
     if (stage === 'gate3') {
       if (t === GATE3_CONFIRM.label) {
-        save()
+        const savedId = save()
+        if (!savedId) {
+          // save() 在 canSave 為 false（草稿沒有名稱或指令）時回傳 null；這裡可能發生在
+          // clarify 的第一句話就剛好命中 CLARIFY_DONE_HINT，直接跳過補齊內容就進了關卡三。
+          // 留在／退回 clarify 讓使用者補內容，不能悶不吭聲地轉 active（等於對話卡死）
+          const missing = [
+            !draft.value.name.trim() ? '名稱' : null,
+            !draft.value.instructions.trim() ? '指令內容' : null,
+          ].filter((x): x is string => !!x)
+          gateStage.value = 'clarify'
+          push({ role: 'agent', content: `這份草稿還缺${missing.join('、')}，麻煩先補齊，再跟我說一次「這樣就好」確認。` })
+          return
+        }
         gateStage.value = 'active'
+        push({ role: 'agent', content: `已存成個人技能「${draft.value.name}」，可以到「測試」tab 驗證。` })
         return
       }
       if (t === GATE3_RETRY.label) {
@@ -504,6 +526,12 @@ export function useSkillStudioConversation() {
     seq = 0
     // 有 prefill：來源（例如方案三 conv4 交接）已經知道使用者要幹嘛，略過整套關卡
     gateStage.value = prefill ? 'active' : 'intent'
+    // 清掉上一輪對話可能留下的暫存狀態：不清的話，「我要講別的」留下的 pausedDraft 會在
+    // seq 已經歸零的新一輪裡被接回去，跟新訊息的 id 撞號；pendingSimilarSkillId／
+    // lastBuildText 也可能指向這輪根本沒問過的東西
+    pausedDraft.value = null
+    pendingSimilarSkillId.value = null
+    lastBuildText.value = ''
     if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
@@ -538,6 +566,13 @@ export function useSkillStudioConversation() {
     snapshot.value = serialize(draft.value)
     messages.value = []
     gateStage.value = 'active'  // 修改既有技能：已經知道要幹嘛，不用再問一輪
+    // 同 startCreate()：清掉可能殘留的暫存狀態，不然舊的 pausedDraft 之後被接回來時，
+    // gateStage／draft／messages／pendingSimilarSkillId 會被暫存快照蓋過去，但 mode／
+    // savedSkillId 不在 PausedDraft 裡、不會一起還原，會變成「草稿內容是暫存的那份，
+    // savedSkillId 卻指向這裡剛載入的技能」，之後 gate3 confirm 一存就存錯技能
+    pausedDraft.value = null
+    pendingSimilarSkillId.value = null
+    lastBuildText.value = ''
     if (draft.value.method === 'chat') push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
     return true
   }
@@ -615,6 +650,8 @@ export function useSkillStudioConversation() {
       savedSkillId: savedSkillId.value,
       draft: draft.value,
       messages: messages.value,
+      gateStage: gateStage.value,
+      pendingSimilarSkillId: pendingSimilarSkillId.value,
     }))
   }
 
@@ -624,6 +661,10 @@ export function useSkillStudioConversation() {
     savedSkillId.value = copy.savedSkillId
     draft.value = copy.draft
     messages.value = copy.messages
+    // 舊快照（早於這兩個欄位存在時寫入）沒有這兩個值，退回原本的預設：gateStage 當作
+    // 已經分流完畢、pendingSimilarSkillId 當作沒有待處理的相近技能
+    gateStage.value = copy.gateStage ?? 'active'
+    pendingSimilarSkillId.value = copy.pendingSimilarSkillId ?? null
     // dirty 基準取自「目前已儲存的內容」而非「這份快照本身」：isDirty 才會是
     // 「跟已存的技能（或空白，若還沒存過）不一樣」，而不是「跟上次 hydrate 不一樣」
     const saved = copy.savedSkillId ? store.findSkill(copy.savedSkillId) : undefined
