@@ -4,8 +4,9 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import SkillManagement from '../SkillManagement.vue'
 
-// 點「我的技能」頁的「建立技能」先問要用哪種方式：AI 賦能（對話或積木，
-// 由 AI 賦能自己的方式選擇畫面再問一次）或手動走 SkillEditor 三步驟表單。
+// 點「我的技能」頁的「建立技能」先問要用哪種方式：對話、行銷積木組裝
+// （兩者都是 AI 賦能／SkillStudio，用 ?method= 直接指定，不會被 AI 賦能
+// 自己的方式選擇畫面再問一次）或手動走 SkillEditor 三步驟表單。
 describe('SkillManagement 建立技能：先選建立方式', () => {
   let currentWrapper: VueWrapper | null = null
 
@@ -42,22 +43,37 @@ describe('SkillManagement 建立技能：先選建立方式', () => {
 
     expect(push).not.toHaveBeenCalled()
     const dialogButtons = new DOMWrapper(document.body).findAll('.drawer-confirm-dialog button')
-    expect(dialogButtons).toHaveLength(2)
-    expect(dialogButtons[0].text()).toContain('用 AI 賦能建立')
-    expect(dialogButtons[1].text()).toContain('手動建立')
+    expect(dialogButtons).toHaveLength(3)
+    expect(dialogButtons[0].text()).toContain('用對話建立')
+    expect(dialogButtons[1].text()).toContain('用行銷積木組裝')
+    expect(dialogButtons[2].text()).toContain('手動建立')
   })
 
-  it('選「用 AI 賦能建立」導向 SkillStudio（空白建立，不帶 skillId）', async () => {
+  it('選「用對話建立」導向 SkillStudio，帶 method=chat（空白建立，不帶 skillId）', async () => {
     setActivePinia(createPinia())
     const { wrapper, router } = mountPage()
     const push = vi.spyOn(router, 'push')
     const createBtn = wrapper.findAll('button').find(b => b.text().includes('建立技能'))
     await createBtn!.trigger('click')
 
-    const studioBtn = new DOMWrapper(document.body).findAll('.drawer-confirm-dialog button').find(b => b.text().includes('AI 賦能'))!
-    await studioBtn.trigger('click')
+    const chatBtn = new DOMWrapper(document.body).findAll('.drawer-confirm-dialog button').find(b => b.text().includes('用對話建立'))!
+    await chatBtn.trigger('click')
 
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio' })
+    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { method: 'chat' } })
+    expect(new DOMWrapper(document.body).find('.drawer-confirm-dialog').exists()).toBe(false)
+  })
+
+  it('選「用行銷積木組裝」導向 SkillStudio，帶 method=blocks（空白建立，不帶 skillId）', async () => {
+    setActivePinia(createPinia())
+    const { wrapper, router } = mountPage()
+    const push = vi.spyOn(router, 'push')
+    const createBtn = wrapper.findAll('button').find(b => b.text().includes('建立技能'))
+    await createBtn!.trigger('click')
+
+    const blocksBtn = new DOMWrapper(document.body).findAll('.drawer-confirm-dialog button').find(b => b.text().includes('用行銷積木組裝'))!
+    await blocksBtn.trigger('click')
+
+    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { method: 'blocks' } })
     expect(new DOMWrapper(document.body).find('.drawer-confirm-dialog').exists()).toBe(false)
   })
 
