@@ -355,6 +355,50 @@ export function useSkillStudioConversation() {
       push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？', actions: [GATE0_BUILD, GATE0_GENERAL] })
       return
     }
+
+    if (stage === 'gate0') {
+      if (t === GATE0_BUILD.label) {
+        routeBuildIntent(lastBuildText.value)
+        return
+      }
+      if (t === GATE0_GENERAL.label) {
+        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
+        gateStage.value = 'intent'
+        return
+      }
+      push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？', actions: [GATE0_BUILD, GATE0_GENERAL] })
+      return
+    }
+
+    if (stage === 'gate1') {
+      if (t === GATE1_NEW.label || t === GATE1_CUSTOM.label) {
+        const similar = findSimilarSkill(lastBuildText.value, store.myPersonalSkills)
+        if (similar) {
+          pendingSimilarSkillId.value = similar.id
+          gateStage.value = 'gate2'
+          push({
+            role: 'agent',
+            content: `您已經有一份「${similar.name}」，這次要沿用他、改他還是記一份新的？`,
+            actions: [GATE2_FOLLOW, GATE2_EDIT, GATE2_NEW, GATE2_ELSE],
+          })
+        } else {
+          gateStage.value = 'clarify'
+          push({ role: 'agent', content: '好，那請直接描述這份做法的內容，我會幫你整理。' })
+        }
+        return
+      }
+      if (t === GATE1_FOLLOW.label) {
+        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
+        gateStage.value = 'active'
+        return
+      }
+      push({
+        role: 'agent',
+        content: '你現在要照公司的規定處理眼前這件事，還是要改規定、或是記一份新的?',
+        actions: [GATE1_NEW, GATE1_CUSTOM, GATE1_FOLLOW],
+      })
+      return
+    }
   }
 
   // 無 prefill：等使用者選建立方式（method null、沒有訊息）。

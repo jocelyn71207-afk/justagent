@@ -549,3 +549,71 @@ describe('意圖判斷（gateStage intent）', () => {
     expect(last.actions?.map(a => a.label)).toEqual(['記技能', '單純問事情'])
   })
 })
+
+describe('關卡 0／關卡一／相似做法比對', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  it('關卡0 點「記技能」：等同建立意圖，清單非空時轉關卡一', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
+    expect(c.gateStage.value).toBe('gate0')
+    await sendAndWait(c, '記技能')
+    expect(c.gateStage.value).toBe('gate1')
+  })
+
+  it('關卡0 點「單純問事情」：推 TODO 佔位，gateStage 回 intent', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
+    await sendAndWait(c, '單純問事情')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('關卡一選「照現有規定」：推 TODO 佔位，gateStage 轉 active', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能')
+    expect(c.gateStage.value).toBe('gate1')
+    await sendAndWait(c, '照現有規定')
+    expect(c.gateStage.value).toBe('active')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('關卡一選「記一份新的」，找到相近做法：gateStage 轉 gate2，訊息帶技能名稱', async () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, `幫我記一個${store.myPersonalSkills[0].name}的做法`)
+    expect(c.gateStage.value).toBe('gate1')
+    await sendAndWait(c, '記一份新的')
+    expect(c.gateStage.value).toBe('gate2')
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain(store.myPersonalSkills[0].name)
+    expect(last.actions?.map(a => a.label)).toEqual(['照現有規定做', '改他', '另外新增一份', '我要講別的'])
+  })
+
+  it('關卡一選「改現有規定（走客製路線）」，找不到相近做法：gateStage 轉 clarify', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '我要新增一份規定')
+    await sendAndWait(c, '改現有規定（走客製路線）')
+    expect(c.gateStage.value).toBe('clarify')
+  })
+})
