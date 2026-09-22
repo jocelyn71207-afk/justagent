@@ -94,16 +94,21 @@ function classifyIntent(text: string): 'build' | 'general' | 'ambiguous' {
 
 ## 7. 記規定階段（`checkingRules`，內部過渡態）
 
-規則式比對使用者在關卡一之前那句話（或關卡一選擇當下最近一則使用者訊息）跟 `store.myPersonalSkills` 每一筆的 `name`／`triggerHint`／`instructions` 有沒有關鍵字重疊：
+規則式比對使用者在關卡一之前那句話（或關卡一選擇當下最近一則使用者訊息）跟 `store.myPersonalSkills` 每一筆的 `name`／`triggerHint`／`instructions` 有沒有重疊。用「二字滑動窗」（character bigram）算重疊比例，而不是先切出「詞」再比對整詞相不相等——使用者一句話通常是一整串連續中文、中間沒有空格或標點斷開，先切詞的規則式寫法（例如貪婪比對連續中文字元）在這種輸入下會把整句話當成單一一個詞，永遠不會完整出現在技能名稱這種短很多的字串裡：
 
 ```ts
 function findSimilarSkill(text: string, skills: Skill[]): Skill | null {
-  const words = text.match(/[一-龥]{2,}|[A-Za-z]{3,}/g) ?? []
-  if (!words.length) return null
+  const t = text.trim()
+  if (t.length < 2) return null
+  const textGrams = new Set<string>()
+  for (let i = 0; i < t.length - 1; i++) textGrams.add(t.slice(i, i + 2))
   let best: { skill: Skill; score: number } | null = null
   for (const skill of skills) {
-    const haystack = `${skill.name} ${skill.triggerHint ?? ''} ${skill.instructions ?? ''}`
-    const score = words.filter(w => haystack.includes(w)).length
+    const haystack = `${skill.name}${skill.triggerHint ?? ''}${skill.instructions ?? ''}`
+    let score = 0
+    for (let i = 0; i < haystack.length - 1; i++) {
+      if (textGrams.has(haystack.slice(i, i + 2))) score++
+    }
     if (score > 0 && (!best || score > best.score)) best = { skill, score }
   }
   return best?.skill ?? null
