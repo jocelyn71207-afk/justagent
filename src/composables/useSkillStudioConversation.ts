@@ -277,12 +277,13 @@ export function useSkillStudioConversation() {
     if (!canSave.value) return null
     const d = draft.value
     if (mode.value === 'create') {
+      // 個人技能一律以未啟用落地，見 skillStore.ts 的 createPersonalSkill() 註解——
+      // 要先通過 AI 快速測試（或使用者明確選擇略過）才能開，這裡不用也不該再傳 isEnabled
       const id = store.createPersonalSkill({
         name: d.name.trim(),
         description: d.description,
         instructions: d.instructions,
         triggerHint: d.triggerHint,
-        isEnabled: true,
         assignedAgents: [],
         capabilities: d.capabilities.map(c => ({ ...c })),
         files: [...d.files],

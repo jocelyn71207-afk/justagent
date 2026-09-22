@@ -139,7 +139,8 @@ describe('useSkillStudioConversation', () => {
     const skill = store.findSkill(id!)!
     expect(skill.creationMethod).toBe('ai_assisted')
     expect(skill.name).toBe('查 ERP 庫存')
-    expect(skill.isEnabled).toBe(true)
+    // 個人技能建立時一律未啟用，要先通過 AI 快速測試（或明確選擇略過）才能開
+    expect(skill.isEnabled).toBe(false)
   })
 
   it('loadSkill 對個人技能回 true 並帶入草稿；對 Library 技能／不存在 id 回 false', () => {
