@@ -13,7 +13,6 @@ describe('AppMenuTree 桌機版「AI 技能」群組子項目', () => {
     })
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await wrapper.find('.nav-team-toggle').trigger('click')
     const group = wrapper.find('.side-panel-group')
     expect(group.text()).toContain('AI 技能')
 

@@ -377,9 +377,9 @@ watch(companyTeams, (groups: any[]) => {
   }
 });
 
-// 團隊選單面板：只有點「團隊功能」或關閉鈕才會開關，不會因為網址帶 teamId
-// 就自動彈出
-const isTeamPanelOpen = ref(false);
+// 團隊選單面板：預設是展開的，點「團隊功能」或關閉鈕可以收合／再打開，
+// 不會因為網址帶 teamId 而額外自動彈出或關閉（開關狀態只看使用者操作）
+const isTeamPanelOpen = ref(true);
 const teamPanelEl = ref<HTMLElement | null>(null);
 function toggleTeamPanel() {
   isTeamPanelOpen.value = !isTeamPanelOpen.value;

@@ -31,7 +31,6 @@ describe('AppMenuTree 統一切換團隊行為', () => {
     await router.push({ path: '/view/KnowledgeBase', query: { teamId: 'testTeam1', teamName: 'UGG電子商務' } })
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const items = wrapper.findAll('.team-switch-list .team-switch-item')
     await items[1].trigger('click')
@@ -47,7 +46,6 @@ describe('AppMenuTree 統一切換團隊行為', () => {
     await router.push('/view/Skills')
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const items = wrapper.findAll('.team-switch-list .team-switch-item')
     await items[1].trigger('click')
@@ -63,7 +61,6 @@ describe('AppMenuTree 統一切換團隊行為', () => {
     await router.push('/view/ProjectDashboard')
     const wrapper = mount(AppMenuTree, { global: { plugins: [router] } })
 
-    await wrapper.find('.nav-team-toggle').trigger('click')
     await wrapper.find('.side-panel-switcher').trigger('click')
     const items = wrapper.findAll('.team-switch-list .team-switch-item')
     await items[1].trigger('click')
