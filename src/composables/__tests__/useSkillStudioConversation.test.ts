@@ -8,7 +8,12 @@ import {
   extractSkillName,
   interpretStudioMessage,
   useSkillStudioConversation,
+  classifyIntent,
+  findSimilarSkill,
+  wantsToResume,
+  formatDraftSummary,
 } from '@/composables/useSkillStudioConversation'
+import type { Skill, PausedDraft } from '@/composables/useSkillStudioConversation'
 
 describe('extractSkillName', () => {
   it('取「建立／幫我做／需要」之後、「的技能／的 Skill」之前的片段，並去掉量詞與「能／可以」', () => {
@@ -365,5 +370,92 @@ describe('useSkillStudioConversation', () => {
     e.loadSkill('personal-001')
     expect(e.draft.value.method).toBe('chat')
     expect(e.messages.value).toHaveLength(1)
+  })
+})
+
+describe('classifyIntent', () => {
+  it('含建立動詞＋技能名詞 → build', () => {
+    expect(classifyIntent('幫我建立一個技能')).toBe('build')
+    expect(classifyIntent('這個流程以後要教你，記成做法')).toBe('build')
+  })
+
+  it('簡短且像問句或提到技能／做法關鍵字 → general', () => {
+    expect(classifyIntent('現在庫存多少？')).toBe('general')
+    expect(classifyIntent('這個技能是做什麼的')).toBe('general')
+  })
+
+  it('訊號不足 → ambiguous', () => {
+    expect(classifyIntent('嗯我想想看要怎麼講這件事情才能講得清楚一點')).toBe('ambiguous')
+  })
+})
+
+describe('findSimilarSkill', () => {
+  const skills: Skill[] = [
+    {
+      id: 's1', name: '產品銷售報告整理', description: '', type: 'extension', origin: 'manually_created',
+      version: '初始版本', isEnabled: true, usageCount: 0, testPassRate: 0, avgLatencyMs: 0,
+      triggerHint: '查詢銷售資料', instructions: '整理銷售報告',
+    },
+  ]
+
+  it('有關鍵字重疊時回傳分數最高的技能', () => {
+    expect(findSimilarSkill('我要處理銷售報告的事情', skills)?.id).toBe('s1')
+  })
+
+  it('沒有重疊回傳 null', () => {
+    expect(findSimilarSkill('今天天氣真好', skills)).toBeNull()
+  })
+
+  it('空字串回傳 null', () => {
+    expect(findSimilarSkill('', skills)).toBeNull()
+  })
+})
+
+describe('wantsToResume', () => {
+  const paused: PausedDraft = {
+    gateStage: 'gate2',
+    messages: [],
+    draft: { ...emptyDraft(), name: '產品銷售報告整理' },
+    pendingSimilarSkillId: null,
+  }
+
+  it('含接續關鍵字 → true', () => {
+    expect(wantsToResume('我們繼續剛才的', paused)).toBe(true)
+    expect(wantsToResume('回到上次那個', paused)).toBe(true)
+  })
+
+  it('直接提到暫存草稿名稱 → true', () => {
+    expect(wantsToResume('產品銷售報告整理那份要怎麼弄', paused)).toBe(true)
+  })
+
+  it('都沒有 → false', () => {
+    expect(wantsToResume('今天天氣真好', paused)).toBe(false)
+  })
+
+  it('暫存草稿沒有名稱時，不會誤判空字串包含在任何話裡', () => {
+    const noName: PausedDraft = { ...paused, draft: { ...emptyDraft() } }
+    expect(wantsToResume('今天天氣真好', noName)).toBe(false)
+  })
+})
+
+describe('formatDraftSummary', () => {
+  it('整理草稿目前欄位成摘要文字', () => {
+    const draft = {
+      ...emptyDraft(),
+      name: '產品銷售報告整理',
+      triggerHint: '查詢銷售資料時',
+      instructions: '1. 查詢資料\n2. 產出報告',
+      capabilities: [{ name: '查詢資料', description: '' }],
+    }
+    const summary = formatDraftSummary(draft)
+    expect(summary).toContain('產品銷售報告整理')
+    expect(summary).toContain('查詢銷售資料時')
+    expect(summary).toContain('查詢資料')
+  })
+
+  it('欄位是空的時候顯示未設定提示，不是空字串', () => {
+    const summary = formatDraftSummary(emptyDraft())
+    expect(summary).not.toContain('名稱：\n')
+    expect(summary).toContain('未命名')
   })
 })

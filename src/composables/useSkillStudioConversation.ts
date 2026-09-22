@@ -39,6 +39,106 @@ export function emptyDraft(): SkillDraft {
   return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [], method: null, sectionIds: [] }
 }
 
+// ── 意圖判斷與關卡分流（AI 賦能「用對話建立」路徑，接在既有解析規則之前）──
+
+export type GateStage =
+  | 'intent'        // 每則新訊息的預設起點：判斷意圖
+  | 'gate0'         // 太模糊，先問「記技能還是單純問事情」
+  | 'gate1'         // 問「照規定 / 改規定 / 記新的」
+  | 'checkingRules' // 內部過渡態：查 myPersonalSkills 有沒有相近做法。
+                     // 注意：實作上這一步在同一輪訊息處理裡就會算完轉下一關，
+                     // gateStage.value 實際上不會被指定成這個值，純粹型別上列出來說明流程
+  | 'gate2'         // 找到相近做法，問「沿用 / 改他 / 另開一份 / 講別的」
+  | 'clarify'       // 多輪問答補齊草稿內容（沿用既有 interpretStudioMessage 的抽取規則）
+  | 'gate3'         // 最終確認「內容如下…這樣可以嗎？」
+  | 'active'        // 分流完畢，既有的 interpretStudioMessage 接手
+
+// 「我要講別的」時的暫存快照：只存在單次連線的記憶體內（一個 ref），
+// 不寫入 skillStore、離開頁面或重新整理就消失，跟 skillStore 既有的
+// myDrafts／DraftSkill（Library／企業技能送審草稿）完全無關
+export interface PausedDraft {
+  gateStage: GateStage
+  messages: StudioMessage[]
+  draft: SkillDraft
+  pendingSimilarSkillId: string | null
+}
+
+const BUILD_INTENT_VERBS = /教|建立|新增|修改|更新|記錄|記一個|記成|固定|流程|SOP/
+const BUILD_INTENT_NOUNS = /技能|skill|規定|做法/i
+
+// 規則式關鍵字比對，不是真語意理解，跟 interpretStudioMessage 的既有風格一致
+export function classifyIntent(text: string): 'build' | 'general' | 'ambiguous' {
+  const hasVerb = BUILD_INTENT_VERBS.test(text)
+  const hasNoun = BUILD_INTENT_NOUNS.test(text)
+  if (hasVerb && hasNoun) return 'build'
+  if (text.trim().length <= 20 && (hasNoun || /[？?]/.test(text))) return 'general'
+  return 'ambiguous'
+}
+
+// 規則式比對使用者描述跟既有個人技能的 name／triggerHint／instructions 有沒有重疊，
+// 回傳重疊分數最高的那一顆；沒有重疊回傳 null。
+//
+// 用「連續中文字元」切詞（/[一-龥]{2,}/）在這裡行不通：使用者一句話通常是一整串
+// 中文、中間沒有空格或標點斷開（例如「我要處理銷售報告的事情」），regex 會把整句話
+// 貪婪比對成單一一個「詞」，永遠不可能完整出現在技能名稱／說明這種短很多的字串裡，
+// 等於這個函式永遠回傳 null。改用「二字滑動窗」（character bigram）算重疊比例，
+// 不需要真的中文斷詞也能抓出「兩段文字有沒有提到同樣的詞彙」，是這類輕量比對常見的做法。
+export function findSimilarSkill(text: string, skills: Skill[]): Skill | null {
+  const t = text.trim()
+  if (t.length < 2) return null
+  const textGrams = new Set<string>()
+  for (let i = 0; i < t.length - 1; i++) textGrams.add(t.slice(i, i + 2))
+  let best: { skill: Skill; score: number } | null = null
+  for (const skill of skills) {
+    const haystack = `${skill.name}${skill.triggerHint ?? ''}${skill.instructions ?? ''}`
+    let score = 0
+    for (let i = 0; i < haystack.length - 1; i++) {
+      if (textGrams.has(haystack.slice(i, i + 2))) score++
+    }
+    if (score > 0 && (!best || score > best.score)) best = { skill, score }
+  }
+  return best?.skill ?? null
+}
+
+const RESUME_HINTS = /繼續|剛才|接著|接續|回到|上次那個/
+
+// 是否要接回被「我要講別的」中斷的草稿：訊息裡有接續關鍵字，或直接提到暫存草稿的名稱
+export function wantsToResume(text: string, paused: PausedDraft): boolean {
+  return RESUME_HINTS.test(text) || (!!paused.draft.name && text.includes(paused.draft.name))
+}
+
+// 關卡三要顯示的草稿內容摘要
+export function formatDraftSummary(draft: SkillDraft): string {
+  const lines = [
+    `名稱：${draft.name || '（未命名）'}`,
+    `觸發時機：${draft.triggerHint || '（未設定）'}`,
+    `指令：${draft.instructions || '（未撰寫）'}`,
+  ]
+  if (draft.capabilities.length) {
+    lines.push(`覆蓋能力：${draft.capabilities.map(c => c.name).join('、')}`)
+  }
+  return lines.join('\n')
+}
+
+const GATE0_BUILD: StudioAction = { id: 'gate0-build', label: '記技能' }
+const GATE0_GENERAL: StudioAction = { id: 'gate0-general', label: '單純問事情' }
+
+const GATE1_NEW: StudioAction = { id: 'gate1-new', label: '記一份新的' }
+const GATE1_CUSTOM: StudioAction = { id: 'gate1-custom', label: '改現有規定（走客製路線）' }
+const GATE1_FOLLOW: StudioAction = { id: 'gate1-follow', label: '照現有規定' }
+
+const GATE2_FOLLOW: StudioAction = { id: 'gate2-follow', label: '照現有規定做' }
+const GATE2_EDIT: StudioAction = { id: 'gate2-edit', label: '改他' }
+const GATE2_NEW: StudioAction = { id: 'gate2-new', label: '另外新增一份' }
+const GATE2_ELSE: StudioAction = { id: 'gate2-else', label: '我要講別的' }
+
+const GATE3_CONFIRM: StudioAction = { id: 'gate3-confirm', label: '這樣可以，存到個人技能' }
+const GATE3_RETRY: StudioAction = { id: 'gate3-retry', label: '不對，我要改' }
+
+const CLARIFY_DONE_HINT = /沒有漏了|寫成做法|可以寫了|這樣就好/
+
+const NOT_IMPLEMENTED_REPLY = '這部分我還在學怎麼幫你直接處理，目前只能先帶你到技能建立/修改的流程。之後會補上「直接套用技能」的功能。'
+
 // 由已儲存的技能還原出一份草稿（loadSkill／hydrate 基準共用，避免兩處各寫一次欄位對應）
 export function draftFromSkill(s: Skill): SkillDraft {
   return {
