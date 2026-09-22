@@ -243,6 +243,9 @@
                 <button class="custom-btn custom-main-btn" @click="handleEnableGateOverride">
                   <i class="material-symbols-outlined">check_circle</i>視為通過，直接啟用
                 </button>
+                <button class="custom-btn" @click="enableGateBlocked = false">
+                  取消
+                </button>
               </div>
             </div>
           </div>
@@ -340,9 +343,10 @@ function handleSubmit() {
   if (!form.name.trim()) return
 
   // 編輯模式下，如果是「原本停用、這次要切成啟用」而且還沒過測試關卡，攔下整次送出，
-  // 不呼叫 updateSkill；只有 zone === 'personal' 的技能受這條規則限制
+  // 不呼叫 updateSkill；canEnableSkill() 本身只管 zone === 'personal' 的技能，
+  // 其他 zone 一律回傳 true，這裡不用再重複判斷一次 zone
   if (
-    isEditMode && editSkillId && existingSkill?.zone === 'personal' &&
+    isEditMode && editSkillId && existingSkill &&
     form.isEnabled && !existingSkill.isEnabled && !canEnableSkill(existingSkill)
   ) {
     enableGateBlocked.value = true

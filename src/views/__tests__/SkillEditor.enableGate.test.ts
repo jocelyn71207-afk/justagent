@@ -74,6 +74,25 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
     expect(router.currentRoute.value.path).toBe('/view/Skills')
   })
 
+  it('決策對話框選「取消」：對話框關閉，不啟用、停留在編輯頁', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能5', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const { wrapper, router } = await mountEditFor(id)
+    ;(wrapper.findComponent(SkillEditor).vm as any).currentStep = 2
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.se-toggle input[type="checkbox"]').setValue(true)
+    await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
+    await flushPromises()
+
+    const cancelBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('取消'))!
+    await cancelBtn.trigger('click')
+    await flushPromises()
+
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+    expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+    expect(router.currentRoute.value.path).toBe('/view/SkillEditor')
+  })
+
   it('已經全對過的技能：勾「啟用狀態」送出直接生效，不彈窗', async () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '已測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })

@@ -373,6 +373,9 @@
               <button class="custom-btn custom-main-btn" @click="handleEnableGateOverride">
                 <i class="material-symbols-outlined">check_circle</i>視為通過，直接啟用
               </button>
+              <button class="custom-btn" @click="enableGateSkill = null">
+                取消
+              </button>
             </div>
           </div>
         </div>

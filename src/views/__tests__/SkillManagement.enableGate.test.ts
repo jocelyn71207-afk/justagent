@@ -102,6 +102,24 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
   })
 
+  it('決策對話框選「取消」：對話框關閉，不啟用、不導頁', async () => {
+    setActivePinia(createPinia())
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能4', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const { wrapper, router } = mountPage()
+    const push = vi.spyOn(router, 'push')
+    ;(wrapper.vm as any).detailSkillId = id
+    await wrapper.vm.$nextTick()
+    await new DOMWrapper(document.body).find('.dm-toggle-btn').trigger('click')
+
+    const cancelBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('取消'))!
+    await cancelBtn.trigger('click')
+
+    expect(push).not.toHaveBeenCalled()
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+    expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+  })
+
   it('停用方向（目前已啟用）：一律直接切換，不檢查、不彈窗', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
