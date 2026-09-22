@@ -773,3 +773,63 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     expect(c.draft.value.name).toBe(nameBeforeRetry)
   })
 })
+
+describe('暫存草稿的接續判斷', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  async function pauseWithDraft(c: ReturnType<typeof useSkillStudioConversation>, skillName: string) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, `幫我記一個${skillName}的做法`)
+    await sendAndWait(c, '記一份新的')
+    await sendAndWait(c, '我要講別的')
+  }
+
+  it('訊息含接續關鍵字：還原暫停當下的 gateStage／messages／draft，推一句銜接語', async () => {
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    await pauseWithDraft(c, target.name)
+    expect(c.gateStage.value).toBe('intent')
+
+    await sendAndWait(c, '我們繼續剛才的')
+
+    expect(c.gateStage.value).toBe('gate2')
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain('繼續')
+  })
+
+  it('訊息沒有接續訊號：正常走當下 gateStage 的路由，暫存草稿維持不動', async () => {
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    await pauseWithDraft(c, target.name)
+
+    await sendAndWait(c, '今天天氣如何？')
+
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('沒有暫存草稿時，接續關鍵字就照正常意圖判斷處理（不會誤觸發還原、不會拋錯）', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '我們繼續剛才的')
+    // 沒有 pausedDraft，接續檢查整段跳過；這句話本身沒有明確的建立動詞＋名詞、
+    // 也沒有問號，classifyIntent 會判成 ambiguous，走正常的關卡0。
+    // pausedDraft 本身不是 useSkillStudioConversation() 回傳值的一部分（純內部狀態，
+    // 見 Task 4），測試只能斷言可觀察的行為結果，不能直接檢查它的值
+    expect(c.gateStage.value).toBe('gate0')
+  })
+})

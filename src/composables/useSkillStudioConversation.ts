@@ -548,6 +548,19 @@ export function useSkillStudioConversation() {
     push({ role: 'user', content: t })
     isRunning.value = true
     await new Promise(r => setTimeout(r, 800))
+
+    if (pausedDraft.value && wantsToResume(t, pausedDraft.value)) {
+      const paused = pausedDraft.value
+      gateStage.value = paused.gateStage
+      messages.value = [...paused.messages]
+      draft.value = paused.draft
+      pendingSimilarSkillId.value = paused.pendingSimilarSkillId
+      pausedDraft.value = null
+      push({ role: 'agent', content: `好，回到剛才「${paused.draft.name || '那個'}」繼續。` })
+      isRunning.value = false
+      return
+    }
+
     if (gateStage.value === 'active') {
       const reply = interpretStudioMessage(t, draft.value, mode.value)
       if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
