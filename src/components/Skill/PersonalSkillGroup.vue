@@ -5,14 +5,14 @@
        送審）都在點進去之後的詳情 drawer 裡，磚塊本身不需要重複放操作按鈕 -->
   <div class="PersonalSkillGroup SkillTile" @click="emit('manage', skill)">
     <div class="tile-icon icon--personal">
-      <i class="material-symbols-outlined">person</i>
+      <i class="material-symbols-outlined">{{ skillIconName }}</i>
     </div>
 
     <div class="tile-name">
       {{ skill.name }}
       <span v-if="statusLabel" :class="['skill-tag', statusTagClass]">{{ statusLabel }}</span>
     </div>
-    <div v-if="skill.description" class="tile-desc">{{ skill.description }}</div>
+    <div v-if="tileDesc" class="tile-desc">{{ tileDesc }}</div>
 
     <div class="tile-stats">
       <span class="sk-stat">
@@ -23,7 +23,7 @@
     <div class="tile-foot">
       <div class="tile-meta">
         <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
-        <span class="status-text">{{ skill.isEnabled ? '啟用中' : '停用中' }}</span>
+        <span class="status-text">{{ skill.isEnabled ? '啟用中' : (skill.aiTestPassRate == null ? '尚未測試' : '停用中') }}</span>
       </div>
     </div>
   </div>
@@ -55,4 +55,17 @@ const statusTagClass = computed(() => {
 function formatCount(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 }
+
+// 用「AI 賦能」建立的技能，圖示換成建立方式本身（跟 SkillMethodChooser 選卡同一組
+// icon：對話 forum／積木 dashboard_customize），一眼看出這顆技能怎麼來的；
+// 其他個人技能（手寫建立、複製副本）維持原本的 person
+const skillIconName = computed(() => {
+  if (props.skill.composition) return 'dashboard_customize'
+  if (props.skill.creationMethod === 'ai_assisted') return 'forum'
+  return 'person'
+})
+
+// 用第一筆使用情境的標題取代原本的技能描述，讓卡片一眼看出「什麼時候會用到」
+// 而不是技能本身的功能說明；沒有使用情境的技能（例如剛手動建立的）才退回顯示描述
+const tileDesc = computed(() => props.skill.usageScenarios?.[0]?.title || props.skill.description)
 </script>

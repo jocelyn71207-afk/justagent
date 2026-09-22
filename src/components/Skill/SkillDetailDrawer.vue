@@ -32,7 +32,7 @@
                     :class="['dh-status', skill.isEnabled ? 'dh-status--on' : 'dh-status--off']"
                   >
                     <span class="dh-status-dot"></span>
-                    {{ skill.isEnabled ? '啟用中' : '已停用' }}
+                    {{ skill.isEnabled ? '啟用中' : (isPersonal && skill.aiTestPassRate == null ? '尚未測試' : '已停用') }}
                   </span>
                 </div>
               </div>

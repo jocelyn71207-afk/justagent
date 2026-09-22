@@ -9,7 +9,7 @@
     @click="emit('click', skill)"
   >
     <div :class="['skill-card-icon', scopeIconClass]">
-      <i class="material-symbols-outlined">{{ isExtension ? 'extension' : 'psychology' }}</i>
+      <i class="material-symbols-outlined">{{ skillIconName }}</i>
     </div>
 
     <div class="skill-card-body">
@@ -28,7 +28,7 @@
     <div class="skill-card-right">
       <div class="skill-card-meta">
         <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
-        <span class="status-text">{{ skill.isEnabled ? '啟用中' : '已停用' }}</span>
+        <span class="status-text">{{ skill.isEnabled ? '啟用中' : (skill.zone === 'personal' && skill.aiTestPassRate == null ? '尚未測試' : '已停用') }}</span>
       </div>
       <div class="skill-card-actions" @click.stop>
         <button
@@ -72,6 +72,15 @@ const scopeIconClass = computed(() => {
 function formatCount(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 }
+
+// 用「AI 賦能」建立的技能，圖示換成建立方式本身（跟 SkillMethodChooser 選卡同一組
+// icon：對話 forum／積木 dashboard_customize），一眼看出這顆技能怎麼來的；
+// 其他技能（Library 現有技能、手寫建立）維持原本依 isExtension 分的圖示
+const skillIconName = computed(() => {
+  if (props.skill.composition) return 'dashboard_customize'
+  if (props.skill.creationMethod === 'ai_assisted') return 'forum'
+  return props.isExtension ? 'extension' : 'psychology'
+})
 
 // 用第一筆使用情境的標題取代原本的技能描述，讓卡片一眼看出「什麼時候會用到」
 // 而不是技能本身的功能說明；沒有使用情境的技能（例如剛手動建立的）才退回顯示描述

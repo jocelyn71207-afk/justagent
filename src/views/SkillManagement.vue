@@ -292,8 +292,11 @@
             <h4>建立技能</h4>
             <p>要用哪種方式建立這顆技能？</p>
             <div class="confirm-actions confirm-actions--column">
-              <button class="custom-btn custom-main-btn" @click="handleCreateWithStudio">
-                <i class="material-symbols-outlined">auto_fix_high</i>用 AI 賦能建立
+              <button class="custom-btn custom-main-btn" @click="handleCreateWithChat">
+                <i class="material-symbols-outlined">forum</i>用對話建立
+              </button>
+              <button class="custom-btn" @click="handleCreateWithBlocks">
+                <i class="material-symbols-outlined">dashboard_customize</i>用行銷積木組裝
               </button>
               <button class="custom-btn" @click="handleCreateManually">
                 <i class="material-symbols-outlined">edit</i>手動建立
@@ -342,6 +345,34 @@
                   <i class="material-symbols-outlined">edit</i>直接編輯
                 </button>
               </template>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 啟用前的測試閘門：個人技能沒通過 AI 快速測試（或沒明確選擇略過）時，
+         點「啟用技能」不直接切換，改問清楚要怎麼處理 -->
+    <Teleport to="body">
+      <Transition name="confirm-fade">
+        <div
+          v-if="enableGateSkill"
+          class="drawer-confirm-overlay"
+          @click.self="enableGateSkill = null"
+        >
+          <div class="drawer-confirm-dialog enable-gate-dialog">
+            <div class="confirm-icon confirm-icon--update">
+              <i class="material-symbols-outlined">rule</i>
+            </div>
+            <h4>還不能啟用「{{ enableGateSkill.name }}」</h4>
+            <p>{{ describeAiTestGateReason(enableGateSkill) }}</p>
+            <div class="confirm-actions confirm-actions--column">
+              <button class="custom-btn" @click="handleEnableGateRevise">
+                <i class="material-symbols-outlined">forum</i>去修改技能內容
+              </button>
+              <button class="custom-btn custom-main-btn" @click="handleEnableGateOverride">
+                <i class="material-symbols-outlined">check_circle</i>視為通過，直接啟用
+              </button>
             </div>
           </div>
         </div>
@@ -501,7 +532,7 @@ import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
-import { useSkillStore } from '@/stores/skillStore'
+import { useSkillStore, canEnableSkill, describeAiTestGateReason } from '@/stores/skillStore'
 import type { Skill, ConflictResolution } from '@/stores/skillStore'
 
 const router = useRouter()
@@ -528,6 +559,7 @@ const showBatchUpdate = ref(false)
 const showLibraryModal = ref(false)
 const editChoiceSkill = ref<Skill | null>(null)
 const editChoiceIsFreshDuplicate = ref(false)
+const enableGateSkill = ref<Skill | null>(null)
 
 // 建立副本第一步：先確認顯示名稱，確認後才真正建立副本（此時才會出現在「我的技能」列表）
 const pendingDuplicateSource = ref<Skill | null>(null)
@@ -611,11 +643,17 @@ function handleTest(skill: Skill) {
   router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
 }
 
-// 「建立技能」選擇框：AI 賦能（對話或積木，建立模式一進去會再問一次方式）
-// 或手動走 SkillEditor 三步驟表單精靈，兩者都是空白建立，不帶 skillId
-function handleCreateWithStudio() {
+// 「建立技能」選擇框：對話／積木都是 AI 賦能（SkillStudio），差別在
+// method query 直接指定建立方式，跳過 SkillStudio 自己那層「選擇建立方式」
+// 畫面（不然會被問兩次）；手動則走 SkillEditor 三步驟表單精靈。
+// 三者都是空白建立，不帶 skillId
+function handleCreateWithChat() {
   showCreateChoice.value = false
-  router.push({ name: 'SkillStudio' })
+  router.push({ name: 'SkillStudio', query: { method: 'chat' } })
+}
+function handleCreateWithBlocks() {
+  showCreateChoice.value = false
+  router.push({ name: 'SkillStudio', query: { method: 'blocks' } })
 }
 function handleCreateManually() {
   showCreateChoice.value = false
@@ -748,7 +786,25 @@ function handleReject(skill: Skill, feedback: string) {
 }
 
 function handleToggle(skill: Skill) {
+  // 只有「目前停用、要切成啟用」這個方向需要檢查；停用方向永遠允許
+  if (!skill.isEnabled && !canEnableSkill(skill)) {
+    enableGateSkill.value = skill
+    return
+  }
   store.toggleSkill(skill.id)
+}
+
+function handleEnableGateRevise() {
+  if (!enableGateSkill.value) return
+  const skillId = enableGateSkill.value.id
+  enableGateSkill.value = null
+  router.push({ name: 'SkillStudio', query: { skillId } })
+}
+
+function handleEnableGateOverride() {
+  if (!enableGateSkill.value) return
+  store.overrideAndEnableSkill(enableGateSkill.value.id)
+  enableGateSkill.value = null
 }
 
 function getDerivedFromName(derivedFrom: string): string {
