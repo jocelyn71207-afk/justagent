@@ -979,11 +979,14 @@ describe('classifyGate1（模組內部邏輯，透過 gateStage 行為驗證）'
   it('本關比對不到，但新話題判斷判成 build（清單仍非空）：直接重定向到關卡一，帶新的 lastBuildText', async () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()
-    await toGate1(c, '幫我建立一個新技能')
+    // 使用不會匹配任何技能的 buildText，確保只有重定向後的新 lastBuildText 才能查到相近做法
+    await toGate1(c, '我要新增一份規定')
     await sendAndWait(c, `幫我記一個${store.myPersonalSkills[0].name}的做法`)
     expect(c.gateStage.value).toBe('gate1')
     // 驗證真的是用新的這句話重新判斷（不是原地不動）：接著選「記一份新的」應該要能查到相近做法
     await sendAndWait(c, '我想重新弄一份')
     expect(c.gateStage.value).toBe('gate2')
+    // 強化檢查：確認查到的技能名稱確實出現在訊息裡，證實 lastBuildText 被正確刷新
+    expect(c.messages.value.at(-1)!.content).toContain(store.myPersonalSkills[0].name)
   })
 })
