@@ -1,19 +1,16 @@
 <template>
-  <div
-    :class="[
-      'agent-card-unit',
-      'lively-card',
-      rank !== undefined ? `podium-card podium-card--rank-${rank}` : 'agent-card',
-    ]"
-    @click="emit('click')"
-  >
-    <div v-if="rank !== undefined" class="rank-badge">{{ rank }}</div>
-    <i v-if="isFavorite" class="material-symbols-outlined material-fill agent-favorite-mark">star</i>
-    <div :class="['agent-icon', `agent-icon--${agent.colorKey}`]">
+  <div class="explore-row" :class="{ 'explore-row--featured': featured }" @click="emit('click')">
+    <div :class="['explore-row-icon', `agent-icon--${agent.colorKey}`]">
       <i class="material-symbols-outlined">{{ agent.icon }}</i>
     </div>
-    <h4>{{ agent.name }}</h4>
-    <p>{{ agent.painPoint }}</p>
+    <div class="explore-row-body">
+      <p class="explore-row-question">{{ agent.painPoint }}</p>
+      <div class="explore-row-meta">
+        <span class="explore-row-name">{{ agent.name }}</span>
+        <i v-if="isFavorite" class="material-symbols-outlined material-fill explore-row-star">star</i>
+      </div>
+    </div>
+    <span v-if="badgeLabel" class="explore-row-badge">{{ badgeLabel }}</span>
   </div>
 </template>
 
@@ -22,8 +19,9 @@ import type { Agent } from '@/stores/exploreStore'
 
 defineProps<{
   agent: Agent
-  rank?: number
+  featured?: boolean
   isFavorite?: boolean
+  badgeLabel?: string
 }>()
 
 const emit = defineEmits<{

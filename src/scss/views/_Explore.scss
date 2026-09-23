@@ -57,200 +57,10 @@
     }
   }
 
-  // 搜尋快捷 chips
-  .search-chips {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 28px;
-
-    .chip {
-      padding: 5px 16px;
-      border-radius: 9999px;
-      font-size: 13px;
-      font-weight: 600;
-      background: var(--primary-a08);
-      color: var(--text);
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: background 0.16s;
-      white-space: nowrap;
-      font-feature-settings: "calt";
-
-      &:hover {
-        background: var(--primary-a12);
-      }
-    }
-  }
-
-  // 篩選 chips（個人化推薦 / Skill 功能類型共用）
-  .recs-chips {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-
-    .recs-chip {
-      padding: 5px 16px;
-      border-radius: 9999px;
-      font-size: 13px;
-      font-weight: 600;
-      background: var(--primary-a08);
-      color: var(--text-muted);
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: background 0.16s, color 0.16s;
-      white-space: nowrap;
-
-      &:hover {
-        background: var(--primary-a12);
-        color: var(--text);
-      }
-
-      &.active {
-        background: var(--accent);
-        color: var(--primary-hover);
-      }
-    }
-  }
-
-  // ── Hero Banner ──────────────────────────────────
-  .explore-hero {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    background: var(--surface);
-    border-top: 4px solid var(--accent);
-    border-left: 1px solid var(--divider);
-    border-right: 1px solid var(--divider);
-    border-bottom: 1px solid var(--divider);
-    border-radius: 20px;
-    padding: 26px 28px;
-    margin-bottom: 36px;
-
-    .hero-left {
-      flex: 1;
-      min-width: 0;
-    }
-
-    // 用品牌淺底+品牌色文字，不用實心黑底 pill
-    .hero-eyebrow-pill {
-      display: inline-flex;
-      background: var(--tag-teal-bg);
-      color: var(--tag-teal-text);
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 9999px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    h2 {
-      font-size: 22px;
-      font-weight: 900;
-      color: var(--text);
-      line-height: 1.15;
-      letter-spacing: -0.4px;
-      margin-bottom: 8px;
-      font-feature-settings: "calt";
-    }
-
-    p {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-faint);
-    }
-
-    .hero-cta {
-      flex-shrink: 0;
-      background: var(--accent);
-      border-radius: 16px;
-      padding: 16px 18px;
-      width: 185px;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: rgba(var(--shadow), 0.12) 0px 8px 20px;
-      }
-
-      // 這兩個原本寫死 rgba(4,120,87,X)，是改版前 Emerald 色系殘留的舊值，
-      // 換成現行 --primary-hover token
-      .hero-cta-label {
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--primary-hover);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 5px;
-      }
-
-      .hero-cta-name {
-        font-size: 14px;
-        font-weight: 900;
-        color: var(--primary-hover);
-        margin-bottom: 5px;
-        line-height: 1.1;
-      }
-
-      .hero-cta-desc {
-        font-size: 11px;
-        color: var(--primary-hover);
-        line-height: 1.5;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        margin-bottom: 12px;
-      }
-
-      .hero-cta-link {
-        display: inline-flex;
-        background: var(--primary-hover);
-        color: var(--accent);
-        font-size: 12px;
-        font-weight: 600;
-        padding: 5px 14px;
-        border-radius: 9999px;
-      }
-    }
-  }
-
-  // ── Section Header ────────────────────────────────
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 14px;
-
-    h3 {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--text);
-      letter-spacing: -0.5px;
-    }
-
-    .see-all {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-faint);
-      cursor: pointer;
-      transition: color 0.15s;
-
-      &:hover {
-        color: var(--text);
-      }
-    }
-  }
-
   // Agent 圖示色系：對應 --tag-*-bg/text token（light/dark 都有定義），
   // 用固定色票取代每個 agent 各自寫死的 hex，深色模式才會正確換色
-  .agent-icon,
-  .explore-modal-icon {
+  .explore-modal-icon,
+  .explore-row-icon {
     &.agent-icon--violet { background: var(--tag-violet-bg); i { color: var(--tag-violet-text); } }
     &.agent-icon--blue   { background: var(--tag-blue-bg);   i { color: var(--tag-blue-text); } }
     &.agent-icon--amber  { background: var(--tag-amber-bg);  i { color: var(--tag-amber-text); } }
@@ -260,289 +70,89 @@
     &.agent-icon--rose   { background: var(--tag-rose-bg);   i { color: var(--tag-rose-text); } }
   }
 
-  .agent-favorite-mark {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    font-size: 16px;
-    color: var(--tag-amber-text);
-  }
-
-  // ── 使用熱度榜：頒獎台版型 ──────────────────────────
-  .ranking-podium {
+  // ── 情境清單（Agent 探索／Skill 探索共用）──────────────────────
+  .explore-list {
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
+    flex-direction: column;
+  }
+
+  .explore-row {
+    display: flex;
+    align-items: center;
     gap: 16px;
-  }
-
-  .podium-card {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 20px;
-    padding: 18px;
+    padding: 14px 8px;
+    border-bottom: 1px solid var(--divider);
     cursor: pointer;
-    width: 220px;
 
-    .agent-icon {
-      width: 44px;
-      height: 44px;
+    &:last-child { border-bottom: none; }
+
+    &:hover {
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    &:not(.explore-row--featured):hover {
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
+      margin: 0 -12px;
+      padding: 14px 20px;
+    }
+
+    &--featured {
+      background: var(--surface);
       border: 1px solid var(--divider);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
 
-      i {
-        font-size: 22px;
-      }
-    }
-
-    h4 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 5px;
-    }
-
-    p {
-      font-size: 12px;
-      color: var(--text-faint);
-      line-height: 1.55;
-    }
-
-    &--rank-1 {
-      order: 2;
-      width: 240px;
-      padding: 24px 22px;
-      border-color: var(--accent);
-      box-shadow: rgba(var(--shadow), 0.18) 0px 10px 28px;
-
-      .agent-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
-
-        i {
-          font-size: 26px;
-        }
-      }
-
-      h4 {
-        font-size: 16px;
-      }
-    }
-
-    &--rank-2 {
-      order: 1;
-      margin-bottom: 18px;
-    }
-
-    &--rank-3 {
-      order: 3;
-      margin-bottom: 18px;
+      .explore-row-icon { width: 56px; height: 56px; }
     }
   }
 
-  .rank-badge {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 700;
+  .explore-row-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+
+    i { font-size: 26px; }
   }
 
-  .podium-card--rank-1 .rank-badge {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
-    background: var(--accent);
-    color: var(--primary-hover);
+  .explore-row-body { flex: 1; min-width: 0; }
+
+  .explore-row-question {
+    font-family: 'Public Sans', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height: 1.4;
+    color: var(--text);
   }
 
-  .podium-card--rank-2 .rank-badge {
-    background: var(--accent-soft);
+  .explore-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
     color: var(--text-muted);
   }
 
-  .podium-card--rank-3 .rank-badge {
-    background: var(--color-wise-rank-bronze-bg);
-    color: var(--color-wise-rank-bronze-text);
-  }
+  .explore-row-name { font-weight: 600; color: var(--text); }
+  .explore-row-star { font-size: 14px; color: var(--tag-amber-text); }
+  .explore-row-tag { font-size: 11px; color: var(--text-faint); }
 
-  .ranking-more {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 14px;
-    padding: 12px 18px;
-    cursor: pointer;
-
-    .rank-badge {
-      position: static;
-      background: var(--accent-soft);
-      color: var(--text-muted);
-      flex-shrink: 0;
-    }
-
-    .agent-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      border: 1px solid var(--divider);
-
-      i {
-        font-size: 16px;
-      }
-    }
-
-    .ranking-more-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      flex-shrink: 0;
-    }
-
-    .ranking-more-desc {
-      flex: 1;
-      min-width: 0;
-      font-size: 12px;
-      color: var(--text-faint);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  @media (max-width: 620px) {
-    .ranking-podium {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .podium-card {
-      width: auto;
-      order: 0 !important;
-      margin-bottom: 0 !important;
-
-      &--rank-1 {
-        width: auto;
-      }
-    }
-  }
-
-  // ── 個人化推薦 ────────────────────────────────────
-  .recs-box {
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: 20px;
-    padding: 28px 32px;
-
-    .recs-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-
-      .recs-avatar {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        background: var(--accent);
-        color: var(--primary-hover);
-        font-size: 13px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-
-      .recs-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--text);
-      }
-    }
-
-    .recs-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .rec-card {
-      background: var(--page-bg);
-      border: 1px solid var(--divider);
-      border-radius: 16px;
-      padding: 16px;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease;
-
-      &:hover {
-        background: var(--accent-soft);
-      }
-
-      .rec-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: var(--divider-a20);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 10px;
-        border: 1px solid var(--divider);
-
-        i {
-          font-size: 16px;
-          color: var(--text-muted);
-        }
-      }
-
-      .rec-card-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 6px;
-
-        .rec-card-name {
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--text);
-        }
-
-        .rec-card-tag {
-          font-size: 10px;
-          font-weight: 600;
-          padding: 2px 8px;
-          border-radius: 9999px;
-          background: var(--hint);
-          color: var(--primary-hover);
-          flex-shrink: 0;
-        }
-      }
-
-      .rec-card-desc {
-        font-size: 12px;
-        color: var(--text-faint);
-        line-height: 1.55;
-      }
-    }
+  .explore-row-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+    flex-shrink: 0;
   }
 
   // ── Modal 內容（保留原樣）────────────────────────────────────────────────────
@@ -602,17 +212,17 @@
     }
   }
 
-  // Skill 功能類型標籤：需同時適用於卡片網格（.explore-skill-card 內）與 Modal
+  // Skill 功能類型標籤：需同時適用於清單列（.explore-row 內）與 Modal
   // （Modal 根層 .Explore.explore-modal-box 與頁面 .Explore.views-page 是兩個平行的
-  // .Explore 子樹，因此不掛在 .explore-skill-card 或 .views-page 之下，直接掛在 .Explore）
+  // .Explore 子樹，因此不掛在 .explore-row 或 .views-page 之下，直接掛在 .Explore）
   .skill-function-badge {
     @extend %badge-shape;
     background: var(--tag-slate-bg);
     color: var(--tag-slate-text);
   }
 
-  // 找不到符合條件的空狀態：跟 .skill-function-badge 同樣的理由，Skill 探索頁的
-  // .skill-grid 空狀態與 AssignSkillToAgentModal 的 Agent 選擇器都要用得到，
+  // 找不到符合條件的空狀態：跟 .skill-function-badge 同樣的理由，Agent／Skill 探索的
+  // 清單空狀態與 AssignSkillToAgentModal 的 Agent 選擇器都要用得到，
   // 而 Modal 根層 .Explore.explore-modal-box 跟頁面 .Explore.views-page 是平行子樹，
   // 所以不掛在 .views-page 之下，直接掛在 .Explore
   .explore-empty-state {
@@ -651,41 +261,6 @@
 
       &:hover:not(.active) { background: var(--page-bg); }
     }
-  }
-
-  .skill-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-  }
-
-  .explore-skill-card {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--divider-a50);
-    border-radius: 12px;
-    padding: 16px;
-    cursor: pointer;
-
-    // .agent-icon 的共用規則原本只掛在 .podium-card/.ranking-more 底下，
-    // 這裡補上同一份 box-model，讓 Skill 卡片也能正確呈現
-    .agent-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      border: 1px solid var(--divider);
-
-      i {
-        font-size: 22px;
-      }
-    }
-
-    h4 { margin: 10px 0 4px; font-size: 15px; }
-    p { font-size: 13px; color: var(--text-muted); margin: 0; }
   }
 }
 
