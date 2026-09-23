@@ -96,6 +96,15 @@ function classifyGate1(text: string): 'new' | 'custom' | 'follow' | null {
   return null
 }
 
+// 關卡二專用的語意分類器
+function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null {
+  if (/照.{0,4}做|沿用他|用現有的/.test(text)) return 'follow'
+  if (/改他|修改他|調整他|改一下(他|這個|這份)/.test(text)) return 'edit'
+  if (/另外|新增一份|開一份新的|重新弄一份|不要沿用/.test(text)) return 'new'
+  if (/講別的|別的事|其他事|換個話題|先不管這個|等一下再/.test(text)) return 'else'
+  return null
+}
+
 // 規則式比對使用者描述跟既有個人技能的 name／triggerHint／instructions 有沒有重疊，
 // 回傳重疊分數最高的那一顆；沒有重疊回傳 null。
 //
@@ -420,19 +429,20 @@ export function useSkillStudioConversation() {
     }
 
     if (stage === 'gate2') {
-      if (t === GATE2_FOLLOW.label) {
+      const g2 = classifyGate2(t)
+      if (g2 === 'follow') {
         pendingSimilarSkillId.value = null
         gateStage.value = 'active'
         push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
         return
       }
-      if (t === GATE2_EDIT.label) {
+      if (g2 === 'edit') {
         const id = pendingSimilarSkillId.value
         pendingSimilarSkillId.value = null
         if (id) loadSkill(id)
         return
       }
-      if (t === GATE2_NEW.label) {
+      if (g2 === 'new') {
         pendingSimilarSkillId.value = null
         // 保留 method：draft.value = emptyDraft() 會把 method 也清成 null，
         // SkillStudio.vue／skillBuilderViewBox.vue 都用 !conv.draft.value.method 判斷要不要
@@ -443,7 +453,7 @@ export function useSkillStudioConversation() {
         push({ role: 'agent', content: '好，那我們重新開一份。請描述這份做法的內容。' })
         return
       }
-      if (t === GATE2_ELSE.label) {
+      if (g2 === 'else') {
         pausedDraft.value = {
           gateStage: 'gate2',
           messages: [...messages.value],
@@ -463,11 +473,8 @@ export function useSkillStudioConversation() {
         push({ role: 'agent', content: '好，你想問什麼或想做什麼？' })
         return
       }
-      const similar = pendingSimilarSkillId.value ? store.findSkill(pendingSimilarSkillId.value) : null
-      push({
-        role: 'agent',
-        content: `您已經有一份「${similar?.name ?? ''}」，這次要沿用他、改他還是記一份新的？`,
-      })
+      pendingSimilarSkillId.value = null
+      routeAsNewIntent(t)
       return
     }
 

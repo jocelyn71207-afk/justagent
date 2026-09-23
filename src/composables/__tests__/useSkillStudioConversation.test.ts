@@ -990,3 +990,49 @@ describe('classifyGate1（模組內部邏輯，透過 gateStage 行為驗證）'
     expect(c.messages.value.at(-1)!.content).toContain(store.myPersonalSkills[0].name)
   })
 })
+
+describe('classifyGate2（模組內部邏輯，透過 gateStage 行為驗證）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  async function toGate2(c: ReturnType<typeof useSkillStudioConversation>, skillName: string) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, `幫我記一個${skillName}的做法`)
+    await sendAndWait(c, '我想重新弄一份')
+    expect(c.gateStage.value).toBe('gate2')
+  }
+
+  it('本關比對到「改他」語意：帶入該技能內容進入修改模式', async () => {
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    await toGate2(c, target.name)
+    await sendAndWait(c, '幫我修改他就好')
+    expect(c.gateStage.value).toBe('active')
+    expect(c.mode.value).toBe('edit')
+    expect(c.savedSkillId.value).toBe(target.id)
+  })
+
+  it('本關比對不到：先清掉 pendingSimilarSkillId，再重定向到新話題判斷', async () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    await toGate2(c, store.myPersonalSkills[0].name)
+    await sendAndWait(c, '依部門報告規範自動產出月報')
+    // classifyIntent 對這句話判成 ambiguous（跟 gate1 那組原始回報句同一批），重定向到關卡0
+    expect(c.gateStage.value).toBe('gate0')
+    // 驗證 pendingSimilarSkillId 真的被清掉了：接著隨便補完一份新草稿存檔，
+    // 不應該去 applyStudioPatch 到原本那顆相近技能身上
+    await sendAndWait(c, '我要記成技能')
+    expect(c.gateStage.value).toBe('gate1')
+  })
+})
