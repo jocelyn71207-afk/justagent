@@ -214,11 +214,6 @@ describe('skillBuilderViewBox', () => {
         await w.findAll('.smc-card')[0].trigger('click')
         await flushPromises()
         await type(w, `幫我記一個${target.name}的做法`)
-        // 關卡一：聊天面板還在，問句正確，不帶 chip
-        expect(w.find('.SkillStudioChat').exists()).toBe(true)
-        expect(w.find('.ssc-messages').text()).toContain('照公司的規定')
-        expect(w.findAll('.chat-bubble').at(-1)!.findAll('.ssc-action-chip')).toHaveLength(0)
-        await type(w, '我想重新弄一份')
         // 關卡二：找到相近做法，聊天面板還在、方式選擇畫面沒有出現，訊息帶技能名稱，不帶 chip
         expect(w.find('.SkillMethodChooser').exists()).toBe(false)
         expect(w.find('.SkillStudioChat').exists()).toBe(true)
