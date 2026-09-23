@@ -77,14 +77,14 @@ describe('AppMenuTree 團隊選單面板開關', () => {
     expect(wrapper.find('.team-panel').attributes('style') ?? '').toContain('display: none')
   })
 
-  it('點擊面板裡的導覽項目（例如團隊專案）後，面板應該自動關閉，不會固定留在畫面上蓋住剛導覽過去的頁面', async () => {
+  it('點擊面板裡的導覽項目（例如團隊專案）後，面板應該維持展開，不會被自動收起', async () => {
     const wrapper = mountMenu()
     expect(wrapper.find('.team-panel').attributes('style') ?? '').not.toContain('display: none')
 
     const teamProjectLink = wrapper.findAll('.side-panel-item').find(el => el.text().includes('團隊專案'))!
     await teamProjectLink.trigger('click')
 
-    expect(wrapper.find('.team-panel').attributes('style') ?? '').toContain('display: none')
+    expect(wrapper.find('.team-panel').attributes('style') ?? '').not.toContain('display: none')
   })
 
   it('點擊「團隊功能」可以切換關閉，再點一次可以重新打開', async () => {
