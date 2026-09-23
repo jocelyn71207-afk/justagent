@@ -995,7 +995,12 @@ describe('classifyGate3（模組內部邏輯，透過 gateStage 行為驗證，�
   async function toGate3(c: ReturnType<typeof useSkillStudioConversation>) {
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '幫我建立一個新技能')
+    // 用 '我要新增一份規定'（不是 '幫我建立一個新技能'）當第一句：跟 mock 個人技能清單裡
+    // 「週報自動生成」的 instructions 文字（"你是一個週報助理…"）有 bigram 重疊（透過
+    // 「一個」兩個字），會讓 findSimilarSkill 誤判成「找到相近做法」、把流程導去關卡二而不是
+    // clarify，整個 toGate3 就到不了關卡三。'我要新增一份規定' 已在別的既有測試驗證過對所有
+    // mock 技能的 bigram 重疊分數是 0，能確保這裡走到 clarify
+    await sendAndWait(c, '我要新增一份規定')
     await sendAndWait(c, '就改現有規定吧')
     await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
     await sendAndWait(c, '沒有漏了，請幫我寫成做法')
