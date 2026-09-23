@@ -373,7 +373,7 @@ export function useSkillStudioConversation() {
     push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？' })
   }
 
-  // gateStage !== 'active' 時，每則訊息都先經過這裡；後續 Task 會繼續往這個函式加 if 分支
+  // gateStage !== 'active' 時，每則訊息都先經過這裡，依目前所在的關卡分派給對應的分支處理
   function handleGateMessage(text: string): void {
     const t = text.trim()
     const stage = gateStage.value
@@ -386,7 +386,10 @@ export function useSkillStudioConversation() {
     if (stage === 'gate0') {
       const g0 = classifyGate0(t)
       if (g0 === 'build') {
-        routeBuildIntent(lastBuildText.value)
+        // t 本身若已經是夠明確的建立描述（classifyIntent 判成 build），優先用它——使用者
+        // 這輪打的內容通常比進 gate0 前那句模糊的舊話更完整。只有 t 本身不構成明確建立訊號時
+        // （例如使用者只打了短短的「記技能」這種等同點選項的字），才退回沿用舊的 lastBuildText
+        routeBuildIntent(classifyIntent(t) === 'build' ? t : lastBuildText.value)
         return
       }
       if (g0 === 'general') {

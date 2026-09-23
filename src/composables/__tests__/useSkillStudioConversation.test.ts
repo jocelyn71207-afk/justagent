@@ -611,6 +611,27 @@ describe('關卡 0／關卡一／相似做法比對', () => {
     await sendAndWait(c, '改現有規定（走客製路線）')
     expect(c.gateStage.value).toBe('clarify')
   })
+
+  it('關卡0 直接比對到 build 語意：用這輪剛打的新描述查相近做法，不沿用進關卡0前的舊文字', async () => {
+    // 進關卡0前的這句模糊舊話跟所有 mock 個人技能零 bigram 重疊（已用 node 腳本驗證），
+    // 用來確保「如果程式碼誤用了舊的 lastBuildText」這件事能被明確觀察到：
+    // 沒修好的話 findSimilarSkill 會查不到任何東西，直接卡在 clarify，到不了 gate2
+    const store = useSkillStore()
+    const target = store.myPersonalSkills[0]
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
+    expect(c.gateStage.value).toBe('gate0')
+    // 這輪打的是完整的新描述（不是短短的 chip label），完整提到目標技能的名稱
+    await sendAndWait(c, `我要記一個${target.name}的做法`)
+    expect(c.gateStage.value).toBe('gate1')
+    await sendAndWait(c, '我想重新弄一份')
+    // 修好後：lastBuildText 是剛打的新描述，findSimilarSkill 查得到 target，轉 gate2
+    // （若沿用進關卡0前的舊文字，這裡會停在 clarify，因為舊文字跟任何技能都零重疊）
+    expect(c.gateStage.value).toBe('gate2')
+    expect(c.messages.value.at(-1)!.content).toContain(target.name)
+  })
 })
 
 describe('關卡二與暫存草稿', () => {
@@ -867,7 +888,7 @@ describe('關卡訊息不再帶 chip（actions）', () => {
     expect(c.messages.value.at(-1)!.actions).toBeUndefined()
   })
 
-  it('精確打「記一份新的」（原本的 chip 文字）依然能正常走關卡一路由（比對不到本關選項的行為留到 Task 3 才改，這裡先只驗證：這句話還是把 gateStage 帶去該去的地方，且訊息本身沒有 actions）', async () => {
+  it('精確打「記一份新的」（原本的 chip 文字）依然能正常走關卡一路由，且訊息本身沒有 actions', async () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()
     c.startCreate()
