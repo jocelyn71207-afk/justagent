@@ -917,7 +917,7 @@ describe('classifyGate0（模組內部邏輯，透過 gateStage 行為驗證）'
     expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
   })
 
-  it('本關比對不到、classifyIntent 判成 build：重定向到關卡一（新話題判斷）', async () => {
+  it('本關直接比對到 build 語意（完整一句話，不是精確 chip 文字）：走關卡一', async () => {
     const c = useSkillStudioConversation()
     await toGate0(c)
     await sendAndWait(c, '幫我建立一個新技能')
