@@ -158,21 +158,6 @@ export function formatDraftSummary(draft: SkillDraft): string {
   return lines.join('\n')
 }
 
-const GATE0_BUILD: StudioAction = { id: 'gate0-build', label: '記技能' }
-const GATE0_GENERAL: StudioAction = { id: 'gate0-general', label: '單純問事情' }
-
-const GATE1_NEW: StudioAction = { id: 'gate1-new', label: '記一份新的' }
-const GATE1_CUSTOM: StudioAction = { id: 'gate1-custom', label: '改現有規定（走客製路線）' }
-const GATE1_FOLLOW: StudioAction = { id: 'gate1-follow', label: '照現有規定' }
-
-const GATE2_FOLLOW: StudioAction = { id: 'gate2-follow', label: '照現有規定做' }
-const GATE2_EDIT: StudioAction = { id: 'gate2-edit', label: '改他' }
-const GATE2_NEW: StudioAction = { id: 'gate2-new', label: '另外新增一份' }
-const GATE2_ELSE: StudioAction = { id: 'gate2-else', label: '我要講別的' }
-
-const GATE3_CONFIRM: StudioAction = { id: 'gate3-confirm', label: '這樣可以，存到個人技能' }
-const GATE3_RETRY: StudioAction = { id: 'gate3-retry', label: '不對，我要改' }
-
 const CLARIFY_DONE_HINT = /沒有漏了|寫成做法|可以寫了|這樣就好/
 
 const NOT_IMPLEMENTED_REPLY = '這部分我還在學怎麼幫你直接處理，目前只能先帶你到技能建立/修改的流程。之後會補上「直接套用技能」的功能。'
