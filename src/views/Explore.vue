@@ -31,6 +31,7 @@
       </div>
 
       <AgentCard
+        v-if="!searchKeyword.trim()"
         :agent="featuredAgent"
         featured
         :is-favorite="exploreStore.isFavorite(featuredAgent.id)"

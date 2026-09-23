@@ -80,4 +80,12 @@ describe('Explore Agent 搜尋（即時篩選，不需要按 Enter）', () => {
 
     expect(wrapper.find('.explore-empty-state').text()).toBe('找不到符合條件的 Agent')
   })
+
+  it('搜尋時精選列會隱藏，避免跟下方清單／空狀態同時出現', async () => {
+    const wrapper = mountExplore()
+    const input = wrapper.find('.explore-search-bar input')
+    await input.setValue('設計')
+
+    expect(wrapper.find('.explore-row--featured').exists()).toBe(false)
+  })
 })
