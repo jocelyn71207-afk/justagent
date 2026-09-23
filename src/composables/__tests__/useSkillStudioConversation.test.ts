@@ -1036,3 +1036,62 @@ describe('classifyGate2（模組內部邏輯，透過 gateStage 行為驗證）'
     expect(c.gateStage.value).toBe('gate1')
   })
 })
+
+describe('classifyGate3（模組內部邏輯，透過 gateStage 行為驗證，不做新話題重定向）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  async function toGate3(c: ReturnType<typeof useSkillStudioConversation>) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    // 用 '我要新增一份規定'（不是 '幫我建立一個新技能'）當第一句：跟 mock 個人技能清單裡
+    // 「週報自動生成」的 instructions 文字（"你是一個週報助理…"）有 bigram 重疊（透過
+    // 「一個」兩個字），會讓 findSimilarSkill 誤判成「找到相近做法」、把流程導去關卡二而不是
+    // clarify，整個 toGate3 就到不了關卡三。'我要新增一份規定' 已在別的既有測試驗證過對所有
+    // mock 技能的 bigram 重疊分數是 0，能確保這裡走到 clarify
+    await sendAndWait(c, '我要新增一份規定')
+    await sendAndWait(c, '就改現有規定吧')
+    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
+    expect(c.gateStage.value).toBe('gate3')
+  }
+
+  it('本關比對到「確認」語意（不是精確 chip 文字）：實際存檔', async () => {
+    const store = useSkillStore()
+    const before = store.myPersonalSkills.length
+    const c = useSkillStudioConversation()
+    await toGate3(c)
+    await sendAndWait(c, '好的，沒問題')
+    expect(c.gateStage.value).toBe('active')
+    expect(store.myPersonalSkills.length).toBe(before + 1)
+  })
+
+  it('本關比對到「不對」語意：不會被「對」字誤判成確認，退回 clarify', async () => {
+    const store = useSkillStore()
+    const before = store.myPersonalSkills.length
+    const c = useSkillStudioConversation()
+    await toGate3(c)
+    await sendAndWait(c, '不對，我打錯了')
+    expect(c.gateStage.value).toBe('clarify')
+    expect(store.myPersonalSkills.length).toBe(before)
+  })
+
+  it('本關比對不到：純文字重新描述選項，不呼叫 classifyIntent 重定向（草稿內容不因此被清空或跳關）', async () => {
+    const c = useSkillStudioConversation()
+    await toGate3(c)
+    const nameBefore = c.draft.value.name
+    await sendAndWait(c, '嗯')
+    expect(c.gateStage.value).toBe('gate3')
+    expect(c.draft.value.name).toBe(nameBefore)
+    expect(c.messages.value.at(-1)!.content).not.toBe('') // 有換句話重述，不是空白
+  })
+})

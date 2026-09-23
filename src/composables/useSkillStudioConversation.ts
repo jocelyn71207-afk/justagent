@@ -105,6 +105,14 @@ function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null 
   return null
 }
 
+// 關卡三專用的語意分類器。順序很重要：retry 的「不對」要先檢查，
+// 否則「不對，我要改」會先被 confirm 規則裡的「對」字誤判
+function classifyGate3(text: string): 'confirm' | 'retry' | null {
+  if (/不對|不是|改一下|再改|不行|等等|漏了/.test(text)) return 'retry'
+  if (/可以|對|沒問題|存吧|好的|確認|儲存|沒錯|就這樣/.test(text)) return 'confirm'
+  return null
+}
+
 // 規則式比對使用者描述跟既有個人技能的 name／triggerHint／instructions 有沒有重疊，
 // 回傳重疊分數最高的那一顆；沒有重疊回傳 null。
 //
@@ -494,7 +502,8 @@ export function useSkillStudioConversation() {
     }
 
     if (stage === 'gate3') {
-      if (t === GATE3_CONFIRM.label) {
+      const g3 = classifyGate3(t)
+      if (g3 === 'confirm') {
         const savedId = save()
         if (!savedId) {
           // save() 在 canSave 為 false（草稿沒有名稱或指令）時回傳 null；這裡可能發生在
@@ -512,14 +521,14 @@ export function useSkillStudioConversation() {
         push({ role: 'agent', content: `已存成個人技能「${draft.value.name}」，可以到「測試」tab 驗證。` })
         return
       }
-      if (t === GATE3_RETRY.label) {
+      if (g3 === 'retry') {
         gateStage.value = 'clarify'
         push({ role: 'agent', content: '好，繼續說你想怎麼調整。' })
         return
       }
       push({
         role: 'agent',
-        content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
+        content: `我不太確定你的意思——這份做法要存成個人技能嗎？內容如下：\n${formatDraftSummary(draft.value)}\n請直接說「可以」或「還要改」。`,
       })
       return
     }
