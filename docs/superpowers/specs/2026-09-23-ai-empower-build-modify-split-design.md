@@ -70,6 +70,12 @@ function routeIntent(text: string): void {
   const kind = classifyBuildOrModify(text)
 
   if (kind === 'modify') {
+    // 清單本來就是空的：沒有任何技能可以修改，問「要改哪一項」沒有意義。
+    // 引導使用者改成描述要建立的內容，gateStage 留在 'intent'，下一句話重新整個判斷一次
+    if (store.myPersonalSkills.length === 0) {
+      push({ role: 'agent', content: '目前還沒有任何個人技能可以修改，要不要先告訴我想建立什麼做法？' })
+      return
+    }
     const similar = findSimilarSkill(text, store.myPersonalSkills)
     if (similar) {
       loadSkill(similar.id)  // 已經會設定 mode='edit'、savedSkillId、draft、gateStage='active'，並推一句開場白
@@ -89,6 +95,8 @@ function routeIntent(text: string): void {
   push({ role: 'agent', content: '你想要記一個新做法，還是要修改現有的？直接跟我說就可以。' })
 }
 ```
+
+**清單為空時的修改意圖**（§4 新增，原文件未涵蓋的邊界情況）：`kind === 'modify'` 但 `store.myPersonalSkills.length === 0` 時，直接回一句提示、不進 `findModifyTarget`（那一關的存在前提是「有技能但不知道要改哪一項」，清單本身是空的不適用）。`gateStage` 留在 `'intent'`，讓下一句話正常重新判斷——使用者接下來多半會改成描述想建立的內容，屆時會被判成 `'build'`，走 §5 的空清單分支直接開始擬草稿。
 
 ## 5. `routeBuildIntent` 重寫：拿掉關卡一的問句，直接查相近做法
 
