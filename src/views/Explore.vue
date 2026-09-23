@@ -115,7 +115,7 @@ const RANKING_NAMES = ['內容創作者', '社群管理', '專案管理', '顧�
 
 function badgeLabelFor(agent: Agent): string | undefined {
   if (agent.badge) return agent.badge.label
-  if (agent.name !== featuredAgent.value.name && RANKING_NAMES.includes(agent.name)) return '熱門'
+  if (RANKING_NAMES.includes(agent.name)) return '熱門'
   return undefined
 }
 
@@ -126,13 +126,11 @@ const otherAgents = computed(() =>
   exploreStore.agents.filter(a => a.name !== featuredAgent.value.name)
 )
 
-const filteredAgents = computed(() =>
-  otherAgents.value.filter(a =>
-    !searchKeyword.value.trim() ||
-    a.name.includes(searchKeyword.value.trim()) ||
-    a.tags.some(t => t.includes(searchKeyword.value.trim()))
-  )
-)
+const filteredAgents = computed(() => {
+  const kw = searchKeyword.value.trim()
+  if (!kw) return otherAgents.value
+  return exploreStore.agents.filter(a => a.name.includes(kw) || a.tags.some(t => t.includes(kw)))
+})
 
 // Agent 詳情 Modal
 const isModalOpen = ref(false)

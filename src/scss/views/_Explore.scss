@@ -59,7 +59,6 @@
 
   // Agent 圖示色系：對應 --tag-*-bg/text token（light/dark 都有定義），
   // 用固定色票取代每個 agent 各自寫死的 hex，深色模式才會正確換色
-  .agent-icon,
   .explore-modal-icon,
   .explore-row-icon {
     &.agent-icon--violet { background: var(--tag-violet-bg); i { color: var(--tag-violet-text); } }
@@ -90,6 +89,9 @@
     &:hover {
       background: var(--surface);
       box-shadow: var(--shadow-sm);
+    }
+
+    &:not(.explore-row--featured):hover {
       border-radius: 12px;
       margin: 0 -12px;
       padding: 14px 20px;

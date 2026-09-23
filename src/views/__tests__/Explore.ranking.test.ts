@@ -63,14 +63,16 @@ describe('Explore Agent 搜尋（即時篩選，不需要按 Enter）', () => {
     expect(rows[0].find('.explore-row-name').text()).toBe('設計助理')
   })
 
-  it('關鍵字比對 tags 也算符合（搜尋「行銷」會找到社群管理）', async () => {
+  it('關鍵字比對 tags 也算符合（搜尋「行銷」會找到社群管理與內容創作者）', async () => {
     const wrapper = mountExplore()
     const input = wrapper.find('.explore-search-bar input')
     await input.setValue('行銷')
 
     const rows = wrapper.findAll('.explore-list .explore-row')
-    expect(rows).toHaveLength(1)
-    expect(rows[0].find('.explore-row-name').text()).toBe('社群管理')
+    const names = rows.map(r => r.find('.explore-row-name').text())
+    expect(names).toContain('社群管理')
+    expect(names).toContain('內容創作者')
+    expect(rows).toHaveLength(2)
   })
 
   it('找不到符合條件的 Agent 時顯示空狀態', async () => {

@@ -43,4 +43,16 @@ describe('Explore Skill 探索分頁', () => {
 
     expect(wrapper.find('.explore-empty-state').text()).toBe('找不到符合條件的技能')
   })
+
+  it('技能列顯示 functionType 標籤', async () => {
+    const wrapper = mountExplore()
+    const tabs = wrapper.findAll('.explore-tab')
+    await tabs[1].trigger('click')
+
+    const input = wrapper.find('.explore-search-bar input')
+    await input.setValue('會議')
+
+    const row = wrapper.find('.explore-list .explore-row')
+    expect(row.find('.explore-row-tag').text()).toBe('文字生成')
+  })
 })
