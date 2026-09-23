@@ -57,13 +57,23 @@ function classifyGate3(text: string): 'confirm' | 'retry' | null {
 
 （以上正規表示式是設計階段的參考版本，實作時可依實際測試微調字詞，不用逐字照抄——跟原設計文件 §15 非目標裡「規則式關鍵字清單日後可能需要調整」的態度一致。）
 
-## 4. 三層 fallback 解析順序
+## 4. Fallback 解析順序
 
 每一關收到訊息，依序嘗試：
 
 1. **本關比對**（§3 的分類器）→ 比對到就照原設計文件對應章節的路由處理（等同「點了這個 chip」）。
-2. **新話題判斷**（僅適用於關卡 0／1／2，關卡 3 不適用，見 §5）→ 本關比對不到時，呼叫既有的 `classifyIntent(text)`；若判斷結果是 `'build'` 或 `'general'`（代表這句話聽起來像是全新的、跟目前關卡問題無關的技能描述或問題），視為使用者換了新話題，直接**重新走一次 §4（原設計文件）的意圖判斷路由**——也就是把目前的 `lastBuildText` 更新成這句新文字，呼叫跟 `gateStage === 'intent'` 時同一套路由邏輯（`build` → `routeBuildIntent`；`general` → TODO 佔位＋回到 `'intent'`）。這一步就是修正「關卡一打新描述被吞掉」的問題：只要 `classifyIntent` 能有信心判斷是新話題，就直接照辦，不用使用者再說一次。
-3. **真的看不懂**→ 前兩步都比對不到（`classifyIntent` 也判成 `'ambiguous'`，或關卡 3 本關比對不到）→ 用純文字**重新描述一次本關的選項**，請使用者說清楚一點（不是重複同一句一字不改的問句，是換句話再問一次，例如「我不太確定你的意思，你是要照公司現有的規定處理、要調整規定，還是要記一份全新的做法？」）。
+2. **新話題判斷**（僅適用於關卡 0／1／2，關卡 3 不適用，見 §5）→ 本關比對不到時，**不管 `classifyIntent(text)` 的結果是 `'build'`、`'general'` 還是 `'ambiguous'`**，一律呼叫共用的 `routeAsNewIntent(text)`（見下方），把這句話當成使用者換了新話題、重新走一次跟 `gateStage === 'intent'` 時同一套路由：
+   - `'build'` → `routeBuildIntent(text)`
+   - `'general'` → TODO 佔位訊息，回到 `gateStage = 'intent'`
+   - `'ambiguous'` → `gateStage = 'gate0'`，問「你是要記成 skill，還是單純問事情？」
+
+   這一步就是修正「關卡一打新描述被吞掉」的問題：原本測試時實際打的「把每週會議逐字稿整理成週報」「依部門報告規範自動產出月報」兩句話，`classifyIntent` 都判成 `'ambiguous'`（不是 `'build'`/`'general'`）——若只有 `'build'`/`'general'` 才重定向，這兩句仍然會被晾在原地。改成「本關比對不到就一律重定向」後，這兩句話會被送去關卡0 問清楚，而不是被原地重問同一個問題。
+
+   關卡2 額外要求：呼叫 `routeAsNewIntent(text)` 前先清掉 `pendingSimilarSkillId.value = null`（放棄目前這個「相近做法」的追問脈絡）。
+
+   關卡0 呼叫 `routeAsNewIntent(text)` 時，若結果又是 `'ambiguous'`，效果等同「重新問一次關卡0自己的問題」（`routeAsNewIntent` 的 ambiguous 分支本來就是推關卡0的問句）——這是預期中的收斂，不是 bug。
+
+因為「新話題判斷」現在無條件涵蓋 `classifyIntent` 的三種結果，**關卡 1／2 不再需要獨立的「真的看不懂，重述本關選項」這一層**——`routeAsNewIntent` 本身的三個分支已經涵蓋所有可能結果，一定會落在某個明確的下一步。關卡 0 因為 `routeAsNewIntent` 的 ambiguous 分支剛好就是重問自己，效果上也不需要另外寫一層。**只有關卡 3**（不做新話題判斷，見 §5）仍然保留「本關比對不到 → 用純文字重新描述本關選項，請使用者說清楚一點」這個獨立的 fallback。
 
 ### 實作上的共用函式
 
@@ -100,7 +110,7 @@ function routeAsNewIntent(text: string): void {
 
 - 既有的 composable 測試目前用 `send(GATE1_NEW.label)` 這類方式模擬「點 chip」——因為 `.label` 本身就是各關分類器的正典比對詞之一（§3 的分類器都會把選項的原文列進 regex），這些測試預期不需要修改，一樣會落在「本關比對」那一層、行為不變。
 - 最終審查階段新增的迴歸測試（`skillBuilderViewBox.test.ts` 裡走 gate1/gate2 的那個測試）目前用 `.trigger('click')` 點 `.ssc-action-chip`——這次要改成透過輸入框打字＋送出，因為畫面上將不再有 chip 可點。
-- 新增測試涵蓋：各關「本關比對成功」「新話題重定向」（關卡 0/1/2）「真的看不懂→重述」三種路徑；關卡三只需涵蓋「本關比對」與「看不懂→重述」兩種（無新話題重定向）。
+- 新增測試涵蓋：關卡 0／1／2 各自的「本關比對成功」與「新話題重定向」（含 `routeAsNewIntent` 的 build／general／ambiguous 三種子結果各至少一個案例）；關卡 2 額外驗證重定向前有清掉 `pendingSimilarSkillId`；關卡三涵蓋「本關比對」與「看不懂→重述」兩種（無新話題重定向）。
 
 ## 7. 型別與既有介面異動
 
