@@ -1,11 +1,15 @@
 <template>
-  <div class="explore-skill-card lively-card" @click="emit('click')">
-    <div :class="['agent-icon', `agent-icon--${visual.colorKey}`]">
+  <div class="explore-row" @click="emit('click')">
+    <div :class="['explore-row-icon', `agent-icon--${visual.colorKey}`]">
       <i class="material-symbols-outlined">{{ visual.icon }}</i>
     </div>
-    <span v-if="skill.functionType" class="skill-function-badge">{{ skill.functionType }}</span>
-    <h4>{{ skill.name }}</h4>
-    <p>{{ capabilityText }}</p>
+    <div class="explore-row-body">
+      <p class="explore-row-question">{{ capabilityText }}</p>
+      <div class="explore-row-meta">
+        <span class="explore-row-name">{{ skill.name }}</span>
+        <span v-if="skill.functionType" class="explore-row-tag">{{ skill.functionType }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
