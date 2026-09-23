@@ -922,9 +922,9 @@ Expected: 這三個檔案本身沒有 `<style>` block（樣式都在 `_Explore.s
 
 檢查 `_Explore.scss` 裡 `.explore-modal-icon`（用 `agent-icon--{colorKey}` token）、`.explore-modal-*`（`.explore-modal-painpoint`/`.explore-modal-desc`/`.explore-modal-tags`）、`.skill-function-badge`（`@extend %badge-shape` + `--tag-slate-*`）、`.assign-agent-*`（`--tag-slate-*`/`--divider`/`--hint`/`--text-muted`）——這些在 Task 3 已經確認全部維持不變，沒有寫死色碼。這一步只是再次確認 Task 3 的重寫沒有不小心遺漏或改動到這些規則。
 
-Run: `git show HEAD~1:src/scss/views/_Explore.scss | grep -c "explore-modal\|assign-agent\|skill-function-badge"` 和 `grep -c "explore-modal\|assign-agent\|skill-function-badge" src/scss/views/_Explore.scss`
+Run: `grep -n "explore-modal-icon\|explore-modal-painpoint\|explore-modal-desc\|explore-modal-tags\|explore-modal-footer\|skill-function-badge\|assign-agent-search\|assign-agent-list\|assign-agent-icon\|assign-agent-item" src/scss/views/_Explore.scss`
 
-Expected: 兩個數字一致（Task 3 前後這些規則的出現次數沒有變化，代表確實原封不動搬過去，不是改寫時漏掉）
+Expected: 每一個都至少出現一次，且內容符合本文件 Task 3 Step 1 裡貼出的完整檔案內容（`.skill-function-badge` 有 `@extend %badge-shape;` + `--tag-slate-bg`/`--tag-slate-text`；`.assign-agent-icon` 背景是 `--tag-slate-bg`；其餘 `.explore-modal-*` 都用 `var(--...)` token，沒有寫死色碼）——不要跟任何 git 歷史比對，直接對照 Task 3 貼出的內容逐條核對即可。
 
 - [ ] **Step 3: 如果 Step 1/2 發現任何問題，在這裡修正**
 
