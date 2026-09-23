@@ -39,7 +39,7 @@ export interface StudioSnapshot {
 }
 
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
-const GATE_OPENING_MESSAGE = '你好，我是這裡的助理。想記一個新做法、調整既有的，還是有其他問題，都可以直接跟我說。'
+const GATE_OPENING_MESSAGE = '你好，我是這裡的助理。想記一個新做法，或是要調整既有的，都可以直接跟我說。'
 
 export function emptyDraft(): SkillDraft {
   return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [], method: null, sectionIds: [] }
@@ -48,16 +48,12 @@ export function emptyDraft(): SkillDraft {
 // ── 意圖判斷與關卡分流（AI 賦能「用對話建立」路徑，接在既有解析規則之前）──
 
 export type GateStage =
-  | 'intent'        // 每則新訊息的預設起點：判斷意圖
-  | 'gate0'         // 太模糊，先問「記技能還是單純問事情」
-  | 'gate1'         // 問「照規定 / 改規定 / 記新的」
-  | 'checkingRules' // 內部過渡態：查 myPersonalSkills 有沒有相近做法。
-                     // 注意：實作上這一步在同一輪訊息處理裡就會算完轉下一關，
-                     // gateStage.value 實際上不會被指定成這個值，純粹型別上列出來說明流程
-  | 'gate2'         // 找到相近做法，問「沿用 / 改他 / 另開一份 / 講別的」
-  | 'clarify'       // 多輪問答補齊草稿內容（沿用既有 interpretStudioMessage 的抽取規則）
-  | 'gate3'         // 最終確認「內容如下…這樣可以嗎？」
-  | 'active'        // 分流完畢，既有的 interpretStudioMessage 接手
+  | 'intent'           // 每則新訊息的起點：判斷「建立」／「修改」／太模糊
+  | 'findModifyTarget' // 已知是修改意圖，但找不到相近技能，等使用者說出要改哪一項
+  | 'gate2'            // 建立意圖找到相近做法，問沿用/改他/另開一份/講別的
+  | 'clarify'          // 多輪問答補齊草稿內容（沿用既有 interpretStudioMessage 的抽取規則）
+  | 'gate3'            // 最終確認「內容如下…這樣可以嗎？」
+  | 'active'           // 分流完畢，既有的 interpretStudioMessage 接手
 
 // 「我要講別的」時的暫存快照：只存在單次連線的記憶體內（一個 ref），
 // 不寫入 skillStore、離開頁面或重新整理就消失，跟 skillStore 既有的
@@ -69,31 +65,19 @@ export interface PausedDraft {
   pendingSimilarSkillId: string | null
 }
 
-const BUILD_INTENT_VERBS = /教|建立|新增|修改|更新|記錄|記一個|記成|固定|流程|SOP/
-const BUILD_INTENT_NOUNS = /技能|skill|規定|做法/i
+const MODIFY_SIGNAL = /修改|調整|更新/
+const BUILD_VERBS = /教|建立|新增|記一個|記成|記錄|固定|流程|SOP/
+const BUILD_NOUNS = /技能|skill|規定|做法/i
 
-// 規則式關鍵字比對，不是真語意理解，跟 interpretStudioMessage 的既有風格一致
-export function classifyIntent(text: string): 'build' | 'general' | 'ambiguous' {
-  const hasVerb = BUILD_INTENT_VERBS.test(text)
-  const hasNoun = BUILD_INTENT_NOUNS.test(text)
-  if (hasVerb && hasNoun) return 'build'
-  if (text.trim().length <= 20 && (hasNoun || /[？?]/.test(text))) return 'general'
+// 規則式關鍵字比對，不是真語意理解，跟既有風格一致。
+// 「建立」是預設值：任何不是明確「修改」訊號、且不是短到看不出內容的輸入都當作建立意圖。
+// 「太模糊」只保留給真的看不出任何內容的極短回覆（例如「嗯」）。
+export function classifyBuildOrModify(text: string): 'build' | 'modify' | 'ambiguous' {
+  const t = text.trim()
+  if (MODIFY_SIGNAL.test(t)) return 'modify'
+  const hasBuildSignal = BUILD_VERBS.test(t) || BUILD_NOUNS.test(t)
+  if (t.length > 4 || hasBuildSignal) return 'build'
   return 'ambiguous'
-}
-
-// 關卡0 專用的語意分類器：本關只有兩個選項，比對到就等同「點了這個選項」
-function classifyGate0(text: string): 'build' | 'general' | null {
-  if (/技能|skill|做法|規定|記(成|一個|下來)|建立|新增/i.test(text)) return 'build'
-  if (/問|問題|單純|查詢|只是想知道/.test(text) || /[？?]/.test(text)) return 'general'
-  return null
-}
-
-// 關卡一專用的語意分類器
-function classifyGate1(text: string): 'new' | 'custom' | 'follow' | null {
-  if (/照(現有|規定|做)|沿用|用他|不用改|維持現況/.test(text)) return 'follow'
-  if (/改(現有|規定)|客製|調整規定|修改規定/.test(text)) return 'custom'
-  if (/新的|另外|重新|開一份|記一份|重新弄一份/.test(text)) return 'new'
-  return null
 }
 
 // 關卡二專用的語意分類器
@@ -324,7 +308,6 @@ export function useSkillStudioConversation() {
   const gateStage = ref<GateStage>('active')
   const pendingSimilarSkillId = ref<string | null>(null)
   const pausedDraft = ref<PausedDraft | null>(null)
-  const lastBuildText = ref('')
 
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
@@ -337,8 +320,9 @@ export function useSkillStudioConversation() {
     messages.value.push({ id: `studio-${++seq}`, ...m })
   }
 
-  // 建立意圖確立後的路由：清單為空就直接進既有建立邏輯（用這句話當第一句描述），
-  // 清單非空就進關卡一問清楚要沿用、改、還是開新的
+  // 建立意圖確立後的路由：清單為空就直接進既有建立邏輯（用這句話當第一句描述）；
+  // 清單非空就直接查有沒有相近做法（不再先問「照規定/改規定/記新的」）——
+  // 避免建立重複的技能，但不追加一個意圖已經明確時顯得多餘的問句
   function routeBuildIntent(text: string): void {
     if (store.myPersonalSkills.length === 0) {
       gateStage.value = 'active'
@@ -347,30 +331,50 @@ export function useSkillStudioConversation() {
       push({ role: 'agent', content: reply.content, actions: reply.actions })
       return
     }
-    lastBuildText.value = text
-    gateStage.value = 'gate1'
-    push({
-      role: 'agent',
-      content: '你現在要照公司的規定處理眼前這件事，還是要改規定、或是記一份新的?',
-    })
+    const similar = findSimilarSkill(text, store.myPersonalSkills)
+    if (similar) {
+      pendingSimilarSkillId.value = similar.id
+      gateStage.value = 'gate2'
+      push({ role: 'agent', content: `您已經有一份「${similar.name}」，這次要沿用他、改他還是記一份新的？` })
+    } else {
+      gateStage.value = 'clarify'
+      push({ role: 'agent', content: '好，那請直接描述這份做法的內容，我會幫你整理。' })
+    }
   }
 
-  // 把這句話當成「全新的一輪」處理：跟 gateStage === 'intent' 時同一套路由邏輯。
-  // 除了 'intent' 本身呼叫外，也是關卡 0／1／2「本關比對不到」時的新話題重定向共用邏輯
-  function routeAsNewIntent(text: string): void {
-    const kind = classifyIntent(text)
+  // 唯一的頂層意圖路由：gateStage === 'intent' 時呼叫，
+  // 也是關卡二「本關比對不到」時的新話題重定向共用邏輯
+  function routeIntent(text: string): void {
+    const kind = classifyBuildOrModify(text)
+
+    if (kind === 'modify') {
+      // 清單本來就是空的：沒有任何技能可以修改，問「要改哪一項」沒有意義。
+      // 引導使用者改成描述要建立的內容，下一句話重新整個判斷一次
+      if (store.myPersonalSkills.length === 0) {
+        gateStage.value = 'intent'
+        push({ role: 'agent', content: '目前還沒有任何個人技能可以修改，要不要先告訴我想建立什麼做法？' })
+        return
+      }
+      const similar = findSimilarSkill(text, store.myPersonalSkills)
+      if (similar) {
+        loadSkill(similar.id)
+        return
+      }
+      gateStage.value = 'findModifyTarget'
+      push({ role: 'agent', content: '要修改哪一項技能？請直接說出技能名稱，或描述一下內容，我幫你找。' })
+      return
+    }
+
     if (kind === 'build') {
       routeBuildIntent(text)
       return
     }
-    if (kind === 'general') {
-      gateStage.value = 'intent'
-      push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
-      return
-    }
-    lastBuildText.value = text
-    gateStage.value = 'gate0'
-    push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？' })
+
+    // kind === 'ambiguous'：明確設回 'intent'，不能假設呼叫端本來就是 'intent'——
+    // 這個函式也會被其他關卡「本關比對不到」時當成重定向呼叫，那時候 gateStage
+    // 還是原本那一關的值（例如 'gate2'），不明確設定的話會卡在錯的關卡
+    gateStage.value = 'intent'
+    push({ role: 'agent', content: '你想要記一個新做法，還是要修改現有的？直接跟我說就可以。' })
   }
 
   // gateStage !== 'active' 時，每則訊息都先經過這裡，依目前所在的關卡分派給對應的分支處理
@@ -379,48 +383,17 @@ export function useSkillStudioConversation() {
     const stage = gateStage.value
 
     if (stage === 'intent') {
-      routeAsNewIntent(t)
+      routeIntent(t)
       return
     }
 
-    if (stage === 'gate0') {
-      const g0 = classifyGate0(t)
-      if (g0 === 'build') {
-        // t 本身若已經是夠明確的建立描述（classifyIntent 判成 build），優先用它——使用者
-        // 這輪打的內容通常比進 gate0 前那句模糊的舊話更完整。只有 t 本身不構成明確建立訊號時
-        // （例如使用者只打了短短的「記技能」這種等同點選項的字），才退回沿用舊的 lastBuildText
-        routeBuildIntent(classifyIntent(t) === 'build' ? t : lastBuildText.value)
+    if (stage === 'findModifyTarget') {
+      const similar = findSimilarSkill(t, store.myPersonalSkills)
+      if (similar) {
+        loadSkill(similar.id)
         return
       }
-      if (g0 === 'general') {
-        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
-        gateStage.value = 'intent'
-        return
-      }
-      routeAsNewIntent(t)
-      return
-    }
-
-    if (stage === 'gate1') {
-      const g1 = classifyGate1(t)
-      if (g1 === 'new' || g1 === 'custom') {
-        const similar = findSimilarSkill(lastBuildText.value, store.myPersonalSkills)
-        if (similar) {
-          pendingSimilarSkillId.value = similar.id
-          gateStage.value = 'gate2'
-          push({ role: 'agent', content: `您已經有一份「${similar.name}」，這次要沿用他、改他還是記一份新的？` })
-        } else {
-          gateStage.value = 'clarify'
-          push({ role: 'agent', content: '好，那請直接描述這份做法的內容，我會幫你整理。' })
-        }
-        return
-      }
-      if (g1 === 'follow') {
-        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
-        gateStage.value = 'active'
-        return
-      }
-      routeAsNewIntent(t)
+      push({ role: 'agent', content: `還是沒找到符合「${t}」的技能，可以換個說法，或直接說出正確的技能名稱嗎？` })
       return
     }
 
@@ -470,7 +443,7 @@ export function useSkillStudioConversation() {
         return
       }
       pendingSimilarSkillId.value = null
-      routeAsNewIntent(t)
+      routeIntent(t)
       return
     }
 
@@ -543,11 +516,10 @@ export function useSkillStudioConversation() {
     // 有 prefill：來源（例如方案三 conv4 交接）已經知道使用者要幹嘛，略過整套關卡
     gateStage.value = prefill ? 'active' : 'intent'
     // 清掉上一輪對話可能留下的暫存狀態：不清的話，「我要講別的」留下的 pausedDraft 會在
-    // seq 已經歸零的新一輪裡被接回去，跟新訊息的 id 撞號；pendingSimilarSkillId／
-    // lastBuildText 也可能指向這輪根本沒問過的東西
+    // seq 已經歸零的新一輪裡被接回去，跟新訊息的 id 撞號；pendingSimilarSkillId 也可能
+    // 指向這輪根本沒問過的東西
     pausedDraft.value = null
     pendingSimilarSkillId.value = null
-    lastBuildText.value = ''
     if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
@@ -588,7 +560,6 @@ export function useSkillStudioConversation() {
     // savedSkillId 卻指向這裡剛載入的技能」，之後 gate3 confirm 一存就存錯技能
     pausedDraft.value = null
     pendingSimilarSkillId.value = null
-    lastBuildText.value = ''
     if (draft.value.method === 'chat') push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
     return true
   }
