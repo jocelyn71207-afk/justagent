@@ -60,6 +60,13 @@
                 @click="openToolboxMenu(toolboxBtnOverlay)">
                 <i class="material-symbols-outlined">construction</i>
               </button>
+              <!-- 同理：對話標題列（.project-name）整個被這層全螢幕遮罩蓋住，「對話列表」
+                   平常只能從那裡的下拉選單打開，空白狀態下完全按不到、切不了對話——
+                   在這裡也放一個直接開啟 Modal 的入口 -->
+              <button v-tooltip.top="'對話列表'"
+                @click="isOpenConversationListModal = true">
+                <i class="material-symbols-outlined">forum</i>
+              </button>
             </div>
             <button class="conv1-empty-send-btn" @click="submitConv1Overlay">
               <i class="material-symbols-outlined">send</i>
