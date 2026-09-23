@@ -641,7 +641,6 @@ describe('關卡二與暫存草稿', () => {
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, `幫我記一個${skillName}的做法`)
-    await sendAndWait(c, '記一份新的')
   }
 
   it('關卡二選「照現有規定做」：推 TODO 佔位，gateStage 轉 active，清掉 pendingSimilarSkillId', async () => {
@@ -686,9 +685,10 @@ describe('關卡二與暫存草稿', () => {
     await sendAndWait(c, '我要講別的')
     expect(c.gateStage.value).toBe('intent')
     expect(c.messages.value.length).toBeLessThan(messagesBeforePause)
-    // 換個新話題照常走一輪意圖判斷
-    await sendAndWait(c, '現在庫存多少？')
-    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+    // 換個新話題照常走一輪意圖判斷（太模糊 → 留在 intent 問澄清）
+    await sendAndWait(c, '嗯')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('記一個新做法')
   })
 })
 
@@ -725,8 +725,7 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '幫我建立一個新技能') // 清單非空 → gate1
-    await sendAndWait(c, '改現有規定（走客製路線）') // 找不到相近 → clarify
+    await sendAndWait(c, '我要新增一份規定') // 清單非空、零 bigram 重疊 → 直接 clarify
     expect(c.gateStage.value).toBe('clarify')
     await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
     expect(c.gateStage.value).toBe('clarify')
@@ -739,8 +738,7 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '幫我建立一個新技能')
-    await sendAndWait(c, '改現有規定（走客製路線）')
+    await sendAndWait(c, '我要新增一份規定')
     await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
     await sendAndWait(c, '沒有漏了，請幫我寫成做法')
     expect(c.gateStage.value).toBe('gate3')
@@ -754,8 +752,7 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '幫我建立一個新技能')
-    await sendAndWait(c, '改現有規定（走客製路線）')
+    await sendAndWait(c, '我要新增一份規定')
     await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
     await sendAndWait(c, '沒有漏了，請幫我寫成做法')
     await sendAndWait(c, '這樣可以，存到個人技能')
@@ -768,8 +765,7 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '幫我建立一個新技能')
-    await sendAndWait(c, '改現有規定（走客製路線）')
+    await sendAndWait(c, '我要新增一份規定')
     await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
     const nameBeforeRetry = c.draft.value.name
     await sendAndWait(c, '沒有漏了，請幫我寫成做法')
@@ -799,7 +795,6 @@ describe('暫存草稿的接續判斷', () => {
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, `幫我記一個${skillName}的做法`)
-    await sendAndWait(c, '記一份新的')
     const pausedMessageCount = c.messages.value.length + 1 // +1：即將送出、會被存進快照的「我要講別的」
     await sendAndWait(c, '我要講別的')
     return pausedMessageCount
@@ -828,22 +823,23 @@ describe('暫存草稿的接續判斷', () => {
     const c = useSkillStudioConversation()
     await pauseWithDraft(c, target.name)
 
-    await sendAndWait(c, '今天天氣如何？')
+    await sendAndWait(c, '嗯')
 
     expect(c.gateStage.value).toBe('intent')
-    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+    expect(c.messages.value.at(-1)!.content).toContain('記一個新做法')
   })
 
   it('沒有暫存草稿時，接續關鍵字就照正常意圖判斷處理（不會誤觸發還原、不會拋錯）', async () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '我們繼續剛才的')
-    // 沒有 pausedDraft，接續檢查整段跳過；這句話本身沒有明確的建立動詞＋名詞、
-    // 也沒有問號，classifyIntent 會判成 ambiguous，走正常的關卡0。
-    // pausedDraft 本身不是 useSkillStudioConversation() 回傳值的一部分（純內部狀態，
-    // 見 Task 4），測試只能斷言可觀察的行為結果，不能直接檢查它的值
-    expect(c.gateStage.value).toBe('gate0')
+    await sendAndWait(c, '嗯')
+    // 沒有 pausedDraft，接續檢查整段跳過；'嗯' 這句話太短、沒有任何訊號，
+    // classifyBuildOrModify 會判成 ambiguous，gateStage 留在 intent 並推一句澄清問句。
+    // pausedDraft 本身不是 useSkillStudioConversation() 回傳值的一部分（純內部狀態），
+    // 測試只能斷言可觀察的行為結果，不能直接檢查它的值
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('記一個新做法')
   })
 })
 
@@ -860,33 +856,31 @@ describe('關卡訊息不再帶 chip（actions）', () => {
     await p
   }
 
-  it('關卡一的訊息（清單非空、建立意圖）不帶 actions', async () => {
-    const c = useSkillStudioConversation()
-    c.startCreate()
-    c.chooseMethod('chat')
-    await sendAndWait(c, '幫我建立一個新技能')
-    expect(c.gateStage.value).toBe('gate1')
-    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
-  })
-
-  it('關卡0 的訊息（太模糊）不帶 actions', async () => {
-    const c = useSkillStudioConversation()
-    c.startCreate()
-    c.chooseMethod('chat')
-    await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
-    expect(c.gateStage.value).toBe('gate0')
-    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
-  })
-
-  it('精確打「記一份新的」（原本的 chip 文字）依然能正常走關卡一路由，且訊息本身沒有 actions', async () => {
+  it('關卡二的訊息（建立意圖找到相近做法）不帶 actions', async () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, `幫我記一個${store.myPersonalSkills[0].name}的做法`)
-    expect(c.gateStage.value).toBe('gate1')
-    await sendAndWait(c, '記一份新的')
     expect(c.gateStage.value).toBe('gate2')
+    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
+  })
+
+  it('findModifyTarget 的訊息（修改意圖找不到相近技能）不帶 actions', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '我想修改一下技能設定')
+    expect(c.gateStage.value).toBe('findModifyTarget')
+    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
+  })
+
+  it('太模糊的澄清問句不帶 actions', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '嗯')
+    expect(c.gateStage.value).toBe('intent')
     expect(c.messages.value.at(-1)!.actions).toBeUndefined()
   })
 })
@@ -908,7 +902,6 @@ describe('classifyGate2（模組內部邏輯，透過 gateStage 行為驗證）'
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, `幫我記一個${skillName}的做法`)
-    await sendAndWait(c, '我想重新弄一份')
     expect(c.gateStage.value).toBe('gate2')
   }
 
@@ -923,17 +916,19 @@ describe('classifyGate2（模組內部邏輯，透過 gateStage 行為驗證）'
     expect(c.savedSkillId.value).toBe(target.id)
   })
 
-  it('本關比對不到：先清掉 pendingSimilarSkillId，再重定向到新話題判斷', async () => {
+  it('本關比對不到：先清掉 pendingSimilarSkillId，再重定向到新話題判斷（太模糊 → 留在 intent 問澄清）', async () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()
     await toGate2(c, store.myPersonalSkills[0].name)
-    await sendAndWait(c, '依部門報告規範自動產出月報')
-    // classifyIntent 對這句話判成 ambiguous（跟 gate1 那組原始回報句同一批），重定向到關卡0
-    expect(c.gateStage.value).toBe('gate0')
-    // 驗證 pendingSimilarSkillId 真的被清掉了：接著隨便補完一份新草稿存檔，
-    // 不應該去 applyStudioPatch 到原本那顆相近技能身上
-    await sendAndWait(c, '我要記成技能')
-    expect(c.gateStage.value).toBe('gate1')
+    await sendAndWait(c, '嗯')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('記一個新做法')
+    // 驗證 pendingSimilarSkillId 真的被清掉了：接著描述一個會命中「另一顆」技能的新內容，
+    // 應該正確轉去 gate2 並帶那顆技能的名稱，而不是卡在舊的 pendingSimilarSkillId 對應的技能上
+    const other = store.myPersonalSkills[1]
+    await sendAndWait(c, `幫我記一個${other.name}的做法`)
+    expect(c.gateStage.value).toBe('gate2')
+    expect(c.messages.value.at(-1)!.content).toContain(other.name)
   })
 })
 
