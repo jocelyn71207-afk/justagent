@@ -81,6 +81,13 @@ export function classifyIntent(text: string): 'build' | 'general' | 'ambiguous' 
   return 'ambiguous'
 }
 
+// 關卡0 專用的語意分類器：本關只有兩個選項，比對到就等同「點了這個選項」
+function classifyGate0(text: string): 'build' | 'general' | null {
+  if (/技能|skill|做法|規定|記(成|一個|下來)|建立|新增/i.test(text)) return 'build'
+  if (/問|問題|單純|查詢|只是想知道/.test(text) || /[？?]/.test(text)) return 'general'
+  return null
+}
+
 // 規則式比對使用者描述跟既有個人技能的 name／triggerHint／instructions 有沒有重疊，
 // 回傳重疊分數最高的那一顆；沒有重疊回傳 null。
 //
@@ -367,16 +374,17 @@ export function useSkillStudioConversation() {
     }
 
     if (stage === 'gate0') {
-      if (t === GATE0_BUILD.label) {
+      const g0 = classifyGate0(t)
+      if (g0 === 'build') {
         routeBuildIntent(lastBuildText.value)
         return
       }
-      if (t === GATE0_GENERAL.label) {
+      if (g0 === 'general') {
         push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
         gateStage.value = 'intent'
         return
       }
-      push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？' })
+      routeAsNewIntent(t)
       return
     }
 

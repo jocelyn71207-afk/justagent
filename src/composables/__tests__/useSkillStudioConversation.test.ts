@@ -879,3 +879,56 @@ describe('關卡訊息不再帶 chip（actions）', () => {
     expect(c.messages.value.at(-1)!.actions).toBeUndefined()
   })
 })
+
+describe('classifyGate0（模組內部邏輯，透過 gateStage 行為驗證）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function toGate0(c: ReturnType<typeof useSkillStudioConversation>) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    const p = c.send('嗯我想想看要怎麼講這件事情才能講得清楚一點')
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+    expect(c.gateStage.value).toBe('gate0')
+  }
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  it('本關比對到 build 語意（不是精確 chip 文字）：等同點了「記技能」', async () => {
+    const c = useSkillStudioConversation()
+    await toGate0(c)
+    await sendAndWait(c, '我要記成技能')
+    expect(c.gateStage.value).toBe('gate1')
+  })
+
+  it('本關比對到 general 語意（不是精確 chip 文字）：等同點了「單純問事情」', async () => {
+    const c = useSkillStudioConversation()
+    await toGate0(c)
+    await sendAndWait(c, '我只是想問問題而已')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('本關比對不到、classifyIntent 判成 build：重定向到關卡一（新話題判斷）', async () => {
+    const c = useSkillStudioConversation()
+    await toGate0(c)
+    await sendAndWait(c, '幫我建立一個新技能')
+    expect(c.gateStage.value).toBe('gate1')
+  })
+
+  it('本關比對不到、classifyIntent 也判成 ambiguous：重新推一次關卡0的問句（效果上等同重問自己）', async () => {
+    const c = useSkillStudioConversation()
+    await toGate0(c)
+    await sendAndWait(c, '今天天氣不錯')
+    expect(c.gateStage.value).toBe('gate0')
+    expect(c.messages.value.at(-1)!.content).toContain('記成 skill')
+  })
+})
