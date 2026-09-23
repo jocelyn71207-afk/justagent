@@ -335,8 +335,25 @@ export function useSkillStudioConversation() {
     push({
       role: 'agent',
       content: '你現在要照公司的規定處理眼前這件事，還是要改規定、或是記一份新的?',
-      actions: [GATE1_NEW, GATE1_CUSTOM, GATE1_FOLLOW],
     })
+  }
+
+  // 把這句話當成「全新的一輪」處理：跟 gateStage === 'intent' 時同一套路由邏輯。
+  // 除了 'intent' 本身呼叫外，也是關卡 0／1／2「本關比對不到」時的新話題重定向共用邏輯
+  function routeAsNewIntent(text: string): void {
+    const kind = classifyIntent(text)
+    if (kind === 'build') {
+      routeBuildIntent(text)
+      return
+    }
+    if (kind === 'general') {
+      gateStage.value = 'intent'
+      push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
+      return
+    }
+    lastBuildText.value = text
+    gateStage.value = 'gate0'
+    push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？' })
   }
 
   // gateStage !== 'active' 時，每則訊息都先經過這裡；後續 Task 會繼續往這個函式加 if 分支
@@ -345,18 +362,7 @@ export function useSkillStudioConversation() {
     const stage = gateStage.value
 
     if (stage === 'intent') {
-      const kind = classifyIntent(t)
-      if (kind === 'build') {
-        routeBuildIntent(t)
-        return
-      }
-      if (kind === 'general') {
-        push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
-        return
-      }
-      lastBuildText.value = t
-      gateStage.value = 'gate0'
-      push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？', actions: [GATE0_BUILD, GATE0_GENERAL] })
+      routeAsNewIntent(t)
       return
     }
 
@@ -370,7 +376,7 @@ export function useSkillStudioConversation() {
         gateStage.value = 'intent'
         return
       }
-      push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？', actions: [GATE0_BUILD, GATE0_GENERAL] })
+      push({ role: 'agent', content: '你是要記成 skill，還是單純問事情？' })
       return
     }
 
@@ -380,11 +386,7 @@ export function useSkillStudioConversation() {
         if (similar) {
           pendingSimilarSkillId.value = similar.id
           gateStage.value = 'gate2'
-          push({
-            role: 'agent',
-            content: `您已經有一份「${similar.name}」，這次要沿用他、改他還是記一份新的？`,
-            actions: [GATE2_FOLLOW, GATE2_EDIT, GATE2_NEW, GATE2_ELSE],
-          })
+          push({ role: 'agent', content: `您已經有一份「${similar.name}」，這次要沿用他、改他還是記一份新的？` })
         } else {
           gateStage.value = 'clarify'
           push({ role: 'agent', content: '好，那請直接描述這份做法的內容，我會幫你整理。' })
@@ -399,7 +401,6 @@ export function useSkillStudioConversation() {
       push({
         role: 'agent',
         content: '你現在要照公司的規定處理眼前這件事，還是要改規定、或是記一份新的?',
-        actions: [GATE1_NEW, GATE1_CUSTOM, GATE1_FOLLOW],
       })
       return
     }
@@ -452,7 +453,6 @@ export function useSkillStudioConversation() {
       push({
         role: 'agent',
         content: `您已經有一份「${similar?.name ?? ''}」，這次要沿用他、改他還是記一份新的？`,
-        actions: [GATE2_FOLLOW, GATE2_EDIT, GATE2_NEW, GATE2_ELSE],
       })
       return
     }
@@ -463,7 +463,6 @@ export function useSkillStudioConversation() {
         push({
           role: 'agent',
           content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
-          actions: [GATE3_CONFIRM, GATE3_RETRY],
         })
         return
       }
@@ -500,7 +499,6 @@ export function useSkillStudioConversation() {
       push({
         role: 'agent',
         content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
-        actions: [GATE3_CONFIRM, GATE3_RETRY],
       })
       return
     }

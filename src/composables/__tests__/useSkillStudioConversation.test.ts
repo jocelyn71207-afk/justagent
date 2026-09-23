@@ -520,14 +520,12 @@ describe('意圖判斷（gateStage intent）', () => {
     expect(c.draft.value.name).toBeTruthy()
   })
 
-  it('清單非空＋建立意圖：gateStage 轉 gate1，推出三個選項', async () => {
+  it('清單非空＋建立意圖：gateStage 轉 gate1', async () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, '幫我建立一個新技能')
     expect(c.gateStage.value).toBe('gate1')
-    const last = c.messages.value.at(-1)!
-    expect(last.actions?.map(a => a.label)).toEqual(['記一份新的', '改現有規定（走客製路線）', '照現有規定'])
   })
 
   it('一般問答意圖：推 TODO 佔位訊息，gateStage 維持 intent', async () => {
@@ -539,14 +537,12 @@ describe('意圖判斷（gateStage intent）', () => {
     expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
   })
 
-  it('太模糊：gateStage 轉 gate0，推兩個選項', async () => {
+  it('太模糊：gateStage 轉 gate0', async () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
     expect(c.gateStage.value).toBe('gate0')
-    const last = c.messages.value.at(-1)!
-    expect(last.actions?.map(a => a.label)).toEqual(['記技能', '單純問事情'])
   })
 })
 
@@ -605,7 +601,6 @@ describe('關卡 0／關卡一／相似做法比對', () => {
     expect(c.gateStage.value).toBe('gate2')
     const last = c.messages.value.at(-1)!
     expect(last.content).toContain(store.myPersonalSkills[0].name)
-    expect(last.actions?.map(a => a.label)).toEqual(['照現有規定做', '改他', '另外新增一份', '我要講別的'])
   })
 
   it('關卡一選「改現有規定（走客製路線）」，找不到相近做法：gateStage 轉 clarify', async () => {
@@ -740,7 +735,6 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     expect(c.gateStage.value).toBe('gate3')
     const last = c.messages.value.at(-1)!
     expect(last.content).toContain(c.draft.value.name)
-    expect(last.actions?.map(a => a.label)).toEqual(['這樣可以，存到個人技能', '不對，我要改'])
   })
 
   it('關卡三選「這樣可以，存到個人技能」：實際呼叫 save()，技能出現在 myPersonalSkills，gateStage 轉 active', async () => {
@@ -839,5 +833,49 @@ describe('暫存草稿的接續判斷', () => {
     // pausedDraft 本身不是 useSkillStudioConversation() 回傳值的一部分（純內部狀態，
     // 見 Task 4），測試只能斷言可觀察的行為結果，不能直接檢查它的值
     expect(c.gateStage.value).toBe('gate0')
+  })
+})
+
+describe('關卡訊息不再帶 chip（actions）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  it('關卡一的訊息（清單非空、建立意圖）不帶 actions', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '幫我建立一個新技能')
+    expect(c.gateStage.value).toBe('gate1')
+    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
+  })
+
+  it('關卡0 的訊息（太模糊）不帶 actions', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '嗯我想想看要怎麼講這件事情才能講得清楚一點')
+    expect(c.gateStage.value).toBe('gate0')
+    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
+  })
+
+  it('精確打「記一份新的」（原本的 chip 文字）依然能正常走關卡一路由（比對不到本關選項的行為留到 Task 3 才改，這裡先只驗證：這句話還是把 gateStage 帶去該去的地方，且訊息本身沒有 actions）', async () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, `幫我記一個${store.myPersonalSkills[0].name}的做法`)
+    expect(c.gateStage.value).toBe('gate1')
+    await sendAndWait(c, '記一份新的')
+    expect(c.gateStage.value).toBe('gate2')
+    expect(c.messages.value.at(-1)!.actions).toBeUndefined()
   })
 })
