@@ -71,8 +71,9 @@ function routeIntent(text: string): void {
 
   if (kind === 'modify') {
     // 清單本來就是空的：沒有任何技能可以修改，問「要改哪一項」沒有意義。
-    // 引導使用者改成描述要建立的內容，gateStage 留在 'intent'，下一句話重新整個判斷一次
+    // 引導使用者改成描述要建立的內容，下一句話重新整個判斷一次
     if (store.myPersonalSkills.length === 0) {
+      gateStage.value = 'intent'
       push({ role: 'agent', content: '目前還沒有任何個人技能可以修改，要不要先告訴我想建立什麼做法？' })
       return
     }
@@ -91,12 +92,17 @@ function routeIntent(text: string): void {
     return
   }
 
-  // kind === 'ambiguous'：gateStage 保持 'intent' 不變，下一句話會重新整個判斷一次
+  // kind === 'ambiguous'：明確設回 'intent'，不能假設呼叫端本來就是 'intent'——
+  // 這個函式也會被其他關卡「本關比對不到」時當成重定向呼叫（見 §6），那時候 gateStage
+  // 還是原本那一關的值（例如 'gate2'），不明確設定的話會卡在錯的關卡
+  gateStage.value = 'intent'
   push({ role: 'agent', content: '你想要記一個新做法，還是要修改現有的？直接跟我說就可以。' })
 }
 ```
 
-**清單為空時的修改意圖**（§4 新增，原文件未涵蓋的邊界情況）：`kind === 'modify'` 但 `store.myPersonalSkills.length === 0` 時，直接回一句提示、不進 `findModifyTarget`（那一關的存在前提是「有技能但不知道要改哪一項」，清單本身是空的不適用）。`gateStage` 留在 `'intent'`，讓下一句話正常重新判斷——使用者接下來多半會改成描述想建立的內容，屆時會被判成 `'build'`，走 §5 的空清單分支直接開始擬草稿。
+**清單為空時的修改意圖**（§4 新增，原文件未涵蓋的邊界情況）：`kind === 'modify'` 但 `store.myPersonalSkills.length === 0` 時，直接回一句提示、不進 `findModifyTarget`（那一關的存在前提是「有技能但不知道要改哪一項」，清單本身是空的不適用）。`gateStage` 明確設回 `'intent'`，讓下一句話正常重新判斷——使用者接下來多半會改成描述想建立的內容，屆時會被判成 `'build'`，走 §5 的空清單分支直接開始擬草稿。
+
+**呼叫端context 的一致性**：`routeIntent` 的三個分支（`modify`／`build`／`ambiguous`）在每一條路徑上都要明確設定 `gateStage.value`（不能有任何路徑「維持不動」），因為這個函式不只在 `gateStage === 'intent'` 時被呼叫，也是 §7 關卡二「本關比對不到」時的重定向目標——呼叫當下 `gateStage`可能還停在呼叫端那一關（例如 `'gate2'`），如果某條路徑忘記賦值，就會卡在錯的關卡上。`build` 分支透過 `routeBuildIntent`（§5，每條路徑都會賦值）間接滿足這個要求；`modify` 分支的三條路徑（清單為空、找到、找不到）都各自明確賦值；`ambiguous` 分支明確賦值為 `'intent'`。
 
 ## 5. `routeBuildIntent` 重寫：拿掉關卡一的問句，直接查相近做法
 
