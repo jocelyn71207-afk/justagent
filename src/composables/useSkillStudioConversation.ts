@@ -88,6 +88,14 @@ function classifyGate0(text: string): 'build' | 'general' | null {
   return null
 }
 
+// 關卡一專用的語意分類器
+function classifyGate1(text: string): 'new' | 'custom' | 'follow' | null {
+  if (/照(現有|規定|做)|沿用|用他|不用改|維持現況/.test(text)) return 'follow'
+  if (/改(現有|規定)|客製|調整規定|修改規定/.test(text)) return 'custom'
+  if (/新的|另外|重新|開一份|記一份|重新弄一份/.test(text)) return 'new'
+  return null
+}
+
 // 規則式比對使用者描述跟既有個人技能的 name／triggerHint／instructions 有沒有重疊，
 // 回傳重疊分數最高的那一顆；沒有重疊回傳 null。
 //
@@ -389,7 +397,8 @@ export function useSkillStudioConversation() {
     }
 
     if (stage === 'gate1') {
-      if (t === GATE1_NEW.label || t === GATE1_CUSTOM.label) {
+      const g1 = classifyGate1(t)
+      if (g1 === 'new' || g1 === 'custom') {
         const similar = findSimilarSkill(lastBuildText.value, store.myPersonalSkills)
         if (similar) {
           pendingSimilarSkillId.value = similar.id
@@ -401,15 +410,12 @@ export function useSkillStudioConversation() {
         }
         return
       }
-      if (t === GATE1_FOLLOW.label) {
+      if (g1 === 'follow') {
         push({ role: 'agent', content: NOT_IMPLEMENTED_REPLY })
         gateStage.value = 'active'
         return
       }
-      push({
-        role: 'agent',
-        content: '你現在要照公司的規定處理眼前這件事，還是要改規定、或是記一份新的?',
-      })
+      routeAsNewIntent(t)
       return
     }
 

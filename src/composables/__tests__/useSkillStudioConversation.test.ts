@@ -932,3 +932,58 @@ describe('classifyGate0（模組內部邏輯，透過 gateStage 行為驗證）'
     expect(c.messages.value.at(-1)!.content).toContain('記成 skill')
   })
 })
+
+describe('classifyGate1（模組內部邏輯，透過 gateStage 行為驗證）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  async function toGate1(c: ReturnType<typeof useSkillStudioConversation>, buildText: string) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, buildText)
+    expect(c.gateStage.value).toBe('gate1')
+  }
+
+  it('本關比對到「新的」語意（不是精確 chip 文字）：找不到相近做法 → clarify', async () => {
+    const c = useSkillStudioConversation()
+    // 使用已驗證不會匹配任何預設技能的 buildText
+    await toGate1(c, '我要新增一份規定')
+    await sendAndWait(c, '我想重新弄一份')
+    expect(c.gateStage.value).toBe('clarify')
+  })
+
+  it('本關比對到「照規定」語意：推 TODO 佔位，gateStage 轉 active', async () => {
+    const c = useSkillStudioConversation()
+    await toGate1(c, '幫我建立一個新技能')
+    await sendAndWait(c, '就沿用現有的規定就好')
+    expect(c.gateStage.value).toBe('active')
+    expect(c.messages.value.at(-1)!.content).toContain('還在學怎麼幫你直接處理')
+  })
+
+  it('本關比對不到，原始 bug 回報的兩句話之一：重定向到新話題判斷（classifyIntent 判成 ambiguous → 關卡0）', async () => {
+    const c = useSkillStudioConversation()
+    await toGate1(c, '幫我建立一個新技能')
+    await sendAndWait(c, '把每週會議逐字稿整理成週報')
+    expect(c.gateStage.value).toBe('gate0')
+  })
+
+  it('本關比對不到，但新話題判斷判成 build（清單仍非空）：直接重定向到關卡一，帶新的 lastBuildText', async () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    await toGate1(c, '幫我建立一個新技能')
+    await sendAndWait(c, `幫我記一個${store.myPersonalSkills[0].name}的做法`)
+    expect(c.gateStage.value).toBe('gate1')
+    // 驗證真的是用新的這句話重新判斷（不是原地不動）：接著選「記一份新的」應該要能查到相近做法
+    await sendAndWait(c, '我想重新弄一份')
+    expect(c.gateStage.value).toBe('gate2')
+  })
+})
