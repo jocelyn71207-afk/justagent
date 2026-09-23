@@ -13,12 +13,12 @@ function mountExplore() {
 }
 
 describe('Explore Agent 常用清單', () => {
-  it('點擊 Agent 卡片開啟詳情 Modal 後，按「加入常用清單」會把該 Agent 加入常用清單，按鈕文字同步更新', async () => {
+  it('點擊精選列開啟詳情 Modal 後，按「加入常用清單」會把該 Agent 加入常用清單，按鈕文字同步更新', async () => {
     const wrapper = mountExplore()
     const exploreStore = useExploreStore()
     const firstAgent = exploreStore.agents.find(a => a.name === '內容創作者')!
 
-    await wrapper.findAll('.podium-card')[0].trigger('click')
+    await wrapper.find('.explore-row--featured').trigger('click')
 
     const favoriteBtn = wrapper.find('.explore-modal-footer .custom-main-btn')
     expect(favoriteBtn.text()).toBe('加入常用清單')
@@ -29,14 +29,13 @@ describe('Explore Agent 常用清單', () => {
     expect(favoriteBtn.text()).toBe('已加入常用清單')
   })
 
-  it('已加入常用清單的 Agent，頒獎台卡片上顯示收藏星號', async () => {
+  it('已加入常用清單的 Agent，清單列上顯示收藏星號', async () => {
     const wrapper = mountExplore()
     const exploreStore = useExploreStore()
     const firstAgent = exploreStore.agents.find(a => a.name === '內容創作者')!
     exploreStore.toggleFavorite(firstAgent.id)
     await wrapper.vm.$nextTick()
 
-    const firstPodiumCard = wrapper.findAll('.podium-card')[0]
-    expect(firstPodiumCard.find('.agent-favorite-mark').exists()).toBe(true)
+    expect(wrapper.find('.explore-row--featured .explore-row-star').exists()).toBe(true)
   })
 })

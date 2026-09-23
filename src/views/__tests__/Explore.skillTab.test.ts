@@ -9,33 +9,18 @@ function mountExplore() {
 }
 
 describe('Explore Skill 探索分頁', () => {
-  it('點擊「Skill 探索」分頁後顯示 skill-grid，Agent 分頁的 explore-hero 不再存在', async () => {
+  it('點擊「Skill 探索」分頁後顯示技能清單，Agent 分頁的精選列不再存在', async () => {
     const wrapper = mountExplore()
-    expect(wrapper.find('.explore-hero').exists()).toBe(true)
+    expect(wrapper.find('.explore-row--featured').exists()).toBe(true)
 
     const tabs = wrapper.findAll('.explore-tab')
     await tabs[1].trigger('click')
 
-    expect(wrapper.find('.skill-grid').exists()).toBe(true)
-    expect(wrapper.find('.explore-hero').exists()).toBe(false)
+    expect(wrapper.find('.explore-list').exists()).toBe(true)
+    expect(wrapper.find('.explore-row--featured').exists()).toBe(false)
   })
 
-  it('切換功能類型 chip 為「資料查詢」時，網格只剩 1 張卡片（ERP 庫存查詢）', async () => {
-    const wrapper = mountExplore()
-    const tabs = wrapper.findAll('.explore-tab')
-    await tabs[1].trigger('click')
-
-    const chips = wrapper.findAll('.recs-chip')
-    const targetChip = chips.find(c => c.text() === '資料查詢')
-    expect(targetChip).toBeTruthy()
-    await targetChip!.trigger('click')
-
-    const cards = wrapper.findAll('.skill-grid .explore-skill-card')
-    expect(cards).toHaveLength(1)
-    expect(cards[0].find('h4').text()).toBe('ERP 庫存查詢')
-  })
-
-  it('輸入搜尋關鍵字「會議」時，網格只剩 1 張卡片（會議摘要）', async () => {
+  it('輸入搜尋關鍵字「會議」時，清單只剩 1 筆（會議摘要），不需要按 Enter', async () => {
     const wrapper = mountExplore()
     const tabs = wrapper.findAll('.explore-tab')
     await tabs[1].trigger('click')
@@ -43,8 +28,19 @@ describe('Explore Skill 探索分頁', () => {
     const input = wrapper.find('.explore-search-bar input')
     await input.setValue('會議')
 
-    const cards = wrapper.findAll('.skill-grid .explore-skill-card')
-    expect(cards).toHaveLength(1)
-    expect(cards[0].find('h4').text()).toBe('會議摘要')
+    const rows = wrapper.findAll('.explore-list .explore-row')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].find('.explore-row-name').text()).toBe('會議摘要')
+  })
+
+  it('找不到符合條件的技能時顯示空狀態', async () => {
+    const wrapper = mountExplore()
+    const tabs = wrapper.findAll('.explore-tab')
+    await tabs[1].trigger('click')
+
+    const input = wrapper.find('.explore-search-bar input')
+    await input.setValue('絕對不存在的關鍵字xyz')
+
+    expect(wrapper.find('.explore-empty-state').text()).toBe('找不到符合條件的技能')
   })
 })
