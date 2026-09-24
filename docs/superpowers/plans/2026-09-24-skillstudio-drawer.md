@@ -667,10 +667,11 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 ```
 
-在 `src/views/SkillManagement.vue:559` 之後（`import { setSkillHandoff } from '@/composables/useSkillHandoff'` 那行下面）加一行：
+在 `src/views/SkillManagement.vue:559` 之後（`import { setSkillHandoff } from '@/composables/useSkillHandoff'` 那行下面）加兩行（`popDialog` 這個檔案目前完全沒 import 過——它自己的確認對話框都是用內建的 Teleport + ref 手刻，不是走 `popDialog` service，不要假設它已經存在）：
 
 ```ts
 import SkillStudioDrawer from '@/components/Skill/SkillStudioDrawer.vue'
+import popDialog from '@/services/popDialog'
 ```
 
 在 `src/views/SkillManagement.vue:564`（`const router = useRouter()` 那行）之後加：
@@ -713,8 +714,6 @@ onBeforeRouteLeave((_to, _from, next) => {
   popDialog.confirm('有未儲存的變更，確定離開？', '離開', '留下', () => next(), () => next(false))
 })
 ```
-
-`popDialog` 已經是這個檔案既有的 import（詳見既有的 `handleApprove`/`handleReject` 等用法），不用另外加。
 
 - [ ] **Step 2: 改四個入口點，push query 而不是換路由名稱**
 

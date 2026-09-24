@@ -1,9 +1,8 @@
 import { setActivePinia, createPinia } from 'pinia'
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { useAiviewerStore } from '@/stores/AiViewerStore'
-import { useSkillStore } from '@/stores/skillStore'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { useSkillSuggestion, suggestionToPrefill, suggestionOpeningMessage } from '@/composables/useSkillSuggestion'
 import type { SkillSuggestion } from '@/composables/useSkillSuggestion'
+import { useSkillStore } from '@/stores/skillStore'
 
 const SUGGESTION: SkillSuggestion = {
   id: 'conv4-sales-report',
@@ -16,7 +15,8 @@ const SUGGESTION: SkillSuggestion = {
 
 function makeCtx() {
   const msgs: any[] = []
-  return { msgs, ctx: { push: (m: any) => msgs.push(m), scroll: vi.fn(), conversationId: 'conv4' } }
+  const scrolled: boolean[] = []
+  return { msgs, ctx: { push: (m: any) => msgs.push(m), scroll: () => scrolled.push(true), conversationId: 'conv4' }, scrolled }
 }
 
 describe('suggestionToPrefill / suggestionOpeningMessage', () => {
@@ -34,78 +34,33 @@ describe('suggestionToPrefill / suggestionOpeningMessage', () => {
 describe('useSkillSuggestion', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    vi.useFakeTimers()
   })
-  afterEach(() => vi.useRealTimers())
 
-  it('offer 推入一則 brain 的 ask 卡片', () => {
-    const { msgs, ctx } = makeCtx()
+  it('offer 把建議放進 skillStore 的待處理佇列', () => {
+    const store = useSkillStore()
+    const { ctx } = makeCtx()
+    useSkillSuggestion().offer(ctx, SUGGESTION)
+    expect(store.pendingSuggestions).toEqual([{ ...SUGGESTION, conversationId: 'conv4' }])
+  })
+
+  it('offer 只推一則單向通知訊息，不帶任何按鈕', () => {
+    const { msgs, ctx, scrolled } = makeCtx()
     useSkillSuggestion().offer(ctx, SUGGESTION)
     expect(msgs).toHaveLength(1)
-    expect(msgs[0]).toMatchObject({ agent: 'brain', cardType: 'skillSuggest', stage: 'ask' })
-    expect(ctx.scroll).toHaveBeenCalled()
+    expect(msgs[0]).toMatchObject({ agent: 'brain', finishResponse: true })
+    expect(msgs[0].cardType).toBeUndefined()
+    expect(msgs[0].msg).toContain(SUGGESTION.reason)
+    expect(msgs[0].msg).toContain('技能管理')
+    expect(scrolled).toEqual([true])
   })
 
-  it('build：推使用者回聲、畫布放上預填的 SKILL block（含 origin）、500ms 後推 placed 卡帶 blockId；不建立技能', () => {
-    const aiviewer = useAiviewerStore()
-    const skills = useSkillStore()
-    const blocksBefore = aiviewer.aiViewerBlocks.length
-    const skillsBefore = skills.myPersonalSkills.length
+  it('同一個建議 offer 兩次不會在佇列裡重複、也不會重複推訊息', () => {
+    const store = useSkillStore()
     const { msgs, ctx } = makeCtx()
     const s = useSkillSuggestion()
     s.offer(ctx, SUGGESTION)
-    expect(s.handleAction('skill-suggest-build', SUGGESTION.id)).toBe(true)
-    expect(msgs[1]).toMatchObject({ forUser: true, msg: '是，建立成個人技能' })
-    expect(aiviewer.aiViewerBlocks.length).toBe(blocksBefore + 1)
-    const block = aiviewer.aiViewerBlocks.find((b: any) => b.data.blockType === 'SKILL')
-    expect(block.blockName).toBe('產品銷售報告整理')
-    expect(block.data.data.origin).toEqual({ conversationId: 'conv4', reason: SUGGESTION.reason })
-    expect(block.data.data.snapshot.draft.instructions).toContain('1. 查詢指定月份產品銷售數據')
-    expect(block.data.data.snapshot.messages[0].content).toBe(suggestionOpeningMessage(SUGGESTION))
-    vi.advanceTimersByTime(500)
-    expect(msgs[2]).toMatchObject({ cardType: 'skillSuggest', stage: 'placed', blockId: block.id, finishResponse: true })
-    expect(skills.myPersonalSkills.length).toBe(skillsBefore)
-  })
-
-  it('skip：推回聲與婉拒訊息；之後 build 無效（one-shot）', () => {
-    const aiviewer = useAiviewerStore()
-    const before = aiviewer.aiViewerBlocks.length
-    const { msgs, ctx } = makeCtx()
-    const s = useSkillSuggestion()
     s.offer(ctx, SUGGESTION)
-    expect(s.handleAction('skill-suggest-skip', SUGGESTION.id)).toBe(true)
-    vi.advanceTimersByTime(500)
-    expect(msgs.at(-1).msg).toContain('好的')
-    const len = msgs.length
-    expect(s.handleAction('skill-suggest-build', SUGGESTION.id)).toBe(true)
-    vi.advanceTimersByTime(500)
-    expect(msgs.length).toBe(len)
-    expect(aiviewer.aiViewerBlocks.length).toBe(before)
-  })
-
-  it('build 只放一個 block；reset 後可重播', () => {
-    const aiviewer = useAiviewerStore()
-    const before = aiviewer.aiViewerBlocks.length
-    const { ctx } = makeCtx()
-    const s = useSkillSuggestion()
-    s.offer(ctx, SUGGESTION)
-    s.handleAction('skill-suggest-build', SUGGESTION.id)
-    s.handleAction('skill-suggest-build', SUGGESTION.id)
-    vi.advanceTimersByTime(500)
-    expect(aiviewer.aiViewerBlocks.length).toBe(before + 1)
-    s.reset(SUGGESTION.id)
-    s.offer(ctx, SUGGESTION)
-    s.handleAction('skill-suggest-build', SUGGESTION.id)
-    vi.advanceTimersByTime(500)
-    expect(aiviewer.aiViewerBlocks.length).toBe(before + 2)
-  })
-
-  it('非 skill-suggest- 前綴、未知 id、或已移除的 confirm 動作回 false', () => {
-    const { ctx } = makeCtx()
-    const s = useSkillSuggestion()
-    expect(s.handleAction('conv9-something', 'x')).toBe(false)
-    expect(s.handleAction('skill-suggest-build', 'never-offered')).toBe(false)
-    s.offer(ctx, SUGGESTION)
-    expect(s.handleAction('skill-suggest-confirm', SUGGESTION.id)).toBe(false)
+    expect(store.pendingSuggestions).toHaveLength(1)
+    expect(msgs).toHaveLength(1)
   })
 })

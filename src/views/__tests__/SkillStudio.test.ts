@@ -5,6 +5,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import SkillStudio from '@/views/SkillStudio.vue'
 import popDialog from '@/services/popDialog'
 import { useSkillStore } from '@/stores/skillStore'
+import { useAiviewerStore } from '@/stores/AiViewerStore'
+import { setSkillHandoff, consumeSkillHandoff } from '@/composables/useSkillHandoff'
 
 vi.mock('@/services/popDialog', () => ({
   default: { toast: vi.fn(), confirm: vi.fn(), alert: vi.fn() },
@@ -24,6 +26,7 @@ async function mountAt(query: Record<string, string> = {}) {
       { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
       { path: '/view/SkillTest', name: 'SkillTest', component: { template: '<div/>' } },
       { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
+      { path: '/view/AiViewer', name: 'AiViewer', component: { template: '<div/>' } },
     ],
   })
   await router.push({ path: '/view/SkillStudio', query })
@@ -45,20 +48,41 @@ describe('SkillStudio', () => {
     vi.clearAllMocks()
   })
 
-  it('渲染 banner 標題「AI 賦能」與左右兩欄版面', async () => {
+  it('渲染 banner 標題與左右兩欄版面：建立模式顯示「新增技能」＋建立 chip', async () => {
     const { wrapper } = await mountAt()
-    expect(wrapper.find('.banner-title').text()).toBe('AI 賦能')
+    expect(wrapper.find('.banner-title').text()).toBe('新增技能')
+    expect(wrapper.find('.banner-title-row .ssc-mode-chip').classes()).toContain('ssc-mode-chip--create')
+    expect(wrapper.find('.banner-title-row .ssc-mode-chip').text()).toContain('建立新技能')
     expect(wrapper.find('.skill-studio-layout .studio-chat-col').exists()).toBe(true)
     expect(wrapper.find('.skill-studio-layout .studio-side-col').exists()).toBe(true)
+  })
+
+  it('?skillId= 個人技能：banner 顯示「修改技能」＋修改 chip（含技能名稱）', async () => {
+    const { wrapper } = await mountAt({ skillId: 'personal-001' })
+    expect(wrapper.find('.banner-title').text()).toBe('修改技能')
+    expect(wrapper.find('.banner-title-row .ssc-mode-chip').classes()).toContain('ssc-mode-chip--edit')
+    expect(wrapper.find('.banner-title-row .ssc-mode-chip').text()).toContain('修改：週報自動生成')
   })
 
   it('無 query：建立模式，左側 chip「建立新技能」，右側預覽空狀態', async () => {
     const { wrapper } = await mountAt()
     expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
-    expect(wrapper.find('.ssc-mode-chip').exists()).toBe(false)
+    expect(wrapper.find('.studio-chat-col .ssc-mode-chip').exists()).toBe(false)
     await chooseChat(wrapper)
-    expect(wrapper.find('.ssc-mode-chip').text()).toContain('建立新技能')
+    expect(wrapper.find('.studio-chat-col .ssc-mode-chip').text()).toContain('建立新技能')
     expect(wrapper.text()).toContain('尚未命名的技能')
+  })
+
+  it('?method=chat：跳過 SkillMethodChooser，直接進對話模式', async () => {
+    const { wrapper } = await mountAt({ method: 'chat' })
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.SkillStudioChat').exists()).toBe(true)
+  })
+
+  it('?method=blocks：跳過 SkillMethodChooser，直接進積木面板', async () => {
+    const { wrapper } = await mountAt({ method: 'blocks' })
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
   })
 
   it('?skillId= 個人技能：修改模式，預覽帶入該技能內容', async () => {
@@ -220,6 +244,8 @@ describe('SkillStudio', () => {
     await flushPromises()
     expect(wrapper.find('.studio-chat-col .SkillBlockComposer').exists()).toBe(true)
     expect(wrapper.find('.SkillStudioChat').exists()).toBe(false)
+    // 建立模式下積木面板頭部的 chip 也要是建立色系，不能沿用修改色系（先前的 bug：class 寫死 --edit）
+    expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--create')
     await wrapper.find('.sbc-name-input').setValue('行銷週報')
     await wrapper.findAll('.sbc-palette-item').find(i => i.text().includes('活動排行'))!.find('.sbc-add-btn').trigger('click')
     await flushPromises()
@@ -240,6 +266,7 @@ describe('SkillStudio', () => {
     expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
     expect(wrapper.findAll('.sbc-list .sbc-item-name').map(n => n.text())).toEqual(['渠道核心 KPI'])
     expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--edit')
   })
 
   it('積木方式的左欄也有「建立新技能」，點擊回到方式選擇', async () => {
@@ -249,5 +276,89 @@ describe('SkillStudio', () => {
     await wrapper.find('.studio-new-btn').trigger('click')
     await flushPromises()
     expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+  })
+
+  // 方案三（2026-09-17 會議決議）：conv4 建議卡按「是」不再落地成畫布 block，
+  // 改為把預填草稿放進 useSkillHandoff 交接資料、導到這裡直接接手。
+  describe('conv4 交接（方案三）', () => {
+    it('?from=conv4 但沒有交接資料（例如重新整理過頁面）：退回一般建立模式，不顯示返回連結', async () => {
+      const { wrapper } = await mountAt({ from: 'conv4' })
+      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+      expect(wrapper.find('.studio-back-link').exists()).toBe(false)
+    })
+
+    it('?from=conv4 且有交接資料：直接進對話模式、套用預填草稿與開場白，並顯示返回連結', async () => {
+      setSkillHandoff({
+        prefill: { name: '產品銷售報告整理', instructions: '1. 查詢資料\n2. 套用規範產出' },
+        openingMessage: '這顆技能來自本對話的「查詢銷售資料」流程，設定我先填好了。',
+        origin: { conversationId: 'conv4', reason: '查詢銷售資料＋套用部門報告規範' },
+      })
+      const { wrapper, router } = await mountAt({ from: 'conv4' })
+      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+      expect(wrapper.find('.ssp-title').text()).toBe('產品銷售報告整理')
+      expect(wrapper.text()).toContain('這顆技能來自本對話的「查詢銷售資料」流程')
+      expect(wrapper.find('.studio-origin-bar').text()).toContain('來自本對話的「查詢銷售資料＋套用部門報告規範」流程')
+
+      const back = wrapper.find('.studio-back-link')
+      expect(back.exists()).toBe(true)
+      const push = vi.spyOn(router, 'push')
+      // 預填草稿刻意一開始就是「有未儲存變更」（見 useSkillStudioConversation），
+      // 按返回一樣要走 guardDirty 的放棄確認
+      await back.trigger('click')
+      expect(popDialog.confirm).toHaveBeenCalledWith('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', expect.any(Function))
+      expect(push).not.toHaveBeenCalled()
+      const onConfirm = vi.mocked(popDialog.confirm).mock.calls[0][3] as () => void
+      onConfirm()
+      expect(push).toHaveBeenCalledWith({ name: 'AiViewer' })
+      // 沒存過技能就返回：conv4 對話不會被塞一句莫名其妙的「已建立」
+      expect(useAiviewerStore().conv4Msgs).toEqual([])
+    })
+
+    it('儲存後再按返回：conv4 對話會補一句「已建立」確認訊息', async () => {
+      setSkillHandoff({
+        prefill: { name: '產品銷售報告整理', instructions: '1. 查詢資料' },
+        openingMessage: '開場白',
+        origin: { conversationId: 'conv4', reason: '查詢銷售資料＋套用部門報告規範' },
+      })
+      const { wrapper, router } = await mountAt({ from: 'conv4' })
+      await wrapper.find('.ssp-save-btn').trigger('click')
+      await flushPromises()
+      // 存完 isDirty 會歸零，返回不必再過放棄確認
+      await wrapper.find('.studio-back-link').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.name).toBe('AiViewer')
+      const aiviewer = useAiviewerStore()
+      expect(aiviewer.conv4Msgs.at(-1)).toMatchObject({
+        agent: 'brain',
+        msg: '✅ 個人技能「產品銷售報告整理」已建立完成。',
+      })
+    })
+
+    it('交接資料只套用一次：讀過就清空', async () => {
+      setSkillHandoff({
+        prefill: { name: '一次性草稿' },
+        openingMessage: '開場白',
+        origin: { conversationId: 'conv4', reason: 'x' },
+      })
+      await mountAt({ from: 'conv4' })
+      expect(consumeSkillHandoff()).toBeNull()
+    })
+
+    it('套用完交接草稿後按「建立新技能」：回到方式選擇，且不再顯示返回連結', async () => {
+      setSkillHandoff({
+        prefill: { name: '產品銷售報告整理' },
+        openingMessage: '開場白',
+        origin: { conversationId: 'conv4', reason: 'x' },
+      })
+      const { wrapper } = await mountAt({ from: 'conv4' })
+      await wrapper.find('.ssc-new-btn').trigger('click')
+      await flushPromises()
+      // 同樣先要過放棄確認（預填草稿一開始就是 dirty）
+      const onConfirm = vi.mocked(popDialog.confirm).mock.calls[0][3] as () => void
+      onConfirm()
+      await flushPromises()
+      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+      expect(wrapper.find('.studio-back-link').exists()).toBe(false)
+    })
   })
 })

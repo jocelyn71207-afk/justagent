@@ -157,6 +157,27 @@
               <i class="material-symbols-outlined">add</i>建立技能
             </button>
           </div>
+          <!-- AI 建議建立的技能：agent 完成任務後放進佇列，決策（建立／不用了）在這裡處理，
+               不再是 AiViewer 對話河道裡的即時卡片，見 useSkillSuggestion -->
+          <div v-if="store.pendingSuggestions.length" class="skill-suggestion-queue">
+            <div class="ssq-header">
+              <i class="material-symbols-outlined">auto_awesome</i>
+              <span class="ssq-title">AI 建議建立的技能</span>
+            </div>
+            <div class="ssq-list">
+              <div v-for="s in store.pendingSuggestions" :key="s.id" class="ssq-item">
+                <div class="ssq-item-body">
+                  <div class="ssq-item-name">{{ s.name }}</div>
+                  <div class="ssq-item-reason">來自「{{ s.reason }}」流程</div>
+                </div>
+                <div class="ssq-item-actions">
+                  <button class="custom-btn" data-action="dismiss" @click="dismissSuggestion(s.id)">不用了</button>
+                  <button class="custom-btn custom-main-btn" data-action="build" @click="buildSuggestion(s)">建立</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div v-if="store.myPersonalSkills.length" class="my-skills-list">
             <PersonalSkillGroup
               v-for="skill in pagedSkills"
@@ -536,7 +557,9 @@ import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
 import { useSkillStore, canEnableSkill, describeAiTestGateReason } from '@/stores/skillStore'
-import type { Skill, ConflictResolution } from '@/stores/skillStore'
+import type { Skill, ConflictResolution, SkillSuggestionEntry } from '@/stores/skillStore'
+import { suggestionToPrefill, suggestionOpeningMessage } from '@/composables/useSkillSuggestion'
+import { setSkillHandoff } from '@/composables/useSkillHandoff'
 
 const router = useRouter()
 const store = useSkillStore()
@@ -644,6 +667,22 @@ const upstreamVersionForDetail = computed(() => {
 
 function handleTest(skill: Skill) {
   router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
+}
+
+function dismissSuggestion(id: string) {
+  store.dismissSuggestion(id)
+}
+
+// 沿用方案三的交接機制（setSkillHandoff + ?from=），只是觸發點從對話河道
+// 卡片改成這裡的「建立」按鈕
+function buildSuggestion(s: SkillSuggestionEntry) {
+  setSkillHandoff({
+    prefill: suggestionToPrefill(s),
+    openingMessage: suggestionOpeningMessage(s),
+    origin: { conversationId: s.conversationId, reason: s.reason },
+  })
+  store.dismissSuggestion(s.id)
+  router.push({ name: 'SkillStudio', query: { from: s.conversationId } })
 }
 
 // 「建立技能」選擇框：對話／積木都是 AI 賦能（SkillStudio），差別在

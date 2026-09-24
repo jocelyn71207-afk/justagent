@@ -78,6 +78,19 @@ export interface TestRun {
 
 export type SkillFunctionType = '文字生成' | '資料查詢' | '流程自動化' | '分析報表' | '溝通協作'
 
+// Agent 完成任務後主動建議「建立成個人技能」的佇列項目（見 useSkillSuggestion）。
+// 決策介面在「技能管理」的「我的技能」分頁，不再是對話河道裡的即時卡片
+// （2026-09-23 產品決議：技能管理列表取代河道即時建議）。
+export interface SkillSuggestionEntry {
+  id: string
+  name: string
+  description: string
+  triggerHint: string
+  steps: string[]
+  reason: string
+  conversationId: string
+}
+
 // 這是 Skill.assignedAgents 的唯一正式詞彙表，`SkillEditor.vue`（指派 chip 選擇器）與
 // `AssignSkillToAgentModal.vue`（探索頁「加入我的技能」流程）都只認這份清單。
 // 刻意跟 `exploreStore.ts` 的 Agent 目錄（探索頁「Agent 探索」分頁瀏覽的 10 筆 Agent
@@ -1695,6 +1708,19 @@ export const useSkillStore = defineStore('skillStore', () => {
     myPersonalSkillsRef.value.filter(s => !s.deletedAt && hasPendingReview(s))
   )
 
+  const pendingSuggestionsRef = ref<SkillSuggestionEntry[]>([])
+  const pendingSuggestions = computed<SkillSuggestionEntry[]>(() => pendingSuggestionsRef.value)
+
+  function addSuggestion(entry: SkillSuggestionEntry): void {
+    if (pendingSuggestionsRef.value.some(s => s.id === entry.id)) return
+    pendingSuggestionsRef.value.push(entry)
+  }
+
+  function dismissSuggestion(id: string): void {
+    const idx = pendingSuggestionsRef.value.findIndex(s => s.id === id)
+    if (idx !== -1) pendingSuggestionsRef.value.splice(idx, 1)
+  }
+
   function submitDraft(id: string, mode: 'new_skill' | 'version_update' = 'new_skill'): void {
     const draft = myDrafts.value.find(d => d.id === id)
     if (!draft) return
@@ -1934,6 +1960,9 @@ export const useSkillStore = defineStore('skillStore', () => {
     rejectPersonalSkill,
     hasPendingReview,
     pendingReviewSkills,
+    pendingSuggestions,
+    addSuggestion,
+    dismissSuggestion,
     batchMergeUpstreamUpdates,
     saveTestRun,
     getTestRunHistory,
