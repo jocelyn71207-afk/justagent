@@ -238,7 +238,7 @@ defineExpose({
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">{{ workspaceRef?.mode.value === 'edit' ? '修改技能' : '新增技能' }}</div>
+          <div class="banner-title">{{ workspaceRef?.mode === 'edit' ? '修改技能' : '新增技能' }}</div>
         </div>
       </div>
 
@@ -258,7 +258,7 @@ const route = useRoute()
 const workspaceRef = ref<InstanceType<typeof SkillStudioWorkspace> | null>(null)
 
 onBeforeRouteUpdate((to, _from, next) => {
-  if (!workspaceRef.value?.isDirty.value) {
+  if (!workspaceRef.value?.isDirty) {
     workspaceRef.value?.applyQuery(to.query)
     return next()
   }
@@ -269,11 +269,13 @@ onBeforeRouteUpdate((to, _from, next) => {
 })
 
 onBeforeRouteLeave((_to, _from, next) => {
-  if (!workspaceRef.value?.isDirty.value) return next()
+  if (!workspaceRef.value?.isDirty) return next()
   popDialog.confirm('有未儲存的變更，確定離開？', '離開', '留下', () => next(), () => next(false))
 })
 </script>
 ```
+
+**重要（IMPORTANT）**：`workspaceRef` 是指向 `SkillStudioWorkspace` 元件實例的 template ref，`isDirty`/`mode`/`skillName` 是透過該元件的 `defineExpose()` 暴露出來的。Vue 3 對 `defineExpose` 出去的物件會自動 unwrap 一層 ref（跟 `<script setup>` 頂層 ref 在自己模板裡自動 unwrap 是同一套機制，只是這次是透過子元件的 public instance proxy），所以從父層透過 `workspaceRef.value.isDirty`／`workspaceRef?.mode`／`workspaceRef?.skillName` 拿到的**已經是 unwrap 過的原始值**（boolean／字串），不要再多接一個 `.value`——多接的話會讀到 `undefined`，产生「永遠等於預設值」這種難以察覺的錯誤（本任務第一輪實作＋審查就是抓到這個問題）。這條規則套用到這份計畫裡**所有**透過 `workspaceRef`／`drawerRef` 存取 `isDirty`/`mode`/`skillName` 的地方，後面的 Task 2/3/4 一律不要加這個 `.value`。
 
 注意：這一步先保留原本純文字的 `.banner-title`（「新增技能」/「修改技能」，不含 `ssc-mode-chip` 徽章），因為徽章邏輯要等 Task 2 抽出 `SkillStudioModeHeader.vue` 才接上——這步只驗證「工作區搬家後行為不變」，不要在同一步裡混入 Task 2 的改動。
 
@@ -365,7 +367,7 @@ Expected: PASS（2 個測試）
 <div class="page-banner">
   <div>
     <AppBreadcrumb />
-    <div class="banner-title">{{ workspaceRef?.mode.value === 'edit' ? '修改技能' : '新增技能' }}</div>
+    <div class="banner-title">{{ workspaceRef?.mode === 'edit' ? '修改技能' : '新增技能' }}</div>
   </div>
 </div>
 ```
@@ -377,12 +379,14 @@ Expected: PASS（2 個測試）
   <div>
     <AppBreadcrumb />
     <SkillStudioModeHeader
-      :mode="workspaceRef?.mode.value ?? 'create'"
-      :skill-name="workspaceRef?.skillName.value ?? ''"
+      :mode="workspaceRef?.mode ?? 'create'"
+      :skill-name="workspaceRef?.skillName ?? ''"
     />
   </div>
 </div>
 ```
+
+（`workspaceRef?.mode`／`workspaceRef?.skillName` 不加 `.value`——Task 1 結尾已經說明過，透過 `defineExpose` 暴露出來的 ref 在父層讀取時已經自動 unwrap 過了。）
 
 並在 `<script setup>` 加一行 import：
 
@@ -475,8 +479,8 @@ Expected: FAIL — 找不到 `@/components/Skill/SkillStudioDrawer.vue`
         <div class="ssd-panel">
           <div class="ssd-head">
             <SkillStudioModeHeader
-              :mode="workspaceRef?.mode.value ?? 'create'"
-              :skill-name="workspaceRef?.skillName.value ?? ''"
+              :mode="workspaceRef?.mode ?? 'create'"
+              :skill-name="workspaceRef?.skillName ?? ''"
             />
             <button type="button" class="ssd-close-btn" @click="emit('close')">
               <i class="material-symbols-outlined">close</i>
@@ -503,11 +507,13 @@ const emit = defineEmits<{ close: [] }>()
 const workspaceRef = ref<InstanceType<typeof SkillStudioWorkspace> | null>(null)
 
 defineExpose({
-  isDirty: computed(() => workspaceRef.value?.isDirty.value ?? false),
+  isDirty: computed(() => workspaceRef.value?.isDirty ?? false),
   applyQuery: (q: LocationQuery) => workspaceRef.value?.applyQuery(q),
 })
 </script>
 ```
+
+（同 Task 1 結尾的重要提醒：`workspaceRef.value?.isDirty` 不加 `.value`——`defineExpose` 出去的 ref 在父層讀取時已經自動 unwrap 過了。）
 
 - [ ] **Step 4: 建立 `_SkillStudioDrawer.scss`**
 
@@ -667,10 +673,11 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 ```
 
-在 `src/views/SkillManagement.vue:559` 之後（`import { setSkillHandoff } from '@/composables/useSkillHandoff'` 那行下面）加一行：
+在 `src/views/SkillManagement.vue:559` 之後（`import { setSkillHandoff } from '@/composables/useSkillHandoff'` 那行下面）加兩行（`popDialog` 這個檔案目前完全沒 import 過——它自己的確認對話框都是用內建的 Teleport + ref 手刻，不是走 `popDialog` service，不要假設它已經存在）：
 
 ```ts
 import SkillStudioDrawer from '@/components/Skill/SkillStudioDrawer.vue'
+import popDialog from '@/services/popDialog'
 ```
 
 在 `src/views/SkillManagement.vue:564`（`const router = useRouter()` 那行）之後加：
@@ -697,7 +704,7 @@ function closeDrawer() {
 // 邏輯跟 SkillStudio.vue（頁面殼）的 onBeforeRouteUpdate 一模一樣，只是搬到這裡，
 // 因為抽屜開關本身就是同一個 /view/Skills 路由上的 query 變化
 onBeforeRouteUpdate((to, _from, next) => {
-  if (!drawerRef.value?.isDirty.value) {
+  if (!drawerRef.value?.isDirty) {
     drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
     return next()
   }
@@ -709,12 +716,12 @@ onBeforeRouteUpdate((to, _from, next) => {
 
 // 抽屜開著且有未儲存變更時，從左側導覽離開 /view/Skills 也要先確認
 onBeforeRouteLeave((_to, _from, next) => {
-  if (!drawerRef.value?.isDirty.value) return next()
+  if (!drawerRef.value?.isDirty) return next()
   popDialog.confirm('有未儲存的變更，確定離開？', '離開', '留下', () => next(), () => next(false))
 })
 ```
 
-`popDialog` 已經是這個檔案既有的 import（詳見既有的 `handleApprove`/`handleReject` 等用法），不用另外加。
+（同前面 Task 1/3 的提醒：`drawerRef.value?.isDirty` 不加 `.value`——`SkillStudioDrawer` 自己 `defineExpose` 出去的 `isDirty` 是個 `computed`，一樣會被父層的 public instance proxy 自動 unwrap。）
 
 - [ ] **Step 2: 改四個入口點，push query 而不是換路由名稱**
 
