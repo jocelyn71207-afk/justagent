@@ -80,6 +80,13 @@ describe('SkillStudio（頁面殼）', () => {
     router.push({ path: '/view/SkillStudio' })
     await flushPromises()
     expect(popDialog.confirm).toHaveBeenCalledWith('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', expect.any(Function), expect.any(Function))
+
+    // 取消（onCancel，第 5 個參數）：導航應被擋下，畫面維持原本內容
+    const onCancel = vi.mocked(popDialog.confirm).mock.calls[0][4]
+    onCancel()
+    await flushPromises()
+    expect(router.currentRoute.value.query).toEqual({ skillId: 'personal-001' })
+    expect(wrapper.find('.banner-title').text()).toBe('修改技能')
   })
 
   it('離開頁面：無未儲存變更時不彈確認', async () => {
