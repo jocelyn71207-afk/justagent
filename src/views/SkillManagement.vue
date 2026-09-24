@@ -731,8 +731,8 @@ function buildSuggestion(s: SkillSuggestionEntry) {
   router.push({ query: { from: s.conversationId } })
 }
 
-// 「建立技能」選擇框：對話／積木都是 AI 賦能（SkillStudio），差別在
-// method query 直接指定建立方式，跳過 SkillStudio 自己那層「選擇建立方式」
+// 「建立技能」選擇框：對話／積木都開技能管理頁的抽屜（SkillStudioDrawer），差別在
+// method query 直接指定建立方式，跳過工作區自己那層「選擇建立方式」
 // 畫面（不然會被問兩次）；手動則走 SkillEditor 三步驟表單精靈。
 // 三者都是空白建立，不帶 skillId
 function handleCreateWithChat() {
@@ -805,8 +805,8 @@ function handleDirectEdit() {
   editChoiceSkill.value = null
 }
 
-// 對話修改改到「AI 賦能」頁進行：那裡有完整的預覽與測試面板，
-// 不再用 modal 擠在技能管理頁裡
+// 對話修改開技能管理頁自己的抽屜（SkillStudioDrawer）進行：抽屜近全螢幕，
+// 完整保留預覽與測試面板，不是被否決過的那種小型置中 modal
 function handleChatEdit() {
   if (!editChoiceSkill.value) return
   const skillId = editChoiceSkill.value.id

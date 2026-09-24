@@ -414,6 +414,7 @@ git commit -m "refactor(skill-studio): extract SkillStudioModeHeader shared by p
 - Create: `src/components/Skill/SkillStudioDrawer.vue`
 - Create: `src/scss/components/_SkillStudioDrawer.scss`
 - Modify: `src/scss/components/_index.scss`（新增一行 `@import`）
+- Modify: `src/scss/views/_SkillStudio.scss`（把 `.banner-title-row` 從 `.SkillStudio` 巢狀規則搬成頂層選擇器，讓抽屜殼也吃得到）
 - Create: `src/components/__tests__/SkillStudioDrawer.test.ts`
 
 **Interfaces:**
@@ -619,7 +620,51 @@ defineExpose({
 }
 ```
 
-- [ ] **Step 5: 註冊進 `_index.scss`**
+- [ ] **Step 5: 修正 `.banner-title-row` 的 CSS 作用範圍，讓抽屜殼也吃得到**
+
+Task 2 加回的 `SkillStudioModeHeader`（標題＋色徽同一排）目前靠 `src/scss/views/_SkillStudio.scss:6` 的 `.banner-title-row` 規則排成橫排，但那條規則是巢狀寫在 `.SkillStudio { }` 選擇器裡面（只對頁面殼生效）。抽屜殼的頂層 class 是 `.SkillStudioDrawer`，不是 `.SkillStudio`，所以 `SkillStudioModeHeader` 放進抽屜的 `.ssd-head` 裡會吃不到這條 flex 規則，標題文字跟徽章會直接垂直堆疊，不會排成一排。
+
+修法比照同一個檔案裡 `.ssc-mode-chip`（:91-102）已經在用的作法——那顆規則本來就寫成跟 `.SkillStudio` 平行的頂層選擇器，註解寫明「SkillStudioChat 與頁面自己的積木欄頭都會用到」，就是為了給多個地方共用。`.banner-title-row` 現在也變成兩個外殼共用，比照辦理：把它從 `.SkillStudio { }` 裡搬出來，改成跟 `.SkillStudio`／`.ssc-mode-chip` 同一層級的頂層選擇器。
+
+修改 `src/scss/views/_SkillStudio.scss`，把：
+
+```scss
+// ── AI 賦能（SkillStudio）頁面佈局 ──
+.SkillStudio {
+  height: 100%;
+
+  // 新增／修改用文字＋既有 chip 色系區分，不疊加左側色條（沿用全站 .page-banner 的既定規則）
+  .banner-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .skill-studio-layout {
+```
+
+改成：
+
+```scss
+// ── AI 賦能（SkillStudio）頁面佈局 ──
+// .banner-title-row 是獨立頂層選擇器（跟下面 .ssc-mode-chip 同樣道理）：
+// 頁面殼（.SkillStudio）跟抽屜殼（.SkillStudioDrawer）的頂部標題列都會用到，
+// 不能巢狀寫在 .SkillStudio 裡面否則抽屜吃不到
+.banner-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.SkillStudio {
+  height: 100%;
+
+  .skill-studio-layout {
+```
+
+（`.skill-studio-layout` 以下、原本 `.SkillStudio { }` 裡的其他規則全部不動，只搬移 `.banner-title-row` 這一小段出去。）
+
+- [ ] **Step 6: 註冊進 `_index.scss`**
 
 修改 `src/scss/components/_index.scss`，在 `@import "./SkillReviewDrawer";` 之後加一行（跟其他 Skill 系列元件放一起）：
 
@@ -627,15 +672,15 @@ defineExpose({
 @import "./SkillStudioDrawer";
 ```
 
-- [ ] **Step 6: 跑測試確認通過**
+- [ ] **Step 7: 跑測試確認通過**
 
-Run: `npm run test:unit -- src/components/__tests__/SkillStudioDrawer.test.ts`
-Expected: PASS（5 個測試）
+Run: `npm run test:unit -- src/components/__tests__/SkillStudioDrawer.test.ts src/views/__tests__/SkillStudio.test.ts`
+Expected: PASS（`SkillStudioDrawer.test.ts` 5 個測試 + `SkillStudio.test.ts` 22 個測試都要過——後者是確認 Step 5 搬移 CSS 沒有動到頁面殼原本的版面）
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/components/Skill/SkillStudioDrawer.vue src/components/__tests__/SkillStudioDrawer.test.ts src/scss/components/_SkillStudioDrawer.scss src/scss/components/_index.scss
+git add src/components/Skill/SkillStudioDrawer.vue src/components/__tests__/SkillStudioDrawer.test.ts src/scss/components/_SkillStudioDrawer.scss src/scss/components/_index.scss src/scss/views/_SkillStudio.scss
 git commit -m "feat(skill-studio): add SkillStudioDrawer shell (not wired into SkillManagement yet)"
 ```
 

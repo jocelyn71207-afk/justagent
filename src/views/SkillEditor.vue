@@ -368,7 +368,7 @@ function handleSubmit() {
 function handleEnableGateRevise() {
   enableGateBlocked.value = false
   if (!editSkillId) return
-  router.push({ name: 'SkillStudio', query: { skillId: editSkillId } })
+  router.push({ name: 'SkillManagement', query: { skillId: editSkillId } })
 }
 
 function handleEnableGateOverride() {
