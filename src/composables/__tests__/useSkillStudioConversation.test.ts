@@ -514,15 +514,15 @@ describe('意圖判斷（gateStage intent）', () => {
     await p
   }
 
-  it('清單為空＋建立意圖：直接 gateStage=active，且用既有 interpretStudioMessage 邏輯把這句話當成第一句描述來擬草稿', async () => {
+  it('清單為空＋建立意圖：不再有快速路徑，統一轉 gathering 開始追問', async () => {
     const store = useSkillStore()
     store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
-    expect(c.gateStage.value).toBe('active')
-    expect(c.draft.value.name).toBeTruthy()
+    expect(c.gateStage.value).toBe('gathering')
+    expect(c.messages.value.at(-1)!.content).toBe('還有沒有需要特別注意的情況或例外？')
   })
 
   it('清單非空＋建立意圖，找到相近做法：不再問關卡一，一句話直接轉 gate2', async () => {
@@ -536,12 +536,13 @@ describe('意圖判斷（gateStage intent）', () => {
     expect(c.messages.value.at(-1)!.content).toContain(target.name)
   })
 
-  it('清單非空＋建立意圖，找不到相近做法：不再問關卡一，一句話直接轉 clarify', async () => {
+  it('清單非空＋建立意圖，找不到相近做法：不再問關卡一，一句話直接轉 gathering', async () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     await sendAndWait(c, '我要新增一份規定')
-    expect(c.gateStage.value).toBe('clarify')
+    expect(c.gateStage.value).toBe('gathering')
+    expect(c.messages.value.at(-1)!.content).toBe('還有沒有需要特別注意的情況或例外？')
   })
 
   it('修改意圖，找到相近技能：直接 loadSkill 進修改模式', async () => {
@@ -665,15 +666,16 @@ describe('關卡二與暫存草稿', () => {
     expect(c.draft.value.name).toBe(target.name)
   })
 
-  it('關卡二選「另外新增一份」：空白開始，gateStage 轉 clarify，草稿沒有帶入相近技能的內容', async () => {
+  it('關卡二選「另外新增一份」：空白開始，gateStage 轉 gathering，草稿沒有帶入相近技能的內容', async () => {
     const store = useSkillStore()
     const target = store.myPersonalSkills[0]
     const c = useSkillStudioConversation()
     await reachGate2(c, target.name)
     await sendAndWait(c, '另外新增一份')
-    expect(c.gateStage.value).toBe('clarify')
+    expect(c.gateStage.value).toBe('gathering')
     expect(c.draft.value.name).toBe('')
     expect(c.draft.value.instructions).toBe('')
+    expect(c.messages.value.at(-1)!.content).toBe('還有沒有需要特別注意的情況或例外？')
   })
 
   it('關卡二選「我要講別的」：暫存目前對話與草稿，gateStage 回 intent 處理新話題', async () => {
