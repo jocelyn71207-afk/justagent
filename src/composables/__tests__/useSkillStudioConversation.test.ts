@@ -1043,7 +1043,7 @@ describe('classifyGate3（模組內部邏輯，透過 gateStage 行為驗證，�
   })
 })
 
-describe('gathering：固定追問 2 輪', () => {
+describe('gathering：最多追問 2 輪，已經講過的題目會跳過', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.useFakeTimers()
@@ -1075,6 +1075,35 @@ describe('gathering：固定追問 2 輪', () => {
     expect(last.content).toContain('我要新增一份規定')
     expect(last.content).toContain('沒有特殊例外')
     expect(last.content).toContain('照標準流程執行')
+  })
+
+  it('第一句描述已經很完整（夠長、看起來已經交代過怎麼做）：只問例外題，不會再多問一次步驟題', async () => {
+    // 清空個人技能清單：避免這句很長的描述剛好跟 mock 個人技能（例如「ERP 報表彙整」）
+    // bigram 重疊而誤判成「找到相近做法」，導致轉去關卡二而非這裡要測的 gathering 跳題邏輯
+    const store = useSkillStore()
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    const detailed = '我每個月月初（第一個工作天）都固定要產出給總公司的月報表（csv格式），資料來源是ERP 系統的API傳遞，輸出的檔案名稱：yyyy/mm月報表格式，需要統計上一個月的鞋款各個顏色、鞋碼的銷售雙、銷售金額、銷售淨額、庫存數量。以後每個月都要做這件事情。'
+    await sendAndWait(c, detailed)
+    expect(c.gateStage.value).toBe('gathering')
+    expect(c.messages.value.at(-1)!.content).toBe('還有沒有需要特別注意的情況或例外？')
+
+    await sendAndWait(c, '如果ERP連線異常，導致錯誤三次以上，請聯繫資訊組組長')
+    // 步驟題不會再問一次：這句描述已經夠長、看起來已經交代過怎麼做，直接進 confirmKnownInfo
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
+    expect(c.messages.value.at(-1)!.content).not.toBe('大概的執行步驟是什麼？麻煩條列一下。')
+  })
+
+  it('一開始就同時交代了例外跟步驟：兩題都跳過，一句話直接進 confirmKnownInfo', async () => {
+    const store = useSkillStore()
+    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '先確認庫存再產出報表，如果 API 逾時就重試三次，重試失敗才通知窗口')
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
   })
 })
 

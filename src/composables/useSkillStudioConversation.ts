@@ -90,6 +90,18 @@ const GATHERING_QUESTIONS = [
   '大概的執行步驟是什麼？麻煩條列一下。',
 ]
 
+// 每一題追問之前，先用關鍵字（或字數夠長，看起來已經交代過怎麼做）判斷使用者是不是已經講過了，
+// 講過就跳過這題，不重複問——規則式判斷，不是真的語意理解，跟這個檔案既有風格一致
+const EXCEPTION_HINT = /例外|異常|萬一|如果.{0,10}(就|請|要)|錯誤|失敗/
+const STEPS_HINT = /先.{0,10}(再|然後|接著)|步驟|流程|依序|依次/
+const STEPS_LENGTH_HINT = 60
+
+function isGatheringQuestionAnswered(index: number, text: string): boolean {
+  if (index === 0) return EXCEPTION_HINT.test(text)
+  if (index === 1) return STEPS_HINT.test(text) || text.trim().length > STEPS_LENGTH_HINT
+  return false
+}
+
 // 關卡二專用的語意分類器
 function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null {
   if (/照.{0,4}做|沿用他|用現有的/.test(text)) return 'follow'
@@ -361,13 +373,29 @@ export function useSkillStudioConversation() {
     startGathering(text)
   }
 
-  // 開始一輪全新的資訊蒐集：重置累積文字與追問輪數，把這句話存進去，推第一個追問問句
+  // 開始一輪全新的資訊蒐集：重置累積文字與追問輪數，把這句話存進去，
+  // 再交給 advanceGathering 判斷第一題要不要問
   function startGathering(text: string): void {
     gatheringRawText.value = text
-    gatheringRound.value = 1
+    gatheringRound.value = 0
     awaitingSupplement.value = false
     gateStage.value = 'gathering'
-    push({ role: 'agent', content: GATHERING_QUESTIONS[0] })
+    advanceGathering()
+  }
+
+  // 從目前 gatheringRound 開始，跳過使用者已經在累積文字裡講過的題目；
+  // 全部題目都講過的話，直接進 confirmKnownInfo（不重複問已經回答過的內容）
+  function advanceGathering(): void {
+    while (gatheringRound.value < GATHERING_QUESTIONS.length) {
+      if (!isGatheringQuestionAnswered(gatheringRound.value, gatheringRawText.value)) {
+        push({ role: 'agent', content: GATHERING_QUESTIONS[gatheringRound.value] })
+        gatheringRound.value += 1
+        return
+      }
+      gatheringRound.value += 1
+    }
+    gateStage.value = 'confirmKnownInfo'
+    push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
   }
 
   // 唯一的頂層意圖路由：gateStage === 'intent' 時呼叫，
@@ -427,13 +455,7 @@ export function useSkillStudioConversation() {
 
     if (stage === 'gathering') {
       gatheringRawText.value += `\n${t}`
-      if (gatheringRound.value < GATHERING_QUESTIONS.length) {
-        push({ role: 'agent', content: GATHERING_QUESTIONS[gatheringRound.value] })
-        gatheringRound.value += 1
-        return
-      }
-      gateStage.value = 'confirmKnownInfo'
-      push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
+      advanceGathering()
       return
     }
 
