@@ -31,6 +31,10 @@ describe('extractSkillName', () => {
     expect(name).not.toContain('\n')
     expect(name).toBe('每週整理銷售報告給主管')
   })
+  it('句子裡有「需要」但後面沒有「的技能／的 Skill」終止詞：不誤判成關鍵字句型，退回逗號斷句規則，不會抓到字串結尾變成一長串斷在詞中間的怪名字', () => {
+    const name = extractSkillName('我每個月都要產出月報表，需要統計上個月各項數據，這件事情以後每個月都要做')
+    expect(name).toBe('我每個月都要產出月報表')
+  })
 })
 
 describe('interpretStudioMessage', () => {
