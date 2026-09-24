@@ -14,7 +14,6 @@ async function mountEditFor(skillId: string) {
       { path: '/', component: { template: '<div/>' } },
       { path: '/view/SkillEditor', name: 'SkillEditor', component: SkillEditor },
       { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
-      { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
     ],
   })
   await router.push({ path: '/view/SkillEditor', query: { skillId } })

@@ -16,7 +16,6 @@ function mountBlock(init?: Parameters<ReturnType<typeof useAiviewerStore>['addSk
     history: createWebHistory(),
     routes: [
       { path: '/', component: { template: '<div/>' } },
-      { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
       { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
       { path: '/view/SkillTest', name: 'SkillTest', component: { template: '<div/>' } },
       { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
@@ -36,7 +35,6 @@ function mountOn(id: string, block: any) {
     history: createWebHistory(),
     routes: [
       { path: '/', component: { template: '<div/>' } },
-      { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
       { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
       { path: '/view/SkillTest', name: 'SkillTest', component: { template: '<div/>' } },
       { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
@@ -131,7 +129,7 @@ describe('skillBuilderViewBox', () => {
     const push = vi.spyOn(router, 'push')
     expect(wrapper.find('.skb-open-studio').attributes('disabled')).toBeUndefined()
     await wrapper.find('.skb-open-studio').trigger('click')
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { skillId: skillStore.myPersonalSkills[0].id } })
+    expect(push).toHaveBeenCalledWith({ name: 'SkillManagement', query: { skillId: skillStore.myPersonalSkills[0].id } })
   })
 
   it('snapshot 指到的技能已被刪除：顯示提示、退回建立模式', async () => {

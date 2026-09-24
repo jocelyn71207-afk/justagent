@@ -1,0 +1,101 @@
+// ── SkillStudioDrawer：技能管理頁點「建立/編輯」時，用近全螢幕的側邊抽屜取代整頁導頁 ──
+// 版型抄 _SkillTest.scss 的 .st-context-drawer（真的從右側滑入的抽屜），
+// 不是 _SkillDetailDrawer.scss 的 .drawer-panel（那個叫 Drawer 但其實是置中
+// scale+fade 的 modal——技能管理過去就是因為那種小 modal 太擠才改走獨立頁面，
+// 見 SkillManagement.vue:762-763 的註解，不要走回頭路）
+.SkillStudioDrawer {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+
+  .ssd-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(9, 21, 26, 0.35);
+    backdrop-filter: blur(4px);
+  }
+
+  .ssd-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc(100vw - 64px);
+    max-width: 1400px;
+    height: 100vh;
+    background: var(--surface);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    @media (max-width: 1023px) { width: 100vw; max-width: none; }
+  }
+
+  .ssd-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--divider-a50);
+    flex-shrink: 0;
+  }
+
+  .ssd-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-a50);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 18px; }
+    &:hover { background: var(--page-bg); color: var(--text); }
+  }
+
+  .ssd-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+
+    // .skill-studio-layout 原本假設自己套在 .page-banner 之下，用
+    // calc(100vh - 172px) 抓高度；抽屜的頭比 page-banner 矮，且已經是
+    // flex 子層，直接吃滿剩餘高度即可，邊框/圓角交給 .ssd-panel 處理
+    .skill-studio-layout {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      border: none;
+      border-radius: 0;
+    }
+  }
+}
+
+// 抽屜進出場：從右側滑入
+.ssd-fade-enter-active,
+.ssd-fade-leave-active {
+  transition: opacity 0.2s ease;
+  .ssd-panel { transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1); }
+}
+.ssd-fade-enter-from,
+.ssd-fade-leave-to {
+  opacity: 0;
+  .ssd-panel { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ssd-fade-enter-active,
+  .ssd-fade-leave-active {
+    transition: opacity 0.1s linear;
+    .ssd-panel { transition: none; }
+  }
+  .ssd-fade-enter-from,
+  .ssd-fade-leave-to {
+    .ssd-panel { transform: none; }
+  }
+}

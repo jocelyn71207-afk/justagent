@@ -13,7 +13,6 @@ function mountOn(id: string, block: any) {
     history: createWebHistory(),
     routes: [
       { path: '/', component: { template: '<div/>' } },
-      { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
       { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
       { path: '/view/SkillTest', name: 'SkillTest', component: { template: '<div/>' } },
       { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },

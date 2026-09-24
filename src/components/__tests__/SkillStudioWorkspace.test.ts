@@ -1,0 +1,343 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { createRouter, createWebHistory } from 'vue-router'
+import SkillStudioWorkspace from '@/components/Skill/SkillStudioWorkspace.vue'
+import popDialog from '@/services/popDialog'
+import { useSkillStore } from '@/stores/skillStore'
+import { useAiviewerStore } from '@/stores/AiViewerStore'
+import { setSkillHandoff, consumeSkillHandoff } from '@/composables/useSkillHandoff'
+
+vi.mock('@/services/popDialog', () => ({
+  default: { toast: vi.fn(), confirm: vi.fn(), alert: vi.fn() },
+}))
+
+async function chooseChat(wrapper: any) {
+  await wrapper.findAll('.smc-card')[0].trigger('click')
+  await flushPromises()
+}
+
+function mountWorkspace(initialQuery: Record<string, string> = {}) {
+  const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+      { path: '/', component: { template: '<div/>' } },
+      { path: '/view/AiViewer', name: 'AiViewer', component: { template: '<div/>' } },
+    ],
+  })
+  const wrapper = mount(SkillStudioWorkspace, {
+    props: { initialQuery },
+    global: { plugins: [router] },
+  })
+  return { wrapper, router }
+}
+
+describe('SkillStudioWorkspace', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  it('無 initialQuery：建立模式，左側 chip「建立新技能」，右側預覽空狀態', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+    expect(wrapper.find('.studio-chat-col .ssc-mode-chip').exists()).toBe(false)
+    await chooseChat(wrapper)
+    expect(wrapper.find('.studio-chat-col .ssc-mode-chip').text()).toContain('建立新技能')
+    expect(wrapper.text()).toContain('尚未命名的技能')
+  })
+
+  it('method: chat：跳過 SkillMethodChooser，直接進對話模式', async () => {
+    const { wrapper } = mountWorkspace({ method: 'chat' })
+    await flushPromises()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.SkillStudioChat').exists()).toBe(true)
+  })
+
+  it('method: blocks：跳過 SkillMethodChooser，直接進積木面板', async () => {
+    const { wrapper } = mountWorkspace({ method: 'blocks' })
+    await flushPromises()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
+  })
+
+  it('skillId 個人技能：修改模式，預覽帶入該技能內容', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+    await flushPromises()
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
+    expect(wrapper.find('.ssp-title').text()).toBe('週報自動生成')
+  })
+
+  it('skillId 是 Library 技能：toast 提示並退回建立模式', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'sys-cs-001' })
+    await flushPromises()
+    expect(popDialog.toast).toHaveBeenCalledWith('Library 技能請先在技能管理複製為個人技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+  })
+
+  it('skillId 不存在：toast「找不到這個技能」並退回建立模式', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'nope-999' })
+    await flushPromises()
+    expect(popDialog.toast).toHaveBeenCalledWith('找不到這個技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+  })
+
+  it('tab: test：預設切到測試 tab', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001', tab: 'test' })
+    await flushPromises()
+    expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
+  })
+
+  it('skillId 不存在且 tab=test：退回建立模式並強制回到預覽 tab', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'nope-999', tab: 'test' })
+    await flushPromises()
+    expect(popDialog.toast).toHaveBeenCalledWith('找不到這個技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+    expect(wrapper.findAll('.ssp-tab-btn')[0].classes()).toContain('is-active')
+  })
+
+  it('送出訊息 → 草稿更新 → 儲存 → 建立個人技能、toast、自動切到測試 tab', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper } = mountWorkspace()
+      await flushPromises()
+      await chooseChat(wrapper)
+      const store = useSkillStore()
+      store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+      const before = store.myPersonalSkills.length
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      await input.setValue('幫我建立一個能查 ERP 庫存的技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('沒有特殊例外')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('照標準流程執行')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('對，沒錯')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      expect(wrapper.find('.ssp-title').text()).toBe('查 ERP 庫存')
+      await wrapper.find('.ssp-save-btn').trigger('click')
+      await flushPromises()
+      expect(store.myPersonalSkills.length).toBe(before + 1)
+      expect(popDialog.toast).toHaveBeenCalledWith('已儲存為個人技能，可到「測試」tab 驗證')
+      expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
+      expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：查 ERP 庫存')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('同名個人技能時顯示提示 banner，改成不同名後消失，儲存仍可用', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper } = mountWorkspace()
+      await flushPromises()
+      await chooseChat(wrapper)
+      const store = useSkillStore()
+      // 清單非空時，建立意圖的訊息會先卡在 gate1（見 useSkillStudioConversation 的意圖判斷關卡）；
+      // 這裡要測的是名稱衝突 banner 本身，先清空清單讓 chat 建立訊息直接進 active、照舊擬草稿，
+      // 草稿擬好之後再直接呼叫 store 補回一顆同名（週報自動生成）的個人技能來觸發衝突判斷
+      store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      // 這個測試接著要送出「自由格式」的改名訊息，那只有在 gateStage 'active' 才會走
+      // interpretStudioMessage 的改名規則，所以要走完整輪：第一句描述 → 兩輪追問 →
+      // confirmKnownInfo 確認 → gate3 確認，最後一步會實際落地一顆個人技能，但這個測試
+      // 不檢查 myPersonalSkills.length，只驗證 name-conflict-banner 與儲存按鈕的狀態
+      await input.setValue('幫我建立一個能查 ERP 庫存的技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('沒有特殊例外')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('照標準流程執行')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('對，沒錯')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('這樣可以，存到個人技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      store.createPersonalSkill({ name: '週報自動生成', instructions: '', triggerHint: '', assignedAgents: [] })
+      await flushPromises()
+
+      await input.setValue('名稱改成「週報自動生成」')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.find('.name-conflict-banner').exists()).toBe(true)
+      expect(wrapper.find('.ssp-save-btn').attributes('disabled')).toBeUndefined()
+
+      await input.setValue('名稱改成「庫存速查」')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.find('.name-conflict-banner').exists()).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('切換技能下拉：無未儲存變更時直接切換', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    await chooseChat(wrapper)
+    await wrapper.find('.ssc-skill-select').setValue('personal-001')
+    await flushPromises()
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
+  })
+
+  it('exposed applyQuery：外部呼叫可以重新套用（模擬外殼守衛通過後的行為）', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+    await flushPromises()
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
+    ;(wrapper.vm as any).applyQuery({})
+    await flushPromises()
+    expect(popDialog.confirm).not.toHaveBeenCalled()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+  })
+
+  it('選「用行銷積木組裝」：左欄變成積木面板；勾章節、命名、儲存 → 個人技能有 composition', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    await wrapper.findAll('.smc-card')[1].trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.studio-chat-col .SkillBlockComposer').exists()).toBe(true)
+    expect(wrapper.find('.SkillStudioChat').exists()).toBe(false)
+    expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--create')
+    await wrapper.find('.sbc-name-input').setValue('行銷週報')
+    await wrapper.findAll('.sbc-palette-item').find(i => i.text().includes('活動排行'))!.find('.sbc-add-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.ssp-title').text()).toBe('行銷週報')
+    expect(wrapper.text()).toContain('活動排行：各促銷活動帶動效果排行')
+    await wrapper.find('.ssp-save-btn').trigger('click')
+    await flushPromises()
+    const store = useSkillStore()
+    expect(store.myPersonalSkills[0].composition).toEqual({ sectionIds: ['promo_ranking'] })
+  })
+
+  it('skillId 指向有 composition 的技能：左欄直接是積木面板且勾選還原', async () => {
+    setActivePinia(createPinia())
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '渠道週報', instructions: '依序產出以下章節：\n1. 渠道核心 KPI', triggerHint: 't', isEnabled: true, assignedAgents: [], composition: { sectionIds: ['ch_kpi'] } })
+    const { wrapper } = mountWorkspace({ skillId: id })
+    await flushPromises()
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
+    expect(wrapper.findAll('.sbc-list .sbc-item-name').map(n => n.text())).toEqual(['渠道核心 KPI'])
+    expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--edit')
+  })
+
+  it('積木方式的左欄也有「建立新技能」，點擊回到方式選擇', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    await wrapper.findAll('.smc-card')[1].trigger('click')
+    await flushPromises()
+    await wrapper.find('.studio-new-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+  })
+
+  describe('conv4 交接（方案三）', () => {
+    it('from: conv4 但沒有交接資料：退回一般建立模式，不顯示返回連結', async () => {
+      const { wrapper } = mountWorkspace({ from: 'conv4' })
+      await flushPromises()
+      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+      expect(wrapper.find('.studio-back-link').exists()).toBe(false)
+    })
+
+    it('from: conv4 且有交接資料：直接進對話模式、套用預填草稿與開場白，並顯示返回連結', async () => {
+      setSkillHandoff({
+        prefill: { name: '產品銷售報告整理', instructions: '1. 查詢資料\n2. 套用規範產出' },
+        openingMessage: '這顆技能來自本對話的「查詢銷售資料」流程，設定我先填好了。',
+        origin: { conversationId: 'conv4', reason: '查詢銷售資料＋套用部門報告規範' },
+      })
+      const { wrapper, router } = mountWorkspace({ from: 'conv4' })
+      await flushPromises()
+      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+      expect(wrapper.find('.ssp-title').text()).toBe('產品銷售報告整理')
+      expect(wrapper.text()).toContain('這顆技能來自本對話的「查詢銷售資料」流程')
+      expect(wrapper.find('.studio-origin-bar').text()).toContain('來自本對話的「查詢銷售資料＋套用部門報告規範」流程')
+
+      const back = wrapper.find('.studio-back-link')
+      expect(back.exists()).toBe(true)
+      const push = vi.spyOn(router, 'push')
+      await back.trigger('click')
+      expect(popDialog.confirm).toHaveBeenCalledWith('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', expect.any(Function))
+      expect(push).not.toHaveBeenCalled()
+      const onConfirm = vi.mocked(popDialog.confirm).mock.calls[0][3] as () => void
+      onConfirm()
+      expect(push).toHaveBeenCalledWith({ name: 'AiViewer' })
+      expect(useAiviewerStore().conv4Msgs).toEqual([])
+    })
+
+    it('儲存後再按返回：conv4 對話會補一句「已建立」確認訊息', async () => {
+      setSkillHandoff({
+        prefill: { name: '產品銷售報告整理', instructions: '1. 查詢資料' },
+        openingMessage: '開場白',
+        origin: { conversationId: 'conv4', reason: '查詢銷售資料＋套用部門報告規範' },
+      })
+      const { wrapper, router } = mountWorkspace({ from: 'conv4' })
+      await flushPromises()
+      await wrapper.find('.ssp-save-btn').trigger('click')
+      await flushPromises()
+      await wrapper.find('.studio-back-link').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.name).toBe('AiViewer')
+      const aiviewer = useAiviewerStore()
+      expect(aiviewer.conv4Msgs.at(-1)).toMatchObject({
+        agent: 'brain',
+        msg: '✅ 個人技能「產品銷售報告整理」已建立完成。',
+      })
+    })
+
+    it('交接資料只套用一次：讀過就清空', async () => {
+      setSkillHandoff({
+        prefill: { name: '一次性草稿' },
+        openingMessage: '開場白',
+        origin: { conversationId: 'conv4', reason: 'x' },
+      })
+      mountWorkspace({ from: 'conv4' })
+      await flushPromises()
+      expect(consumeSkillHandoff()).toBeNull()
+    })
+
+    it('套用完交接草稿後按「建立新技能」：回到方式選擇，且不再顯示返回連結', async () => {
+      setSkillHandoff({
+        prefill: { name: '產品銷售報告整理' },
+        openingMessage: '開場白',
+        origin: { conversationId: 'conv4', reason: 'x' },
+      })
+      const { wrapper } = mountWorkspace({ from: 'conv4' })
+      await flushPromises()
+      await wrapper.find('.ssc-new-btn').trigger('click')
+      await flushPromises()
+      const onConfirm = vi.mocked(popDialog.confirm).mock.calls[0][3] as () => void
+      onConfirm()
+      await flushPromises()
+      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+      expect(wrapper.find('.studio-back-link').exists()).toBe(false)
+    })
+  })
+})

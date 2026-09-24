@@ -72,6 +72,64 @@
     }
   }
 
+  // ── 建議建立的技能 ────────────────────────────
+  // agent 完成任務後放進佇列，決策（建立／不用了）在這裡處理；
+  // 跟下面「我的技能」清單分開一塊，用淡色卡片+左側 AI 圖示區隔「這是建議」
+  // 而不是已經存在的技能。
+
+  .skill-suggestion-queue {
+    margin-bottom: 18px;
+    border: 1px solid var(--tag-violet-text);
+    border-radius: 10px;
+    background: var(--tag-violet-bg);
+    overflow: hidden;
+  }
+
+  .ssq-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tag-violet-text);
+
+    .material-symbols-outlined { font-size: 17px; }
+  }
+
+  .ssq-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ssq-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-top: 1px solid var(--divider-a50);
+  }
+
+  .ssq-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .ssq-item-reason {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .ssq-item-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   // ── Search ────────────────────────────────────
 
   .skill-search {

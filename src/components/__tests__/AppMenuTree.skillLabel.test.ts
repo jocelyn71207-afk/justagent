@@ -5,7 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AppMenuTree from '../AppMenuTree.vue'
 
 describe('AppMenuTree 桌機版「AI 技能」群組子項目', () => {
-  it('展開後依序為 技能管理 / AI 賦能 / 技能測試沙盒，且不再出現舊名「技能清單」', async () => {
+  it('展開後依序為 技能管理 / 技能測試沙盒，且不再出現舊名「技能清單」或已移除的「AI 賦能」', async () => {
     setActivePinia(createPinia())
     const router = createRouter({
       history: createWebHistory(),
@@ -21,13 +21,11 @@ describe('AppMenuTree 桌機版「AI 技能」群組子項目', () => {
     const text = sub.text()
 
     expect(text).not.toContain('技能清單')
+    expect(text).not.toContain('AI 賦能')
     expect(text).toContain('技能管理')
-    expect(text).toContain('AI 賦能')
     expect(text).toContain('技能測試沙盒')
-    expect(text.indexOf('技能管理')).toBeLessThan(text.indexOf('AI 賦能'))
-    expect(text.indexOf('AI 賦能')).toBeLessThan(text.indexOf('技能測試沙盒'))
+    expect(text.indexOf('技能管理')).toBeLessThan(text.indexOf('技能測試沙盒'))
 
-    const studioLink = sub.findAll('a').find(a => a.text().includes('AI 賦能'))
-    expect(studioLink?.attributes('href')).toBe('/view/SkillStudio')
+    expect(sub.findAll('a')).toHaveLength(2)
   })
 })

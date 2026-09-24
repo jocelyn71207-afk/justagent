@@ -876,7 +876,7 @@ const journeyDashboardAdded = ref(false)
 let _journeyUserCount = 0
 const showJourneyModifyPill = ref(false)
 
-const { isOpenConversationListModal, currentConversationId, conv1IsEmpty } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
+const { isOpenConversationListModal, currentConversationId, conv1IsEmpty, conv4Msgs, conv4Title } = storeToRefs(aiviewerStore); // 是否開啟對話列表 Modal
 
 const conv2Title = ref('');
 const conv1Title = ref('未命名對話');
@@ -2411,10 +2411,6 @@ function handleChatAreaClick(e: MouseEvent) {
     return
   }
 
-  // 建議建立成個人技能（任何 convN 共用）：data-id 是哪一則建議
-  if (action.startsWith('skill-suggest-') && skillSuggestion.handleAction(action, el.dataset.id ?? '')) {
-    return;
-  }
   // 河道卡片「前往區塊」：鏡頭移到指定 block 並選取它；block 已被刪就提示
   if (action === 'pan-to-block') {
     const target = aiViewerBlocks.value.find((b: any) => b.id === el.dataset.value);
@@ -2816,12 +2812,10 @@ function conv3FlipSearchCard(from: string[], to: string[]) {
 }
 
 // -------- Conversation 4 流程 --------
-const conv4Msgs = ref<any[]>([]);
-let conv4IdCounter = 2;
-const conv4Title = ref('');
-
+// conv4Msgs／conv4Title 已搬進 aiviewerStore（方案三：導到 AI 賦能再返回時，
+// 這個元件會被銷毀重建，區域 state 撐不住那趟往返）
 function c4Push(msg: any) {
-  conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
+  aiviewerStore.pushConv4Message(msg);
 }
 function c4Scroll() {
   nextTick(() => AiAgentChatListScrollTo('ASC'));
@@ -2860,7 +2854,11 @@ function conv4InitFlow() {
         sources: CONV4_SOURCES,
       });
       c4Scroll();
-      setTimeout(() => skillSuggestion.offer({ push: c4Push, scroll: c4Scroll, conversationId: 'conv4' }, CONV4_SKILL_SUGGESTION), 600);
+      setTimeout(() => skillSuggestion.offer({
+        push: c4Push,
+        scroll: c4Scroll,
+        conversationId: 'conv4',
+      }, CONV4_SKILL_SUGGESTION), 600);
     }, 1800);
   }, 300);
 }
@@ -3487,10 +3485,7 @@ function resetConversation() {
     conv3KbChoiceMade.value = false;
   }
   if (currentConversationId.value === 'conv4') {
-    conv4IdCounter = 2;
-    conv4Title.value = '';
-    conv4Msgs.value = [];
-    skillSuggestion.reset(CONV4_SKILL_SUGGESTION.id);
+    aiviewerStore.resetConv4();
   }
   if (currentConversationId.value === 'conv5') {
     conv5IdCounter = 2;
