@@ -94,7 +94,7 @@ const GATHERING_QUESTIONS = [
 function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null {
   if (/照.{0,4}做|沿用他|用現有的/.test(text)) return 'follow'
   if (/改他|修改他|調整他|改一下(他|這個|這份)/.test(text)) return 'edit'
-  if (/另外|新增一份|開一份新的|重新弄一份|不要沿用/.test(text)) return 'new'
+  if (/另外|新增一份|開一份新的|重新弄一份|不要沿用|記.{0,4}新的|新的一份/.test(text)) return 'new'
   if (/講別的|別的事|其他事|換個話題|先不管這個|等一下再/.test(text)) return 'else'
   return null
 }

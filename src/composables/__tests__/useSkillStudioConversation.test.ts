@@ -964,6 +964,15 @@ describe('classifyGate2（模組內部邏輯，透過 gateStage 行為驗證）'
     expect(c.savedSkillId.value).toBe(target.id)
   })
 
+  it('本關比對到「新的」語意（呼應本關問句自己的用字「記一份新的」，不只認得「另外／新增一份」等固定詞）：轉 intent 重新開一份，不會卡在原地重問同一題', async () => {
+    const store = useSkillStore()
+    const c = useSkillStudioConversation()
+    await toGate2(c, store.myPersonalSkills[0].name)
+    await sendAndWait(c, '要記一份新的')
+    expect(c.gateStage.value).toBe('intent')
+    expect(c.messages.value.at(-1)!.content).toBe('好，那我們重新開一份。請描述這份做法的內容。')
+  })
+
   it('本關比對不到：先清掉 pendingSimilarSkillId，再重定向到新話題判斷（太模糊 → 留在 intent 問澄清）', async () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()
