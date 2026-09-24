@@ -35,6 +35,17 @@ describe('extractSkillName', () => {
     const name = extractSkillName('我每個月都要產出月報表，需要統計上個月各項數據，這件事情以後每個月都要做')
     expect(name).toBe('我每個月都要產出月報表')
   })
+  it('斷句前先拿掉括號內容（全形／半形）：不會把名稱硬切在括號中間', () => {
+    const name = extractSkillName('我每個月月初（第一個工作天）都固定要產出給總公司的月報表（csv格式），資料來源是ERP 系統')
+    expect(name).not.toContain('（')
+    expect(name).not.toContain('）')
+    expect(name).toBe('我每個月月初都固定要產出')
+  })
+  it('整句都是括號內容：拿掉括號後變空字串，退回原本的第一行內容，不會回傳「新技能」', () => {
+    const name = extractSkillName('（這整句都是括號內容）')
+    expect(name).not.toBe('新技能')
+    expect(name).toContain('括號內容')
+  })
 })
 
 describe('interpretStudioMessage', () => {

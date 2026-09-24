@@ -240,11 +240,15 @@ export function extractSkillName(text: string): string {
   const t = text.trim()
   if (!t) return '新技能'
   const firstLine = t.split('\n')[0].trim() || t
+  // 先把括號內容（全形／半形）拿掉再斷句取字：不然像「（第一個工作天）」這種插入語
+  // 剛好卡在斷句點前面，會把名稱硬切在括號中間，看起來很怪。整句都是括號內容時退回
+  // 原本的 firstLine，避免抓出空字串
+  const candidate = firstLine.replace(/[（(][^）)]*[）)]/g, '').trim() || firstLine
   // 終止詞不能退回 $（字串結尾）：否則像「…需要統計上一個月的…」這種「需要」只是
   // 一般用語、後面根本沒有「的技能／的 Skill」的句子，也會被硬吃到字串結尾當成名稱，
   // 抓出一長串斷在詞中間的怪名字。沒有終止詞就該直接判定不比對，退回下面的逗號斷句規則
-  const m = firstLine.match(/(?:建立|幫我做|需要)(.*?)(?:的技能|的 ?Skill)/i)
-  let picked = m ? m[1] : firstLine.split(/[，。！？、；：,.!?;:]/)[0]
+  const m = candidate.match(/(?:建立|幫我做|需要)(.*?)(?:的技能|的 ?Skill)/i)
+  let picked = m ? m[1] : candidate.split(/[，。！？、；：,.!?;:]/)[0]
   picked = picked
     .replace(/^(一個|一顆|一份|一套|一支)/, '')
     .replace(/^(能夠|能|可以|會)/, '')
