@@ -104,6 +104,19 @@ function classifyGate3(text: string): 'confirm' | 'retry' | null {
   return null
 }
 
+// 白話摘要文字：規則式串接，不是真的語意濃縮，跟這個檔案既有的其他函式風格一致
+function buildKnownInfoSummary(rawText: string): string {
+  return `我理解你想做的是：${rawText.trim()}\n\n這樣的理解對嗎？`
+}
+
+// confirmKnownInfo 專用的語意分類器。順序很重要：retry 的「不對」要先檢查，
+// 否則「不對，我要改」會先被 confirm 規則裡的「對」字誤判——跟既有 classifyGate3 同樣的慣例
+function classifyKnownInfoConfirm(text: string): 'confirm' | 'retry' | null {
+  if (/不對|不是|還要補充|還有|再說|不完整|漏了/.test(text)) return 'retry'
+  if (/對|沒錯|正確|可以|沒問題|就這樣/.test(text)) return 'confirm'
+  return null
+}
+
 // 規則式比對使用者描述跟既有個人技能的 name／triggerHint／instructions 有沒有重疊，
 // 回傳重疊分數最高的那一顆；沒有重疊回傳 null。
 //
@@ -404,6 +417,45 @@ export function useSkillStudioConversation() {
         return
       }
       push({ role: 'agent', content: `還是沒找到符合「${t}」的技能，可以換個說法，或直接說出正確的技能名稱嗎？` })
+      return
+    }
+
+    if (stage === 'gathering') {
+      gatheringRawText.value += `\n${t}`
+      if (gatheringRound.value < GATHERING_QUESTIONS.length) {
+        push({ role: 'agent', content: GATHERING_QUESTIONS[gatheringRound.value] })
+        gatheringRound.value += 1
+        return
+      }
+      gateStage.value = 'confirmKnownInfo'
+      push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
+      return
+    }
+
+    if (stage === 'confirmKnownInfo') {
+      if (awaitingSupplement.value) {
+        gatheringRawText.value += `\n${t}`
+        awaitingSupplement.value = false
+        push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
+        return
+      }
+      const k = classifyKnownInfoConfirm(t)
+      if (k === 'confirm') {
+        const reply = interpretStudioMessage(gatheringRawText.value, draft.value, mode.value)
+        if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
+        gateStage.value = 'gate3'
+        push({
+          role: 'agent',
+          content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
+        })
+        return
+      }
+      if (k === 'retry') {
+        awaitingSupplement.value = true
+        push({ role: 'agent', content: '好，那請告訴我還要補充什麼。' })
+        return
+      }
+      push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
       return
     }
 

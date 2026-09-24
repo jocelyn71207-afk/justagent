@@ -714,25 +714,36 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     await p
   }
 
-  it('clarify 階段一般描述：照既有 interpretStudioMessage 規則更新草稿，不轉關卡', async () => {
-    const c = useSkillStudioConversation()
+  // 走完 gathering（3 句話：描述＋2 個追問答案）＋ confirmKnownInfo（1 句確認），
+  // 產生結構化草稿並轉關卡三
+  async function toGate3(c: ReturnType<typeof useSkillStudioConversation>, buildText: string) {
     c.startCreate()
     c.chooseMethod('chat')
-    await sendAndWait(c, '我要新增一份規定') // 清單非空、零 bigram 重疊 → 直接 clarify
+    await sendAndWait(c, buildText)
+    await sendAndWait(c, '沒有特殊例外')
+    await sendAndWait(c, '照標準流程執行')
+    await sendAndWait(c, '對，沒錯')
+    expect(c.gateStage.value).toBe('gate3')
+  }
+
+  // 在 toGate3 的基礎上，關卡三選「不對，我要改」退回 clarify
+  async function toClarify(c: ReturnType<typeof useSkillStudioConversation>, buildText: string) {
+    await toGate3(c, buildText)
+    await sendAndWait(c, '不對，我要改')
     expect(c.gateStage.value).toBe('clarify')
-    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
-    expect(c.gateStage.value).toBe('clarify')
-    expect(c.draft.value.name).toBeTruthy()
+  }
+
+  it('clarify 階段一般描述：照既有 interpretStudioMessage 規則更新草稿，不轉關卡', async () => {
+    const c = useSkillStudioConversation()
+    await toClarify(c, '我要新增一份規定')
     await sendAndWait(c, '觸發條件改成當使用者提到缺貨時')
+    expect(c.gateStage.value).toBe('clarify')
     expect(c.draft.value.triggerHint).toContain('缺貨')
   })
 
   it('clarify 階段說收尾語：轉關卡三，訊息帶草稿摘要', async () => {
     const c = useSkillStudioConversation()
-    c.startCreate()
-    c.chooseMethod('chat')
-    await sendAndWait(c, '我要新增一份規定')
-    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    await toClarify(c, '我要新增一份規定')
     await sendAndWait(c, '沒有漏了，請幫我寫成做法')
     expect(c.gateStage.value).toBe('gate3')
     const last = c.messages.value.at(-1)!
@@ -743,11 +754,7 @@ describe('CLARIFY 補齊與關卡三確認', () => {
     const store = useSkillStore()
     const before = store.myPersonalSkills.length
     const c = useSkillStudioConversation()
-    c.startCreate()
-    c.chooseMethod('chat')
-    await sendAndWait(c, '我要新增一份規定')
-    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
-    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
+    await toGate3(c, '我要新增一份規定')
     await sendAndWait(c, '這樣可以，存到個人技能')
     expect(c.gateStage.value).toBe('active')
     expect(store.myPersonalSkills.length).toBe(before + 1)
@@ -756,12 +763,8 @@ describe('CLARIFY 補齊與關卡三確認', () => {
 
   it('關卡三選「不對，我要改」：退回 clarify，草稿內容不清空', async () => {
     const c = useSkillStudioConversation()
-    c.startCreate()
-    c.chooseMethod('chat')
-    await sendAndWait(c, '我要新增一份規定')
-    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
+    await toGate3(c, '我要新增一份規定')
     const nameBeforeRetry = c.draft.value.name
-    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
     await sendAndWait(c, '不對，我要改')
     expect(c.gateStage.value).toBe('clarify')
     expect(c.draft.value.name).toBe(nameBeforeRetry)
@@ -941,15 +944,10 @@ describe('classifyGate3（模組內部邏輯，透過 gateStage 行為驗證，�
   async function toGate3(c: ReturnType<typeof useSkillStudioConversation>) {
     c.startCreate()
     c.chooseMethod('chat')
-    // 用 '我要新增一份規定'（不是 '幫我建立一個新技能'）當第一句：跟 mock 個人技能清單裡
-    // 「週報自動生成」的 instructions 文字（"你是一個週報助理…"）有 bigram 重疊（透過
-    // 「一個」兩個字），會讓 findSimilarSkill 誤判成「找到相近做法」、把流程導去關卡二而不是
-    // clarify，整個 toGate3 就到不了關卡三。'我要新增一份規定' 已在別的既有測試驗證過對所有
-    // mock 技能的 bigram 重疊分數是 0，能確保這裡走到 clarify
     await sendAndWait(c, '我要新增一份規定')
-    await sendAndWait(c, '就改現有規定吧')
-    await sendAndWait(c, '幫我建立一個能查 ERP 庫存的技能')
-    await sendAndWait(c, '沒有漏了，請幫我寫成做法')
+    await sendAndWait(c, '沒有特殊例外')
+    await sendAndWait(c, '照標準流程執行')
+    await sendAndWait(c, '對，沒錯')
     expect(c.gateStage.value).toBe('gate3')
   }
 
@@ -981,5 +979,99 @@ describe('classifyGate3（模組內部邏輯，透過 gateStage 行為驗證，�
     expect(c.gateStage.value).toBe('gate3')
     expect(c.draft.value.name).toBe(nameBefore)
     expect(c.messages.value.at(-1)!.content).not.toBe('') // 有換句話重述，不是空白
+  })
+})
+
+describe('gathering：固定追問 2 輪', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  it('第一句描述後推第一個追問問句；答完兩輪追問後轉 confirmKnownInfo，訊息帶白話摘要', async () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '我要新增一份規定')
+    expect(c.gateStage.value).toBe('gathering')
+    expect(c.messages.value.at(-1)!.content).toBe('還有沒有需要特別注意的情況或例外？')
+
+    await sendAndWait(c, '沒有特殊例外')
+    expect(c.gateStage.value).toBe('gathering')
+    expect(c.messages.value.at(-1)!.content).toBe('大概的執行步驟是什麼？麻煩條列一下。')
+
+    await sendAndWait(c, '照標準流程執行')
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain('我理解你想做的是')
+    expect(last.content).toContain('我要新增一份規定')
+    expect(last.content).toContain('沒有特殊例外')
+    expect(last.content).toContain('照標準流程執行')
+  })
+})
+
+describe('confirmKnownInfo：白話摘要確認', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  async function sendAndWait(c: ReturnType<typeof useSkillStudioConversation>, text: string) {
+    const p = c.send(text)
+    await vi.advanceTimersByTimeAsync(800)
+    await p
+  }
+
+  async function toConfirmKnownInfo(c: ReturnType<typeof useSkillStudioConversation>) {
+    c.startCreate()
+    c.chooseMethod('chat')
+    await sendAndWait(c, '我要新增一份規定')
+    await sendAndWait(c, '沒有特殊例外')
+    await sendAndWait(c, '照標準流程執行')
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
+  }
+
+  it('確認：用累積的原始文字產生結構化草稿，直接轉關卡三，不留在 clarify', async () => {
+    const c = useSkillStudioConversation()
+    await toConfirmKnownInfo(c)
+    await sendAndWait(c, '對，沒錯')
+    expect(c.gateStage.value).toBe('gate3')
+    expect(c.draft.value.name).toBeTruthy()
+    expect(c.draft.value.instructions).toBeTruthy()
+  })
+
+  it('還要補充：不會重新觸發 gathering 的兩輪固定追問，下一句話直接當成補充內容，重新產生摘要再問一次', async () => {
+    const c = useSkillStudioConversation()
+    await toConfirmKnownInfo(c)
+    await sendAndWait(c, '不對，還要補充')
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
+    expect(c.messages.value.at(-1)!.content).toBe('好，那請告訴我還要補充什麼。')
+
+    await sendAndWait(c, '還要記得檢查權限')
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain('我理解你想做的是')
+    expect(last.content).toContain('還要記得檢查權限')
+
+    // 補充完後正常確認，草稿內容應該要包含補充進去的文字
+    await sendAndWait(c, '對，沒錯')
+    expect(c.gateStage.value).toBe('gate3')
+  })
+
+  it('看不懂：換句話重述摘要，不清空草稿，不跳關', async () => {
+    const c = useSkillStudioConversation()
+    await toConfirmKnownInfo(c)
+    const rawTextBefore = c.messages.value.at(-1)!.content
+    await sendAndWait(c, '嗯')
+    expect(c.gateStage.value).toBe('confirmKnownInfo')
+    expect(c.messages.value.at(-1)!.content).toBe(rawTextBefore)
   })
 })
