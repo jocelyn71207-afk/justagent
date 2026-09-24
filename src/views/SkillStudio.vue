@@ -4,7 +4,10 @@
       <div class="page-banner">
         <div>
           <AppBreadcrumb />
-          <div class="banner-title">{{ workspaceRef?.mode === 'edit' ? '修改技能' : '新增技能' }}</div>
+          <SkillStudioModeHeader
+            :mode="workspaceRef?.mode ?? 'create'"
+            :skill-name="workspaceRef?.skillName ?? ''"
+          />
         </div>
       </div>
 
@@ -17,6 +20,7 @@
 import { ref } from 'vue'
 import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import SkillStudioModeHeader from '@/components/Skill/SkillStudioModeHeader.vue'
 import SkillStudioWorkspace from '@/components/Skill/SkillStudioWorkspace.vue'
 import popDialog from '@/services/popDialog'
 
