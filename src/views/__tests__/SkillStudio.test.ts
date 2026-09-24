@@ -82,7 +82,7 @@ describe('SkillStudio（頁面殼）', () => {
     expect(popDialog.confirm).toHaveBeenCalledWith('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', expect.any(Function), expect.any(Function))
 
     // 取消（onCancel，第 5 個參數）：導航應被擋下，畫面維持原本內容
-    const onCancel = vi.mocked(popDialog.confirm).mock.calls[0][4]
+    const onCancel = vi.mocked(popDialog.confirm).mock.calls[0][4] as () => void
     onCancel()
     await flushPromises()
     expect(router.currentRoute.value.query).toEqual({ skillId: 'personal-001' })
