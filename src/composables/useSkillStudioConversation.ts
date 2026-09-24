@@ -36,6 +36,9 @@ export interface StudioSnapshot {
   // 存在時寫入的），hydrate() 遇到 undefined 會分別退回 'active' 與 null
   gateStage?: GateStage
   pendingSimilarSkillId?: string | null
+  gatheringRawText?: string
+  gatheringRound?: number
+  awaitingSupplement?: boolean
 }
 
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
@@ -48,12 +51,14 @@ export function emptyDraft(): SkillDraft {
 // ── 意圖判斷與關卡分流（AI 賦能「用對話建立」路徑，接在既有解析規則之前）──
 
 export type GateStage =
-  | 'intent'           // 每則新訊息的起點：判斷「建立」／「修改」／太模糊
-  | 'findModifyTarget' // 已知是修改意圖，但找不到相近技能，等使用者說出要改哪一項
-  | 'gate2'            // 建立意圖找到相近做法，問沿用/改他/另開一份/講別的
-  | 'clarify'          // 多輪問答補齊草稿內容（沿用既有 interpretStudioMessage 的抽取規則）
-  | 'gate3'            // 最終確認「內容如下…這樣可以嗎？」
-  | 'active'           // 分流完畢，既有的 interpretStudioMessage 接手
+  | 'intent'            // 每則新訊息的起點：判斷「建立」／「修改」／太模糊
+  | 'findModifyTarget'  // 已知是修改意圖，但找不到相近技能，等使用者說出要改哪一項
+  | 'gathering'         // 從零開始建立：固定追問幾輪補充資訊
+  | 'confirmKnownInfo'  // 白話摘要確認，確認後才真正產出結構化草稿
+  | 'gate2'             // 建立意圖找到相近做法，問沿用/改他/另開一份/講別的
+  | 'clarify'           // 多輪問答補齊草稿內容（沿用既有 interpretStudioMessage 的抽取規則）
+  | 'gate3'             // 最終確認「內容如下…這樣可以嗎？」
+  | 'active'            // 分流完畢，既有的 interpretStudioMessage 接手
 
 // 「我要講別的」時的暫存快照：只存在單次連線的記憶體內（一個 ref），
 // 不寫入 skillStore、離開頁面或重新整理就消失，跟 skillStore 既有的
@@ -80,6 +85,11 @@ export function classifyBuildOrModify(text: string): 'build' | 'modify' | 'ambig
   return 'ambiguous'
 }
 
+const GATHERING_QUESTIONS = [
+  '還有沒有需要特別注意的情況或例外？',
+  '大概的執行步驟是什麼？麻煩條列一下。',
+]
+
 // 關卡二專用的語意分類器
 function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null {
   if (/照.{0,4}做|沿用他|用現有的/.test(text)) return 'follow'
@@ -94,6 +104,19 @@ function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null 
 function classifyGate3(text: string): 'confirm' | 'retry' | null {
   if (/不對|不是|改一下|再改|不行|等等|漏了/.test(text)) return 'retry'
   if (/可以|對|沒問題|存吧|好的|確認|儲存|沒錯|就這樣/.test(text)) return 'confirm'
+  return null
+}
+
+// 白話摘要文字：規則式串接，不是真的語意濃縮，跟這個檔案既有的其他函式風格一致
+function buildKnownInfoSummary(rawText: string): string {
+  return `我理解你想做的是：${rawText.trim()}\n\n這樣的理解對嗎？`
+}
+
+// confirmKnownInfo 專用的語意分類器。順序很重要：retry 的「不對」要先檢查，
+// 否則「不對，我要改」會先被 confirm 規則裡的「對」字誤判——跟既有 classifyGate3 同樣的慣例
+function classifyKnownInfoConfirm(text: string): 'confirm' | 'retry' | null {
+  if (/不對|不是|還要補充|還有|再說|不完整|漏了/.test(text)) return 'retry'
+  if (/對|沒錯|正確|可以|沒問題|就這樣/.test(text)) return 'confirm'
   return null
 }
 
@@ -204,8 +227,9 @@ const NAME_MAX = 12
 export function extractSkillName(text: string): string {
   const t = text.trim()
   if (!t) return '新技能'
-  const m = t.match(/(?:建立|幫我做|需要)(.*?)(?:的技能|的 ?Skill|$)/i)
-  let picked = m ? m[1] : t.split(/[，。！？、；：,.!?;:]/)[0]
+  const firstLine = t.split('\n')[0].trim() || t
+  const m = firstLine.match(/(?:建立|幫我做|需要)(.*?)(?:的技能|的 ?Skill|$)/i)
+  let picked = m ? m[1] : firstLine.split(/[，。！？、；：,.!?;:]/)[0]
   picked = picked
     .replace(/^(一個|一顆|一份|一套|一支)/, '')
     .replace(/^(能夠|能|可以|會)/, '')
@@ -308,6 +332,9 @@ export function useSkillStudioConversation() {
   const gateStage = ref<GateStage>('active')
   const pendingSimilarSkillId = ref<string | null>(null)
   const pausedDraft = ref<PausedDraft | null>(null)
+  const gatheringRawText = ref('')        // 從零開始建立時，累積的原始文字（第一句描述＋追問答案）
+  const gatheringRound = ref(0)           // gathering 階段已經問過幾輪追問（0～2）
+  const awaitingSupplement = ref(false)   // confirmKnownInfo 階段是否正在等一句開放式補充內容
 
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
@@ -320,26 +347,27 @@ export function useSkillStudioConversation() {
     messages.value.push({ id: `studio-${++seq}`, ...m })
   }
 
-  // 建立意圖確立後的路由：清單為空就直接進既有建立邏輯（用這句話當第一句描述）；
-  // 清單非空就直接查有沒有相近做法（不再先問「照規定/改規定/記新的」）——
-  // 避免建立重複的技能，但不追加一個意圖已經明確時顯得多餘的問句
+  // 建立意圖確立後的路由：先查有沒有相近做法（不管清單空不空，findSimilarSkill 對空清單
+  // 自然回傳 null）——找到就進關卡二問清楚要沿用/改/另開；沒找到（含清單本來就是空的）
+  // 就開始一輪全新的資訊蒐集流程，不再先問關卡一那句「照規定/改規定/記一份新的」
   function routeBuildIntent(text: string): void {
-    if (store.myPersonalSkills.length === 0) {
-      gateStage.value = 'active'
-      const reply = interpretStudioMessage(text, draft.value, mode.value)
-      if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
-      push({ role: 'agent', content: reply.content, actions: reply.actions })
-      return
-    }
     const similar = findSimilarSkill(text, store.myPersonalSkills)
     if (similar) {
       pendingSimilarSkillId.value = similar.id
       gateStage.value = 'gate2'
       push({ role: 'agent', content: `您已經有一份「${similar.name}」，這次要沿用他、改他還是記一份新的？` })
-    } else {
-      gateStage.value = 'clarify'
-      push({ role: 'agent', content: '好，那請直接描述這份做法的內容，我會幫你整理。' })
+      return
     }
+    startGathering(text)
+  }
+
+  // 開始一輪全新的資訊蒐集：重置累積文字與追問輪數，把這句話存進去，推第一個追問問句
+  function startGathering(text: string): void {
+    gatheringRawText.value = text
+    gatheringRound.value = 1
+    awaitingSupplement.value = false
+    gateStage.value = 'gathering'
+    push({ role: 'agent', content: GATHERING_QUESTIONS[0] })
   }
 
   // 唯一的頂層意圖路由：gateStage === 'intent' 時呼叫，
@@ -397,6 +425,45 @@ export function useSkillStudioConversation() {
       return
     }
 
+    if (stage === 'gathering') {
+      gatheringRawText.value += `\n${t}`
+      if (gatheringRound.value < GATHERING_QUESTIONS.length) {
+        push({ role: 'agent', content: GATHERING_QUESTIONS[gatheringRound.value] })
+        gatheringRound.value += 1
+        return
+      }
+      gateStage.value = 'confirmKnownInfo'
+      push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
+      return
+    }
+
+    if (stage === 'confirmKnownInfo') {
+      if (awaitingSupplement.value) {
+        gatheringRawText.value += `\n${t}`
+        awaitingSupplement.value = false
+        push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
+        return
+      }
+      const k = classifyKnownInfoConfirm(t)
+      if (k === 'confirm') {
+        const reply = interpretStudioMessage(gatheringRawText.value, draft.value, mode.value)
+        if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
+        gateStage.value = 'gate3'
+        push({
+          role: 'agent',
+          content: `我準備幫您記成這份做法，內容如下：\n${formatDraftSummary(draft.value)}\n這樣可以嗎？`,
+        })
+        return
+      }
+      if (k === 'retry') {
+        awaitingSupplement.value = true
+        push({ role: 'agent', content: '好，那請告訴我還要補充什麼。' })
+        return
+      }
+      push({ role: 'agent', content: buildKnownInfoSummary(gatheringRawText.value) })
+      return
+    }
+
     if (stage === 'gate2') {
       const g2 = classifyGate2(t)
       if (g2 === 'follow') {
@@ -418,7 +485,7 @@ export function useSkillStudioConversation() {
         // 顯示 SkillMethodChooser 取代掉聊天面板，這裡是在聊天面板裡回話，不能把它自己的
         // 前提條件清掉
         draft.value = { ...emptyDraft(), method: draft.value.method }
-        gateStage.value = 'clarify'
+        gateStage.value = 'intent'
         push({ role: 'agent', content: '好，那我們重新開一份。請描述這份做法的內容。' })
         return
       }
@@ -520,6 +587,9 @@ export function useSkillStudioConversation() {
     // 指向這輪根本沒問過的東西
     pausedDraft.value = null
     pendingSimilarSkillId.value = null
+    gatheringRawText.value = ''
+    gatheringRound.value = 0
+    awaitingSupplement.value = false
     if (prefill) push({ role: 'agent', content: openingMessage ?? DEFAULT_OPENING_MESSAGE })
   }
 
@@ -560,6 +630,9 @@ export function useSkillStudioConversation() {
     // savedSkillId 卻指向這裡剛載入的技能」，之後 gate3 confirm 一存就存錯技能
     pausedDraft.value = null
     pendingSimilarSkillId.value = null
+    gatheringRawText.value = ''
+    gatheringRound.value = 0
+    awaitingSupplement.value = false
     if (draft.value.method === 'chat') push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
     return true
   }
@@ -639,6 +712,9 @@ export function useSkillStudioConversation() {
       messages: messages.value,
       gateStage: gateStage.value,
       pendingSimilarSkillId: pendingSimilarSkillId.value,
+      gatheringRawText: gatheringRawText.value,
+      gatheringRound: gatheringRound.value,
+      awaitingSupplement: awaitingSupplement.value,
     }))
   }
 
@@ -652,6 +728,9 @@ export function useSkillStudioConversation() {
     // 已經分流完畢、pendingSimilarSkillId 當作沒有待處理的相近技能
     gateStage.value = copy.gateStage ?? 'active'
     pendingSimilarSkillId.value = copy.pendingSimilarSkillId ?? null
+    gatheringRawText.value = copy.gatheringRawText ?? ''
+    gatheringRound.value = copy.gatheringRound ?? 0
+    awaitingSupplement.value = copy.awaitingSupplement ?? false
     // dirty 基準取自「目前已儲存的內容」而非「這份快照本身」：isDirty 才會是
     // 「跟已存的技能（或空白，若還沒存過）不一樣」，而不是「跟上次 hydrate 不一樣」
     const saved = copy.savedSkillId ? store.findSkill(copy.savedSkillId) : undefined

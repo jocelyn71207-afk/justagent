@@ -44,10 +44,28 @@ describe('two skillBuilderViewBox instances on one block', () => {
       await A.findAll('.smc-card')[0].trigger('click')
       await flushPromises()
       const input = A.find('.SkillStudioChat input.custom-input')
+      // 新的多輪 gathering 流程：第一句描述 → 兩輪追問 → confirmKnownInfo 確認，
+      // 才會落在 gate3（草稿已擬好但尚未儲存），維持這裡「B 儲存前 A 的草稿已是最新」的測試意圖
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
       await input.trigger('keydown.enter')
       await vi.advanceTimersByTimeAsync(800)
       await flushPromises()
+
+      await input.setValue('沒有特殊例外')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('照標準流程執行')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('對，沒錯')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
       expect(block.data.data.snapshot.draft.name).toBe('查 ERP 庫存')
 
       const B = mountOn(id, block) // fullscreen instance, hydrates A's state

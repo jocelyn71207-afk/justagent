@@ -95,10 +95,28 @@ describe('SkillStudio', () => {
       store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
       const before = store.myPersonalSkills.length
       const input = wrapper.find('.SkillStudioChat input.custom-input')
+      // 新的多輪 gathering 流程：第一句描述 → 兩輪追問 → confirmKnownInfo 確認，
+      // 才會落在 gate3（草稿已擬好但尚未儲存），維持這裡「儲存前先驗證草稿」的測試意圖
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
       await input.trigger('keydown.enter')
       await vi.advanceTimersByTimeAsync(800)
       await flushPromises()
+
+      await input.setValue('沒有特殊例外')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('照標準流程執行')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('對，沒錯')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
       expect(wrapper.find('.ssp-title').text()).toBe('查 ERP 庫存')
       await wrapper.find('.ssp-save-btn').trigger('click')
       await flushPromises()
@@ -130,7 +148,32 @@ describe('SkillStudio', () => {
       // 草稿擬好之後再直接呼叫 store 補回一顆同名（週報自動生成）的個人技能來觸發衝突判斷
       store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
       const input = wrapper.find('.SkillStudioChat input.custom-input')
+      // 這個測試接著要送出「自由格式」的改名訊息，那只有在 gateStage 'active' 才會走
+      // interpretStudioMessage 的改名規則（見 useSkillStudioConversation 的 gate3 分支），
+      // 所以要走完整輪：第一句描述 → 兩輪追問 → confirmKnownInfo 確認 → gate3 確認，
+      // 最後一步會實際呼叫 save() 落地一顆「查 ERP 庫存」個人技能，但這個測試不檢查
+      // myPersonalSkills.length，只驗證 name-conflict-banner 與儲存按鈕的狀態，不受影響
       await input.setValue('幫我建立一個能查 ERP 庫存的技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('沒有特殊例外')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('照標準流程執行')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('對，沒錯')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('這樣可以，存到個人技能')
       await input.trigger('keydown.enter')
       await vi.advanceTimersByTimeAsync(800)
       await flushPromises()
