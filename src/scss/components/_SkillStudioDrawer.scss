@@ -67,6 +67,8 @@
     // calc(100vh - 172px) 抓高度；抽屜的頭比 page-banner 矮，且已經是
     // flex 子層，直接吃滿剩餘高度即可，邊框/圓角交給 .ssd-panel 處理
     .skill-studio-layout {
+      flex: 1;
+      min-width: 0;
       height: 100%;
       border: none;
       border-radius: 0;

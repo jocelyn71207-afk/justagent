@@ -89,6 +89,14 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
   })
 
+  it('skillId 不存在且 tab=test：退回建立模式並強制回到預覽 tab', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'nope-999', tab: 'test' })
+    await flushPromises()
+    expect(popDialog.toast).toHaveBeenCalledWith('找不到這個技能')
+    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
+    expect(wrapper.findAll('.ssp-tab-btn')[0].classes()).toContain('is-active')
+  })
+
   it('送出訊息 → 草稿更新 → 儲存 → 建立個人技能、toast、自動切到測試 tab', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
@@ -126,6 +134,67 @@ describe('SkillStudioWorkspace', () => {
       expect(popDialog.toast).toHaveBeenCalledWith('已儲存為個人技能，可到「測試」tab 驗證')
       expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
       expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：查 ERP 庫存')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('同名個人技能時顯示提示 banner，改成不同名後消失，儲存仍可用', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper } = mountWorkspace()
+      await flushPromises()
+      await chooseChat(wrapper)
+      const store = useSkillStore()
+      // 清單非空時，建立意圖的訊息會先卡在 gate1（見 useSkillStudioConversation 的意圖判斷關卡）；
+      // 這裡要測的是名稱衝突 banner 本身，先清空清單讓 chat 建立訊息直接進 active、照舊擬草稿，
+      // 草稿擬好之後再直接呼叫 store 補回一顆同名（週報自動生成）的個人技能來觸發衝突判斷
+      store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      // 這個測試接著要送出「自由格式」的改名訊息，那只有在 gateStage 'active' 才會走
+      // interpretStudioMessage 的改名規則，所以要走完整輪：第一句描述 → 兩輪追問 →
+      // confirmKnownInfo 確認 → gate3 確認，最後一步會實際落地一顆個人技能，但這個測試
+      // 不檢查 myPersonalSkills.length，只驗證 name-conflict-banner 與儲存按鈕的狀態
+      await input.setValue('幫我建立一個能查 ERP 庫存的技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('沒有特殊例外')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('照標準流程執行')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('對，沒錯')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      await input.setValue('這樣可以，存到個人技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      store.createPersonalSkill({ name: '週報自動生成', instructions: '', triggerHint: '', assignedAgents: [] })
+      await flushPromises()
+
+      await input.setValue('名稱改成「週報自動生成」')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.find('.name-conflict-banner').exists()).toBe(true)
+      expect(wrapper.find('.ssp-save-btn').attributes('disabled')).toBeUndefined()
+
+      await input.setValue('名稱改成「庫存速查」')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.find('.name-conflict-banner').exists()).toBe(false)
     } finally {
       vi.useRealTimers()
     }

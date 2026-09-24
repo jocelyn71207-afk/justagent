@@ -1,99 +1,99 @@
 // ── AI 賦能（SkillStudio）頁面佈局 ──
-// .banner-title-row 是獨立頂層選擇器（跟下面 .ssc-mode-chip 同樣道理）：
-// 頁面殼（.SkillStudio）跟抽屜殼（.SkillStudioDrawer）的頂部標題列都會用到，
-// 不能巢狀寫在 .SkillStudio 裡面否則抽屜吃不到
+// .banner-title-row／.skill-studio-layout 以下這些規則都是獨立頂層選擇器：
+// 頁面殼（.SkillStudio）跟抽屜殼（.SkillStudioDrawer）都會渲染同一份工作區
+// （SkillStudioWorkspace），不能巢狀寫在 .SkillStudio 裡面否則抽屜吃不到
 .banner-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.SkillStudio {
-  height: 100%;
+.skill-studio-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  // 同 SkillTest：扣掉 .views-page 上下 padding 與 page-banner 實際佔高
+  height: calc(100vh - 172px);
+  overflow: hidden;
+  border: 1px solid var(--divider-a50);
+  border-radius: 12px;
+  background: var(--surface);
+}
 
+.studio-chat-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.studio-side-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid var(--divider-a50);
+  background: var(--page-bg);
+}
+
+@media (max-width: 1023px) {
   .skill-studio-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 380px;
-    // 同 SkillTest：扣掉 .views-page 上下 padding 與 page-banner 實際佔高
-    height: calc(100vh - 172px);
-    overflow: hidden;
-    border: 1px solid var(--divider-a50);
-    border-radius: 12px;
-    background: var(--surface);
-  }
-
-  .studio-chat-col {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(320px, 1fr) auto;
+    height: auto;
+    min-height: calc(100vh - 172px);
   }
 
   .studio-side-col {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-left: 1px solid var(--divider-a50);
-    background: var(--page-bg);
+    border-left: none;
+    border-top: 1px solid var(--divider-a50);
+    max-height: 60vh;
   }
+}
 
-  @media (max-width: 1023px) {
-    .skill-studio-layout {
-      grid-template-columns: 1fr;
-      grid-template-rows: minmax(320px, 1fr) auto;
-      height: auto;
-      min-height: calc(100vh - 172px);
-    }
+.studio-composer-col { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.studio-composer-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--divider-a50); flex-shrink: 0;
+  .studio-new-btn { gap: 4px; font-size: 12.5px; white-space: nowrap; .material-symbols-outlined { font-size: 16px; } }
+}
+.studio-composer-col .SkillBlockComposer { flex: 1; min-height: 0; overflow-y: auto; }
+.studio-chat-col .SkillMethodChooser { height: 100%; }
 
-    .studio-side-col {
-      border-left: none;
-      border-top: 1px solid var(--divider-a50);
-      max-height: 60vh;
-    }
-  }
+// 方案三：conv4 交接過來的草稿，帶一條回原對話的路
+.studio-back-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin: 12px 16px 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  .material-symbols-outlined { font-size: 16px; }
+}
 
-  .studio-composer-col { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-  .studio-composer-head {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 12px 16px; border-bottom: 1px solid var(--divider-a50); flex-shrink: 0;
-    .studio-new-btn { gap: 4px; font-size: 12.5px; white-space: nowrap; .material-symbols-outlined { font-size: 16px; } }
-  }
-  .studio-composer-col .SkillBlockComposer { flex: 1; min-height: 0; overflow-y: auto; }
-  .studio-chat-col .SkillMethodChooser { height: 100%; }
+// 同畫布 SKILL block 的 .skb-origin-bar：這顆草稿是被 Agent 從哪段對話帶過來的
+.studio-origin-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 16px 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--tag-slate-bg);
+  .material-symbols-outlined { font-size: 15px; }
+}
 
-  // 方案三：conv4 交接過來的草稿，帶一條回原對話的路
-  .studio-back-link {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    align-self: flex-start;
-    margin: 12px 16px 0;
-    padding: 0;
-    background: none;
-    border: none;
-    color: var(--primary);
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    .material-symbols-outlined { font-size: 16px; }
-  }
-
-  // 同畫布 SKILL block 的 .skb-origin-bar：這顆草稿是被 Agent 從哪段對話帶過來的
-  .studio-origin-bar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 8px 16px 0;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--text-muted);
-    background: var(--tag-slate-bg);
-    .material-symbols-outlined { font-size: 15px; }
-  }
+.SkillStudio {
+  height: 100%;
 }
 
 // ── 建立方式 chip：SkillStudioChat 與頁面自己的積木欄頭都會用到 ──
