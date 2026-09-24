@@ -1,13 +1,15 @@
 // ── AI 賦能（SkillStudio）頁面佈局 ──
+// .banner-title-row 是獨立頂層選擇器（跟下面 .ssc-mode-chip 同樣道理）：
+// 頁面殼（.SkillStudio）跟抽屜殼（.SkillStudioDrawer）的頂部標題列都會用到，
+// 不能巢狀寫在 .SkillStudio 裡面否則抽屜吃不到
+.banner-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .SkillStudio {
   height: 100%;
-
-  // 新增／修改用文字＋既有 chip 色系區分，不疊加左側色條（沿用全站 .page-banner 的既定規則）
-  .banner-title-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
 
   .skill-studio-layout {
     display: grid;
