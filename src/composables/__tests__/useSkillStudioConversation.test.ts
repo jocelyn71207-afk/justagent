@@ -112,12 +112,8 @@ describe('useSkillStudioConversation', () => {
   })
 
   it('send 推入使用者訊息、800ms 後套用 patch 並推入 Agent 回覆', async () => {
-    // 清單非空時，建立意圖的訊息會先卡在 gate1（見「意圖判斷」測試）；
-    // 這裡要測的是既有 interpretStudioMessage 擬草稿邏輯本身，所以先清空清單讓 gateStage 直接進 active
-    const store = useSkillStore()
-    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const c = useSkillStudioConversation()
-    c.startCreate()
+    c.startCreate({}, '開場白')
     c.chooseMethod('chat')
     const p = c.send('幫我建立一個能查 ERP 庫存的技能')
     expect(c.isRunning.value).toBe(true)
@@ -134,10 +130,8 @@ describe('useSkillStudioConversation', () => {
 
   it('save 於建立模式呼叫 createPersonalSkill（ai_assisted）、轉成 edit 模式並清除 dirty', async () => {
     const store = useSkillStore()
-    // 清單非空時，建立意圖的訊息會先卡在 gate1；這裡要測的是 save 本身，先清空清單讓 gateStage 直接進 active
-    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const c = useSkillStudioConversation()
-    c.startCreate()
+    c.startCreate({}, '開場白')
     c.chooseMethod('chat')
     const p = c.send('幫我建立一個能查 ERP 庫存的技能')
     await vi.advanceTimersByTimeAsync(800)
@@ -226,11 +220,8 @@ describe('useSkillStudioConversation', () => {
   })
 
   it('toSnapshot / hydrate 往返：內容一致、create 模式下 hydrate 後 isDirty=true（內容與空白不同）、之後新訊息 id 不重複', async () => {
-    // 清單非空時，建立意圖的訊息會先卡在 gate1；這裡要測的是 toSnapshot/hydrate 本身，先清空清單讓 gateStage 直接進 active
-    const store = useSkillStore()
-    store.myPersonalSkills.forEach(s => store.deletePersonalSkill(s.id))
     const a = useSkillStudioConversation()
-    a.startCreate()
+    a.startCreate({}, '開場白')
     a.chooseMethod('chat')
     const p = a.send('幫我建立一個能查 ERP 庫存的技能')
     await vi.advanceTimersByTimeAsync(800)
