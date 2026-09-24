@@ -18,25 +18,28 @@ describe('SkillManagement 編輯選擇框：積木組裝的技能只給積木面
     currentWrapper = null
   })
 
-  function mountPage() {
+  async function mountPage() {
     const router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div/>' } },
-        { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
         { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
       ],
     })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
-    })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const wrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } } },
+    )
     currentWrapper = wrapper
-    return { wrapper, router }
+    return { wrapper: wrapper.findComponent(SkillManagement), router }
   }
 
   it('composition 技能：只顯示「用積木面板編輯」，沒有「直接編輯」；點擊導向 AI 賦能', async () => {
     setActivePinia(createPinia())
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const store = useSkillStore()
     const push = vi.spyOn(router, 'push')
     const skillId = store.createPersonalSkill({
@@ -58,13 +61,13 @@ describe('SkillManagement 編輯選擇框：積木組裝的技能只給積木面
     expect(buttons.some(b => b.text().includes('直接編輯'))).toBe(false)
 
     await buttons[0].trigger('click')
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { skillId } })
+    expect(push).toHaveBeenCalledWith({ query: { skillId } })
     expect((wrapper.vm as any).editChoiceSkill).toBeNull()
   })
 
   it('沒有 composition 的技能：維持原本兩個選項（跟 Agent 對話修改／直接編輯）', async () => {
     setActivePinia(createPinia())
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     const store = useSkillStore()
     const skill = store.myPersonalSkills.find(s => !s.composition)!
     expect(skill).toBeDefined()
@@ -79,7 +82,7 @@ describe('SkillManagement 編輯選擇框：積木組裝的技能只給積木面
 
   it('複製 composition 技能後的複本，編輯選擇框同樣只給積木面板入口', async () => {
     setActivePinia(createPinia())
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     const store = useSkillStore()
     const sourceId = store.createPersonalSkill({
       name: '渠道週報',

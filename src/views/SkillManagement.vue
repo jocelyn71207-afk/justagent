@@ -260,6 +260,13 @@
       @merged="showBatchUpdate = false"
     />
 
+    <SkillStudioDrawer
+      ref="drawerRef"
+      :open="drawerOpen"
+      :query="drawerQuery"
+      @close="closeDrawer"
+    />
+
     <!-- 複製第一步：確認顯示名稱（確認後才真正建立副本，出現在「我的技能」列表） -->
     <Teleport to="body">
       <Transition name="confirm-fade">
@@ -546,7 +553,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTile from '@/components/Skill/SkillTile.vue'
 import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
@@ -560,8 +567,47 @@ import { useSkillStore, canEnableSkill, describeAiTestGateReason } from '@/store
 import type { Skill, ConflictResolution, SkillSuggestionEntry } from '@/stores/skillStore'
 import { suggestionToPrefill, suggestionOpeningMessage } from '@/composables/useSkillSuggestion'
 import { setSkillHandoff } from '@/composables/useSkillHandoff'
+import SkillStudioDrawer from '@/components/Skill/SkillStudioDrawer.vue'
+import popDialog from '@/services/popDialog'
 
 const router = useRouter()
+const route = useRoute()
+const drawerRef = ref<InstanceType<typeof SkillStudioDrawer> | null>(null)
+
+// 抽屜開關與內容完全由這三個既有 query 參數決定，不新增額外旗標——
+// 跟 SkillStudioWorkspace.applyQuery() 判斷式用的是同一組參數
+const drawerOpen = computed(() => !!(route.query.skillId || route.query.method || route.query.from))
+const drawerQuery = computed(() => ({
+  skillId: route.query.skillId,
+  method: route.query.method,
+  from: route.query.from,
+  tab: route.query.tab,
+}))
+
+function closeDrawer() {
+  router.push({ path: '/view/Skills' })
+}
+
+// 抽屜開著且有未儲存變更時，換編輯目標／關閉抽屜都要先確認——
+// 邏輯跟 SkillStudio.vue（頁面殼）的 onBeforeRouteUpdate 一模一樣，只是搬到這裡，
+// 因為抽屜開關本身就是同一個 /view/Skills 路由上的 query 變化
+onBeforeRouteUpdate((to, _from, next) => {
+  if (!drawerRef.value?.isDirty) {
+    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
+    return next()
+  }
+  popDialog.confirm('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', () => {
+    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
+    next()
+  }, () => next(false))
+})
+
+// 抽屜開著且有未儲存變更時，從左側導覽離開 /view/Skills 也要先確認
+onBeforeRouteLeave((_to, _from, next) => {
+  if (!drawerRef.value?.isDirty) return next()
+  popDialog.confirm('有未儲存的變更，確定離開？', '離開', '留下', () => next(), () => next(false))
+})
+
 const store = useSkillStore()
 
 const showCreateChoice = ref(false)
@@ -682,7 +728,7 @@ function buildSuggestion(s: SkillSuggestionEntry) {
     origin: { conversationId: s.conversationId, reason: s.reason },
   })
   store.dismissSuggestion(s.id)
-  router.push({ name: 'SkillStudio', query: { from: s.conversationId } })
+  router.push({ query: { from: s.conversationId } })
 }
 
 // 「建立技能」選擇框：對話／積木都是 AI 賦能（SkillStudio），差別在
@@ -691,11 +737,11 @@ function buildSuggestion(s: SkillSuggestionEntry) {
 // 三者都是空白建立，不帶 skillId
 function handleCreateWithChat() {
   showCreateChoice.value = false
-  router.push({ name: 'SkillStudio', query: { method: 'chat' } })
+  router.push({ query: { method: 'chat' } })
 }
 function handleCreateWithBlocks() {
   showCreateChoice.value = false
-  router.push({ name: 'SkillStudio', query: { method: 'blocks' } })
+  router.push({ query: { method: 'blocks' } })
 }
 function handleCreateManually() {
   showCreateChoice.value = false
@@ -765,7 +811,7 @@ function handleChatEdit() {
   if (!editChoiceSkill.value) return
   const skillId = editChoiceSkill.value.id
   editChoiceSkill.value = null
-  router.push({ name: 'SkillStudio', query: { skillId } })
+  router.push({ query: { skillId } })
 }
 
 // ── 個人技能 handlers ──────────────────────────────
@@ -840,7 +886,7 @@ function handleEnableGateRevise() {
   if (!enableGateSkill.value) return
   const skillId = enableGateSkill.value.id
   enableGateSkill.value = null
-  router.push({ name: 'SkillStudio', query: { skillId } })
+  router.push({ query: { skillId } })
 }
 
 function handleEnableGateOverride() {

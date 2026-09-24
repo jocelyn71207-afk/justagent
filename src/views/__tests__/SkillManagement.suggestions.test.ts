@@ -16,29 +16,32 @@ describe('SkillManagement 建議建立的技能', () => {
     currentWrapper = null
   })
 
-  function mountPage() {
+  async function mountPage() {
     const router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div/>' } },
-        { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
         { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
       ],
     })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
-    })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const wrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } } },
+    )
     currentWrapper = wrapper
-    return { wrapper, router }
+    return { wrapper: wrapper.findComponent(SkillManagement), router }
   }
 
-  it('沒有待處理建議時不顯示這個區塊', () => {
+  it('沒有待處理建議時不顯示這個區塊', async () => {
     setActivePinia(createPinia())
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     expect(wrapper.find('.skill-suggestion-queue').exists()).toBe(false)
   })
 
-  it('顯示佇列裡的建議：名稱與來源流程', () => {
+  it('顯示佇列裡的建議：名稱與來源流程', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     store.addSuggestion({
@@ -46,7 +49,7 @@ describe('SkillManagement 建議建立的技能', () => {
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
       reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
     })
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     const queue = wrapper.find('.skill-suggestion-queue')
     expect(queue.exists()).toBe(true)
     expect(queue.text()).toContain('產品銷售報告整理')
@@ -61,12 +64,12 @@ describe('SkillManagement 建議建立的技能', () => {
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
       reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
     })
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     const buildBtn = wrapper.find('.skill-suggestion-queue [data-action="build"]')
     await buildBtn.trigger('click')
 
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { from: 'conv4' } })
+    expect(push).toHaveBeenCalledWith({ query: { from: 'conv4' } })
     expect(store.pendingSuggestions).toEqual([])
     const handoff = consumeSkillHandoff()
     expect(handoff?.origin).toEqual({ conversationId: 'conv4', reason: '查詢銷售資料＋套用部門報告規範' })
@@ -81,7 +84,7 @@ describe('SkillManagement 建議建立的技能', () => {
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
       reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
     })
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     const dismissBtn = wrapper.find('.skill-suggestion-queue [data-action="dismiss"]')
     await dismissBtn.trigger('click')

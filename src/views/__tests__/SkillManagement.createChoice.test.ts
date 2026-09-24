@@ -17,25 +17,28 @@ describe('SkillManagement 建立技能：先選建立方式', () => {
     currentWrapper = null
   })
 
-  function mountPage() {
+  async function mountPage() {
     const router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div/>' } },
-        { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
         { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
       ],
     })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
-    })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const wrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } } },
+    )
     currentWrapper = wrapper
-    return { wrapper, router }
+    return { wrapper: wrapper.findComponent(SkillManagement), router }
   }
 
   it('點「建立技能」先彈出選擇框，不直接跳轉', async () => {
     setActivePinia(createPinia())
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     const createBtn = wrapper.findAll('button').find(b => b.text().includes('建立技能'))
     expect(createBtn).toBeDefined()
@@ -51,7 +54,7 @@ describe('SkillManagement 建立技能：先選建立方式', () => {
 
   it('選「用對話建立」導向 SkillStudio，帶 method=chat（空白建立，不帶 skillId）', async () => {
     setActivePinia(createPinia())
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     const createBtn = wrapper.findAll('button').find(b => b.text().includes('建立技能'))
     await createBtn!.trigger('click')
@@ -59,13 +62,13 @@ describe('SkillManagement 建立技能：先選建立方式', () => {
     const chatBtn = new DOMWrapper(document.body).findAll('.drawer-confirm-dialog button').find(b => b.text().includes('用對話建立'))!
     await chatBtn.trigger('click')
 
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { method: 'chat' } })
+    expect(push).toHaveBeenCalledWith({ query: { method: 'chat' } })
     expect(new DOMWrapper(document.body).find('.drawer-confirm-dialog').exists()).toBe(false)
   })
 
   it('選「用行銷積木組裝」導向 SkillStudio，帶 method=blocks（空白建立，不帶 skillId）', async () => {
     setActivePinia(createPinia())
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     const createBtn = wrapper.findAll('button').find(b => b.text().includes('建立技能'))
     await createBtn!.trigger('click')
@@ -73,13 +76,13 @@ describe('SkillManagement 建立技能：先選建立方式', () => {
     const blocksBtn = new DOMWrapper(document.body).findAll('.drawer-confirm-dialog button').find(b => b.text().includes('用行銷積木組裝'))!
     await blocksBtn.trigger('click')
 
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { method: 'blocks' } })
+    expect(push).toHaveBeenCalledWith({ query: { method: 'blocks' } })
     expect(new DOMWrapper(document.body).find('.drawer-confirm-dialog').exists()).toBe(false)
   })
 
   it('選「手動建立」導向 SkillEditor', async () => {
     setActivePinia(createPinia())
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     const createBtn = wrapper.findAll('button').find(b => b.text().includes('建立技能'))
     await createBtn!.trigger('click')
