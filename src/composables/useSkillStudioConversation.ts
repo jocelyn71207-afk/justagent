@@ -115,7 +115,7 @@ function classifyGate2(text: string): 'follow' | 'edit' | 'new' | 'else' | null 
 // 否則「不對，我要改」會先被 confirm 規則裡的「對」字誤判
 function classifyGate3(text: string): 'confirm' | 'retry' | null {
   if (/不對|不是|改一下|再改|不行|等等|漏了/.test(text)) return 'retry'
-  if (/可以|對|沒問題|存吧|好的|確認|儲存|沒錯|就這樣/.test(text)) return 'confirm'
+  if (/可以|對|沒問題|存吧|好|確認|儲存|沒錯|就這樣/.test(text)) return 'confirm'
   return null
 }
 

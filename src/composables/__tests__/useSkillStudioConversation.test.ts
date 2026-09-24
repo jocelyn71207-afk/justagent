@@ -1037,6 +1037,16 @@ describe('classifyGate3（模組內部邏輯，透過 gateStage 行為驗證，�
     expect(store.myPersonalSkills.length).toBe(before + 1)
   })
 
+  it('單字「好」也算確認，不用一定要打「好的」：實際存檔', async () => {
+    const store = useSkillStore()
+    const before = store.myPersonalSkills.length
+    const c = useSkillStudioConversation()
+    await toGate3(c)
+    await sendAndWait(c, '好')
+    expect(c.gateStage.value).toBe('active')
+    expect(store.myPersonalSkills.length).toBe(before + 1)
+  })
+
   it('本關比對到「不對」語意：不會被「對」字誤判成確認，退回 clarify', async () => {
     const store = useSkillStore()
     const before = store.myPersonalSkills.length
