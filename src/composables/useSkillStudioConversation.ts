@@ -36,6 +36,9 @@ export interface StudioSnapshot {
   // 存在時寫入的），hydrate() 遇到 undefined 會分別退回 'active' 與 null
   gateStage?: GateStage
   pendingSimilarSkillId?: string | null
+  gatheringRawText?: string
+  gatheringRound?: number
+  awaitingSupplement?: boolean
 }
 
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
@@ -224,8 +227,9 @@ const NAME_MAX = 12
 export function extractSkillName(text: string): string {
   const t = text.trim()
   if (!t) return '新技能'
-  const m = t.match(/(?:建立|幫我做|需要)(.*?)(?:的技能|的 ?Skill|$)/i)
-  let picked = m ? m[1] : t.split(/[，。！？、；：,.!?;:]/)[0]
+  const firstLine = t.split('\n')[0].trim() || t
+  const m = firstLine.match(/(?:建立|幫我做|需要)(.*?)(?:的技能|的 ?Skill|$)/i)
+  let picked = m ? m[1] : firstLine.split(/[，。！？、；：,.!?;:]/)[0]
   picked = picked
     .replace(/^(一個|一顆|一份|一套|一支)/, '')
     .replace(/^(能夠|能|可以|會)/, '')
@@ -330,7 +334,7 @@ export function useSkillStudioConversation() {
   const pausedDraft = ref<PausedDraft | null>(null)
   const gatheringRawText = ref('')        // 從零開始建立時，累積的原始文字（第一句描述＋追問答案）
   const gatheringRound = ref(0)           // gathering 階段已經問過幾輪追問（0～2）
-  const awaitingSupplement = ref(false)   // confirmKnownInfo 階段是否正在等一句開放式補充內容（Task 2 會用到）
+  const awaitingSupplement = ref(false)   // confirmKnownInfo 階段是否正在等一句開放式補充內容
 
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
@@ -361,6 +365,7 @@ export function useSkillStudioConversation() {
   function startGathering(text: string): void {
     gatheringRawText.value = text
     gatheringRound.value = 1
+    awaitingSupplement.value = false
     gateStage.value = 'gathering'
     push({ role: 'agent', content: GATHERING_QUESTIONS[0] })
   }
@@ -480,7 +485,8 @@ export function useSkillStudioConversation() {
         // 顯示 SkillMethodChooser 取代掉聊天面板，這裡是在聊天面板裡回話，不能把它自己的
         // 前提條件清掉
         draft.value = { ...emptyDraft(), method: draft.value.method }
-        startGathering('')
+        gateStage.value = 'intent'
+        push({ role: 'agent', content: '好，那我們重新開一份。請描述這份做法的內容。' })
         return
       }
       if (g2 === 'else') {
@@ -706,6 +712,9 @@ export function useSkillStudioConversation() {
       messages: messages.value,
       gateStage: gateStage.value,
       pendingSimilarSkillId: pendingSimilarSkillId.value,
+      gatheringRawText: gatheringRawText.value,
+      gatheringRound: gatheringRound.value,
+      awaitingSupplement: awaitingSupplement.value,
     }))
   }
 
@@ -719,6 +728,9 @@ export function useSkillStudioConversation() {
     // 已經分流完畢、pendingSimilarSkillId 當作沒有待處理的相近技能
     gateStage.value = copy.gateStage ?? 'active'
     pendingSimilarSkillId.value = copy.pendingSimilarSkillId ?? null
+    gatheringRawText.value = copy.gatheringRawText ?? ''
+    gatheringRound.value = copy.gatheringRound ?? 0
+    awaitingSupplement.value = copy.awaitingSupplement ?? false
     // dirty 基準取自「目前已儲存的內容」而非「這份快照本身」：isDirty 才會是
     // 「跟已存的技能（或空白，若還沒存過）不一樣」，而不是「跟上次 hydrate 不一樣」
     const saved = copy.savedSkillId ? store.findSkill(copy.savedSkillId) : undefined

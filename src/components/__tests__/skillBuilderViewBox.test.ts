@@ -239,7 +239,7 @@ describe('skillBuilderViewBox', () => {
       expect(a.wrapper.find('.SkillMethodChooser').exists()).toBe(false)
       expect(a.wrapper.find('.SkillStudioChat').exists()).toBe(true)
       expect(a.block.data.data.snapshot.draft.method).toBe('chat')
-      expect(a.wrapper.find('.ssc-messages').text()).toContain('還有沒有需要特別注意的情況或例外？')
+      expect(a.wrapper.find('.ssc-messages').text()).toContain('好，那我們重新開一份。請描述這份做法的內容。')
 
       // ── Important #2（final review）：另開一顆獨立的 block／實例，停在關卡二（不再往下打），
       // 讓第二個實例 hydrate 這份「卡在 gate2」的快照，驗證 gateStage 有沒有跟著還原 ──
@@ -260,7 +260,7 @@ describe('skillBuilderViewBox', () => {
       expect(b2.find('.SkillStudioChat').exists()).toBe(true)
       expect(b1.block.data.data.snapshot.draft.name).toBe('')
       expect(b1.block.data.data.snapshot.draft.method).toBe('chat')
-      expect(b2.find('.ssc-messages').text()).toContain('還有沒有需要特別注意的情況或例外？')
+      expect(b2.find('.ssc-messages').text()).toContain('好，那我們重新開一份。請描述這份做法的內容。')
     } finally {
       vi.useRealTimers()
     }
