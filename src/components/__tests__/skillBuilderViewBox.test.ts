@@ -91,14 +91,24 @@ describe('skillBuilderViewBox', () => {
       skillStore.myPersonalSkills.forEach(s => skillStore.deletePersonalSkill(s.id))
       await wrapper.findAll('.smc-card')[0].trigger('click')
       await flushPromises()
-      const input = wrapper.find('.SkillStudioChat input.custom-input')
-      await input.setValue('幫我建立一個能查 ERP 庫存的技能')
-      await input.trigger('keydown.enter')
-      await vi.advanceTimersByTimeAsync(800)
-      await flushPromises()
+      // 從零開始建立現在一律走 gathering → confirmKnownInfo → gate3 的完整關卡流程，
+      // 沒有「一句話直接變 active 草稿」的捷徑了，這裡改成打字逐一驅動整個流程
+      async function type(text: string) {
+        const input = wrapper.find('.SkillStudioChat input.custom-input')
+        await input.setValue(text)
+        await input.trigger('keydown.enter')
+        await vi.advanceTimersByTimeAsync(800)
+        await flushPromises()
+      }
+      await type('幫我建立一個能查 ERP 庫存的技能')
+      await type('沒有特殊例外')
+      await type('照標準流程執行就好')
+      await type('對，沒錯')
+      await type('這樣可以，存到個人技能')
       expect(block.data.data.snapshot.draft.name).toBe('查 ERP 庫存')
       expect(block.blockName).toBe('查 ERP 庫存')
-      expect(block.data.data.snapshot.messages.length).toBe(3)
+      // 1 則開場白 + 5 輪打字各自的「使用者訊息 + agent 回覆」= 1 + 5*2 = 11
+      expect(block.data.data.snapshot.messages.length).toBe(11)
     } finally {
       vi.useRealTimers()
     }
@@ -229,7 +239,7 @@ describe('skillBuilderViewBox', () => {
       expect(a.wrapper.find('.SkillMethodChooser').exists()).toBe(false)
       expect(a.wrapper.find('.SkillStudioChat').exists()).toBe(true)
       expect(a.block.data.data.snapshot.draft.method).toBe('chat')
-      expect(a.wrapper.find('.ssc-messages').text()).toContain('好，那我們重新開一份。請描述這份做法的內容。')
+      expect(a.wrapper.find('.ssc-messages').text()).toContain('還有沒有需要特別注意的情況或例外？')
 
       // ── Important #2（final review）：另開一顆獨立的 block／實例，停在關卡二（不再往下打），
       // 讓第二個實例 hydrate 這份「卡在 gate2」的快照，驗證 gateStage 有沒有跟著還原 ──
@@ -250,7 +260,7 @@ describe('skillBuilderViewBox', () => {
       expect(b2.find('.SkillStudioChat').exists()).toBe(true)
       expect(b1.block.data.data.snapshot.draft.name).toBe('')
       expect(b1.block.data.data.snapshot.draft.method).toBe('chat')
-      expect(b2.find('.ssc-messages').text()).toContain('好，那我們重新開一份。請描述這份做法的內容。')
+      expect(b2.find('.ssc-messages').text()).toContain('還有沒有需要特別注意的情況或例外？')
     } finally {
       vi.useRealTimers()
     }
