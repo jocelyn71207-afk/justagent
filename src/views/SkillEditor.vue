@@ -319,7 +319,10 @@ async function handleSubmit() {
   if (isEditMode && editSkillId && existingSkill && form.isEnabled && !existingSkill.isEnabled) {
     const outcome = await enableFlowRef.value!.requestEnable(existingSkill, form.assignedAgents)
     if (outcome.type === 'cancelled') return
-    if (outcome.type === 'revise') return // 現行行為：關掉對話框、停留在編輯頁，不用額外導頁
+    if (outcome.type === 'revise') {
+      router.push({ name: 'SkillManagement', query: { skillId: editSkillId } })
+      return
+    }
     form.assignedAgents = outcome.agents
     if (outcome.wasOverridden) store.overrideAndEnableSkill(editSkillId)
     store.updateSkill(editSkillId, { ...buildPayload(), isEnabled: true })

@@ -100,6 +100,25 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
     expect(router.currentRoute.value.path).toBe('/view/SkillEditor')
   })
 
+  it('決策對話框選「去修改技能內容」：導回技能管理頁並帶上 skillId，不啟用、不寫入', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能6', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const { wrapper, router } = await mountEditFor(id)
+    ;(wrapper.findComponent(SkillEditor).vm as any).currentStep = 2
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.se-toggle input[type="checkbox"]').setValue(true)
+    await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
+    await flushPromises()
+
+    const reviseBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('去修改'))!
+    await reviseBtn.trigger('click')
+    await flushPromises()
+
+    expect(router.currentRoute.value.path).toBe('/view/Skills')
+    expect(router.currentRoute.value.query.skillId).toBe(id)
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+  })
+
   it('已經全對過的技能：勾「啟用狀態」送出不彈閘門失敗對話框，但仍要過 Agent 確認才真的生效', async () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '已測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
