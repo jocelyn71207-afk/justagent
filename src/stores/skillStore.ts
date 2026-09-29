@@ -1266,6 +1266,14 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
+  // 整份取代 assignedAgents（區別於 assignSkillToAgent 只能單筆新增）：
+  // 啟用技能時的「確認可用 Agent」步驟用這個，使用者可能同時勾選、取消勾選多個
+  function setAssignedAgents(skillId: string, agents: string[]): void {
+    const skill = findSkill(skillId)
+    if (!skill) return
+    skill.assignedAgents = [...agents]
+  }
+
   function deleteSkill(id: string): void {
     const skill = findSkill(id)
     if (skill) skill.deletedAt = new Date().toISOString()
@@ -1938,6 +1946,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     toggleSkill,
     overrideAndEnableSkill,
     assignSkillToAgent,
+    setAssignedAgents,
     mergeUpstreamUpdate,
     ignoreUpstreamUpdate,
     submitSkillForReview,
