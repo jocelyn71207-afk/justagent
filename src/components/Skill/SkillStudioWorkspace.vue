@@ -43,6 +43,7 @@
     <div class="studio-side-col">
       <SkillStudioPreview
         v-model:active-tab="activeTab"
+        hide-files
         :draft="conv.draft.value"
         :mode="conv.mode.value"
         :saved-skill-id="conv.savedSkillId.value"
@@ -50,7 +51,6 @@
         :can-save="conv.canSave.value"
         :name-conflict="nameConflict"
         @save="onSave"
-        @update:files="conv.updateFiles"
       />
     </div>
   </div>

@@ -48,6 +48,13 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.text()).toContain('尚未命名的技能')
   })
 
+  it('抽屜模式：不提供附加檔案功能', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    await chooseChat(wrapper)
+    expect(wrapper.text()).not.toContain('附加檔案')
+  })
+
   it('method: chat：跳過 SkillMethodChooser，直接進對話模式', async () => {
     const { wrapper } = mountWorkspace({ method: 'chat' })
     await flushPromises()

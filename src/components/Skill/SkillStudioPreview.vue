@@ -56,7 +56,7 @@
           <p v-else class="ssp-empty">尚未拆解覆蓋能力項目</p>
         </div>
 
-        <div class="ssp-section">
+        <div v-if="!props.hideFiles" class="ssp-section">
           <button type="button" class="ssp-section-label ssp-files-toggle" @click="filesExpanded = !filesExpanded">
             附加檔案<template v-if="props.draft.files.length">（{{ props.draft.files.length }}）</template>
             <i class="material-symbols-outlined">{{ filesExpanded ? 'expand_less' : 'expand_more' }}</i>
@@ -139,6 +139,7 @@ const props = defineProps<{
   activeTab: 'preview' | 'test'
   nameConflict?: boolean
   hideTabs?: boolean
+  hideFiles?: boolean
 }>()
 
 const emit = defineEmits<{

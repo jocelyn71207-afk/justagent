@@ -43,6 +43,12 @@ describe('SkillStudioPreview', () => {
     expect(w.findAll('.ssp-section-label').length).toBe(5) // 說明／觸發條件／技能指令／覆蓋能力／附加檔案
   })
 
+  it('hideFiles：不顯示「附加檔案」區塊，只剩四個區塊標籤', () => {
+    const w = mountPreview({ hideFiles: true })
+    expect(w.text()).not.toContain('附加檔案')
+    expect(w.findAll('.ssp-section-label').length).toBe(4)
+  })
+
   it('有內容時渲染名稱、觸發、markdown 指令與能力 chip', () => {
     const w = mountPreview({
       draft: { ...emptyDraft(), name: '查庫存', triggerHint: '提到庫存時', instructions: '1. **釐清**\n2. 查詢', capabilities: [{ name: '能力A', description: '' }] },
