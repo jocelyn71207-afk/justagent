@@ -1113,6 +1113,7 @@ export const useSkillStore = defineStore('skillStore', () => {
   const testIsRunning = ref(false)
   const aiTestScenarios = ref<AITestScenario[]>([])
   const aiTestReport = ref<AITestReport | null>(null)
+  const aiTestScenariosSkillId = ref<string | null>(null)
   const aiTestIsGenerating = ref(false)
 
   const flatSkills = computed<Skill[]>(() => {
@@ -1264,6 +1265,14 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (!skill.assignedAgents.includes(agentName)) {
       skill.assignedAgents.push(agentName)
     }
+  }
+
+  // 整份取代 assignedAgents（區別於 assignSkillToAgent 只能單筆新增）：
+  // 啟用技能時的「確認可用 Agent」步驟用這個，使用者可能同時勾選、取消勾選多個
+  function setAssignedAgents(skillId: string, agents: string[]): void {
+    const skill = findSkill(skillId)
+    if (!skill) return
+    skill.assignedAgents = [...agents]
   }
 
   function deleteSkill(id: string): void {
@@ -1777,13 +1786,26 @@ export const useSkillStore = defineStore('skillStore', () => {
     selectedVersionName.value = versionName ?? getDefaultVersionName(id)
     aiTestScenarios.value = []
     aiTestReport.value = null
+    aiTestScenariosSkillId.value = null
     aiTestIsGenerating.value = false
+  }
+
+  // SkillTestAI.vue 可能被掛載在不同技能的畫面（獨立測試頁 / 抽屜內的測試 tab），
+  // 但 aiTestScenarios／aiTestReport 是單一全域狀態；掛載或切換技能時呼叫這個函式，
+  // 確保看到的不是另一顆技能留下的舊測試結果
+  function ensureAITestStateForSkill(skillId: string): void {
+    if (aiTestScenariosSkillId.value !== null && aiTestScenariosSkillId.value !== skillId) {
+      aiTestScenarios.value = []
+      aiTestReport.value = null
+      aiTestScenariosSkillId.value = null
+    }
   }
 
   async function generateAITestScenarios(skillId: string): Promise<void> {
     aiTestIsGenerating.value = true
     aiTestScenarios.value = []
     aiTestReport.value = null
+    aiTestScenariosSkillId.value = skillId
     await new Promise(r => setTimeout(r, 900))
     const templates = MOCK_AI_SCENARIO_TEMPLATES[skillId] ?? DEFAULT_AI_SCENARIOS
     aiTestScenarios.value = templates.map((t, i) => ({
@@ -1905,6 +1927,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     testIsRunning,
     aiTestScenarios,
     aiTestReport,
+    aiTestScenariosSkillId,
     aiTestIsGenerating,
     flatSkills,
     enabledCount,
@@ -1938,6 +1961,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     toggleSkill,
     overrideAndEnableSkill,
     assignSkillToAgent,
+    setAssignedAgents,
     mergeUpstreamUpdate,
     ignoreUpstreamUpdate,
     submitSkillForReview,
@@ -1968,6 +1992,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     getTestRunHistory,
     setSelectedSkill,
     generateAITestScenarios,
+    ensureAITestStateForSkill,
     answerAITestScenario,
     resetConversation,
     sendChatMessage,

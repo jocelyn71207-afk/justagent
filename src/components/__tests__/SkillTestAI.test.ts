@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount, DOMWrapper } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
+import { createRouter, createWebHistory } from 'vue-router'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
 import { useSkillStore } from '@/stores/skillStore'
 
@@ -98,4 +99,164 @@ describe('SkillTestAI：AI 出題、使用者判斷該不該觸發的選擇題',
     expect(store.aiTestScenarios.every(s => s.status === 'pending')).toBe(true)
     expect(w.find('.status-badge').exists()).toBe(false)
   }, 10000)
+
+  it('100% 通過時顯示「啟用技能」按鈕；未 100% 或尚未測試時不顯示', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false) // 還沒生成測試情境
+
+    await store.generateAITestScenarios(id)
+    await wrapper.vm.$nextTick()
+    const scenarios = [...store.aiTestScenarios]
+    expect(scenarios.length).toBeGreaterThan(1) // 這個測試要故意答錯至少一題，情境數要夠
+
+    // 除了最後一題以外全部故意答錯，確定 correct !== total（不會意外全對）
+    for (let i = 0; i < scenarios.length - 1; i++) {
+      store.answerAITestScenario(id, scenarios[i].id, !scenarios[i].expectedTrigger)
+    }
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false) // 還有題目 pending，aiTestReport 仍是 null
+
+    store.answerAITestScenario(id, scenarios.at(-1)!.id, scenarios.at(-1)!.expectedTrigger)
+    await wrapper.vm.$nextTick()
+    expect(store.aiTestReport!.correct).not.toBe(store.aiTestReport!.total) // 確認這次真的不是 100%
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false)
+  })
+
+  it('100% 全對：顯示啟用按鈕，點擊走 SkillEnableFlow 並在確認後呼叫 setAssignedAgents + toggleSkill', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能2', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger) // 全部答對
+    }
+    expect(store.aiTestReport!.correct).toBe(store.aiTestReport!.total)
+
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+    await wrapper.vm.$nextTick()
+
+    const enableBtn = wrapper.find('.ai-enable-btn')
+    expect(enableBtn.exists()).toBe(true)
+    await enableBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const agentDialog = new DOMWrapper(document.body).find('.enable-agent-dialog')
+    expect(agentDialog.exists()).toBe(true) // 100% 直接進 Agent 確認，不會看到閘門失敗對話框
+    await agentDialog.findAll('.se-agent-chip').find(c => c.text().includes('通用助理'))!.trigger('click')
+    await agentDialog.findAll('button').find(b => b.text().includes('確認並啟用'))!.trigger('click')
+
+    expect(store.findSkill(id)!.isEnabled).toBe(true)
+    expect(store.findSkill(id)!.assignedAgents).toEqual(['通用助理'])
+  })
+
+  it('confirmed outcome 帶 wasOverridden=true 時呼叫 overrideAndEnableSkill 而非 toggleSkill', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能3', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger)
+    }
+
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+    await wrapper.vm.$nextTick()
+
+    // SkillEnableFlow 透過 defineExpose 只暴露 requestEnable，findComponent(...).vm 拿到的是
+    // 開發模式下的完整內部 proxy（<script setup> top-level binding 唯讀，寫入會被吃掉），
+    // 真正被 SkillTestAI 呼叫的是 template ref 拿到的「exposed」物件本身，
+    // 所以改成透過 SkillTestAI 自己的 enableFlowRef（在其未呼叫 defineExpose 的完整 dev proxy 上可讀到）
+    // 取得同一個 exposed 物件來 stub，才能真正攔截 handleEnableClick 內的呼叫。
+    const enableFlowRef = (wrapper.vm as any).enableFlowRef
+    vi.spyOn(enableFlowRef, 'requestEnable').mockResolvedValue({ type: 'confirmed', agents: ['通用助理'], wasOverridden: true })
+
+    await wrapper.find('.ai-enable-btn').trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    const skill = store.findSkill(id)!
+    expect(skill.isEnabled).toBe(true)
+    expect(skill.aiTestOverridden).toBe(true)
+    expect(skill.assignedAgents).toEqual(['通用助理'])
+  })
+
+  it('已經啟用的技能：即使報告 100% 全對，也不顯示「啟用技能」按鈕（避免誤按變成停用）', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '已啟用技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    store.overrideAndEnableSkill(id) // 繞過閘門直接啟用，模擬「已經是上線中的技能」
+    expect(store.findSkill(id)!.isEnabled).toBe(true)
+
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger) // 全部答對
+    }
+    expect(store.aiTestReport!.correct).toBe(store.aiTestReport!.total)
+
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false)
+  })
+
+  it('跨技能的舊報告不會外洩：技能 A 測完 100% 後，掛載技能 B 的元件不應該顯示啟用按鈕', async () => {
+    const store = useSkillStore()
+    const idA = store.createPersonalSkill({ name: '技能A', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const idB = store.createPersonalSkill({ name: '技能B', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+
+    await store.generateAITestScenarios(idA)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(idA, sc.id, sc.expectedTrigger) // A 全部答對
+    }
+    expect(store.aiTestReport!.correct).toBe(store.aiTestReport!.total)
+    expect(store.aiTestScenariosSkillId).toBe(idA)
+
+    // 從沒對 B 呼叫過 generateAITestScenarios／setSelectedSkill，全域報告仍是 A 留下的
+    const wrapper = mount(SkillTestAI, { props: { skillId: idB } })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false)
+    // mount 時的 ensureAITestStateForSkill 應該已經把 A 的舊狀態清掉
+    expect(store.aiTestReport).toBeNull()
+    expect(store.aiTestScenarios).toEqual([])
+  })
+
+  it('「去修改技能內容」（revise）：導向 /view/Skills 並帶上 skillId，不再是靜默丟棄', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待修改技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger)
+    }
+
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        { path: '/', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
+      ],
+    })
+    await router.push('/')
+    await router.isReady()
+    const push = vi.spyOn(router, 'push')
+
+    const wrapper = mount(SkillTestAI, {
+      props: { skillId: id },
+      global: { plugins: [router] },
+    })
+    await wrapper.vm.$nextTick()
+
+    // SkillEnableFlow 透過 defineExpose 只暴露 requestEnable，findComponent(...).vm 拿到的是
+    // 開發模式下的完整內部 proxy（<script setup> top-level binding 唯讀，寫入會被吃掉），
+    // 真正被 SkillTestAI 呼叫的是 template ref 拿到的「exposed」物件本身，
+    // 所以改成透過 SkillTestAI 自己的 enableFlowRef 取得同一個 exposed 物件來 stub。
+    const enableFlowRef = (wrapper.vm as any).enableFlowRef
+    vi.spyOn(enableFlowRef, 'requestEnable').mockResolvedValue({ type: 'revise' })
+
+    await wrapper.find('.ai-enable-btn').trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(push).toHaveBeenCalledWith({ path: '/view/Skills', query: { skillId: id } })
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+  })
 })

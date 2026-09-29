@@ -94,20 +94,61 @@
             </div>
           </div>
           <p class="report-summary">{{ store.aiTestReport.summary }}</p>
+          <button
+            v-if="isFullPass"
+            type="button"
+            class="custom-btn custom-main-btn ai-enable-btn"
+            @click="handleEnableClick"
+          >
+            <i class="material-symbols-outlined">check_circle</i>啟用技能
+          </button>
         </div>
       </div>
     </template>
 
+    <SkillEnableFlow ref="enableFlowRef" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSkillStore } from '@/stores/skillStore'
 import type { AITestTag } from '@/stores/skillStore'
+import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
+const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
+const router = useRouter()
+
+onMounted(() => store.ensureAITestStateForSkill(props.skillId))
+watch(() => props.skillId, (id) => store.ensureAITestStateForSkill(id))
+
+// 全域的 aiTestReport 必須確實屬於這顆技能（不是另一顆技能留下的舊報告），
+// 而且這顆技能還沒啟用才顯示按鈕——已啟用的技能不該被「啟用」按鈕再切回停用
+const isFullPass = computed(() => {
+  if (store.aiTestScenariosSkillId !== props.skillId) return false
+  const report = store.aiTestReport
+  if (!report || report.total === 0 || report.correct !== report.total) return false
+  const skill = store.findSkill(props.skillId)
+  return !!skill && !skill.isEnabled
+})
+
+async function handleEnableClick() {
+  const skill = store.findSkill(props.skillId)
+  if (!skill) return
+  // 呼叫端要處理完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
+  const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
+  if (outcome.type === 'cancelled') return
+  if (outcome.type === 'revise') {
+    router.push({ path: '/view/Skills', query: { skillId: skill.id } })
+    return
+  }
+  store.setAssignedAgents(skill.id, outcome.agents)
+  if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
+  else store.toggleSkill(skill.id)
+}
 
 const TAG_LABELS: Record<AITestTag, string> = {
   normal: '正常流程',

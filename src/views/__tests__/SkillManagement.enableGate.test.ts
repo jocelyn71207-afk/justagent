@@ -52,7 +52,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     expect(dialog.text()).toContain('還沒有做過 AI 快速測試')
   })
 
-  it('決策對話框選「視為通過，直接啟用」：呼叫 overrideAndEnableSkill，對話框關閉', async () => {
+  it('決策對話框選「視為通過」，Agent 確認對話框勾選並送出：呼叫 overrideAndEnableSkill 與 setAssignedAgents', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能2', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
@@ -63,10 +63,19 @@ describe('SkillManagement 啟用前的測試閘門', () => {
 
     const overrideBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('視為通過'))!
     await overrideBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(store.findSkill(id)!.isEnabled).toBe(false) // 還沒真的啟用，還在 Agent 確認步驟
+    const agentDialog = new DOMWrapper(document.body).find('.enable-agent-dialog')
+    expect(agentDialog.exists()).toBe(true)
+
+    await agentDialog.findAll('.se-agent-chip').find(c => c.text().includes('通用助理'))!.trigger('click')
+    await agentDialog.findAll('button').find(b => b.text().includes('確認並啟用'))!.trigger('click')
 
     expect(store.findSkill(id)!.isEnabled).toBe(true)
     expect(store.findSkill(id)!.aiTestOverridden).toBe(true)
-    expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+    expect(store.findSkill(id)!.assignedAgents).toEqual(['通用助理'])
+    expect(new DOMWrapper(document.body).find('.enable-agent-dialog').exists()).toBe(false)
   })
 
   it('決策對話框選「去修改技能內容」：導向 AI 賦能並帶 skillId，不切換 isEnabled', async () => {
@@ -86,7 +95,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     expect(store.findSkill(id)!.isEnabled).toBe(false)
   })
 
-  it('已經全對過的技能：點「啟用技能」直接切換，不彈對話框', async () => {
+  it('已經全對過的技能：點「啟用技能」不彈閘門失敗對話框，但仍要過 Agent 確認才真的啟用', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '已測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
@@ -100,9 +109,16 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
     await new DOMWrapper(document.body).find('.dm-toggle-btn').trigger('click')
+    await wrapper.vm.$nextTick()
 
-    expect(store.findSkill(id)!.isEnabled).toBe(true)
     expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+    const agentDialog = new DOMWrapper(document.body).find('.enable-agent-dialog')
+    expect(agentDialog.exists()).toBe(true)
+
+    await agentDialog.findAll('.se-agent-chip').find(c => c.text().includes('通用助理'))!.trigger('click')
+    await agentDialog.findAll('button').find(b => b.text().includes('確認並啟用'))!.trigger('click')
+    expect(store.findSkill(id)!.isEnabled).toBe(true)
   })
 
   it('決策對話框選「取消」：對話框關閉，不啟用、不導頁', async () => {

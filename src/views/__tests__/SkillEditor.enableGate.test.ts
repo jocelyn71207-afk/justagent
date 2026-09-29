@@ -48,12 +48,12 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
     await flushPromises()
 
     expect(store.findSkill(id)!.isEnabled).toBe(false)
-    // .enable-gate-dialog 是透過 <Teleport to="body"> 掛到 document.body，
-    // 不在 wrapper 的元素樹底下，wrapper.find() 找不到，改用 DOMWrapper 查整個 document.body
+    // .enable-gate-dialog 是透過 <Teleport to="body"> 掛到 document.body（在
+    // SkillEnableFlow.vue 裡），不在 wrapper 的元素樹底下，改用 DOMWrapper 查整個 document.body
     expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(true)
   })
 
-  it('決策對話框選「視為通過」：技能被啟用，接著照原本流程導回技能管理頁', async () => {
+  it('決策對話框選「視為通過」，Agent 確認對話框勾選並送出：技能被啟用，接著照原本流程導回技能管理頁', async () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能2', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
     const { wrapper, router } = await mountEditFor(id)
@@ -63,13 +63,21 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
     await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
     await flushPromises()
 
-    // 同上，對話框內容透過 Teleport 掛到 document.body，改用 DOMWrapper 查找
     const overrideBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('視為通過'))!
     await overrideBtn.trigger('click')
     await flushPromises()
 
+    expect(store.findSkill(id)!.isEnabled).toBe(false) // 還在 Agent 確認步驟，還沒真的啟用
+    const agentDialog = new DOMWrapper(document.body).find('.enable-agent-dialog')
+    expect(agentDialog.exists()).toBe(true)
+
+    await agentDialog.findAll('.se-agent-chip').find(c => c.text().includes('通用助理'))!.trigger('click')
+    await agentDialog.findAll('button').find(b => b.text().includes('確認並啟用'))!.trigger('click')
+    await flushPromises()
+
     expect(store.findSkill(id)!.isEnabled).toBe(true)
     expect(store.findSkill(id)!.aiTestOverridden).toBe(true)
+    expect(store.findSkill(id)!.assignedAgents).toEqual(['通用助理'])
     expect(router.currentRoute.value.path).toBe('/view/Skills')
   })
 
@@ -92,7 +100,26 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
     expect(router.currentRoute.value.path).toBe('/view/SkillEditor')
   })
 
-  it('已經全對過的技能：勾「啟用狀態」送出直接生效，不彈窗', async () => {
+  it('決策對話框選「去修改技能內容」：導回技能管理頁並帶上 skillId，不啟用、不寫入', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能6', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const { wrapper, router } = await mountEditFor(id)
+    ;(wrapper.findComponent(SkillEditor).vm as any).currentStep = 2
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.se-toggle input[type="checkbox"]').setValue(true)
+    await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
+    await flushPromises()
+
+    const reviseBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('去修改'))!
+    await reviseBtn.trigger('click')
+    await flushPromises()
+
+    expect(router.currentRoute.value.path).toBe('/view/Skills')
+    expect(router.currentRoute.value.query.skillId).toBe(id)
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+  })
+
+  it('已經全對過的技能：勾「啟用狀態」送出不彈閘門失敗對話框，但仍要過 Agent 確認才真的生效', async () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '已測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
     await store.generateAITestScenarios(id)
@@ -106,8 +133,45 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
     await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
     await flushPromises()
 
-    expect(store.findSkill(id)!.isEnabled).toBe(true)
     expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+    expect(store.findSkill(id)!.isEnabled).toBe(false)
+    const agentDialog = new DOMWrapper(document.body).find('.enable-agent-dialog')
+    expect(agentDialog.exists()).toBe(true)
+
+    await agentDialog.findAll('.se-agent-chip').find(c => c.text().includes('通用助理'))!.trigger('click')
+    await agentDialog.findAll('button').find(b => b.text().includes('確認並啟用'))!.trigger('click')
+    await flushPromises()
+    expect(store.findSkill(id)!.isEnabled).toBe(true)
+  })
+
+  it('新建模式：不管表單 isEnabled 預設值是什麼，送出後一律以未啟用落地，不彈任何對話框', async () => {
+    const store = useSkillStore()
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        { path: '/', component: { template: '<div/>' } },
+        { path: '/view/SkillEditor', name: 'SkillEditor', component: SkillEditor },
+        { path: '/view/Skills', name: 'SkillManagement', component: { template: '<div/>' } },
+      ],
+    })
+    await router.push('/view/SkillEditor')
+    await router.isReady()
+    const wrapper = mount({ template: '<router-view />' }, { global: { plugins: [router] } })
+    currentWrapper = wrapper
+    await flushPromises()
+
+    const editor = wrapper.findComponent(SkillEditor)
+    ;(editor.vm as any).form.name = '全新技能'
+    ;(editor.vm as any).currentStep = 2
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
+    await flushPromises()
+
+    expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+    expect(new DOMWrapper(document.body).find('.enable-agent-dialog').exists()).toBe(false)
+    const created = store.myPersonalSkills.find(s => s.name === '全新技能')
+    expect(created).toBeDefined()
+    expect(created!.isEnabled).toBe(false)
   })
 
   it('建立模式（沒有 skillId）：看不到「建立後立即啟用」這個勾選', async () => {
