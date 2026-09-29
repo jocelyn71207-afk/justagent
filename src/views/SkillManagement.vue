@@ -379,36 +379,7 @@
       </Transition>
     </Teleport>
 
-    <!-- 啟用前的測試閘門：個人技能沒通過 AI 快速測試（或沒明確選擇略過）時，
-         點「啟用技能」不直接切換，改問清楚要怎麼處理 -->
-    <Teleport to="body">
-      <Transition name="confirm-fade">
-        <div
-          v-if="enableGateSkill"
-          class="drawer-confirm-overlay"
-          @click.self="enableGateSkill = null"
-        >
-          <div class="drawer-confirm-dialog enable-gate-dialog">
-            <div class="confirm-icon confirm-icon--update">
-              <i class="material-symbols-outlined">rule</i>
-            </div>
-            <h4>還不能啟用「{{ enableGateSkill.name }}」</h4>
-            <p>{{ describeAiTestGateReason(enableGateSkill) }}</p>
-            <div class="confirm-actions confirm-actions--column">
-              <button class="custom-btn" @click="handleEnableGateRevise">
-                <i class="material-symbols-outlined">forum</i>去修改技能內容
-              </button>
-              <button class="custom-btn custom-main-btn" @click="handleEnableGateOverride">
-                <i class="material-symbols-outlined">check_circle</i>視為通過，直接啟用
-              </button>
-              <button class="custom-btn" @click="enableGateSkill = null">
-                取消
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <SkillEnableFlow ref="enableFlowRef" />
 
     <!-- 送審 dialog -->
     <Teleport to="body">
@@ -563,11 +534,12 @@ import SkillDetailDrawer from '@/components/Skill/SkillDetailDrawer.vue'
 import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
-import { useSkillStore, canEnableSkill, describeAiTestGateReason } from '@/stores/skillStore'
+import { useSkillStore } from '@/stores/skillStore'
 import type { Skill, ConflictResolution, SkillSuggestionEntry } from '@/stores/skillStore'
 import { suggestionToPrefill, suggestionOpeningMessage } from '@/composables/useSkillSuggestion'
 import { setSkillHandoff } from '@/composables/useSkillHandoff'
 import SkillStudioDrawer from '@/components/Skill/SkillStudioDrawer.vue'
+import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 import popDialog from '@/services/popDialog'
 
 const router = useRouter()
@@ -631,7 +603,7 @@ const showBatchUpdate = ref(false)
 const showLibraryModal = ref(false)
 const editChoiceSkill = ref<Skill | null>(null)
 const editChoiceIsFreshDuplicate = ref(false)
-const enableGateSkill = ref<Skill | null>(null)
+const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
 
 // 建立副本第一步：先確認顯示名稱，確認後才真正建立副本（此時才會出現在「我的技能」列表）
 const pendingDuplicateSource = ref<Skill | null>(null)
@@ -873,26 +845,21 @@ function handleReject(skill: Skill, feedback: string) {
   store.rejectPersonalSkill(skill.id, feedback)
 }
 
-function handleToggle(skill: Skill) {
-  // 只有「目前停用、要切成啟用」這個方向需要檢查；停用方向永遠允許
-  if (!skill.isEnabled && !canEnableSkill(skill)) {
-    enableGateSkill.value = skill
+async function handleToggle(skill: Skill) {
+  // 停用方向永遠允許，不用檢查、不用確認 Agent
+  if (skill.isEnabled) {
+    store.toggleSkill(skill.id)
     return
   }
-  store.toggleSkill(skill.id)
-}
-
-function handleEnableGateRevise() {
-  if (!enableGateSkill.value) return
-  const skillId = enableGateSkill.value.id
-  enableGateSkill.value = null
-  router.push({ query: { skillId } })
-}
-
-function handleEnableGateOverride() {
-  if (!enableGateSkill.value) return
-  store.overrideAndEnableSkill(enableGateSkill.value.id)
-  enableGateSkill.value = null
+  const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
+  if (outcome.type === 'cancelled') return
+  if (outcome.type === 'revise') {
+    router.push({ query: { skillId: skill.id } })
+    return
+  }
+  store.setAssignedAgents(skill.id, outcome.agents)
+  if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
+  else store.toggleSkill(skill.id)
 }
 
 function getDerivedFromName(derivedFrom: string): string {
