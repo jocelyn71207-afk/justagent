@@ -13,25 +13,21 @@
       <SkillMethodChooser v-if="!conv.draft.value.method" @choose="conv.chooseMethod" />
       <SkillStudioChat
         v-else-if="conv.draft.value.method === 'chat'"
+        compact
         :mode="conv.mode.value"
         :skill-name="conv.draft.value.name"
         :saved-skill-id="conv.savedSkillId.value"
         :messages="conv.messages.value"
         :is-running="conv.isRunning.value"
         :suggestion-chips="conv.suggestionChips.value"
-        :personal-skills="store.myPersonalSkills"
+        :personal-skills="[]"
         @send="conv.send"
-        @switch-skill="onSwitchSkill"
-        @new-skill="onNewSkill"
       />
       <div v-else class="studio-composer-col">
         <div class="studio-composer-head">
           <span :class="['ssc-mode-chip', `ssc-mode-chip--${conv.mode.value}`]">
             <i class="material-symbols-outlined">dashboard_customize</i>{{ conv.mode.value === 'create' ? '用行銷積木組裝' : `修改：${conv.draft.value.name}` }}
           </span>
-          <button type="button" class="custom-btn studio-new-btn" @click="onNewSkill">
-            <i class="material-symbols-outlined">add</i>建立新技能
-          </button>
         </div>
         <SkillBlockComposer
           :name="conv.draft.value.name"
@@ -137,29 +133,13 @@ function onBackToOrigin() {
   })
 }
 
-// 有未儲存變更時，切換／新建／離開前都要確認；沒有變更就直接做
+// 有未儲存變更時，離開（返回原對話）前要確認；沒有變更就直接做
 function guardDirty(proceed: () => void) {
   if (!conv.isDirty.value) {
     proceed()
     return
   }
   popDialog.confirm('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', proceed)
-}
-
-function onSwitchSkill(skillId: string) {
-  guardDirty(() => {
-    if (!conv.loadSkill(skillId)) popDialog.toast('找不到這個技能')
-    activeTab.value = 'preview'
-    handoffOrigin.value = null
-  })
-}
-
-function onNewSkill() {
-  guardDirty(() => {
-    conv.startCreate()
-    activeTab.value = 'preview'
-    handoffOrigin.value = null
-  })
 }
 
 function onSave() {

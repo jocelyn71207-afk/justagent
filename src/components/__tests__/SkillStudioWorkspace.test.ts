@@ -200,15 +200,6 @@ describe('SkillStudioWorkspace', () => {
     }
   })
 
-  it('切換技能下拉：無未儲存變更時直接切換', async () => {
-    const { wrapper } = mountWorkspace()
-    await flushPromises()
-    await chooseChat(wrapper)
-    await wrapper.find('.ssc-skill-select').setValue('personal-001')
-    await flushPromises()
-    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
-  })
-
   it('exposed applyQuery：外部呼叫可以重新套用（模擬外殼守衛通過後的行為）', async () => {
     const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
     await flushPromises()
@@ -247,16 +238,6 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
     expect(wrapper.findAll('.sbc-list .sbc-item-name').map(n => n.text())).toEqual(['渠道核心 KPI'])
     expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--edit')
-  })
-
-  it('積木方式的左欄也有「建立新技能」，點擊回到方式選擇', async () => {
-    const { wrapper } = mountWorkspace()
-    await flushPromises()
-    await wrapper.findAll('.smc-card')[1].trigger('click')
-    await flushPromises()
-    await wrapper.find('.studio-new-btn').trigger('click')
-    await flushPromises()
-    expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
   })
 
   describe('conv4 交接（方案三）', () => {
@@ -323,21 +304,5 @@ describe('SkillStudioWorkspace', () => {
       expect(consumeSkillHandoff()).toBeNull()
     })
 
-    it('套用完交接草稿後按「建立新技能」：回到方式選擇，且不再顯示返回連結', async () => {
-      setSkillHandoff({
-        prefill: { name: '產品銷售報告整理' },
-        openingMessage: '開場白',
-        origin: { conversationId: 'conv4', reason: 'x' },
-      })
-      const { wrapper } = mountWorkspace({ from: 'conv4' })
-      await flushPromises()
-      await wrapper.find('.ssc-new-btn').trigger('click')
-      await flushPromises()
-      const onConfirm = vi.mocked(popDialog.confirm).mock.calls[0][3] as () => void
-      onConfirm()
-      await flushPromises()
-      expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
-      expect(wrapper.find('.studio-back-link').exists()).toBe(false)
-    })
   })
 })
