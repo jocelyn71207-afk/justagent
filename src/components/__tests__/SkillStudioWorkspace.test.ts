@@ -217,6 +217,18 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.find('.SkillMethodChooser').exists()).toBe(true)
   })
 
+  it('AI 快速測試回報沒有全對：左側對話收到引導訊息，轉去 clarify', async () => {
+    const store = useSkillStore()
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+    await flushPromises()
+    store.aiTestReport = { total: 5, correct: 3, byTag: {} as any, summary: '' }
+    await flushPromises()
+    const last = wrapper.findAll('.chat-bubble').at(-1)!
+    expect(last.classes()).toContain('bubble--agent')
+    expect(last.text()).toContain('3/5')
+    expect(last.text()).toContain('60%')
+  })
+
   it('選「用行銷積木組裝」：左欄變成積木面板；勾章節、命名、儲存 → 個人技能有 composition', async () => {
     const { wrapper } = mountWorkspace()
     await flushPromises()

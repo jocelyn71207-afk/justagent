@@ -1190,3 +1190,32 @@ describe('confirmKnownInfo：白話摘要確認', () => {
     expect(c.messages.value.at(-1)!.content).toBe(rawTextBefore)
   })
 })
+
+describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動引導調整', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('答對比例不是 100%：轉 clarify，推一則帶答對比例的引導訊息', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    const before = c.messages.value.length
+    c.notifyTestResult({ total: 8, correct: 6, byTag: {} as any, summary: '' })
+    expect(c.gateStage.value).toBe('clarify')
+    expect(c.messages.value.length).toBe(before + 1)
+    const last = c.messages.value.at(-1)!
+    expect(last.role).toBe('agent')
+    expect(last.content).toContain('6/8')
+    expect(last.content).toContain('75%')
+  })
+
+  it('全對（100%）：不打擾使用者，不轉關卡也不推訊息', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    const before = c.messages.value.length
+    const stageBefore = c.gateStage.value
+    c.notifyTestResult({ total: 8, correct: 8, byTag: {} as any, summary: '' })
+    expect(c.gateStage.value).toBe(stageBefore)
+    expect(c.messages.value.length).toBe(before)
+  })
+})

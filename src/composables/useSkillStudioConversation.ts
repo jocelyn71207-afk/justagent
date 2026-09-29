@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
-import type { ChatMessage, Skill, SkillCapability, SkillFile } from '@/stores/skillStore'
+import type { ChatMessage, Skill, SkillCapability, SkillFile, AITestReport } from '@/stores/skillStore'
 export type { Skill }
 import { REPORT_CATEGORIES, SECTION_MAP } from '@/constants/reportSections'
 
@@ -733,6 +733,18 @@ export function useSkillStudioConversation() {
     draft.value = { ...draft.value, files }
   }
 
+  // AI 快速測試沒有全對：左側對話主動引導使用者調整內容，退回既有的 clarify 補齊流程
+  // （沿用「多輪問答補齊草稿內容」的既有語意，不新增一個專門的關卡）。全對就不用打擾使用者
+  function notifyTestResult(report: AITestReport): void {
+    if (report.total === 0 || report.correct === report.total) return
+    const rate = Math.round((report.correct / report.total) * 100)
+    gateStage.value = 'clarify'
+    push({
+      role: 'agent',
+      content: `剛剛的測試沒有全部通過（答對 ${report.correct}/${report.total}，${rate}%），要不要跟我說說看哪裡需要調整？我會幫你補齊或修正做法內容。`,
+    })
+  }
+
   function toSnapshot(): StudioSnapshot {
     return JSON.parse(JSON.stringify({
       mode: mode.value,
@@ -777,6 +789,6 @@ export function useSkillStudioConversation() {
 
   return {
     mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips, gateStage,
-    startCreate, chooseMethod, updateBlocks, loadSkill, send, save, updateFiles, toSnapshot, hydrate, detachSavedSkill,
+    startCreate, chooseMethod, updateBlocks, loadSkill, send, save, updateFiles, notifyTestResult, toSnapshot, hydrate, detachSavedSkill,
   }
 }

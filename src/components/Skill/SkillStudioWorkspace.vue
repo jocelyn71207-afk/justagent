@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { LocationQuery } from 'vue-router'
 import SkillStudioChat from '@/components/Skill/SkillStudioChat.vue'
@@ -88,6 +88,13 @@ const handoffOrigin = ref<SkillHandoffOrigin | null>(null)
 const nameConflict = computed(() => {
   const n = conv.draft.value.name.trim()
   return !!n && store.myPersonalSkills.some(s => s.id !== conv.savedSkillId.value && s.name === n)
+})
+
+// AI 快速測試完成（store.aiTestReport 從 null 變成一份報告，一輪測驗只會發生一次
+// 這樣的轉換——見 _computeAITestReport 在所有題目答完前都是 no-op）：交給 conv 判斷
+// 要不要在左側對話主動引導使用者調整內容
+watch(() => store.aiTestReport, report => {
+  if (report) conv.notifyTestResult(report)
 })
 
 // ?skillId= 進修改模式；找不到／不是個人技能都退回建立模式，不拋錯。
