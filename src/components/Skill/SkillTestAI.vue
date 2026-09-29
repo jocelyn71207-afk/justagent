@@ -111,7 +111,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSkillStore } from '@/stores/skillStore'
 import type { AITestTag } from '@/stores/skillStore'
 import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
@@ -119,17 +120,31 @@ import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
 const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
+const router = useRouter()
 
-const isFullPass = computed(() =>
-  !!store.aiTestReport && store.aiTestReport.total > 0 && store.aiTestReport.correct === store.aiTestReport.total
-)
+onMounted(() => store.ensureAITestStateForSkill(props.skillId))
+watch(() => props.skillId, (id) => store.ensureAITestStateForSkill(id))
+
+// 全域的 aiTestReport 必須確實屬於這顆技能（不是另一顆技能留下的舊報告），
+// 而且這顆技能還沒啟用才顯示按鈕——已啟用的技能不該被「啟用」按鈕再切回停用
+const isFullPass = computed(() => {
+  if (store.aiTestScenariosSkillId !== props.skillId) return false
+  const report = store.aiTestReport
+  if (!report || report.total === 0 || report.correct !== report.total) return false
+  const skill = store.findSkill(props.skillId)
+  return !!skill && !skill.isEnabled
+})
 
 async function handleEnableClick() {
   const skill = store.findSkill(props.skillId)
   if (!skill) return
   // 呼叫端要處理完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
   const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
-  if (outcome.type !== 'confirmed') return
+  if (outcome.type === 'cancelled') return
+  if (outcome.type === 'revise') {
+    router.push({ path: '/view/Skills', query: { skillId: skill.id } })
+    return
+  }
   store.setAssignedAgents(skill.id, outcome.agents)
   if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
   else store.toggleSkill(skill.id)
