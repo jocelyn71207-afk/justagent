@@ -359,39 +359,43 @@
     font-size: 18px;
   }
 
-  .se-agent-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+}
+
+// .se-agent-grid／.se-agent-chip／.se-chip-check 是獨立頂層選擇器：
+// SkillEnableFlow.vue（啟用時確認可用 Agent）也會重用同一套 chip 選擇器樣式，
+// 不能巢狀寫在 .SkillEditor 裡面否則其他頁面套不上
+.se-agent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.se-agent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--divider-a50);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  .material-symbols-outlined { font-size: 15px; }
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary-hover);
   }
 
-  .se-agent-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--divider-a50);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
+  &.is-selected {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--primary-hover);
+    font-weight: 500;
 
-    .material-symbols-outlined { font-size: 15px; }
-
-    &:hover {
-      border-color: var(--primary);
-      color: var(--primary-hover);
-    }
-
-    &.is-selected {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--primary-hover);
-      font-weight: 500;
-
-      .se-chip-check { color: var(--primary); }
-    }
+    .se-chip-check { color: var(--primary); }
   }
 }
