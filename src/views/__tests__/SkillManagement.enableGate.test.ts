@@ -15,27 +15,30 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     currentWrapper = null
   })
 
-  function mountPage() {
+  async function mountPage() {
     const router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div/>' } },
-        { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
         { path: '/view/SkillEditor', name: 'SkillEditor', component: { template: '<div/>' } },
       ],
     })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillReviewDrawer: true, UpstreamUpdateDrawer: true, BatchUpdateModal: true } },
-    })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const wrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillReviewDrawer: true, UpstreamUpdateDrawer: true, BatchUpdateModal: true } } },
+    )
     currentWrapper = wrapper
-    return { wrapper, router }
+    return { wrapper: wrapper.findComponent(SkillManagement), router }
   }
 
   it('技能從沒測過：點「啟用技能」不會直接切換，改彈出決策對話框', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
 
@@ -53,7 +56,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能2', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
     await new DOMWrapper(document.body).find('.dm-toggle-btn').trigger('click')
@@ -70,7 +73,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能3', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
@@ -79,7 +82,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     const reviseBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('去修改'))!
     await reviseBtn.trigger('click')
 
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { skillId: id } })
+    expect(push).toHaveBeenCalledWith({ query: { skillId: id } })
     expect(store.findSkill(id)!.isEnabled).toBe(false)
   })
 
@@ -93,7 +96,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     }
     expect(store.findSkill(id)!.aiTestPassRate).toBe(1)
 
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
     await new DOMWrapper(document.body).find('.dm-toggle-btn').trigger('click')
@@ -106,7 +109,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能4', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
-    const { wrapper, router } = mountPage()
+    const { wrapper, router } = await mountPage()
     const push = vi.spyOn(router, 'push')
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
@@ -125,7 +128,7 @@ describe('SkillManagement 啟用前的測試閘門', () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '要停用的技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
     store.overrideAndEnableSkill(id)
-    const { wrapper } = mountPage()
+    const { wrapper } = await mountPage()
     ;(wrapper.vm as any).detailSkillId = id
     await wrapper.vm.$nextTick()
     await new DOMWrapper(document.body).find('.dm-toggle-btn').trigger('click')

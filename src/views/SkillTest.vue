@@ -138,10 +138,10 @@
                 <template v-if="store.aiTestReport">
                   <div class="context-rate">
                     <span class="context-rate-num">{{ aiRatePercent }}%</span>
-                    <span class="context-rate-sub">{{ store.aiTestReport.passed }} / {{ store.aiTestReport.total }} 通過</span>
+                    <span class="context-rate-sub">{{ store.aiTestReport.correct }} / {{ store.aiTestReport.total }} 答對</span>
                   </div>
                 </template>
-                <p v-else class="context-empty-hint">尚未執行 AI 快速測試</p>
+                <p v-else class="context-empty-hint">尚未作答 AI 快速測試</p>
               </div>
             </div>
           </div>
@@ -182,7 +182,7 @@ const librarySubgroups = computed(() => [
 const aiRatePercent = computed(() => {
   const report = store.aiTestReport
   if (!report || !report.total) return 0
-  return Math.round((report.passed / report.total) * 100)
+  return Math.round((report.correct / report.total) * 100)
 })
 
 function displayVersionName(skill: Skill): string {

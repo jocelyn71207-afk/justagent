@@ -7,12 +7,22 @@ import SkillManagement from '../SkillManagement.vue'
 // 統計列改成跟 TeamAccessManagement 的 .role-stats-row 同一套「色點 + 文字」語彙，
 // 不再是四張各自上色的邊框卡片（lively-card），這裡驗證新的結構
 describe('SkillManagement 統計列', () => {
-  it('統計列是一行安靜的「色點 + 數字 + 文字」，不是邊框卡片堆砌', () => {
+  it('統計列是一行安靜的「色點 + 數字 + 文字」，不是邊框卡片堆砌', async () => {
     setActivePinia(createPinia())
-    const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        { path: '/', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
+      ],
     })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const rootWrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } } },
+    )
+    const wrapper = rootWrapper.findComponent(SkillManagement)
     // 目前 mock 角色為管理者且有待審核個人技能，所以會多一個「待審核」chip
     // 排在最前面；它是需要行動的實心 pill 徽章（icon，不是安靜的色點），
     // 其餘三個維持純資訊的色點語彙

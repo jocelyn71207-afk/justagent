@@ -8,10 +8,20 @@ import { useSkillStore } from '@/stores/skillStore'
 describe('SkillManagement Library 團隊技能卡片', () => {
   it('團隊技能區塊改為多欄卡片，卡片數等於團隊分組數', async () => {
     setActivePinia(createPinia())
-    const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        { path: '/', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
+      ],
     })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const rootWrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } } },
+    )
+    const wrapper = rootWrapper.findComponent(SkillManagement)
     const store = useSkillStore()
     // 切到管理區才會渲染 Library 技能管理區塊（點擊頂部「團隊技能管理」按鈕，不碰內部狀態）
     const teamManageBtn = wrapper.findAll('button').find(b => b.text().includes('團隊技能管理'))
@@ -34,12 +44,16 @@ describe('SkillManagement Library 團隊技能卡片', () => {
       history: createWebHistory(),
       routes: [
         { path: '/', component: { template: '<div/>' } },
-        { path: '/view/SkillStudio', name: 'SkillStudio', component: { template: '<div/>' } },
+        { path: '/view/Skills', name: 'SkillManagement', component: SkillManagement },
       ],
     })
-    const wrapper = mount(SkillManagement, {
-      global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } },
-    })
+    await router.push('/view/Skills')
+    await router.isReady()
+    const rootWrapper = mount(
+      { template: '<router-view />' },
+      { global: { plugins: [router], stubs: { AppBreadcrumb: true, LibraryBrowseModal: true, SkillDetailDrawer: true, UpstreamUpdateDrawer: true, SkillReviewDrawer: true, BatchUpdateModal: true } } },
+    )
+    const wrapper = rootWrapper.findComponent(SkillManagement)
     const store = useSkillStore()
     const push = vi.spyOn(router, 'push')
     const skill = store.myPersonalSkills[0]
@@ -49,7 +63,7 @@ describe('SkillManagement Library 團隊技能卡片', () => {
     const btn = new DOMWrapper(document.body).findAll('button').find(b => b.text().includes('跟 Agent 對話修改'))
     expect(btn).toBeDefined()
     await btn!.trigger('click')
-    expect(push).toHaveBeenCalledWith({ name: 'SkillStudio', query: { skillId: skill.id } })
+    expect(push).toHaveBeenCalledWith({ query: { skillId: skill.id } })
     expect((wrapper.vm as any).editChoiceSkill).toBeNull()
   })
 })

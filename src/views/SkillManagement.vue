@@ -157,6 +157,27 @@
               <i class="material-symbols-outlined">add</i>建立技能
             </button>
           </div>
+          <!-- AI 建議建立的技能：agent 完成任務後放進佇列，決策（建立／不用了）在這裡處理，
+               不再是 AiViewer 對話河道裡的即時卡片，見 useSkillSuggestion -->
+          <div v-if="store.pendingSuggestions.length" class="skill-suggestion-queue">
+            <div class="ssq-header">
+              <i class="material-symbols-outlined">auto_awesome</i>
+              <span class="ssq-title">AI 建議建立的技能</span>
+            </div>
+            <div class="ssq-list">
+              <div v-for="s in store.pendingSuggestions" :key="s.id" class="ssq-item">
+                <div class="ssq-item-body">
+                  <div class="ssq-item-name">{{ s.name }}</div>
+                  <div class="ssq-item-reason">來自「{{ s.reason }}」流程</div>
+                </div>
+                <div class="ssq-item-actions">
+                  <button class="custom-btn" data-action="dismiss" @click="dismissSuggestion(s.id)">不用了</button>
+                  <button class="custom-btn custom-main-btn" data-action="build" @click="buildSuggestion(s)">建立</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div v-if="store.myPersonalSkills.length" class="my-skills-list">
             <PersonalSkillGroup
               v-for="skill in pagedSkills"
@@ -237,6 +258,13 @@
     <BatchUpdateModal
       v-model="showBatchUpdate"
       @merged="showBatchUpdate = false"
+    />
+
+    <SkillStudioDrawer
+      ref="drawerRef"
+      :open="drawerOpen"
+      :query="drawerQuery"
+      @close="closeDrawer"
     />
 
     <!-- 複製第一步：確認顯示名稱（確認後才真正建立副本，出現在「我的技能」列表） -->
@@ -525,7 +553,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTile from '@/components/Skill/SkillTile.vue'
 import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
@@ -536,9 +564,50 @@ import SkillReviewDrawer from '@/components/Skill/SkillReviewDrawer.vue'
 import UpstreamUpdateDrawer from '@/components/Skill/UpstreamUpdateDrawer.vue'
 import BatchUpdateModal from '@/components/Skill/BatchUpdateModal.vue'
 import { useSkillStore, canEnableSkill, describeAiTestGateReason } from '@/stores/skillStore'
-import type { Skill, ConflictResolution } from '@/stores/skillStore'
+import type { Skill, ConflictResolution, SkillSuggestionEntry } from '@/stores/skillStore'
+import { suggestionToPrefill, suggestionOpeningMessage } from '@/composables/useSkillSuggestion'
+import { setSkillHandoff } from '@/composables/useSkillHandoff'
+import SkillStudioDrawer from '@/components/Skill/SkillStudioDrawer.vue'
+import popDialog from '@/services/popDialog'
 
 const router = useRouter()
+const route = useRoute()
+const drawerRef = ref<InstanceType<typeof SkillStudioDrawer> | null>(null)
+
+// 抽屜開關與內容完全由這三個既有 query 參數決定，不新增額外旗標——
+// 跟 SkillStudioWorkspace.applyQuery() 判斷式用的是同一組參數
+const drawerOpen = computed(() => !!(route.query.skillId || route.query.method || route.query.from))
+const drawerQuery = computed(() => ({
+  skillId: route.query.skillId,
+  method: route.query.method,
+  from: route.query.from,
+  tab: route.query.tab,
+}))
+
+function closeDrawer() {
+  router.push({ path: '/view/Skills' })
+}
+
+// 抽屜開著且有未儲存變更時，換編輯目標／關閉抽屜都要先確認——
+// 邏輯跟 SkillStudio.vue（頁面殼）的 onBeforeRouteUpdate 一模一樣，只是搬到這裡，
+// 因為抽屜開關本身就是同一個 /view/Skills 路由上的 query 變化
+onBeforeRouteUpdate((to, _from, next) => {
+  if (!drawerRef.value?.isDirty) {
+    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
+    return next()
+  }
+  popDialog.confirm('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', () => {
+    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
+    next()
+  }, () => next(false))
+})
+
+// 抽屜開著且有未儲存變更時，從左側導覽離開 /view/Skills 也要先確認
+onBeforeRouteLeave((_to, _from, next) => {
+  if (!drawerRef.value?.isDirty) return next()
+  popDialog.confirm('有未儲存的變更，確定離開？', '離開', '留下', () => next(), () => next(false))
+})
+
 const store = useSkillStore()
 
 const showCreateChoice = ref(false)
@@ -646,17 +715,33 @@ function handleTest(skill: Skill) {
   router.push({ path: '/view/SkillTest', query: { skillId: skill.id } })
 }
 
-// 「建立技能」選擇框：對話／積木都是 AI 賦能（SkillStudio），差別在
-// method query 直接指定建立方式，跳過 SkillStudio 自己那層「選擇建立方式」
+function dismissSuggestion(id: string) {
+  store.dismissSuggestion(id)
+}
+
+// 沿用方案三的交接機制（setSkillHandoff + ?from=），只是觸發點從對話河道
+// 卡片改成這裡的「建立」按鈕
+function buildSuggestion(s: SkillSuggestionEntry) {
+  setSkillHandoff({
+    prefill: suggestionToPrefill(s),
+    openingMessage: suggestionOpeningMessage(s),
+    origin: { conversationId: s.conversationId, reason: s.reason },
+  })
+  store.dismissSuggestion(s.id)
+  router.push({ query: { from: s.conversationId } })
+}
+
+// 「建立技能」選擇框：對話／積木都開技能管理頁的抽屜（SkillStudioDrawer），差別在
+// method query 直接指定建立方式，跳過工作區自己那層「選擇建立方式」
 // 畫面（不然會被問兩次）；手動則走 SkillEditor 三步驟表單精靈。
 // 三者都是空白建立，不帶 skillId
 function handleCreateWithChat() {
   showCreateChoice.value = false
-  router.push({ name: 'SkillStudio', query: { method: 'chat' } })
+  router.push({ query: { method: 'chat' } })
 }
 function handleCreateWithBlocks() {
   showCreateChoice.value = false
-  router.push({ name: 'SkillStudio', query: { method: 'blocks' } })
+  router.push({ query: { method: 'blocks' } })
 }
 function handleCreateManually() {
   showCreateChoice.value = false
@@ -720,13 +805,13 @@ function handleDirectEdit() {
   editChoiceSkill.value = null
 }
 
-// 對話修改改到「AI 賦能」頁進行：那裡有完整的預覽與測試面板，
-// 不再用 modal 擠在技能管理頁裡
+// 對話修改開技能管理頁自己的抽屜（SkillStudioDrawer）進行：抽屜近全螢幕，
+// 完整保留預覽與測試面板，不是被否決過的那種小型置中 modal
 function handleChatEdit() {
   if (!editChoiceSkill.value) return
   const skillId = editChoiceSkill.value.id
   editChoiceSkill.value = null
-  router.push({ name: 'SkillStudio', query: { skillId } })
+  router.push({ query: { skillId } })
 }
 
 // ── 個人技能 handlers ──────────────────────────────
@@ -801,7 +886,7 @@ function handleEnableGateRevise() {
   if (!enableGateSkill.value) return
   const skillId = enableGateSkill.value.id
   enableGateSkill.value = null
-  router.push({ name: 'SkillStudio', query: { skillId } })
+  router.push({ query: { skillId } })
 }
 
 function handleEnableGateOverride() {

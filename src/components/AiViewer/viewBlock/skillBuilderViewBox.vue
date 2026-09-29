@@ -218,6 +218,6 @@ function onSave() {
 
 function openStudio() {
   if (!conv.savedSkillId.value) return
-  router.push({ name: 'SkillStudio', query: { skillId: conv.savedSkillId.value } })
+  router.push({ name: 'SkillManagement', query: { skillId: conv.savedSkillId.value } })
 }
 </script>

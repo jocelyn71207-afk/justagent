@@ -129,10 +129,10 @@ export const routes: RouteRecordRaw[] = [
         meta: { title: '建立技能', parentName: 'SkillManagement' },
       },
       {
+        // AI 賦能已經整併進技能管理頁的抽屜（SkillStudioDrawer），不再是獨立頁面；
+        // 保留這條重定向讓舊書籤/分享連結（含 skillId/method/from query）還能用
         path: '/view/SkillStudio',
-        name: 'SkillStudio',
-        component: () => import('@/views/SkillStudio.vue'),
-        meta: { title: 'AI 賦能', parentLabel: 'AI 技能' },
+        redirect: (to) => ({ path: '/view/Skills', query: to.query }),
       },
     ]
   },

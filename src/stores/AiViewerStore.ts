@@ -142,6 +142,23 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
   // 目前選中的對話 ID
   const currentConversationId = ref('conv1') as Ref<string>;
 
+  // conv4 對話訊息（方案三：離開 AiViewer 路由導到 AI 賦能、再返回時，
+  // AiViewerRightBox 會被銷毀重建，區域 state 撐不住這趟往返，
+  // 故搬進 store；resetAiViewerState() 刻意不動這裡，只有 resetConv4() 才清）
+  const conv4Msgs = ref<any[]>([]) as Ref<any[]>;
+  const conv4Title = ref('');
+  let conv4IdCounter = 2;
+
+  function pushConv4Message(msg: any): void {
+    conv4Msgs.value.push({ id: `c4_${conv4IdCounter++}`, ...msg });
+  }
+
+  function resetConv4(): void {
+    conv4IdCounter = 2;
+    conv4Title.value = '';
+    conv4Msgs.value = [];
+  }
+
   // conv1 是否處於初始空白狀態（尚未送出任何訊息）
   const conv1IsEmpty = ref(true);
 
@@ -1102,6 +1119,10 @@ export const useAiviewerStore = defineStore('AiviewerStore', () => {
     isOpenConversationListModal,
     currentConversationId,
     conv1IsEmpty,
+    conv4Msgs,
+    conv4Title,
+    pushConv4Message,
+    resetConv4,
     projectFiles,
     INITIAL_BLOCKS,
     aiViewerBlocks,

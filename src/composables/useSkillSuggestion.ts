@@ -1,14 +1,15 @@
-import { useAiviewerStore } from '@/stores/AiViewerStore'
 import type { SkillDraft } from '@/composables/useSkillStudioConversation'
+import { useSkillStore } from '@/stores/skillStore'
 
 // 專案內由 Agent 發起「這個流程要不要建立成個人技能？」的可重用流程。
-// 使用者按「是」→ 直接在畫布放上一個已預填的技能建立 block（SKILL），
-// 確認、調整、儲存、測試都在 block 內完成；河道只回一則「已放上區塊」。
-// 任何 convN 腳本只要提供自己的 push/scroll/conversationId，就能一行 offer()；
-// 按鈕點擊由 AiViewerRightBox 的 handleChatAreaClick 事件委派轉進 handleAction()。
+// offer() 把建議放進 skillStore 的待處理佇列，並在河道推一則單向通知——
+// 決策（建立／不用了）改到「技能管理」的「我的技能」分頁處理，不再是河道裡的
+// 即時 Y/N 卡片（2026-09-23 產品決議：技能管理列表取代河道即時建議，取代先前
+// 「方案三」直接跳轉 AI 賦能的即時卡片）。
+// 任何 convN 腳本只要提供自己的 push/scroll/conversationId，就能一行 offer()。
 
 export interface SkillSuggestion {
-  id: string          // 一則建議一個 id，one-shot 旗標以此為 key
+  id: string          // 一則建議一個 id，佇列以此去重
   name: string
   description: string
   triggerHint: string
@@ -16,24 +17,11 @@ export interface SkillSuggestion {
   reason: string      // 「我留意到「{reason}」這類流程…」
 }
 
-export type SkillSuggestStage = 'ask' | 'placed' | 'skipped'
-
 export interface SuggestionCtx {
   push: (msg: any) => void
   scroll: () => void
-  conversationId: string   // 寫進 block 的 origin，讓 block 知道自己從哪段對話長出來
+  conversationId: string   // 寫進佇列項目，「技能管理」按「建立」時當作交接資料的 origin
 }
-
-interface SuggestionState {
-  ctx: SuggestionCtx
-  suggestion: SkillSuggestion
-  choiceMade: boolean      // build／skip 二擇一
-}
-
-export const SKILL_SUGGEST_ACTIONS = {
-  build: 'skill-suggest-build',
-  skip: 'skill-suggest-skip',
-} as const
 
 export function suggestionToPrefill(s: SkillSuggestion): Partial<SkillDraft> {
   return {
@@ -50,63 +38,17 @@ export function suggestionOpeningMessage(s: SkillSuggestion): string {
 }
 
 export function useSkillSuggestion() {
-  const aiviewerStore = useAiviewerStore()
-  const states = new Map<string, SuggestionState>()
-
   function offer(ctx: SuggestionCtx, suggestion: SkillSuggestion): void {
-    states.set(suggestion.id, { ctx, suggestion, choiceMade: false })
-    ctx.push({ agent: 'brain', cardType: 'skillSuggest', suggestion, stage: 'ask' as SkillSuggestStage })
+    const store = useSkillStore()
+    if (store.pendingSuggestions.some(s => s.id === suggestion.id)) return
+    store.addSuggestion({ ...suggestion, conversationId: ctx.conversationId })
+    ctx.push({
+      agent: 'brain',
+      msg: `我留意到「${suggestion.reason}」這類流程你之後可能會重複用到，已經把建議放進「技能管理」，可以之後去那邊決定要不要建立成技能。`,
+      finishResponse: true,
+    })
     ctx.scroll()
   }
 
-  function build(st: SuggestionState) {
-    if (st.choiceMade) return
-    st.choiceMade = true
-    st.ctx.push({ forUser: true, msg: '是，建立成個人技能' })
-    st.ctx.scroll()
-    const s = st.suggestion
-    const blockId = aiviewerStore.addSkillBuilderBlock({
-      prefill: suggestionToPrefill(s),
-      openingMessage: suggestionOpeningMessage(s),
-      origin: { conversationId: st.ctx.conversationId, reason: s.reason },
-    })
-    setTimeout(() => {
-      st.ctx.push({
-        agent: 'brain',
-        cardType: 'skillSuggest',
-        suggestion: s,
-        stage: 'placed' as SkillSuggestStage,
-        blockId,
-        finishResponse: true,
-      })
-      st.ctx.scroll()
-    }, 500)
-  }
-
-  function skip(st: SuggestionState) {
-    if (st.choiceMade) return
-    st.choiceMade = true
-    st.ctx.push({ forUser: true, msg: '不用了' })
-    st.ctx.scroll()
-    setTimeout(() => {
-      st.ctx.push({ agent: 'brain', msg: '好的，這次的結果已保留在畫布中，之後有需要再跟我說一聲！' })
-      st.ctx.scroll()
-    }, 500)
-  }
-
-  function handleAction(action: string, suggestionId: string): boolean {
-    if (!action.startsWith('skill-suggest-')) return false
-    const st = states.get(suggestionId)
-    if (!st) return false
-    if (action === SKILL_SUGGEST_ACTIONS.build) build(st)
-    else if (action === SKILL_SUGGEST_ACTIONS.skip) skip(st)
-    else return false
-    return true
-  }
-
-  function reset(suggestionId: string): void {
-    states.delete(suggestionId)
-  }
-
-  return { offer, handleAction, reset }
+  return { offer }
 }
