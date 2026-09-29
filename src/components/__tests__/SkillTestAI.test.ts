@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, DOMWrapper } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
@@ -148,5 +148,34 @@ describe('SkillTestAI：AI 出題、使用者判斷該不該觸發的選擇題',
 
     expect(store.findSkill(id)!.isEnabled).toBe(true)
     expect(store.findSkill(id)!.assignedAgents).toEqual(['通用助理'])
+  })
+
+  it('confirmed outcome 帶 wasOverridden=true 時呼叫 overrideAndEnableSkill 而非 toggleSkill', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能3', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger)
+    }
+
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+    await wrapper.vm.$nextTick()
+
+    // SkillEnableFlow 透過 defineExpose 只暴露 requestEnable，findComponent(...).vm 拿到的是
+    // 開發模式下的完整內部 proxy（<script setup> top-level binding 唯讀，寫入會被吃掉），
+    // 真正被 SkillTestAI 呼叫的是 template ref 拿到的「exposed」物件本身，
+    // 所以改成透過 SkillTestAI 自己的 enableFlowRef（在其未呼叫 defineExpose 的完整 dev proxy 上可讀到）
+    // 取得同一個 exposed 物件來 stub，才能真正攔截 handleEnableClick 內的呼叫。
+    const enableFlowRef = (wrapper.vm as any).enableFlowRef
+    vi.spyOn(enableFlowRef, 'requestEnable').mockResolvedValue({ type: 'confirmed', agents: ['通用助理'], wasOverridden: true })
+
+    await wrapper.find('.ai-enable-btn').trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    const skill = store.findSkill(id)!
+    expect(skill.isEnabled).toBe(true)
+    expect(skill.aiTestOverridden).toBe(true)
+    expect(skill.assignedAgents).toEqual(['通用助理'])
   })
 })

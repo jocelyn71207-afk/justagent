@@ -127,12 +127,12 @@ const isFullPass = computed(() =>
 async function handleEnableClick() {
   const skill = store.findSkill(props.skillId)
   if (!skill) return
-  // 100% 全對時 canEnableSkill() 一定是 true，這裡不會看到「還不能啟用」對話框，
-  // 但呼叫端還是要處理完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
+  // 呼叫端要處理完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
   const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
   if (outcome.type !== 'confirmed') return
   store.setAssignedAgents(skill.id, outcome.agents)
-  store.toggleSkill(skill.id)
+  if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
+  else store.toggleSkill(skill.id)
 }
 
 const TAG_LABELS: Record<AITestTag, string> = {
