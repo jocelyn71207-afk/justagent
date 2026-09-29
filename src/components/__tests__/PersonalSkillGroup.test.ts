@@ -1,0 +1,49 @@
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import PersonalSkillGroup from '@/components/Skill/PersonalSkillGroup.vue'
+import type { Skill } from '@/stores/skillStore'
+
+function baseSkill(over: Partial<Skill> = {}): Skill {
+  return {
+    id: 'p1',
+    name: '我的技能',
+    description: '',
+    type: 'extension',
+    origin: 'manually_created',
+    version: '1.0.0',
+    isEnabled: true,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    ...over,
+  }
+}
+
+function mountTile(skill: Skill) {
+  return mount(PersonalSkillGroup, { props: { skill } })
+}
+
+describe('PersonalSkillGroup：skillIconName（怎麼來的一眼圖示）', () => {
+  it('積木組成（composition）：dashboard_customize', () => {
+    const w = mountTile(baseSkill({ composition: { sectionIds: ['x'] } } as Partial<Skill>))
+    expect(w.find('.tile-icon .material-symbols-outlined').text()).toBe('dashboard_customize')
+  })
+
+  it('AI 賦能對話建立（ai_assisted）：forum', () => {
+    const w = mountTile(baseSkill({ creationMethod: 'ai_assisted' }))
+    expect(w.find('.tile-icon .material-symbols-outlined').text()).toBe('forum')
+  })
+
+  it('真的自建（沒有 forkSourceId／derivedFrom）：edit（跟 SkillDetailDrawer「自建」一致）', () => {
+    const w = mountTile(baseSkill())
+    expect(w.find('.tile-icon .material-symbols-outlined').text()).toBe('edit')
+  })
+
+  it('複製副本（有 forkSourceId 或 derivedFrom）：維持原本的 person，不誤判成自建', () => {
+    const forked = mountTile(baseSkill({ forkSourceId: 'sys-001' }))
+    expect(forked.find('.tile-icon .material-symbols-outlined').text()).toBe('person')
+
+    const derived = mountTile(baseSkill({ derivedFrom: 'sys-002' }))
+    expect(derived.find('.tile-icon .material-symbols-outlined').text()).toBe('person')
+  })
+})

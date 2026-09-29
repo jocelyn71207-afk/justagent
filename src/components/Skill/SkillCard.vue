@@ -75,10 +75,12 @@ function formatCount(n: number): string {
 
 // 用「AI 賦能」建立的技能，圖示換成建立方式本身（跟 SkillMethodChooser 選卡同一組
 // icon：對話 forum／積木 dashboard_customize），一眼看出這顆技能怎麼來的；
-// 其他技能（Library 現有技能、手寫建立）維持原本依 isExtension 分的圖示
+// 真的自建（沒有 forkSourceId／derivedFrom 血緣）換成筆，跟 SkillDetailDrawer「來源關係」
+// 的自建圖示一致；有血緣的技能（複製副本、衍生自既有技能）維持原本依 isExtension 分的圖示
 const skillIconName = computed(() => {
   if (props.skill.composition) return 'dashboard_customize'
   if (props.skill.creationMethod === 'ai_assisted') return 'forum'
+  if (!props.skill.forkSourceId && !props.skill.derivedFrom) return 'edit'
   return props.isExtension ? 'extension' : 'psychology'
 })
 
