@@ -44,6 +44,7 @@
       <SkillStudioPreview
         v-model:active-tab="activeTab"
         hide-files
+        hide-nav-links
         :draft="conv.draft.value"
         :mode="conv.mode.value"
         :saved-skill-id="conv.savedSkillId.value"

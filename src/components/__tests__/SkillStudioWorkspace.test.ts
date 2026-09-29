@@ -207,6 +207,14 @@ describe('SkillStudioWorkspace', () => {
     }
   })
 
+  it('修改模式：右側不提供「直接編輯」「到技能管理」，因為現在是抽屜，離開這兩個入口都不合理', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('直接編輯')
+    expect(wrapper.text()).not.toContain('到技能管理')
+    expect(wrapper.text()).toContain('測試沙盒')
+  })
+
   it('exposed applyQuery：外部呼叫可以重新套用（模擬外殼守衛通過後的行為）', async () => {
     const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
     await flushPromises()

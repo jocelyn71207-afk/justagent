@@ -81,6 +81,13 @@ describe('SkillStudioPreview', () => {
     expect(w.find('.ssp-status-badge').text()).toBe('有未儲存變更')
   })
 
+  it('hideNavLinks：不顯示「直接編輯」「到技能管理」，但「測試沙盒」還在', async () => {
+    const w = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true, hideNavLinks: true })
+    expect(w.text()).not.toContain('直接編輯')
+    expect(w.text()).not.toContain('到技能管理')
+    expect(w.text()).toContain('測試沙盒')
+  })
+
   it('已儲存後兩個 tab 都有「技能測試沙盒」入口，點擊導向 /view/SkillTest?skillId=', async () => {
     const w = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true })
     const push = vi.spyOn((w.vm as any).$router, 'push')

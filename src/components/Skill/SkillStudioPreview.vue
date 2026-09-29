@@ -80,12 +80,14 @@
           {{ props.mode === 'create' ? '儲存為個人技能' : '儲存修改' }}
         </button>
         <template v-if="props.mode === 'edit' && props.savedSkillId">
-          <button type="button" class="custom-btn" @click="router.push({ path: '/view/SkillEditor', query: { skillId: props.savedSkillId } })">
-            <i class="material-symbols-outlined">edit</i>直接編輯
-          </button>
-          <button type="button" class="custom-btn" @click="router.push({ path: '/view/Skills' })">
-            <i class="material-symbols-outlined">auto_awesome</i>到技能管理
-          </button>
+          <template v-if="!props.hideNavLinks">
+            <button type="button" class="custom-btn" @click="router.push({ path: '/view/SkillEditor', query: { skillId: props.savedSkillId } })">
+              <i class="material-symbols-outlined">edit</i>直接編輯
+            </button>
+            <button type="button" class="custom-btn" @click="router.push({ path: '/view/Skills' })">
+              <i class="material-symbols-outlined">auto_awesome</i>到技能管理
+            </button>
+          </template>
           <!-- 對話測試、版本比較留在沙盒；這裡只放入口，不把沙盒整套搬進來 -->
           <button type="button" class="custom-btn" @click="goSandbox">
             <i class="material-symbols-outlined">science</i>測試沙盒
@@ -140,6 +142,7 @@ const props = defineProps<{
   nameConflict?: boolean
   hideTabs?: boolean
   hideFiles?: boolean
+  hideNavLinks?: boolean
 }>()
 
 const emit = defineEmits<{
