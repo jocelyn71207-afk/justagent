@@ -289,7 +289,7 @@
                     <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
                   </template>
                   <span v-else class="lineage-text">
-                    <i class="material-symbols-outlined lineage-icon">edit_note</i>
+                    <i class="material-symbols-outlined lineage-icon">edit</i>
                     自建
                   </span>
                 </div>
