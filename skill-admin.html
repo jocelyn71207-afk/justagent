@@ -559,7 +559,7 @@ This product is broken, I need help
         <div class="table-wrap">
           <div class="table-toolbar"><div class="left"><span style="font-size:12px;color:var(--gray-400);">共 3 筆</span></div><div class="right"><button class="btn btn-primary btn-sm" onclick="openModal('modal-create-agent')">+ 新增 Agent</button></div></div>
           <table>
-            <thead><tr><th>Agent 名稱</th><th>啟用 Skills</th><th>狀態</th><th>最後活躍</th><th class="center">動作</th></tr></thead>
+            <thead><tr><th>Agent 名稱</th><th>啟用 Skills</th><th>綁定 Tools/MCP</th><th>狀態</th><th>最後活躍</th><th class="center">動作</th></tr></thead>
             <tbody>
               <tr>
                 <td><strong>客服機器人</strong><br><span style="font-size:11px;color:var(--gray-400);">處理客戶線上諮詢</span></td>
@@ -571,6 +571,12 @@ This product is broken, I need help
                     <span class="tag tag-blue">文件摘要生成</span>
                     <span class="disabled-chip" title="此 Skill 已停用">情緒分析</span>
                     <span class="disabled-note">⚠ 停用</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="tag tag-cyan">knowledge-base-search</span>
+                    <span class="tag tag-purple">sentiment-analysis/analyze</span>
                   </div>
                 </td>
                 <td><span class="tag tag-green">✓ 運行中</span></td>
@@ -591,6 +597,12 @@ This product is broken, I need help
                     <span class="tag tag-indigo">競品分析</span>
                   </div>
                 </td>
+                <td>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="tag tag-cyan">knowledge-base-search</span>
+                    <span class="tag tag-purple">erp-server/query_inventory</span>
+                  </div>
+                </td>
                 <td><span class="tag tag-green">✓ 運行中</span></td>
                 <td>2 分鐘前</td>
                 <td class="center"><div style="display:flex;gap:6px;justify-content:center;"><button class="btn btn-default btn-sm" onclick="openModal('modal-create-agent')">編輯</button><button class="btn btn-default btn-sm">複製連結</button></div></td>
@@ -603,6 +615,11 @@ This product is broken, I need help
                     <span class="tag tag-indigo">ERP 庫存查詢</span>
                     <span class="tag tag-blue">數據可視化</span>
                     <span class="tag tag-blue">通用客服答覆</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="tag tag-purple">erp-server/query_inventory</span>
                   </div>
                 </td>
                 <td><span class="tag tag-green">✓ 運行中</span></td>
