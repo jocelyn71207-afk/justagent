@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, DOMWrapper } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
 import { useSkillStore } from '@/stores/skillStore'
@@ -98,4 +98,55 @@ describe('SkillTestAI：AI 出題、使用者判斷該不該觸發的選擇題',
     expect(store.aiTestScenarios.every(s => s.status === 'pending')).toBe(true)
     expect(w.find('.status-badge').exists()).toBe(false)
   }, 10000)
+
+  it('100% 通過時顯示「啟用技能」按鈕；未 100% 或尚未測試時不顯示', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false) // 還沒生成測試情境
+
+    await store.generateAITestScenarios(id)
+    await wrapper.vm.$nextTick()
+    const scenarios = [...store.aiTestScenarios]
+    expect(scenarios.length).toBeGreaterThan(1) // 這個測試要故意答錯至少一題，情境數要夠
+
+    // 除了最後一題以外全部故意答錯，確定 correct !== total（不會意外全對）
+    for (let i = 0; i < scenarios.length - 1; i++) {
+      store.answerAITestScenario(id, scenarios[i].id, !scenarios[i].expectedTrigger)
+    }
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false) // 還有題目 pending，aiTestReport 仍是 null
+
+    store.answerAITestScenario(id, scenarios.at(-1)!.id, scenarios.at(-1)!.expectedTrigger)
+    await wrapper.vm.$nextTick()
+    expect(store.aiTestReport!.correct).not.toBe(store.aiTestReport!.total) // 確認這次真的不是 100%
+    expect(wrapper.find('.ai-enable-btn').exists()).toBe(false)
+  })
+
+  it('100% 全對：顯示啟用按鈕，點擊走 SkillEnableFlow 並在確認後呼叫 setAssignedAgents + toggleSkill', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能2', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger) // 全部答對
+    }
+    expect(store.aiTestReport!.correct).toBe(store.aiTestReport!.total)
+
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+    await wrapper.vm.$nextTick()
+
+    const enableBtn = wrapper.find('.ai-enable-btn')
+    expect(enableBtn.exists()).toBe(true)
+    await enableBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const agentDialog = new DOMWrapper(document.body).find('.enable-agent-dialog')
+    expect(agentDialog.exists()).toBe(true) // 100% 直接進 Agent 確認，不會看到閘門失敗對話框
+    await agentDialog.findAll('.se-agent-chip').find(c => c.text().includes('通用助理'))!.trigger('click')
+    await agentDialog.findAll('button').find(b => b.text().includes('確認並啟用'))!.trigger('click')
+
+    expect(store.findSkill(id)!.isEnabled).toBe(true)
+    expect(store.findSkill(id)!.assignedAgents).toEqual(['通用助理'])
+  })
 })

@@ -94,20 +94,46 @@
             </div>
           </div>
           <p class="report-summary">{{ store.aiTestReport.summary }}</p>
+          <button
+            v-if="isFullPass"
+            type="button"
+            class="custom-btn custom-main-btn ai-enable-btn"
+            @click="handleEnableClick"
+          >
+            <i class="material-symbols-outlined">check_circle</i>啟用技能
+          </button>
         </div>
       </div>
     </template>
 
+    <SkillEnableFlow ref="enableFlowRef" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { AITestTag } from '@/stores/skillStore'
+import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 
 const props = defineProps<{ skillId: string }>()
 const store = useSkillStore()
+const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
+
+const isFullPass = computed(() =>
+  !!store.aiTestReport && store.aiTestReport.total > 0 && store.aiTestReport.correct === store.aiTestReport.total
+)
+
+async function handleEnableClick() {
+  const skill = store.findSkill(props.skillId)
+  if (!skill) return
+  // 100% 全對時 canEnableSkill() 一定是 true，這裡不會看到「還不能啟用」對話框，
+  // 但呼叫端還是要處理完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
+  const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
+  if (outcome.type !== 'confirmed') return
+  store.setAssignedAgents(skill.id, outcome.agents)
+  store.toggleSkill(skill.id)
+}
 
 const TAG_LABELS: Record<AITestTag, string> = {
   normal: '正常流程',
