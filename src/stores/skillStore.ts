@@ -187,7 +187,7 @@ export interface UpdateSkillPayload {
   capabilities?: SkillCapability[]
 }
 
-// AI 賦能對話修改用：只允許動這五個內容欄位，不碰狀態／版本／來源關係
+// AI 賦能對話修改用：只允許動這六個內容欄位，不碰狀態／版本／來源關係
 export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities' | 'composition'>>
 
 export interface DraftSkill {
