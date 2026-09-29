@@ -124,6 +124,9 @@ function resolveConfirmed() {
 }
 
 function requestEnable(skill: Skill, existingAgents: string[]): Promise<EnableFlowOutcome> {
+  // 若前一次呼叫的 promise 還沒 resolve（理論上不該發生，但呼叫端萬一重複呼叫，
+  // 不能讓前一個 promise 永遠 pending 下去），先幫它 resolve 成 cancelled 再繼續
+  resolver?.({ type: 'cancelled' })
   pendingWasOverridden = false
   pendingExistingAgents = existingAgents
   return new Promise(resolve => {

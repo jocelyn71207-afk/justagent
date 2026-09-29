@@ -128,4 +128,24 @@ describe('SkillEnableFlow', () => {
     await new DOMWrapper(document.body).findAll('.enable-agent-dialog button').find(b => b.text().includes('取消'))!.trigger('click')
     expect(await promise).toEqual({ type: 'cancelled' })
   })
+
+  it('requestEnable 被再次呼叫時，前一次還沒 resolve 的 promise 會被 resolve 成 cancelled', async () => {
+    const store = useSkillStore()
+    const idA = store.createPersonalSkill({ name: '技能A', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const idB = store.createPersonalSkill({ name: '技能B', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const wrapper = mountFlow()
+    const firstPromise = (wrapper.vm as any).requestEnable(store.findSkill(idA), [])
+    await wrapper.vm.$nextTick()
+
+    const secondPromise = (wrapper.vm as any).requestEnable(store.findSkill(idB), [])
+    expect(await firstPromise).toEqual({ type: 'cancelled' })
+
+    await wrapper.vm.$nextTick()
+    const dialog = new DOMWrapper(document.body).find('.enable-gate-dialog')
+    expect(dialog.text()).toContain('技能B') // 第二次呼叫真的接手了對話框
+
+    const cancelBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('取消'))!
+    await cancelBtn.trigger('click')
+    expect(await secondPromise).toEqual({ type: 'cancelled' })
+  })
 })
