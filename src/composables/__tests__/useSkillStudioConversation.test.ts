@@ -1208,14 +1208,17 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     expect(last.content).toContain('75%')
   })
 
-  it('全對（100%）：不打擾使用者，不轉關卡也不推訊息', () => {
+  it('全對（100%）：不轉關卡，但主動推一句引導啟用的訊息', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     const before = c.messages.value.length
     const stageBefore = c.gateStage.value
     c.notifyTestResult({ total: 8, correct: 8, byTag: {} as any, summary: '' })
-    expect(c.gateStage.value).toBe(stageBefore)
-    expect(c.messages.value.length).toBe(before)
+    expect(c.gateStage.value).toBe(stageBefore) // 不打斷後續對話，維持原本關卡
+    expect(c.messages.value.length).toBe(before + 1)
+    const last = c.messages.value.at(-1)!
+    expect(last.role).toBe('agent')
+    expect(last.content).toContain('啟用技能')
   })
 })

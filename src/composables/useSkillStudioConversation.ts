@@ -733,10 +733,18 @@ export function useSkillStudioConversation() {
     draft.value = { ...draft.value, files }
   }
 
-  // AI 快速測試沒有全對：左側對話主動引導使用者調整內容，退回既有的 clarify 補齊流程
-  // （沿用「多輪問答補齊草稿內容」的既有語意，不新增一個專門的關卡）。全對就不用打擾使用者
+  // AI 快速測試結果出來：全對就主動引導去啟用（不轉關卡，純推一句訊息，跟現有
+  // save() 之後「可以到「測試」tab 驗證」是同一種寫法）；沒全對則退回既有的 clarify
+  // 補齊流程（沿用「多輪問答補齊草稿內容」的既有語意，不新增一個專門的關卡）
   function notifyTestResult(report: AITestReport): void {
-    if (report.total === 0 || report.correct === report.total) return
+    if (report.total === 0) return
+    if (report.correct === report.total) {
+      push({
+        role: 'agent',
+        content: '太好了，這次全部答對了！到下面的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。',
+      })
+      return
+    }
     const rate = Math.round((report.correct / report.total) * 100)
     gateStage.value = 'clarify'
     push({
