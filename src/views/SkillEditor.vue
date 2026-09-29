@@ -221,36 +221,7 @@
         </div>
       </div>
 
-      <!-- 啟用前的測試閘門：個人技能沒通過 AI 快速測試（或沒明確選擇略過）時，
-           勾了「啟用狀態」送出也不直接生效，改問清楚要怎麼處理 -->
-      <Teleport to="body">
-        <Transition name="confirm-fade">
-          <div
-            v-if="enableGateBlocked"
-            class="drawer-confirm-overlay"
-            @click.self="enableGateBlocked = false"
-          >
-            <div class="drawer-confirm-dialog enable-gate-dialog">
-              <div class="confirm-icon confirm-icon--update">
-                <i class="material-symbols-outlined">rule</i>
-              </div>
-              <h4>還不能啟用「{{ form.name }}」</h4>
-              <p>{{ existingSkill ? describeAiTestGateReason(existingSkill) : '' }}</p>
-              <div class="confirm-actions confirm-actions--column">
-                <button class="custom-btn" @click="handleEnableGateRevise">
-                  <i class="material-symbols-outlined">forum</i>去修改技能內容
-                </button>
-                <button class="custom-btn custom-main-btn" @click="handleEnableGateOverride">
-                  <i class="material-symbols-outlined">check_circle</i>視為通過，直接啟用
-                </button>
-                <button class="custom-btn" @click="enableGateBlocked = false">
-                  取消
-                </button>
-              </div>
-            </div>
-          </div>
-        </Transition>
-      </Teleport>
+      <SkillEnableFlow ref="enableFlowRef" />
 
     </div>
   </div>
@@ -262,7 +233,8 @@ import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
-import { useSkillStore, AVAILABLE_AGENTS, canEnableSkill, describeAiTestGateReason } from '@/stores/skillStore'
+import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
+import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
 import type { DraftSkill, SkillFile, SkillCapability } from '@/stores/skillStore'
 
 const router = useRouter()
@@ -280,7 +252,7 @@ const isDraftMode = !!draftId
 const existingSkill = editSkillId ? store.findSkill(editSkillId) : null
 const existingDraft = draftId ? (store.myDrafts as DraftSkill[]).find(d => d.id === draftId) ?? null : null
 
-const enableGateBlocked = ref(false)
+const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
 
 const hasNameConflict = computed(() => {
   if (!existingSkill || existingSkill.zone !== 'personal' || !existingSkill.derivedFrom) return false
@@ -339,17 +311,19 @@ function buildPayload() {
   }
 }
 
-function handleSubmit() {
+async function handleSubmit() {
   if (!form.name.trim()) return
 
-  // 編輯模式下，如果是「原本停用、這次要切成啟用」而且還沒過測試關卡，攔下整次送出，
-  // 不呼叫 updateSkill；canEnableSkill() 本身只管 zone === 'personal' 的技能，
-  // 其他 zone 一律回傳 true，這裡不用再重複判斷一次 zone
-  if (
-    isEditMode && editSkillId && existingSkill &&
-    form.isEnabled && !existingSkill.isEnabled && !canEnableSkill(existingSkill)
-  ) {
-    enableGateBlocked.value = true
+  // 編輯模式下，如果是「原本停用、這次要切成啟用」而且還沒過測試關卡，
+  // 先跑「檢查閘門 → 確認 Agent」共用流程，通過才繼續送出
+  if (isEditMode && editSkillId && existingSkill && form.isEnabled && !existingSkill.isEnabled) {
+    const outcome = await enableFlowRef.value!.requestEnable(existingSkill, form.assignedAgents)
+    if (outcome.type === 'cancelled') return
+    if (outcome.type === 'revise') return // 現行行為：關掉對話框、停留在編輯頁，不用額外導頁
+    form.assignedAgents = outcome.agents
+    if (outcome.wasOverridden) store.overrideAndEnableSkill(editSkillId)
+    store.updateSkill(editSkillId, { ...buildPayload(), isEnabled: true })
+    router.push('/view/Skills')
     return
   }
 
@@ -359,25 +333,11 @@ function handleSubmit() {
   } else if (isEditMode && editSkillId) {
     store.updateSkill(editSkillId, payload)
   } else {
-    // 全新建立一律先進個人技能區，不需要送審就能個人使用（跟「建立副本」同一套模式）
+    // 全新建立一律先進個人技能區，不需要送審就能個人使用（跟「建立副本」同一套模式）；
+    // 新建一律以未啟用落地——createPersonalSkill() 本來就無條件寫死 isEnabled: false，
+    // 完全不讀這裡 payload.isEnabled 的值，不需要、也不應該接 SkillEnableFlow
     store.createPersonalSkill(payload)
   }
-  router.push('/view/Skills')
-}
-
-function handleEnableGateRevise() {
-  enableGateBlocked.value = false
-  if (!editSkillId) return
-  router.push({ name: 'SkillManagement', query: { skillId: editSkillId } })
-}
-
-function handleEnableGateOverride() {
-  if (!editSkillId) return
-  store.overrideAndEnableSkill(editSkillId)
-  enableGateBlocked.value = false
-  // 覆蓋只處理 isEnabled；表單其餘欄位的變更照樣送出，isEnabled 明確帶 true
-  // （剛剛已經翻成 true 的現況），不要帶表單裡過期的 false 把它蓋回去
-  store.updateSkill(editSkillId, { ...buildPayload(), isEnabled: true })
   router.push('/view/Skills')
 }
 </script>
