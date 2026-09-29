@@ -751,12 +751,47 @@ This product is broken, I need help
         </div>
         <div class="form-item" style="margin-bottom:0;">
           <label>綁定 Tools / MCP <span style="font-weight:400;color:var(--gray-400);font-size:11px;">· 除了上方 Skills 帶來的工具，也可以直接為此 Agent 額外加掛</span></label>
-          <div style="border:1px solid var(--gray-300);border-radius:4px;padding:10px;max-height:120px;overflow-y:auto;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> knowledge-base-search <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> sentiment-analysis/analyze <span class="tag tag-purple" style="margin-left:auto;">MCP</span></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> meeting-transcript-search <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox"> order-query <span class="tag tag-cyan" style="margin-left:auto;">Native</span></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox"> erp-server/query_inventory <span class="tag tag-purple" style="margin-left:auto;">MCP</span></label>
+          <div style="border:1px solid var(--gray-300);border-radius:4px;padding:10px;max-height:180px;overflow-y:auto;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox" checked>
+              <span style="display:flex;flex-direction:column;">
+                <span>knowledge-base-search</span>
+                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">平台知識庫全文搜尋</span>
+              </span>
+              <span class="tag tag-cyan" style="margin-left:auto;">Native</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox" checked>
+              <span style="display:flex;flex-direction:column;">
+                <span>sentiment-analysis/analyze</span>
+                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">情緒分析與語氣偵測</span>
+              </span>
+              <span class="tag tag-purple" style="margin-left:auto;">MCP</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox" checked>
+              <span style="display:flex;flex-direction:column;">
+                <span>meeting-transcript-search</span>
+                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">會議逐字稿全文搜尋</span>
+              </span>
+              <span class="tag tag-cyan" style="margin-left:auto;">Native</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox">
+              <span style="display:flex;flex-direction:column;">
+                <span>order-query</span>
+                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">查詢訂單狀態與物流</span>
+              </span>
+              <span class="tag tag-cyan" style="margin-left:auto;">Native</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+              <input type="checkbox">
+              <span style="display:flex;flex-direction:column;">
+                <span>erp-server/query_inventory</span>
+                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">查詢 ERP 即時庫存</span>
+              </span>
+              <span class="tag tag-purple" style="margin-left:auto;">MCP</span>
+            </label>
           </div>
         </div>
       </div>
