@@ -165,13 +165,21 @@
             </button>
           </div>
           <!-- AI 建議建立的技能：agent 完成任務後放進佇列，決策（建立／不用了）在這裡處理，
-               不再是 AiViewer 對話河道裡的即時卡片，見 useSkillSuggestion -->
+               不再是 AiViewer 對話河道裡的即時卡片，見 useSkillSuggestion。預設收合成一行
+               摘要——展開後的完整清單才是喧賓奪主的來源，筆數不管多寡，收合狀態下這塊
+               區域永遠只佔一行高度 -->
           <div v-if="store.pendingSuggestions.length" ref="suggestionQueueRef" class="skill-suggestion-queue">
-            <div class="ssq-header">
+            <button
+              type="button"
+              class="ssq-header ssq-summary-btn"
+              :aria-expanded="suggestionsExpanded"
+              @click="suggestionsExpanded = !suggestionsExpanded"
+            >
               <i class="material-symbols-outlined">auto_awesome</i>
-              <span class="ssq-title">AI 建議建立的技能</span>
-            </div>
-            <div class="ssq-list">
+              <span class="ssq-title">{{ store.pendingSuggestions.length }} 個 AI 建議建立的技能</span>
+              <i class="material-symbols-outlined ssq-caret">{{ suggestionsExpanded ? 'expand_less' : 'expand_more' }}</i>
+            </button>
+            <div v-if="suggestionsExpanded" class="ssq-list">
               <div v-for="s in store.pendingSuggestions" :key="s.id" class="ssq-item">
                 <div class="ssq-item-body">
                   <div class="ssq-item-name">{{ s.name }}</div>
@@ -699,11 +707,16 @@ function dismissSuggestion(id: string) {
   store.dismissSuggestion(id)
 }
 
-// 統計列的「N 個 AI 建議技能待處理」入口：確保停在「我的技能」分頁（佇列只在那裡渲染），
-// 再捲動到佇列本身——它在頁面下方，光切分頁不一定看得到
+// 建議佇列預設收合成一行摘要，筆數再多也不會佔滿版面；點統計列的入口
+// 或摘要列本身都會展開
+const suggestionsExpanded = ref(false)
+
+// 統計列的「N 個 AI 建議技能待處理」入口：確保停在「我的技能」分頁（佇列只在那裡渲染）、
+// 展開摘要，再捲動到佇列本身——它在頁面下方，光切分頁不一定看得到
 const suggestionQueueRef = ref<HTMLElement | null>(null)
 async function scrollToSuggestions() {
   activeTab.value = 'my'
+  suggestionsExpanded.value = true
   await nextTick()
   suggestionQueueRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }

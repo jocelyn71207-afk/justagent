@@ -104,17 +104,30 @@
     overflow: hidden;
   }
 
+  // 現在是可點擊的收合/展開摘要列，不是純文字標題——重置成按鈕的樣子，
+  // 視覺上維持跟改版前一樣（同樣的 padding／字級／顏色）
   .ssq-header {
+    width: 100%;
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 10px 14px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 600;
     color: var(--tag-violet-text);
+    transition: filter 0.15s;
 
     .material-symbols-outlined { font-size: 17px; }
+    &:hover { filter: brightness(0.94); }
   }
+
+  .ssq-title { flex: 1; }
+  .ssq-caret { flex-shrink: 0; }
 
   // 多筆建議時，這塊佔幅不能無限長高、把下面「我的技能」清單擠到很遠——
   // 超過約 2 筆半就內部捲動，讓這塊區域的高度跟建議筆數脫鉤
