@@ -145,6 +145,10 @@ async function handleEnableClick() {
     router.push({ path: '/view/Skills', query: { skillId: skill.id } })
     return
   }
+  // 這顆按鈕只在 100% 全對時出現，isFullPass 已經保證 canEnableSkill() 為
+  // true，理論上不會走到閘門對話框、更不會拿到 goToTest——但呼叫端仍要處理
+  // 完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
+  if (outcome.type === 'goToTest') return
   store.setAssignedAgents(skill.id, outcome.agents)
   if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
   else store.toggleSkill(skill.id)

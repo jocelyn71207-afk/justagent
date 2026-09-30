@@ -873,6 +873,10 @@ async function handleToggle(skill: Skill) {
     router.push({ query: { skillId: skill.id } })
     return
   }
+  if (outcome.type === 'goToTest') {
+    router.push({ query: { skillId: skill.id, tab: 'test' } })
+    return
+  }
   store.setAssignedAgents(skill.id, outcome.agents)
   if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
   else store.toggleSkill(skill.id)

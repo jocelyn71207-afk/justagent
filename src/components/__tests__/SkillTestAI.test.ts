@@ -180,6 +180,29 @@ describe('SkillTestAI：AI 出題、使用者判斷該不該觸發的選擇題',
     expect(skill.assignedAgents).toEqual(['通用助理'])
   })
 
+  it('goToTest outcome（理論上不會發生，因為 100% 時閘門不會顯示）：不觸發任何 store 變更', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能4', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios(id)
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario(id, sc.id, sc.expectedTrigger)
+    }
+
+    const wrapper = mount(SkillTestAI, { props: { skillId: id } })
+    await wrapper.vm.$nextTick()
+
+    const enableFlowRef = (wrapper.vm as any).enableFlowRef
+    vi.spyOn(enableFlowRef, 'requestEnable').mockResolvedValue({ type: 'goToTest' })
+
+    await wrapper.find('.ai-enable-btn').trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    const skill = store.findSkill(id)!
+    expect(skill.isEnabled).toBe(false)
+    expect(skill.assignedAgents).toEqual([])
+  })
+
   it('已經啟用的技能：即使報告 100% 全對，也不顯示「啟用技能」按鈕（避免誤按變成停用）', async () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '已啟用技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })

@@ -9,6 +9,9 @@
           <h4>還不能啟用「{{ gateSkill.name }}」</h4>
           <p>{{ describeAiTestGateReason(gateSkill) }}</p>
           <div class="confirm-actions confirm-actions--column">
+            <button class="custom-btn" @click="resolveGoToTest">
+              <i class="material-symbols-outlined">science</i>前往測試
+            </button>
             <button class="custom-btn" @click="resolveRevise">
               <i class="material-symbols-outlined">forum</i>去修改技能內容
             </button>
@@ -76,6 +79,7 @@ import type { Skill } from '@/stores/skillStore'
 export type EnableFlowOutcome =
   | { type: 'confirmed'; agents: string[]; wasOverridden: boolean }
   | { type: 'revise' }
+  | { type: 'goToTest' }
   | { type: 'cancelled' }
 
 const gateSkill = ref<Skill | null>(null)
@@ -106,6 +110,12 @@ function handleOverride() {
 function resolveRevise() {
   gateSkill.value = null
   resolver?.({ type: 'revise' })
+  resolver = null
+}
+
+function resolveGoToTest() {
+  gateSkill.value = null
+  resolver?.({ type: 'goToTest' })
   resolver = null
 }
 

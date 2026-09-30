@@ -53,6 +53,20 @@ describe('SkillEnableFlow', () => {
     expect(new DOMWrapper(document.body).find('.enable-agent-dialog').exists()).toBe(false)
   })
 
+  it('沒過測試閘門：選「前往測試」resolve goToTest，不進 Agent 確認步驟', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '待測技能2b', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    const wrapper = mountFlow()
+    const promise = (wrapper.vm as any).requestEnable(store.findSkill(id), [])
+    await wrapper.vm.$nextTick()
+
+    const goToTestBtn = new DOMWrapper(document.body).findAll('.enable-gate-dialog button').find(b => b.text().includes('前往測試'))!
+    await goToTestBtn.trigger('click')
+    expect(await promise).toEqual({ type: 'goToTest' })
+    expect(new DOMWrapper(document.body).find('.enable-gate-dialog').exists()).toBe(false)
+    expect(new DOMWrapper(document.body).find('.enable-agent-dialog').exists()).toBe(false)
+  })
+
   it('沒過測試閘門：選「視為通過」會接著顯示 Agent 確認對話框，預填 existingAgents', async () => {
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '待測技能3', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
