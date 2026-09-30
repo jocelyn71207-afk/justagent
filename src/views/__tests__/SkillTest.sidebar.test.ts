@@ -9,7 +9,7 @@ describe('SkillTest 側欄分類色條', () => {
     setActivePinia(createPinia())
     const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
     const wrapper = mount(SkillTest, {
-      global: { plugins: [router], stubs: { SkillTestChat: true, SkillTestAI: true } },
+      global: { plugins: [router], stubs: { SkillTestChat: true } },
     })
     const labels = wrapper.findAll('.subgroup-label')
     expect(labels.length).toBeGreaterThan(0)

@@ -79,25 +79,7 @@
               </button>
             </div>
 
-            <div class="test-panel-tabs">
-              <button
-                :class="['tab-btn', { 'is-active': activeTab === 'chat' }]"
-                @click="activeTab = 'chat'"
-              >
-                <i class="material-symbols-outlined">chat</i>
-                對話測試
-              </button>
-              <button
-                :class="['tab-btn', { 'is-active': activeTab === 'ai' }]"
-                @click="activeTab = 'ai'"
-              >
-                <i class="material-symbols-outlined">auto_awesome</i>
-                AI 快速測試
-              </button>
-            </div>
-
-            <SkillTestChat v-if="activeTab === 'chat'" :skill-id="selectedSkill.id" />
-            <SkillTestAI v-else :skill-id="selectedSkill.id" />
+            <SkillTestChat :skill-id="selectedSkill.id" />
           </template>
 
           <div v-else class="panel-empty">
@@ -132,17 +114,6 @@
                 <div class="context-card-title">觸發時機</div>
                 <p class="context-instructions">{{ selectedSkill.triggerHint }}</p>
               </div>
-
-              <div class="context-card">
-                <div class="context-card-title">AI 測試摘要</div>
-                <template v-if="store.aiTestReport">
-                  <div class="context-rate">
-                    <span class="context-rate-num">{{ aiRatePercent }}%</span>
-                    <span class="context-rate-sub">{{ store.aiTestReport.correct }} / {{ store.aiTestReport.total }} 答對</span>
-                  </div>
-                </template>
-                <p v-else class="context-empty-hint">尚未作答 AI 快速測試</p>
-              </div>
             </div>
           </div>
         </div>
@@ -156,14 +127,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTestChat from '@/components/Skill/SkillTestChat.vue'
-import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
 import SkillVersionPicker from '@/components/Skill/SkillVersionPicker.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { Skill } from '@/stores/skillStore'
 
 const route = useRoute()
 const store = useSkillStore()
-const activeTab = ref<'chat' | 'ai'>('chat')
 const isContextOpen = ref(false)
 
 const selectedSkill = computed(() =>
@@ -178,12 +147,6 @@ const librarySubgroups = computed(() => [
   { key: 'enterprise', label: '企業擴充', skills: enabledLibrarySkills.value.filter(s => s.scope === 'enterprise') },
   { key: 'team', label: '團隊擴充', skills: enabledLibrarySkills.value.filter(s => s.scope === 'team') },
 ])
-
-const aiRatePercent = computed(() => {
-  const report = store.aiTestReport
-  if (!report || !report.total) return 0
-  return Math.round((report.correct / report.total) * 100)
-})
 
 function displayVersionName(skill: Skill): string {
   if (store.selectedSkillId === skill.id && store.selectedVersionName) {
