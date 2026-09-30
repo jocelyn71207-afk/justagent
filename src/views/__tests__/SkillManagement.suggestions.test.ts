@@ -37,6 +37,9 @@ describe('SkillManagement 建議建立的技能', () => {
 
   it('沒有待處理建議時不顯示這個區塊', async () => {
     setActivePinia(createPinia())
+    // 預設佇列裡有一筆示範假資料（見 skillStore.ts 的 MOCK_SUGGESTIONS），
+    // 這裡測的是真的清空之後的樣子，先清掉才有乾淨的起點
+    useSkillStore().dismissSuggestion('demo-weekly-report-digest')
     const { wrapper } = await mountPage()
     expect(wrapper.find('.skill-suggestion-queue').exists()).toBe(false)
   })
@@ -44,6 +47,7 @@ describe('SkillManagement 建議建立的技能', () => {
   it('顯示佇列裡的建議：名稱與來源流程', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
+    store.dismissSuggestion('demo-weekly-report-digest')
     store.addSuggestion({
       id: 'conv4-sales-report', name: '產品銷售報告整理', description: '查詢並產出報告',
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
@@ -59,6 +63,7 @@ describe('SkillManagement 建議建立的技能', () => {
   it('按「建立」：設定交接資料、從佇列移除、導向 AI 賦能並帶 ?from=', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
+    store.dismissSuggestion('demo-weekly-report-digest')
     store.addSuggestion({
       id: 'conv4-sales-report', name: '產品銷售報告整理', description: '查詢並產出報告',
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
@@ -79,6 +84,7 @@ describe('SkillManagement 建議建立的技能', () => {
   it('按「不用了」：直接從佇列移除，不導向也不設定交接資料', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
+    store.dismissSuggestion('demo-weekly-report-digest')
     store.addSuggestion({
       id: 'conv4-sales-report', name: '產品銷售報告整理', description: '查詢並產出報告',
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
@@ -101,6 +107,7 @@ describe('SkillManagement 建議建立的技能', () => {
     const scrollIntoView = vi.fn()
     Element.prototype.scrollIntoView = scrollIntoView
     const store = useSkillStore()
+    store.dismissSuggestion('demo-weekly-report-digest')
     store.addSuggestion({
       id: 'conv4-sales-report', name: '產品銷售報告整理', description: '查詢並產出報告',
       triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
@@ -118,6 +125,7 @@ describe('SkillManagement 建議建立的技能', () => {
 
   it('沒有待處理建議時，統計列不顯示這個入口', async () => {
     setActivePinia(createPinia())
+    useSkillStore().dismissSuggestion('demo-weekly-report-digest')
     const { wrapper } = await mountPage()
     expect(wrapper.find('.skill-stat--suggestion').exists()).toBe(false)
   })

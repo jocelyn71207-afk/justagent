@@ -1717,7 +1717,21 @@ export const useSkillStore = defineStore('skillStore', () => {
     myPersonalSkillsRef.value.filter(s => !s.deletedAt && hasPendingReview(s))
   )
 
-  const pendingSuggestionsRef = ref<SkillSuggestionEntry[]>([])
+  // 預設放一筆假資料，畫面上才看得到「AI 建議建立的技能」長什麼樣子——
+  // 真正的建議（conv4 demo 觸發的 useSkillSuggestion().offer()）id 不同，
+  // 兩者不會互相 dedupe 掉，可以同時存在
+  const MOCK_SUGGESTIONS: SkillSuggestionEntry[] = [
+    {
+      id: 'demo-weekly-report-digest',
+      name: '週報摘要整理',
+      description: '整理本週對話中的重點需求，套用固定格式產出週報摘要',
+      triggerHint: '偵測到「彙整本週重點＋套用週報格式」類型的整理需求',
+      steps: ['彙整本週對話重點', '套用週報格式產出摘要'],
+      reason: '示範用資料，方便直接看到「AI 建議建立的技能」的樣子',
+      conversationId: 'demo',
+    },
+  ]
+  const pendingSuggestionsRef = ref<SkillSuggestionEntry[]>(JSON.parse(JSON.stringify(MOCK_SUGGESTIONS)))
   const pendingSuggestions = computed<SkillSuggestionEntry[]>(() => pendingSuggestionsRef.value)
 
   function addSuggestion(entry: SkillSuggestionEntry): void {

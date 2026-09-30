@@ -16,6 +16,9 @@ const ENTRY: SkillSuggestionEntry = {
 describe('skillStore 建議建立的技能佇列', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    // 預設佇列裡有一筆示範假資料（見 skillStore.ts 的 MOCK_SUGGESTIONS），
+    // 這裡測的是 addSuggestion/dismissSuggestion 本身的行為，先清掉才有乾淨的起點
+    useSkillStore().dismissSuggestion('demo-weekly-report-digest')
   })
 
   it('addSuggestion 後會出現在 pendingSuggestions', () => {
