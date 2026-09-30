@@ -178,6 +178,20 @@ describe('useSkillStudioConversation', () => {
     expect(c.loadSkill('nope')).toBe(false)
   })
 
+  it('loadSkill 帶 intent="ask"：開場白換一句「剛剛測試」的問句，不是預設「要改」的版本', () => {
+    const c1 = useSkillStudioConversation()
+    c1.loadSkill('personal-001', 'edit')
+    const editOpening = c1.messages.value[0].content
+
+    const c2 = useSkillStudioConversation()
+    expect(c2.loadSkill('personal-001', 'ask')).toBe(true)
+    expect(c2.mode.value).toBe('edit')
+    const askOpening = c2.messages.value[0].content
+    expect(askOpening).toContain('週報自動生成')
+    expect(askOpening).toContain('測試')
+    expect(askOpening).not.toBe(editOpening)
+  })
+
   it('save 於修改模式呼叫 applyStudioPatch，內容寫回 store', async () => {
     const store = useSkillStore()
     const c = useSkillStudioConversation()

@@ -42,7 +42,9 @@ export interface StudioSnapshot {
 }
 
 export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描述你想讓 Agent 幫你做什麼，我會先擬一版設定放在右側。'
-const GATE_OPENING_MESSAGE = '你好，我是這裡的助理。想記一個新做法，或是要調整既有的，都可以直接跟我說。'
+// 從「建立技能」按鈕進來，意圖已經確定是「建立」，開場白不用再留「或是要調整既有的」
+// 這種模糊空間——跟 loadSkill()／askAboutSkill 各自的開場白算同一組、依入口區分語氣
+const GATE_OPENING_MESSAGE = '你好，我是技能建立助理。跟我說說你想讓 Agent 幫你做什麼，我會先幫你擬一版設定內容。'
 
 export function emptyDraft(): SkillDraft {
   return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], files: [], method: null, sectionIds: [] }
@@ -644,7 +646,10 @@ export function useSkillStudioConversation() {
     draft.value = next
   }
 
-  function loadSkill(skillId: string): boolean {
+  // intent 'edit'：從技能卡片點進來，已經知道要調整內容。
+  // intent 'ask'：從測試沙盒點進來，剛測完可能只是想問問題，不代表一定要改東西——
+  // 開場白故意不預設「要改」，留給使用者自己決定要不要動手調整
+  function loadSkill(skillId: string, intent: 'edit' | 'ask' = 'edit'): boolean {
     const s = store.findSkill(skillId)
     if (!s || s.zone !== 'personal') return false
     mode.value = 'edit'
@@ -662,7 +667,12 @@ export function useSkillStudioConversation() {
     gatheringRawText.value = ''
     gatheringRound.value = 0
     awaitingSupplement.value = false
-    if (draft.value.method === 'chat') push({ role: 'agent', content: `我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。` })
+    if (draft.value.method === 'chat') {
+      const opening = intent === 'ask'
+        ? `你好，我是這裡的助理。剛剛測試「${s.name}」時如果有哪裡想確認或討論，都可以直接問我，需要調整內容的話我們再一起處理。`
+        : `你好，我們來調整「${s.name}」。告訴我想改哪裡，右側會即時反映。`
+      push({ role: 'agent', content: opening })
+    }
     return true
   }
 

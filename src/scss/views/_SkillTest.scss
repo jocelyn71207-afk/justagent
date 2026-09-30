@@ -201,9 +201,21 @@
       gap: 6px;
     }
 
+    .test-panel-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .ask-studio-btn,
     .info-toggle-btn {
       font-size: 12px;
       padding: 5px 12px;
+    }
+
+    .ask-studio-btn .material-symbols-outlined {
+      color: $color_main_1;
     }
   }
 

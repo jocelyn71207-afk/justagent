@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAiviewerStore } from '@/stores/AiViewerStore'
 import { useSkillStore } from '@/stores/skillStore'
 import skillBuilderViewBox from '@/components/AiViewer/viewBlock/skillBuilderViewBox.vue'
+import { DEFAULT_OPENING_MESSAGE } from '@/composables/useSkillStudioConversation'
 
 vi.mock('@/services/popDialog', () => ({ default: { toast: vi.fn(), confirm: vi.fn(), alert: vi.fn() } }))
 
@@ -59,8 +60,9 @@ describe('skillBuilderViewBox', () => {
     expect(block.data.data.activeTab).toBe('chat')
     expect(wrapper.findAll('.skb-tab-btn').map(t => t.text())).toEqual([expect.stringContaining('對話'), expect.stringContaining('預覽'), expect.stringContaining('測試')])
     // 無 prefill 走意圖判斷關卡（見 useSkillStudioConversation 的 gateStage：進入點），
-    // 開場白不是既有的 DEFAULT_OPENING_MESSAGE（'...技能建立助理...'）
-    expect(wrapper.text()).toContain('這裡的助理')
+    // 開場白不是既有的 DEFAULT_OPENING_MESSAGE（那句只給有 prefill 的交接情境用）
+    expect(wrapper.text()).not.toContain(DEFAULT_OPENING_MESSAGE)
+    expect(wrapper.text()).toContain('你好')
     await wrapper.findAll('.skb-tab-btn')[1].trigger('click')
     expect(block.data.data.activeTab).toBe('preview')
     expect(wrapper.find('.ssp-tabs').exists()).toBe(false)

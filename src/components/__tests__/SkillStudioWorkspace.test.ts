@@ -76,6 +76,16 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.find('.ssp-title').text()).toBe('週報自動生成')
   })
 
+  it('skillId + intent=ask：修改模式，但開場白是「剛剛測試」的問句，不是預設要改的版本', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001', intent: 'ask' })
+    await flushPromises()
+    expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
+    const firstBubble = wrapper.find('.chat-bubble')
+    expect(firstBubble.text()).toContain('週報自動生成')
+    expect(firstBubble.text()).toContain('測試')
+    expect(firstBubble.text()).not.toContain('告訴我想改哪裡')
+  })
+
   it('skillId 是 Library 技能：toast 提示並退回建立模式', async () => {
     const { wrapper } = mountWorkspace({ skillId: 'sys-cs-001' })
     await flushPromises()

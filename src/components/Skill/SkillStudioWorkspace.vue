@@ -99,6 +99,8 @@ watch(() => store.aiTestReport, report => {
 })
 
 // ?skillId= 進修改模式；找不到／不是個人技能都退回建立模式，不拋錯。
+// ?intent=ask 是從測試沙盒點「詢問技能助理」進來的——一樣是 loadSkill()，
+// 只是開場白換一句不預設「要改」的問句，其餘（gateStage/mode/method）完全相同。
 // ?from= 是方案三的 conv4 交接：consumeSkillHandoff() 有值才套用預填草稿並記住
 // 返回連結；讀不到（例如重新整理過頁面、交接資料已被用掉）就退回一般建立模式。
 function applyQuery(query: LocationQuery) {
@@ -110,7 +112,7 @@ function applyQuery(query: LocationQuery) {
       popDialog.toast('找不到這個技能')
     } else if (skill.zone !== 'personal') {
       popDialog.toast('Library 技能請先在技能管理複製為個人技能')
-    } else if (conv.loadSkill(skillId)) {
+    } else if (conv.loadSkill(skillId, query.intent === 'ask' ? 'ask' : 'edit')) {
       return
     }
   } else if (query.from) {

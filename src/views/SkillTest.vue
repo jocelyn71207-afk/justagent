@@ -74,9 +74,18 @@
                 {{ selectedSkill.name }}
                 <span class="skill-tag tag--version">{{ displayVersionName(selectedSkill) }}</span>
               </div>
-              <button class="custom-btn info-toggle-btn" @click="isContextOpen = true">
-                <i class="material-symbols-outlined">info</i>技能資訊
-              </button>
+              <div class="test-panel-head-actions">
+                <button
+                  v-if="selectedSkill.zone === 'personal'"
+                  class="custom-btn ask-studio-btn"
+                  @click="askAboutSkill(selectedSkill.id)"
+                >
+                  <i class="material-symbols-outlined">auto_awesome</i>詢問技能助理
+                </button>
+                <button class="custom-btn info-toggle-btn" @click="isContextOpen = true">
+                  <i class="material-symbols-outlined">info</i>技能資訊
+                </button>
+              </div>
             </div>
 
             <SkillTestChat :skill-id="selectedSkill.id" />
@@ -124,7 +133,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTestChat from '@/components/Skill/SkillTestChat.vue'
 import SkillVersionPicker from '@/components/Skill/SkillVersionPicker.vue'
@@ -132,6 +141,7 @@ import { useSkillStore } from '@/stores/skillStore'
 import type { Skill } from '@/stores/skillStore'
 
 const route = useRoute()
+const router = useRouter()
 const store = useSkillStore()
 const isContextOpen = ref(false)
 
@@ -147,6 +157,12 @@ const librarySubgroups = computed(() => [
   { key: 'enterprise', label: '企業擴充', skills: enabledLibrarySkills.value.filter(s => s.scope === 'enterprise') },
   { key: 'team', label: '團隊擴充', skills: enabledLibrarySkills.value.filter(s => s.scope === 'team') },
 ])
+
+// 帶著 intent=ask 開技能管理頁的抽屜——一樣是編輯模式（loadSkill），只是開場白
+// 換一句不預設「要改」的問句，見 useSkillStudioConversation.ts 的 loadSkill(id, 'ask')
+function askAboutSkill(skillId: string) {
+  router.push({ path: '/view/Skills', query: { skillId, intent: 'ask' } })
+}
 
 function displayVersionName(skill: Skill): string {
   if (store.selectedSkillId === skill.id && store.selectedVersionName) {

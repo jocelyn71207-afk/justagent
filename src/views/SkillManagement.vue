@@ -561,6 +561,7 @@ const drawerQuery = computed(() => ({
   method: route.query.method,
   from: route.query.from,
   tab: route.query.tab,
+  intent: route.query.intent,
 }))
 
 function closeDrawer() {
@@ -572,11 +573,11 @@ function closeDrawer() {
 // 因為抽屜開關本身就是同一個 /view/Skills 路由上的 query 變化
 onBeforeRouteUpdate((to, _from, next) => {
   if (!drawerRef.value?.isDirty) {
-    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
+    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab, intent: to.query.intent })
     return next()
   }
   popDialog.confirm('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', () => {
-    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab })
+    drawerRef.value?.applyQuery({ skillId: to.query.skillId, method: to.query.method, from: to.query.from, tab: to.query.tab, intent: to.query.intent })
     next()
   }, () => next(false))
 })
