@@ -6,6 +6,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  // 這一列本身要有明確的可用寬度，chip 的 max-width:50% 才有東西可以算：
+  // 它是 .ssd-head 的 flex 子項，沒有 flex/min-width 時只會依內容收縮，
+  // 50% 對一個「依內容收縮」的容器來說形同 0，導致抽屜明明還有大把空間，
+  // chip 卻在字中間硬生生截斷
+  flex: 1;
+  min-width: 0;
+
+  // 標題文字（新增技能／修改技能）固定短字，永遠完整顯示，把剩下空間留給 chip
+  .banner-title {
+    flex-shrink: 0;
+  }
 
   // 這裡是唯一一個 .ssc-mode-chip 還要跟另一個文字（.banner-title）分同一列的地方，
   // 才需要收窄到一半；截斷（overflow/text-overflow）本身 .ssc-mode-chip 自己的
