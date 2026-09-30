@@ -6,6 +6,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
+  // 這裡是唯一一個 .ssc-mode-chip 還要跟另一個文字（.banner-title）分同一列的地方，
+  // 才需要收窄到一半；截斷（overflow/text-overflow）本身 .ssc-mode-chip 自己的
+  // 規則已經有了，這裡只需要覆寫 max-width
+  .ssc-mode-chip {
+    max-width: 50%;
+  }
 }
 
 .skill-studio-layout {
@@ -97,10 +104,15 @@
 }
 
 // ── 建立方式 chip：SkillStudioChat 與頁面自己的積木欄頭都會用到 ──
+// max-width 只保留 100%（配 min-width:0 讓 flex 子項可以正常縮小＋截斷，避免技能
+// 名稱長到把整列撐爆）；50% 那道更窄的限制移到 .banner-title-row 裡（唯一還要
+// 跟另一個文字分同一列的地方），其他用到這顆 chip 的地方它都是唯一內容，
+// 不該被硬性砍半空間
 .ssc-mode-chip {
   @extend %badge-shape;
   font-size: 12px;
-  max-width: 50%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 
