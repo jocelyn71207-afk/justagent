@@ -44,7 +44,7 @@ describe('SkillManagement 建議建立的技能', () => {
     expect(wrapper.find('.skill-suggestion-queue').exists()).toBe(false)
   })
 
-  it('顯示佇列裡的建議：名稱與來源流程', async () => {
+  it('預設收合：只看得到一行摘要（含筆數），看不到個別建議內容', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     store.dismissSuggestion('demo-weekly-report-digest')
@@ -56,8 +56,28 @@ describe('SkillManagement 建議建立的技能', () => {
     const { wrapper } = await mountPage()
     const queue = wrapper.find('.skill-suggestion-queue')
     expect(queue.exists()).toBe(true)
+    expect(queue.text()).toContain('1 個 AI 建議建立的技能')
+    expect(wrapper.find('.ssq-list').exists()).toBe(false)
+    expect(queue.text()).not.toContain('產品銷售報告整理')
+  })
+
+  it('點摘要列展開：顯示佇列裡的建議名稱與來源流程；再點一次收合回去', async () => {
+    setActivePinia(createPinia())
+    const store = useSkillStore()
+    store.dismissSuggestion('demo-weekly-report-digest')
+    store.addSuggestion({
+      id: 'conv4-sales-report', name: '產品銷售報告整理', description: '查詢並產出報告',
+      triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
+      reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
+    })
+    const { wrapper } = await mountPage()
+    await wrapper.find('.ssq-header').trigger('click')
+    const queue = wrapper.find('.skill-suggestion-queue')
     expect(queue.text()).toContain('產品銷售報告整理')
     expect(queue.text()).toContain('查詢銷售資料＋套用部門報告規範')
+
+    await wrapper.find('.ssq-header').trigger('click')
+    expect(wrapper.find('.ssq-list').exists()).toBe(false)
   })
 
   it('按「建立」：設定交接資料、從佇列移除、導向 AI 賦能並帶 ?from=', async () => {
@@ -70,6 +90,7 @@ describe('SkillManagement 建議建立的技能', () => {
       reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
     })
     const { wrapper, router } = await mountPage()
+    await wrapper.find('.ssq-header').trigger('click')
     const push = vi.spyOn(router, 'push')
     const buildBtn = wrapper.find('.skill-suggestion-queue [data-action="build"]')
     await buildBtn.trigger('click')
@@ -91,6 +112,7 @@ describe('SkillManagement 建議建立的技能', () => {
       reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
     })
     const { wrapper, router } = await mountPage()
+    await wrapper.find('.ssq-header').trigger('click')
     const push = vi.spyOn(router, 'push')
     const dismissBtn = wrapper.find('.skill-suggestion-queue [data-action="dismiss"]')
     await dismissBtn.trigger('click')
@@ -119,8 +141,10 @@ describe('SkillManagement 建議建立的技能', () => {
     expect(stat.text()).toContain('1')
     expect(stat.text()).toContain('個 AI 建議技能待處理')
 
+    expect(wrapper.find('.ssq-list').exists()).toBe(false)
     await stat.trigger('click')
     expect(scrollIntoView).toHaveBeenCalled()
+    expect(wrapper.find('.ssq-list').exists()).toBe(true)
   })
 
   it('沒有待處理建議時，統計列不顯示這個入口', async () => {
@@ -149,6 +173,7 @@ describe('SkillManagement 建議建立的技能', () => {
     const stat = wrapper.find('.skill-stat--suggestion')
     expect(stat.text()).toContain('2')
 
+    await wrapper.find('.ssq-header').trigger('click')
     const items = wrapper.findAll('.ssq-item')
     expect(items).toHaveLength(2)
     expect(items[0].text()).toContain('建議技能A')
