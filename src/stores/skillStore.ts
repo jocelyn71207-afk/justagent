@@ -1745,9 +1745,10 @@ export const useSkillStore = defineStore('skillStore', () => {
     myPersonalSkillsRef.value.filter(s => !s.deletedAt && hasPendingReview(s))
   )
 
-  // 預設放一筆假資料，畫面上才看得到「AI 建議建立的技能」長什麼樣子——
-  // 真正的建議（conv4 demo 觸發的 useSkillSuggestion().offer()）id 不同，
-  // 兩者不會互相 dedupe 掉，可以同時存在
+  // 預設放幾筆假資料，畫面上才看得到「AI 建議建立的技能」在有複數筆待處理時
+  // 長什麼樣子（佇列摘要列收合、展開後內部捲動）——只放一筆的話，永遠測不到
+  // 多筆情境。真正的建議（conv4 demo 觸發的 useSkillSuggestion().offer()）
+  // id 不同，不會跟這幾筆互相 dedupe 掉，可以同時存在
   const MOCK_SUGGESTIONS: SkillSuggestionEntry[] = [
     {
       id: 'demo-weekly-report-digest',
@@ -1756,6 +1757,33 @@ export const useSkillStore = defineStore('skillStore', () => {
       triggerHint: '偵測到「彙整本週重點＋套用週報格式」類型的整理需求',
       steps: ['彙整本週對話重點', '套用週報格式產出摘要'],
       reason: '示範用資料，方便直接看到「AI 建議建立的技能」的樣子',
+      conversationId: 'demo',
+    },
+    {
+      id: 'demo-complaint-triage',
+      name: '客訴分類彙整',
+      description: '將客服對話中的客訴內容自動分類，彙整成週期性報表',
+      triggerHint: '偵測到「客服對話標記＋客訴週報彙整」類型的整理需求',
+      steps: ['標記對話中的客訴類別', '彙整成客訴分類週報'],
+      reason: '示範用資料，方便直接看到複數建議同時存在的樣子',
+      conversationId: 'demo',
+    },
+    {
+      id: 'demo-inventory-alert',
+      name: '庫存異常示警',
+      description: '偵測庫存數量低於安全水位時，自動整理成示警清單',
+      triggerHint: '偵測到「庫存低於安全水位＋自動示警」類型的整理需求',
+      steps: ['查詢各品項庫存數量', '篩選低於安全水位的品項並示警'],
+      reason: '示範用資料，方便直接看到複數建議同時存在的樣子',
+      conversationId: 'demo',
+    },
+    {
+      id: 'demo-meeting-action-items',
+      name: '會議行動項目追蹤',
+      description: '從會議記錄中擷取行動項目，整理成待辦追蹤清單',
+      triggerHint: '偵測到「會議記錄整理＋行動項目追蹤」類型的整理需求',
+      steps: ['擷取會議記錄中的行動項目', '整理成待辦追蹤清單並標註負責人'],
+      reason: '示範用資料，方便直接看到複數建議同時存在的樣子',
       conversationId: 'demo',
     },
   ]
