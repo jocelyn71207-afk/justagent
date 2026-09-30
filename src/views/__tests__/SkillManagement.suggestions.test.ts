@@ -129,4 +129,39 @@ describe('SkillManagement 建議建立的技能', () => {
     const { wrapper } = await mountPage()
     expect(wrapper.find('.skill-stat--suggestion').exists()).toBe(false)
   })
+
+  // 佇列本來就是 v-for 列表，每個項目的「建立」「不用了」都用各自的 id 操作，
+  // 這裡驗證多筆同時存在時，動到其中一筆不會影響到另一筆
+  it('同時有多筆建議：各自獨立顯示，處理其中一筆不影響其他筆', async () => {
+    setActivePinia(createPinia())
+    const store = useSkillStore()
+    store.dismissSuggestion('demo-weekly-report-digest')
+    store.addSuggestion({
+      id: 'suggest-a', name: '建議技能A', description: 'x', triggerHint: 'y',
+      steps: [], reason: '來源A', conversationId: 'conv4',
+    })
+    store.addSuggestion({
+      id: 'suggest-b', name: '建議技能B', description: 'x', triggerHint: 'y',
+      steps: [], reason: '來源B', conversationId: 'conv5',
+    })
+    const { wrapper } = await mountPage()
+
+    const stat = wrapper.find('.skill-stat--suggestion')
+    expect(stat.text()).toContain('2')
+
+    const items = wrapper.findAll('.ssq-item')
+    expect(items).toHaveLength(2)
+    expect(items[0].text()).toContain('建議技能A')
+    expect(items[1].text()).toContain('建議技能B')
+
+    const dismissBtnA = items[0].find('[data-action="dismiss"]')
+    await dismissBtnA.trigger('click')
+
+    expect(store.pendingSuggestions).toEqual([
+      expect.objectContaining({ id: 'suggest-b' }),
+    ])
+    const remaining = wrapper.findAll('.ssq-item')
+    expect(remaining).toHaveLength(1)
+    expect(remaining[0].text()).toContain('建議技能B')
+  })
 })
