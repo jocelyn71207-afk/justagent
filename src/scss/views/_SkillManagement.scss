@@ -116,9 +116,14 @@
     .material-symbols-outlined { font-size: 17px; }
   }
 
+  // 多筆建議時，這塊佔幅不能無限長高、把下面「我的技能」清單擠到很遠——
+  // 超過約 2 筆半就內部捲動，讓這塊區域的高度跟建議筆數脫鉤
   .ssq-list {
     display: flex;
     flex-direction: column;
+    max-height: 120px;
+    overflow-y: auto;
+    @include use-scroll-bar(var(--scrollbar-a50));
   }
 
   .ssq-item {
@@ -126,7 +131,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 8px 14px;
     background: var(--surface);
     border-top: 1px solid var(--divider-a50);
   }
