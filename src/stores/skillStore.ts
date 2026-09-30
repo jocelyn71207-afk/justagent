@@ -1036,6 +1036,34 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     files: [],
     composition: { sectionIds: ['ta_persona', 'promo_ranking', 'ch_traffic'] },
   },
+  {
+    // 專門示範用：從沒測試過（aiTestPassRate 未設定）、personalStatus 'available'
+    // 所以「啟用技能」按鈕看得到，一點就會觸發 SkillEnableFlow 的「還不能啟用」
+    // 閘門對話框——demo 時不用先去找哪顆技能符合條件
+    id: 'personal-008',
+    name: '待測試新流程示範（demo）',
+    description: '示範項目：尚未通過 AI 快速測試，點「啟用技能」會先看到測試閘門對話框',
+    type: 'extension',
+    origin: 'manually_created',
+    creationMethod: 'manual',
+    zone: 'personal',
+    personalStatus: 'available',
+    skillName: '待測試新流程示範（demo）',
+    version: '1.0.0',
+    isEnabled: false,
+    usageCount: 0,
+    testPassRate: 0,
+    avgLatencyMs: 0,
+    // 這裡的文字內容故意避開跟其他關卡測試共用的詞彙（例如「技能」「修改」）——
+    // routeIntent 的 findSimilarSkill 是全域 bigram 比對沒有門檻，一有共同的
+    // 兩字重疊就可能被誤判成「找到相近技能」，見 useSkillStudioConversation.ts
+    instructions: '這是示範用的一顆項目，內容可以隨時調整，主要用來展示啟用前的測試流程。',
+    triggerHint: '示範用途，沒有特定觸發情境',
+    assignedAgents: [],
+    capabilities: [
+      { name: '示範能力', description: '沒有實際功能，純粹用來展示啟用前的測試閘門流程。' },
+    ],
+  },
 ]
 
 const MOCK_DRAFTS: DraftSkill[] = [
