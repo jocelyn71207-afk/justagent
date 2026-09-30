@@ -18,9 +18,10 @@ describe('AppMenuTree「技能管理」旁的 AI 建議徽章', () => {
 
   it('沒有待處理建議時，桌機版不顯示徽章', async () => {
     setActivePinia(createPinia())
-    // 預設佇列裡有一筆示範假資料（見 skillStore.ts 的 MOCK_SUGGESTIONS），
+    // 預設佇列裡有幾筆示範假資料（見 skillStore.ts 的 MOCK_SUGGESTIONS），
     // 這裡測的是真的清空之後的樣子，先清掉才有乾淨的起點
-    useSkillStore().dismissSuggestion('demo-weekly-report-digest')
+    const store = useSkillStore()
+    store.pendingSuggestions.map(s => s.id).forEach(id => store.dismissSuggestion(id))
     const wrapper = await mountTree()
     const skillLink = wrapper.findAll('.side-panel-sub a').find(a => a.text().includes('技能管理'))!
     expect(skillLink.find('.nav-suggestion-badge').exists()).toBe(false)
@@ -29,7 +30,7 @@ describe('AppMenuTree「技能管理」旁的 AI 建議徽章', () => {
   it('有 2 個待處理建議時，桌機版顯示數字 2', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
-    store.dismissSuggestion('demo-weekly-report-digest')
+    store.pendingSuggestions.map(s => s.id).forEach(id => store.dismissSuggestion(id))
     store.addSuggestion({
       id: 's1', name: '技能A', description: 'x', triggerHint: 'y',
       steps: [], reason: 'r1', conversationId: 'conv4',
@@ -48,7 +49,7 @@ describe('AppMenuTree「技能管理」旁的 AI 建議徽章', () => {
   it('手機版也同步顯示徽章數字', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
-    store.dismissSuggestion('demo-weekly-report-digest')
+    store.pendingSuggestions.map(s => s.id).forEach(id => store.dismissSuggestion(id))
     store.addSuggestion({
       id: 's1', name: '技能A', description: 'x', triggerHint: 'y',
       steps: [], reason: 'r1', conversationId: 'conv4',

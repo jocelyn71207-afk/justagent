@@ -34,9 +34,10 @@ describe('suggestionToPrefill / suggestionOpeningMessage', () => {
 describe('useSkillSuggestion', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    // 預設佇列裡有一筆示範假資料（見 skillStore.ts 的 MOCK_SUGGESTIONS），
+    // 預設佇列裡有幾筆示範假資料（見 skillStore.ts 的 MOCK_SUGGESTIONS），
     // 這裡測的是 offer() 本身放進佇列的行為，先清掉才有乾淨的起點
-    useSkillStore().dismissSuggestion('demo-weekly-report-digest')
+    const store = useSkillStore()
+    store.pendingSuggestions.map(s => s.id).forEach(id => store.dismissSuggestion(id))
   })
 
   it('offer 把建議放進 skillStore 的待處理佇列', () => {
