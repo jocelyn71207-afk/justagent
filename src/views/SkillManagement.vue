@@ -28,6 +28,13 @@
         >
           <i class="material-symbols-outlined">rate_review</i><b>{{ store.pendingReviewSkills.length }}</b>個技能等待審核
         </button>
+        <button
+          v-if="store.pendingSuggestions.length > 0"
+          class="skill-stat skill-stat--suggestion"
+          @click="scrollToSuggestions"
+        >
+          <i class="material-symbols-outlined">auto_awesome</i><b>{{ store.pendingSuggestions.length }}</b>個 AI 建議技能待處理
+        </button>
         <div class="skill-stat skill-stat--enabled">
           <i class="stat-dot"></i><b>{{ store.enabledCount }}</b>啟用中技能
         </div>
@@ -159,7 +166,7 @@
           </div>
           <!-- AI 建議建立的技能：agent 完成任務後放進佇列，決策（建立／不用了）在這裡處理，
                不再是 AiViewer 對話河道裡的即時卡片，見 useSkillSuggestion -->
-          <div v-if="store.pendingSuggestions.length" class="skill-suggestion-queue">
+          <div v-if="store.pendingSuggestions.length" ref="suggestionQueueRef" class="skill-suggestion-queue">
             <div class="ssq-header">
               <i class="material-symbols-outlined">auto_awesome</i>
               <span class="ssq-title">AI 建議建立的技能</span>
@@ -523,7 +530,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTile from '@/components/Skill/SkillTile.vue'
@@ -689,6 +696,15 @@ function handleTest(skill: Skill) {
 
 function dismissSuggestion(id: string) {
   store.dismissSuggestion(id)
+}
+
+// 統計列的「N 個 AI 建議技能待處理」入口：確保停在「我的技能」分頁（佇列只在那裡渲染），
+// 再捲動到佇列本身——它在頁面下方，光切分頁不一定看得到
+const suggestionQueueRef = ref<HTMLElement | null>(null)
+async function scrollToSuggestions() {
+  activeTab.value = 'my'
+  await nextTick()
+  suggestionQueueRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 // 沿用方案三的交接機制（setSkillHandoff + ?from=），只是觸發點從對話河道

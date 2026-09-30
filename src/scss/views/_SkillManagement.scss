@@ -70,6 +70,25 @@
 
       &:hover { filter: brightness(0.94); }
     }
+
+    // 同一套 pill 語彙，顏色用 green 跟待審核的 rust 區分——這格是「AI 主動提議」，
+    // 不是「等你處理的義務」，兩種提醒不能長得一樣
+    &.skill-stat--suggestion {
+      @extend %badge-shape;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: filter 0.15s;
+
+      .material-symbols-outlined { font-size: 15px; }
+      b { color: inherit; font-size: 13px; margin-right: 0; }
+
+      &:hover { filter: brightness(0.94); }
+    }
   }
 
   // ── 建議建立的技能 ────────────────────────────

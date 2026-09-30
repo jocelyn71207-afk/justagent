@@ -184,6 +184,7 @@
         <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
           <RouterLink to="/view/Skills" class="side-panel-item" :class="{ active: route.path === '/view/Skills' }">
             <i class="material-symbols-outlined">auto_awesome</i><span class="side-panel-item-label">技能管理</span>
+            <span v-if="suggestionCount > 0" class="nav-suggestion-badge">{{ suggestionCount }}</span>
           </RouterLink>
           <RouterLink to="/view/SkillTest" class="side-panel-item" :class="{ active: route.path === '/view/SkillTest' }">
             <i class="material-symbols-outlined">science</i><span class="side-panel-item-label">技能測試沙盒</span>
@@ -287,6 +288,7 @@
       <div class="side-panel-sub" v-show="selectedTeam.isSkillOpen">
         <RouterLink to="/view/Skills" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">auto_awesome</i>技能管理
+          <span v-if="suggestionCount > 0" class="nav-suggestion-badge">{{ suggestionCount }}</span>
         </RouterLink>
         <RouterLink to="/view/SkillTest" class="side-panel-item mobile-item mobile-sub" @click="closeMobileMenu">
           <i class="material-symbols-outlined">science</i>技能測試沙盒
@@ -323,6 +325,7 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router';
 import { useRootStore } from '@/stores/rootStore';
+import { useSkillStore } from '@/stores/skillStore';
 import { initClickOutsideListener } from '@/utils/utils';
 
 const route = useRoute();
@@ -330,6 +333,12 @@ const router = useRouter();
 
 const rootStore = useRootStore();
 const { isEnterAppSearchPage, appSearchKeyword, testGroups, companyList, nowMenuTreeCompanyId, nowMenuTreeCompanyName } = storeToRefs(rootStore);
+
+// 「技能管理」旁的提醒徽章：AI 建議建立的技能佇列在 useSkillSuggestion 產生後，
+// 只會顯示在技能管理頁面裡（見那邊的 skill-suggestion-queue），這裡加個數字
+// 提醒，才不會使用者沒點進去就完全不知道有新建議
+const skillStore = useSkillStore();
+const suggestionCount = computed(() => skillStore.pendingSuggestions.length);
 
 // 團隊切換器只列出「目前選定企業」底下的團隊，不是列出所有企業的團隊——
 // 企業是團隊的上層範疇，選錯範疇卻看到別間企業的團隊，才是真正會讓人迷路的地方

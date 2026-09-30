@@ -93,4 +93,32 @@ describe('SkillManagement 建議建立的技能', () => {
     expect(store.pendingSuggestions).toEqual([])
     expect(consumeSkillHandoff()).toBeNull()
   })
+
+  // 統計列的「N 個 AI 建議技能待處理」入口：跟「個技能等待審核」同一套 pill 徽章語彙，
+  // 讓使用者不用先滑到頁面下方才發現有新建議
+  it('統計列顯示「N 個 AI 建議技能待處理」，點擊捲動到建議佇列', async () => {
+    setActivePinia(createPinia())
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    const store = useSkillStore()
+    store.addSuggestion({
+      id: 'conv4-sales-report', name: '產品銷售報告整理', description: '查詢並產出報告',
+      triggerHint: '偵測到銷售整理需求', steps: ['查詢數據', '套用規範產出'],
+      reason: '查詢銷售資料＋套用部門報告規範', conversationId: 'conv4',
+    })
+    const { wrapper } = await mountPage()
+    const stat = wrapper.find('.skill-stat--suggestion')
+    expect(stat.exists()).toBe(true)
+    expect(stat.text()).toContain('1')
+    expect(stat.text()).toContain('個 AI 建議技能待處理')
+
+    await stat.trigger('click')
+    expect(scrollIntoView).toHaveBeenCalled()
+  })
+
+  it('沒有待處理建議時，統計列不顯示這個入口', async () => {
+    setActivePinia(createPinia())
+    const { wrapper } = await mountPage()
+    expect(wrapper.find('.skill-stat--suggestion').exists()).toBe(false)
+  })
 })

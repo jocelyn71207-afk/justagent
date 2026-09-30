@@ -637,6 +637,24 @@
   }
 }
 
+// 「技能管理」旁的 AI 建議數量提醒：跟 AiViewer 浮動按鈕的 .jcd-fab-badge
+// 同一套「小圓點 + 數字」語彙，但這裡是併排在文字後面，不是疊在圖示右上角，
+// 所以用 margin-left: auto 把它推到這一列的最右邊，而不是絕對定位
+.nav-suggestion-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: var(--primary-fg);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 // 第二層可展開群組（AI 技能／共享資源庫）：本身也是一個項目，
 // 但點擊是展開/收合子項目，不是導覽
 .side-panel-group {
