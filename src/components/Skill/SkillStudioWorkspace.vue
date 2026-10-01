@@ -110,6 +110,15 @@ watch(() => conv.requestTestTab.value, requested => {
   conv.requestTestTab.value = false
 })
 
+// 修改模式下使用者確認要開始建立新技能：conv 已經把草稿悄悄重設回已儲存版本了，
+// 這裡只負責把抽屜導去全新的建立流程——用 router.push 換掉 query，drawer 外殼
+// 會依新的 query 重新套用成建立模式
+watch(() => conv.requestNewSkillDrawer.value, requested => {
+  if (!requested) return
+  conv.requestNewSkillDrawer.value = false
+  router.push({ query: { method: 'chat' } })
+})
+
 // ?skillId= 進修改模式；找不到／不是個人技能都退回建立模式，不拋錯。
 // ?intent=ask 是從測試沙盒點「詢問技能助理」進來的——一樣是 loadSkill()，
 // 只是開場白換一句不預設「要改」的問句，其餘（gateStage/mode/method）完全相同。
