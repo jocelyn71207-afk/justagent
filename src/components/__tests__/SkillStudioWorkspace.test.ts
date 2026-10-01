@@ -303,6 +303,54 @@ describe('SkillStudioWorkspace', () => {
     }
   })
 
+  it('修改模式下說要建立新技能，點「對，開新的」確認：導向全新的建立流程（conv 自己切不了路由，靠 requestNewSkillDrawer 訊號橋接）', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper, router } = mountWorkspace({ skillId: 'personal-001' })
+      await flushPromises()
+      const push = vi.spyOn(router, 'push')
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+
+      await input.setValue('我要建立一個新技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      const confirmChip = wrapper.findAll('.ssc-action-chip').find(b => b.text().includes('對，開新的'))!
+      expect(confirmChip).toBeDefined()
+
+      await confirmChip.trigger('click')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(push).toHaveBeenCalledWith({ query: { method: 'chat' } })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('修改模式下說要建立新技能，點「不是，我想問別的」：留在原本修改畫面，不導航', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper, router } = mountWorkspace({ skillId: 'personal-001' })
+      await flushPromises()
+      const push = vi.spyOn(router, 'push')
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+
+      await input.setValue('我要建立一個新技能')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      const cancelChip = wrapper.findAll('.ssc-action-chip').find(b => b.text().includes('不是，我想問別的'))!
+
+      await cancelChip.trigger('click')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(push).not.toHaveBeenCalled()
+      expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('選「用行銷積木組裝」：左欄變成積木面板；勾章節、命名、儲存 → 個人技能有 composition', async () => {
     const { wrapper } = mountWorkspace()
     await flushPromises()

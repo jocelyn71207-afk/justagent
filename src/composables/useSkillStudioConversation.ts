@@ -61,6 +61,7 @@ export type GateStage =
   | 'clarify'           // 多輪問答補齊草稿內容（沿用既有 interpretStudioMessage 的抽取規則）
   | 'gate3'             // 最終確認「內容如下…這樣可以嗎？」
   | 'active'            // 分流完畢，既有的 interpretStudioMessage 接手
+  | 'confirmStartNew'   // 修改模式下使用者明確說要建立新技能：確認是否放下目前的修改
 
 // 「我要講別的」時的暫存快照：只存在單次連線的記憶體內（一個 ref），
 // 不寫入 skillStore、離開頁面或重新整理就消失，跟 skillStore 既有的
@@ -220,6 +221,13 @@ const ACTION_STEP: StudioAction = { id: 'step', label: '再補一個步驟' }
 const ACTION_RETEST: StudioAction = { id: 'retest', label: '重新測試' }
 const ACTION_FORCE_ENABLE: StudioAction = { id: 'force-enable', label: '不改，直接啟用' }
 
+// 修改模式下，使用者在對話裡明確說要建立「新」技能：要跟「只是在描述這顆技能的
+// 新能力/新步驟」區分開，所以一定要有「新」字＋建立動詞＋技能/skill 字樣，
+// 不是隨便一句含「建立」兩字的話就觸發
+const WANTS_NEW_SKILL_WHILE_EDITING = /(建立|新增|開|做|記)(一個|一份)?新(的)?(技能|skill)|新(的)?技能|另外(建|做|開|弄)(一個|一份)/i
+const ACTION_START_NEW_CONFIRM: StudioAction = { id: 'start-new-confirm', label: '對，開新的' }
+const ACTION_START_NEW_CANCEL: StudioAction = { id: 'start-new-cancel', label: '不是，我想問別的' }
+
 const CREATE_SUGGESTIONS: StudioSuggestion[] = [
   { icon: 'inventory_2', label: '幫我建立一個能查 ERP 庫存的技能', prefill: '幫我建立一個能查 ERP 庫存的技能' },
   { icon: 'summarize', label: '把每週會議逐字稿整理成週報', prefill: '把每週會議逐字稿整理成週報' },
@@ -365,6 +373,9 @@ export function useSkillStudioConversation() {
   // 但切不了外殼（SkillStudioWorkspace）自己管的 activeTab——這個旗標讓外殼知道要
   // 切到測試 tab，讀到之後要自己歸零，單次訊號不是常駐狀態
   const requestTestTab = ref(false)
+  // 修改模式下確認要開始建立新技能：composable 自己導不了路由，這個旗標讓外殼
+  // 知道要把抽屜切去全新的建立流程，讀到之後要自己歸零
+  const requestNewSkillDrawer = ref(false)
 
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
@@ -554,6 +565,27 @@ export function useSkillStudioConversation() {
       return
     }
 
+    if (stage === 'confirmStartNew') {
+      // 錨定在開頭比對：避免「不是」這種否定句因為含有「是」字被誤判成確認
+      if (t === ACTION_START_NEW_CONFIRM.label || /^(對|沒錯|開新的|是)/.test(t)) {
+        // 使用者在這裡已經確認過了，不要讓即將導航的路由守衛又跳一次「有未儲存變更」
+        // 確認對話框——先把草稿悄悄重設回已儲存版本（沒有要存的東西了，不用管 isDirty）
+        if (mode.value === 'edit' && savedSkillId.value) {
+          const skill = store.findSkill(savedSkillId.value)
+          if (skill) {
+            draft.value = draftFromSkill(skill)
+            snapshot.value = serialize(draft.value)
+          }
+        }
+        requestNewSkillDrawer.value = true
+        push({ role: 'agent', content: '好，幫你開一個新的建立流程。' })
+        return
+      }
+      gateStage.value = 'active'
+      push({ role: 'agent', content: '好，那我們繼續剛剛的修改。' })
+      return
+    }
+
     if (stage === 'clarify') {
       // 測試沒全對引導訊息的兩個 action chip（也接受相近的自由輸入）：使用者可能是
       // 自己答題答錯了想重新測，或根本不在意這次沒全對、先不改直接啟用——兩者都
@@ -725,6 +757,19 @@ export function useSkillStudioConversation() {
     }
 
     if (gateStage.value === 'active') {
+      // 修改模式下，使用者在這裡明確說要建立「新」技能：先確認要不要放下目前的修改，
+      // 不要直接把這句話當成編輯內容、用 interpretStudioMessage 的「其他訊息附加到
+      // instructions」規則吃掉
+      if (mode.value === 'edit' && WANTS_NEW_SKILL_WHILE_EDITING.test(t)) {
+        gateStage.value = 'confirmStartNew'
+        push({
+          role: 'agent',
+          content: '你是想先放下目前的修改，開始建立一份全新的技能嗎？',
+          actions: [ACTION_START_NEW_CONFIRM, ACTION_START_NEW_CANCEL],
+        })
+        isRunning.value = false
+        return
+      }
       const reply = interpretStudioMessage(t, draft.value, mode.value)
       if (reply.patch) draft.value = { ...draft.value, ...reply.patch }
       push({ role: 'agent', content: reply.content, actions: reply.actions })
@@ -836,7 +881,7 @@ export function useSkillStudioConversation() {
   }
 
   return {
-    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips, gateStage, requestTestTab,
+    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips, gateStage, requestTestTab, requestNewSkillDrawer,
     startCreate, chooseMethod, updateBlocks, loadSkill, send, save, updateFiles, notifyTestResult, toSnapshot, hydrate, detachSavedSkill,
   }
 }

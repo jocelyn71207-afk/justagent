@@ -1293,3 +1293,116 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     }
   })
 })
+
+describe('修改模式下明確說要建立新技能：先確認，確認後捨棄目前修改開新流程', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  function makeEditingConv() {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '查 ERP 庫存', instructions: '1. 查詢', triggerHint: '問庫存時', assignedAgents: [] })
+    const c = useSkillStudioConversation()
+    c.loadSkill(id)
+    return { store, c, id }
+  }
+
+  it('建立模式下不受影響：確認用的 confirmStartNew 關卡只會在修改模式出現', async () => {
+    vi.useFakeTimers()
+    try {
+      const c = useSkillStudioConversation()
+      c.startCreate()
+      c.chooseMethod('chat')
+      const p = c.send('我要建立一個新技能')
+      await vi.advanceTimersByTimeAsync(800)
+      await p
+      expect(c.gateStage.value).not.toBe('confirmStartNew')
+      expect(c.messages.value.at(-1)!.actions?.map(a => a.label)).not.toEqual(['對，開新的', '不是，我想問別的'])
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('一般編輯指令（含「建立」字樣但不是「新技能」）不會誤判：正常走自由編輯', async () => {
+    vi.useFakeTimers()
+    try {
+      const { c } = makeEditingConv()
+      const before = c.draft.value.instructions
+      const p = c.send('再補一個步驟：建立工單')
+      await vi.advanceTimersByTimeAsync(800)
+      await p
+      expect(c.gateStage.value).toBe('active')
+      expect(c.draft.value.instructions).not.toBe(before)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('修改模式下說要建立新技能：轉 confirmStartNew，推確認訊息並帶兩個 action chip', async () => {
+    vi.useFakeTimers()
+    try {
+      const { c } = makeEditingConv()
+      const p = c.send('我要建立一個新技能')
+      await vi.advanceTimersByTimeAsync(800)
+      await p
+      expect(c.gateStage.value).toBe('confirmStartNew')
+      const last = c.messages.value.at(-1)!
+      expect(last.content).toContain('放下目前的修改')
+      expect(last.actions?.map(a => a.label)).toEqual(['對，開新的', '不是，我想問別的'])
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('點「對，開新的」：草稿悄悄重設回已儲存版本（isDirty 歸零），設定 requestNewSkillDrawer 單次訊號', async () => {
+    vi.useFakeTimers()
+    try {
+      const { c, id } = makeEditingConv()
+      // 先改動草稿，模擬使用者在問出「要開新的」之前已經講過一些修改
+      const p1 = c.send('改成先確認庫存地點')
+      await vi.advanceTimersByTimeAsync(800)
+      await p1
+      expect(c.isDirty.value).toBe(true)
+
+      const p2 = c.send('我要建立一個新技能')
+      await vi.advanceTimersByTimeAsync(800)
+      await p2
+      expect(c.requestNewSkillDrawer.value).toBe(false)
+
+      const p3 = c.send('對，開新的')
+      await vi.advanceTimersByTimeAsync(800)
+      await p3
+      expect(c.draft.value.instructions).toBe('1. 查詢') // 回到原本已儲存的版本
+      expect(c.isDirty.value).toBe(false)
+      expect(c.requestNewSkillDrawer.value).toBe(true)
+      expect(c.savedSkillId.value).toBe(id)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('點「不是，我想問別的」：留在修改模式，轉回 active 繼續原本的修改', async () => {
+    vi.useFakeTimers()
+    try {
+      const { c, id } = makeEditingConv()
+      const p1 = c.send('我要建立一個新技能')
+      await vi.advanceTimersByTimeAsync(800)
+      await p1
+      expect(c.gateStage.value).toBe('confirmStartNew')
+
+      const p2 = c.send('不是，我想問別的')
+      await vi.advanceTimersByTimeAsync(800)
+      await p2
+      expect(c.gateStage.value).toBe('active')
+      expect(c.requestNewSkillDrawer.value).toBe(false)
+      expect(c.mode.value).toBe('edit')
+      expect(c.savedSkillId.value).toBe(id)
+
+      // 確認「繼續原本修改」是真的可以繼續編輯，不是卡死
+      const p3 = c.send('改成先確認庫存地點')
+      await vi.advanceTimersByTimeAsync(800)
+      await p3
+      expect(c.draft.value.instructions).not.toBe('1. 查詢')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
