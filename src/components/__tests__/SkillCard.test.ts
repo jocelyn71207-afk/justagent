@@ -47,3 +47,22 @@ describe('SkillCard：skillIconName（怎麼來的一眼圖示）', () => {
     expect(derived.find('.skill-card-icon .material-symbols-outlined').text()).toBe('psychology')
   })
 })
+
+describe('SkillCard：強制啟用（aiTestOverridden）的視覺提示', () => {
+  it('啟用中且 aiTestOverridden：顯示警示圖示與提示文字，跟全對啟用的技能有區別', () => {
+    const w = mountCard(baseSkill({ isEnabled: true, aiTestOverridden: true }))
+    const icon = w.find('.status-override-icon')
+    expect(icon.exists()).toBe(true)
+    expect(icon.attributes('title')).toContain('測試沒有全對')
+  })
+
+  it('啟用中但 aiTestOverridden 為 false（真的測全對）：不顯示警示圖示', () => {
+    const w = mountCard(baseSkill({ isEnabled: true, aiTestOverridden: false, aiTestPassRate: 1 }))
+    expect(w.find('.status-override-icon').exists()).toBe(false)
+  })
+
+  it('aiTestOverridden 但技能已停用：不顯示警示圖示（這個標記只在「啟用中」才有意義）', () => {
+    const w = mountCard(baseSkill({ isEnabled: false, aiTestOverridden: true }))
+    expect(w.find('.status-override-icon').exists()).toBe(false)
+  })
+})

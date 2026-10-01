@@ -827,7 +827,7 @@ export function useSkillStudioConversation() {
     if (report.correct === report.total) {
       push({
         role: 'agent',
-        content: '太好了，這次全部答對了！到下面的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。',
+        content: '太好了，這次全部答對了！到右側的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。',
       })
       return
     }
