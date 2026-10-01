@@ -283,6 +283,26 @@ describe('SkillStudioWorkspace', () => {
     expect(last.text()).toContain('60%')
   })
 
+  it('引導訊息點「重新測試」：工作區切到測試 tab（conv 自己切不了，靠 requestTestTab 訊號橋接）', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const store = useSkillStore()
+      const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+      await flushPromises()
+      store.aiTestReport = { total: 5, correct: 3, byTag: {} as any, summary: '' }
+      await flushPromises()
+      expect(wrapper.findAll('.ssp-tab-btn')[0].classes()).toContain('is-active')
+
+      const retestChip = wrapper.findAll('.ssc-action-chip').find(b => b.text().includes('重新測試'))!
+      await retestChip.trigger('click')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('選「用行銷積木組裝」：左欄變成積木面板；勾章節、命名、儲存 → 個人技能有 composition', async () => {
     const { wrapper } = mountWorkspace()
     await flushPromises()

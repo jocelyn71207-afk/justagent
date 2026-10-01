@@ -102,6 +102,14 @@ watch(() => store.aiTestReport, report => {
   if (report) conv.notifyTestResult(report)
 })
 
+// 使用者在引導訊息點「重新測試」：conv 自己呼叫得到 store.generateAITestScenarios，
+// 但切不了這裡才有的 activeTab——讀到這個單次訊號就切到測試 tab，讀完歸零
+watch(() => conv.requestTestTab.value, requested => {
+  if (!requested) return
+  activeTab.value = 'test'
+  conv.requestTestTab.value = false
+})
+
 // ?skillId= 進修改模式；找不到／不是個人技能都退回建立模式，不拋錯。
 // ?intent=ask 是從測試沙盒點「詢問技能助理」進來的——一樣是 loadSkill()，
 // 只是開場白換一句不預設「要改」的問句，其餘（gateStage/mode/method）完全相同。
