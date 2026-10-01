@@ -34,6 +34,11 @@
                     <span class="dh-status-dot"></span>
                     {{ skill.isEnabled ? '啟用中' : (isPersonal && skill.aiTestPassRate == null ? '尚未測試' : '已停用') }}
                   </span>
+                  <i
+                    v-if="!libraryView && skill.isEnabled && skill.aiTestOverridden"
+                    class="material-symbols-outlined dh-status-override-icon"
+                    title="測試沒有全對，使用者選擇直接啟用"
+                  >warning</i>
                 </div>
               </div>
             </div>

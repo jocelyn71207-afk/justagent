@@ -1242,6 +1242,10 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     const last = c.messages.value.at(-1)!
     expect(last.role).toBe('agent')
     expect(last.content).toContain('啟用技能')
+    // 對話和預覽是左右並排（見 SkillStudioWorkspace），不是上下堆疊，
+    // 「下面」會指錯方向，固定成「右側」跟其他引導訊息的措辭一致
+    expect(last.content).toContain('右側的測試報告')
+    expect(last.content).not.toContain('下面')
   })
 
   it('沒有全對的引導訊息帶「重新測試」「不改，直接啟用」兩個 action chip', () => {

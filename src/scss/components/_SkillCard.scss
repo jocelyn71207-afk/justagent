@@ -152,6 +152,11 @@
       color: var(--text-muted);
       white-space: nowrap;
     }
+
+    .status-override-icon {
+      font-size: 14px;
+      color: var(--tag-amber-text);
+    }
   }
 
   .skill-card-actions {
