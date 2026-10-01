@@ -80,6 +80,11 @@
           {{ props.mode === 'create' ? '儲存為個人技能' : '儲存修改' }}
         </button>
         <template v-if="props.mode === 'edit' && props.savedSkillId">
+          <!-- 修改既有技能：這份草稿只是複製出來改的，沒按這顆鍵就不會寫回原本的技能——
+               按了就把草稿重設回目前已儲存的版本，並請外殼關閉／離開 -->
+          <button v-if="props.showDiscard" type="button" class="custom-btn" @click="emit('discard')">
+            <i class="material-symbols-outlined">undo</i>放棄修改
+          </button>
           <template v-if="!props.hideNavLinks">
             <button type="button" class="custom-btn" @click="router.push({ path: '/view/SkillEditor', query: { skillId: props.savedSkillId } })">
               <i class="material-symbols-outlined">edit</i>直接編輯
@@ -143,11 +148,13 @@ const props = defineProps<{
   hideTabs?: boolean
   hideFiles?: boolean
   hideNavLinks?: boolean
+  showDiscard?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:activeTab': [tab: 'preview' | 'test']
   save: []
+  discard: []
   'update:files': [files: SkillFile[]]
 }>()
 

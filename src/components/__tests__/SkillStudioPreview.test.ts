@@ -88,6 +88,22 @@ describe('SkillStudioPreview', () => {
     expect(w.text()).toContain('測試沙盒')
   })
 
+  it('showDiscard：預設不顯示「放棄修改」；開啟後顯示，點擊 emit discard', async () => {
+    const w = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true })
+    expect(w.text()).not.toContain('放棄修改')
+
+    const w2 = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true, showDiscard: true })
+    const discardBtn = w2.findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))
+    expect(discardBtn).toBeDefined()
+    await discardBtn!.trigger('click')
+    expect(w2.emitted('discard')).toHaveLength(1)
+  })
+
+  it('showDiscard 在建立模式（尚未儲存過）不顯示：沒有「原本版本」可以放棄回去', async () => {
+    const w = mountPreview({ mode: 'create', savedSkillId: null, canSave: true, showDiscard: true })
+    expect(w.text()).not.toContain('放棄修改')
+  })
+
   it('已儲存後兩個 tab 都有「技能測試沙盒」入口，點擊導向 /view/SkillTest?skillId=', async () => {
     const w = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true })
     const push = vi.spyOn((w.vm as any).$router, 'push')

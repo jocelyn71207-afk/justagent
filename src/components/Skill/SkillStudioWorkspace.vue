@@ -45,6 +45,7 @@
         v-model:active-tab="activeTab"
         hide-files
         hide-nav-links
+        show-discard
         :draft="conv.draft.value"
         :mode="conv.mode.value"
         :saved-skill-id="conv.savedSkillId.value"
@@ -52,6 +53,7 @@
         :can-save="conv.canSave.value"
         :name-conflict="nameConflict"
         @save="onSave"
+        @discard="onDiscard"
       />
     </div>
   </div>
@@ -76,6 +78,8 @@ import popDialog from '@/services/popDialog'
 // 初次掛載讀 initialQuery；之後外殼自己的路由守衛通過後，用 defineExpose 出去的
 // applyQuery() 重新套用，跟現在 SkillStudio.vue 的 applyQuery() 呼叫時機一致
 const props = defineProps<{ initialQuery?: LocationQuery }>()
+// 放棄修改：草稿重設回目前已儲存的版本後，請外殼（抽屜）關閉
+const emit = defineEmits<{ discard: [] }>()
 
 const router = useRouter()
 const store = useSkillStore()
@@ -162,6 +166,19 @@ function onSave() {
   } else {
     popDialog.toast('已儲存修改')
   }
+}
+
+// 放棄修改：草稿只是從已儲存版本複製出來改的，從沒呼叫過 save() 就不會寫回原本的
+// 技能——loadSkill 本來就是「從目前儲存版本重新載入草稿」的邏輯，直接複用來重設，
+// 再請外殼（抽屜）關閉。不用額外確認：guardDirty 已經會在真的有變更時才跳出確認，
+// 沒變更的話按這顆鍵跟直接關閉沒兩樣
+function onDiscard() {
+  guardDirty(() => {
+    if (conv.mode.value === 'edit' && conv.savedSkillId.value) {
+      conv.loadSkill(conv.savedSkillId.value)
+    }
+    emit('discard')
+  })
 }
 
 onMounted(() => {

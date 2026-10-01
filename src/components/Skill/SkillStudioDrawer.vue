@@ -14,7 +14,7 @@
             </button>
           </div>
           <div class="ssd-body">
-            <SkillStudioWorkspace ref="workspaceRef" :initial-query="props.query" />
+            <SkillStudioWorkspace ref="workspaceRef" :initial-query="props.query" @discard="emit('close')" />
           </div>
         </div>
       </div>
