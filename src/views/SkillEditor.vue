@@ -21,9 +21,9 @@
           v-for="(label, i) in STEPS"
           :key="i"
           :class="['se-step', { 'is-active': currentStep === i, 'is-done': currentStep > i }]"
-          :disabled="currentStep <= i"
+          :disabled="currentStep <= i || isStepLocked(i)"
           :aria-current="currentStep === i ? 'step' : undefined"
-          @click="currentStep > i ? (currentStep = i) : undefined"
+          @click="currentStep > i && !isStepLocked(i) ? (currentStep = i) : undefined"
         >
           <span class="se-step-bubble">
             <i v-if="currentStep > i" class="material-symbols-outlined">check</i>
@@ -129,7 +129,7 @@
         </template>
 
         <!-- Step 2：確認 -->
-        <template v-else>
+        <template v-else-if="currentStep === 2">
           <h3 class="se-confirm-title">{{ form.name }}</h3>
 
           <div class="se-confirm-grid lively-stagger">
@@ -187,29 +187,45 @@
 
           <p class="se-confirm-note">
             <i class="material-symbols-outlined">info</i>
-            {{ isEditMode ? '儲存後變更立即生效。' : '建立後請先在「AI 快速測試」通過測試（或選擇略過）才能啟用。' }}
+            {{ isEditMode ? '儲存後變更立即生效。' : '下一步會先建立這顆技能（預設未啟用），再進「AI 快速測試」驗證。' }}
           </p>
+        </template>
+
+        <!-- Step 3（僅全新建立）：測試 -->
+        <template v-if="isTestStep">
+          <div class="se-section">
+            <p class="se-hint">技能已建立（未啟用）。AI 會自動產生測試情境，通過後就能啟用；也可以先略過，之後再回來測試。</p>
+          </div>
+          <SkillTestAI :skill-id="createdSkillId!" />
         </template>
 
       </div>
 
       <!-- 底部導覽 -->
       <div class="se-footer">
-        <button v-if="currentStep > 0" class="custom-btn" @click="currentStep--">
+        <button v-if="canGoBack" class="custom-btn" @click="currentStep--">
           <i class="material-symbols-outlined">arrow_back</i>上一步
         </button>
         <span v-else />
         <div class="se-footer-right">
           <!-- 編輯模式：這份 form 只是從既有技能複製出來改的，沒按「儲存變更」
-               就離開不會動到原本的技能，所以文字講「放棄修改」而不是泛用的「取消」 -->
-          <button class="custom-btn" @click="router.push('/view/Skills')">{{ isEditMode ? '放棄修改' : '取消' }}</button>
+               就離開不會動到原本的技能，所以文字講「放棄修改」而不是泛用的「取消」。
+               測試步驟代表技能已經建立了，不是能回頭的「取消」狀態，不顯示這顆鍵 -->
+          <button v-if="!isTestStep" class="custom-btn" @click="router.push('/view/Skills')">{{ isEditMode ? '放棄修改' : '取消' }}</button>
           <button
             v-if="currentStep < STEPS.length - 1"
             class="custom-btn custom-main-btn"
             :disabled="currentStep === 0 && !form.name.trim()"
-            @click="currentStep++"
+            @click="handleNext"
           >
             下一步<i class="material-symbols-outlined">arrow_forward</i>
+          </button>
+          <button
+            v-else-if="isTestStep"
+            class="custom-btn custom-main-btn"
+            @click="router.push('/view/Skills')"
+          >
+            <i class="material-symbols-outlined">check</i>完成
           </button>
           <button
             v-else
@@ -236,6 +252,7 @@ import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
 import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
+import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
 import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
 import type { DraftSkill, SkillFile, SkillCapability } from '@/stores/skillStore'
 
@@ -243,13 +260,29 @@ const router = useRouter()
 const route = useRoute()
 const store = useSkillStore()
 
-const STEPS = ['基本資訊', '技能指令', '確認'] as const
-const currentStep = ref(0)
-
 const editSkillId = route.query.skillId as string | undefined
 const draftId = route.query.draftId as string | undefined
 const isEditMode = !!editSkillId
 const isDraftMode = !!draftId
+// 只有全新建立（不是編輯既有技能、也不是繼續編輯草稿）才多「測試」這一步——
+// 編輯模式已經有 SkillEnableFlow 的啟用測試閘門了，不用在精靈裡重做一次
+const isNewCreate = !isEditMode && !isDraftMode
+
+const STEPS = isNewCreate
+  ? (['基本資訊', '技能指令', '確認', '測試'] as const)
+  : (['基本資訊', '技能指令', '確認'] as const)
+const currentStep = ref(0)
+// 離開「確認」步驟那一刻才真的呼叫 createPersonalSkill()，拿到 id 才能把
+// SkillTestAI 綁到這顆剛建立的技能上
+const createdSkillId = ref<string | null>(null)
+const isTestStep = computed(() => isNewCreate && currentStep.value === STEPS.length - 1)
+// 技能建立後，「基本資訊」「技能指令」的欄位內容已經跟已建立的技能脫勾——
+// 不讓使用者點回去改，避免改了欄位卻忘記其實沒有寫回技能，測試結果跟畫面對不起來。
+// 「確認」「測試」都是唯讀畫面，兩者之間可以互看
+function isStepLocked(i: number) {
+  return createdSkillId.value !== null && i < 2
+}
+const canGoBack = computed(() => currentStep.value > 0 && !isStepLocked(currentStep.value - 1))
 
 const existingSkill = editSkillId ? store.findSkill(editSkillId) : null
 const existingDraft = draftId ? (store.myDrafts as DraftSkill[]).find(d => d.id === draftId) ?? null : null
@@ -340,12 +373,25 @@ async function handleSubmit() {
     store.updateDraft(draftId, payload)
   } else if (isEditMode && editSkillId) {
     store.updateSkill(editSkillId, payload)
-  } else {
-    // 全新建立一律先進個人技能區，不需要送審就能個人使用（跟「建立副本」同一套模式）；
-    // 新建一律以未啟用落地——createPersonalSkill() 本來就無條件寫死 isEnabled: false，
-    // 完全不讀這裡 payload.isEnabled 的值，不需要、也不應該接 SkillEnableFlow
-    store.createPersonalSkill(payload)
   }
+  // 全新建立不會走到這裡：那個分支現在由 handleNext() 在離開「確認」步驟時
+  // 處理，建立完技能後進「測試」步驟，不是在這裡直接送出離開頁面
   router.push('/view/Skills')
+}
+
+function handleNext() {
+  // 全新建立：離開「確認」步驟那一刻才真的建立技能，進「測試」步驟。
+  // 技能一律先進個人技能區、以未啟用落地——createPersonalSkill() 本來就無條件
+  // 寫死 isEnabled: false，完全不讀這裡 payload.isEnabled 的值，不需要、也不應該
+  // 接 SkillEnableFlow。用 createdSkillId 擋重複呼叫，避免使用者在確認／測試
+  // 步驟間來回切換時建出好幾顆同名技能
+  if (isNewCreate && currentStep.value === STEPS.length - 2) {
+    if (!createdSkillId.value) {
+      createdSkillId.value = store.createPersonalSkill(buildPayload())
+    }
+    currentStep.value++
+    return
+  }
+  currentStep.value++
 }
 </script>
