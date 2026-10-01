@@ -79,11 +79,18 @@ describe('interpretStudioMessage', () => {
     expect(reply.content).toBe('已追加第 4 步。')
   })
 
-  it('加能力：push 一項 capability', () => {
-    const draft = { ...emptyDraft(), name: 'x', capabilities: [{ name: 'a', description: '' }] }
-    const reply = interpretStudioMessage('還能匯出成 Excel', draft, 'edit')
+  it('加能力：push 一項 capability（hashtag，不支援空白）', () => {
+    const draft = { ...emptyDraft(), name: 'x', capabilities: ['a'] }
+    const reply = interpretStudioMessage('還能匯出PDF', draft, 'edit')
     expect(reply.patch?.capabilities).toHaveLength(2)
-    expect(reply.patch?.capabilities?.[1].name).toBe('匯出成 Excel')
+    expect(reply.patch?.capabilities?.[1]).toBe('匯出PDF')
+  })
+
+  it('加能力：一句話講多個（空白分隔），各自成一個 hashtag', () => {
+    const draft = { ...emptyDraft(), name: 'x', capabilities: ['a'] }
+    const reply = interpretStudioMessage('還能匯出成 Excel', draft, 'edit')
+    expect(reply.patch?.capabilities).toEqual(['a', '匯出成', 'Excel'])
+    expect(reply.content).toBe('已新增 2 項覆蓋能力。')
   })
 
   it('動作 chip「看起來沒問題，儲存」不改草稿，只回提示', () => {
@@ -273,7 +280,7 @@ describe('useSkillStudioConversation', () => {
     expect(b.isDirty.value).toBe(true)
     // 深拷貝：改 b 不影響 snap
     b.updateFiles([])
-    b.draft.value.capabilities.push({ name: 'x', description: '' })
+    b.draft.value.capabilities.push('x')
     expect(snap.draft.capabilities).toHaveLength(2)
 
     const q = b.send('再補一個步驟')
@@ -388,7 +395,8 @@ describe('useSkillStudioConversation', () => {
     const d = deriveFromSections(['promo_kpi', 'ta_gender'])
     expect(d.instructions).toBe('依序產出以下章節：\n1. 促銷核心 KPI：完成訂單數、GMV、折扣總額、折扣佔比、規則數。\n2. 性別分布：會員性別分布資料，圖表自動生成。')
     expect(d.triggerHint).toBe('當使用者要求產出行銷報告，或提到「TA 用戶畫像、行銷活動成效」相關分析時')
-    expect(d.capabilities.map(c => c.name)).toEqual(['促銷核心 KPI', '性別分布'])
+    // hashtag 不支援空白，章節名稱含空白的（「促銷核心 KPI」）轉成能力標籤時去掉
+    expect(d.capabilities).toEqual(['促銷核心KPI', '性別分布'])
     expect(deriveFromSections([])).toEqual({ instructions: '', triggerHint: '', capabilities: [] })
     expect(deriveFromSections(['nope']).instructions).toBe('')
   })
@@ -518,7 +526,7 @@ describe('formatDraftSummary', () => {
       name: '產品銷售報告整理',
       triggerHint: '查詢銷售資料時',
       instructions: '1. 查詢資料\n2. 產出報告',
-      capabilities: [{ name: '查詢資料', description: '' }],
+      capabilities: ['查詢資料'],
     }
     const summary = formatDraftSummary(draft)
     expect(summary).toContain('產品銷售報告整理')
@@ -782,7 +790,7 @@ describe('CLARIFY 補齊與關卡三確認', () => {
         instructions: '檢視核簽狀況',
         triggerHint: '需要簽核文件時',
         assignedAgents: [],
-        capabilities: [{ name: 'test', description: 'test' }],
+        capabilities: ['test'],
         files: [],
       })
     }

@@ -3,6 +3,7 @@ import { useSkillStore } from '@/stores/skillStore'
 import type { ChatMessage, Skill, SkillCapability, SkillFile, AITestReport } from '@/stores/skillStore'
 export type { Skill }
 import { REPORT_CATEGORIES, SECTION_MAP } from '@/constants/reportSections'
+import { parseHashtags } from '@/utils/hashtags'
 
 // AI 賦能（SkillStudio）的對話狀態與規則式 mock 回覆。
 // 這裡是頁面唯一的狀態來源：左側對話、右側預覽都只讀這裡的 draft／messages。
@@ -175,7 +176,7 @@ export function formatDraftSummary(draft: SkillDraft): string {
     `指令：${draft.instructions || '（未撰寫）'}`,
   ]
   if (draft.capabilities.length) {
-    lines.push(`覆蓋能力：${draft.capabilities.map(c => c.name).join('、')}`)
+    lines.push(`覆蓋能力：${draft.capabilities.map(c => `#${c}`).join(' ')}`)
   }
   return lines.join('\n')
 }
@@ -191,7 +192,7 @@ export function draftFromSkill(s: Skill): SkillDraft {
     description: s.description ?? '',
     instructions: s.instructions ?? '',
     triggerHint: s.triggerHint ?? '',
-    capabilities: (s.capabilities ?? []).map(c => ({ ...c })),
+    capabilities: [...(s.capabilities ?? [])],
     files: [...(s.files ?? [])],
     method: s.composition ? 'blocks' : 'chat',
     sectionIds: [...(s.composition?.sectionIds ?? [])],
@@ -208,7 +209,8 @@ export function deriveFromSections(sectionIds: string[]): Pick<SkillDraft, 'inst
   return {
     instructions: `依序產出以下章節：\n${lines.join('\n')}`,
     triggerHint: `當使用者要求產出行銷報告，或提到「${labels}」相關分析時`,
-    capabilities: sections.map(s => ({ name: s.name, description: s.description })),
+    // 章節名稱有些含空白（例如「TA 明細資料」），hashtag 不支援空白，轉成能力標籤時去掉
+    capabilities: sections.map(s => s.name.replace(/\s+/g, '')),
   }
 }
 
@@ -305,10 +307,8 @@ export function interpretStudioMessage(text: string, draft: SkillDraft, mode: St
         description: t,
         triggerHint: `當使用者提到「${name}」相關需求時`,
         instructions: `1. 釐清使用者的輸入與需求範圍\n2. 執行「${name}」\n3. 依指定格式回覆結果`,
-        capabilities: [
-          { name, description: t },
-          { name: '結果格式化輸出', description: '依指定格式整理並回覆結果' },
-        ],
+        // hashtag 不支援空白，技能名稱若含空白（例如使用者打「查 ERP 庫存」）轉成標籤時去掉
+        capabilities: [name.replace(/\s+/g, ''), '結果格式化輸出'],
       },
       content: '我先幫你擬了一版設定，右側可以看到。名稱、觸發條件和步驟都可以再跟我說要怎麼調。',
       actions: [ACTION_CONFIRM, ACTION_TRIGGER, ACTION_STEP],
@@ -334,9 +334,11 @@ export function interpretStudioMessage(text: string, draft: SkillDraft, mode: St
 
   if (/能力|還能/.test(t)) {
     const body = stripLead(t, /^.*?(能力|還能)(：|:|，)?/) || t
+    // 一句話可能講好幾個能力（空白分隔多個 hashtag），已經在清單裡的不重複加
+    const added = parseHashtags(body).filter(tag => !draft.capabilities.includes(tag))
     return {
-      patch: { capabilities: [...draft.capabilities, { name: body, description: '' }] },
-      content: '已新增一項覆蓋能力。',
+      patch: { capabilities: [...draft.capabilities, ...added] },
+      content: added.length > 1 ? `已新增 ${added.length} 項覆蓋能力。` : '已新增一項覆蓋能力。',
     }
   }
 
@@ -664,7 +666,7 @@ export function useSkillStudioConversation() {
     draft.value = {
       ...base,
       ...prefill,
-      capabilities: (prefill?.capabilities ?? base.capabilities).map(c => ({ ...c })),
+      capabilities: [...(prefill?.capabilities ?? base.capabilities)],
       files: [...(prefill?.files ?? base.files)],
       sectionIds: [...(prefill?.sectionIds ?? base.sectionIds)],
       method: prefill ? 'chat' : null,
@@ -791,7 +793,7 @@ export function useSkillStudioConversation() {
         instructions: d.instructions,
         triggerHint: d.triggerHint,
         assignedAgents: [],
-        capabilities: d.capabilities.map(c => ({ ...c })),
+        capabilities: [...d.capabilities],
         files: [...d.files],
         composition: d.method === 'blocks' ? { sectionIds: [...d.sectionIds] } : undefined,
         creationMethod: d.method === 'blocks' ? 'manual' : 'ai_assisted',

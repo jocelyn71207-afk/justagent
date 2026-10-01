@@ -29,7 +29,8 @@ export function suggestionToPrefill(s: SkillSuggestion): Partial<SkillDraft> {
     description: s.description,
     triggerHint: s.triggerHint,
     instructions: s.steps.map((step, i) => `${i + 1}. ${step}`).join('\n'),
-    capabilities: s.steps.map(step => ({ name: step, description: '' })),
+    // hashtag 不支援空白，步驟文字轉成能力標籤時去掉
+    capabilities: s.steps.map(step => step.replace(/\s+/g, '')),
   }
 }
 

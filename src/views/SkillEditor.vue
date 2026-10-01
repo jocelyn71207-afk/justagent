@@ -306,10 +306,9 @@ function buildPayload() {
     assignedAgents: [...form.assignedAgents],
     isEnabled: form.isEnabled,
     files: [...form.files],
-    // 只保留有填名稱的能力，使用者點了「新增能力」卻沒填就送出的空白列不用存
-    capabilities: form.capabilities
-      .filter(c => c.name.trim())
-      .map(c => ({ name: c.name.trim(), description: c.description.trim() })),
+    // 過濾掉空字串（理論上不會發生，SkillCapabilityEditor 不會送出空白標籤，
+    // 這裡只是防呆)
+    capabilities: form.capabilities.map(c => c.trim()).filter(Boolean),
   }
 }
 

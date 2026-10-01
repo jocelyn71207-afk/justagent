@@ -51,12 +51,12 @@ describe('SkillStudioPreview', () => {
 
   it('有內容時渲染名稱、觸發、markdown 指令與能力 chip', () => {
     const w = mountPreview({
-      draft: { ...emptyDraft(), name: '查庫存', triggerHint: '提到庫存時', instructions: '1. **釐清**\n2. 查詢', capabilities: [{ name: '能力A', description: '' }] },
+      draft: { ...emptyDraft(), name: '查庫存', triggerHint: '提到庫存時', instructions: '1. **釐清**\n2. 查詢', capabilities: ['能力A'] },
     })
     expect(w.find('.ssp-title').text()).toBe('查庫存')
     expect(w.text()).toContain('提到庫存時')
     expect(w.find('.markdown-body strong').text()).toBe('釐清')
-    expect(w.findAll('.ssp-cap-chip').map(c => c.text())).toEqual(['能力A'])
+    expect(w.findAll('.ssp-cap-chip').map(c => c.text())).toEqual(['#能力A'])
   })
 
   it('建立模式主按鈕「儲存為個人技能」依 canSave 決定 disabled，點擊 emit save', async () => {

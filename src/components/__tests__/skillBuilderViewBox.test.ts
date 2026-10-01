@@ -177,7 +177,7 @@ describe('skillBuilderViewBox', () => {
     // markdown-it 把「1. …」轉成 <ol><li>，數字是瀏覽器產生的 ::marker，不在 textContent 裡，
     // 這裡改驗證章節名稱＋說明確實被 deriveFromSections 帶進技能指令
     expect(wrapper.text()).toContain('促銷核心 KPI：完成訂單數')
-    expect(wrapper.findAll('.ssp-cap-chip').map(c => c.text())).toEqual(['促銷核心 KPI', '渠道核心 KPI'])
+    expect(wrapper.findAll('.ssp-cap-chip').map(c => c.text())).toEqual(['#促銷核心KPI', '#渠道核心KPI'])
 
     const blocksBefore = store.aiViewerBlocks.length
     await wrapper.find('.ssp-save-btn').trigger('click')

@@ -51,7 +51,7 @@
         <div class="ssp-section">
           <div class="ssp-section-label">覆蓋能力</div>
           <div v-if="props.draft.capabilities.length" class="ssp-caps">
-            <span v-for="(cap, i) in props.draft.capabilities" :key="`${cap.name}-${i}`" class="ssp-cap-chip">{{ cap.name }}</span>
+            <span v-for="(cap, i) in props.draft.capabilities" :key="`${cap}-${i}`" class="ssp-cap-chip">#{{ cap }}</span>
           </div>
           <p v-else class="ssp-empty">尚未拆解覆蓋能力項目</p>
         </div>

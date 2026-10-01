@@ -2,10 +2,10 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { FileType } from '@/utils/file'
 
-export interface SkillCapability {
-  name: string
-  description: string
-}
+// 覆蓋能力：純 hashtag 字串（不含 #，顯示時才加），不支援空白、不限字數，
+// 可以有多個。原本的 { name, description } 結構拿掉——資料面只能有一種表示法，
+// 說明文字需要的地方（例如技能定義 markdown）改用 tag 本身，不再帶額外說明
+export type SkillCapability = string
 
 export interface SkillTestCase {
   name: string
@@ -248,10 +248,10 @@ const MOCK_SKILLS: Skill[] = [
     avgLatencyMs: 280,
     instructions: '你是一個專業的客服助理，負責處理客戶的訂單查詢、退換貨、付款方式等常見問題。回覆時語氣親切且專業，優先比對知識庫給出準確答案。遇到情緒激動或複雜投訴時，主動轉接人工客服。支援繁體中文、簡體中文、英文回覆。',
     capabilities: [
-      { name: '問題分類', description: '依使用者訊息語意自動分類問題類型，如退貨、查詢、投訴等。' },
-      { name: 'FAQ 查詢', description: '比對知識庫快速回覆常見問題，支援模糊比對與同義詞展開。' },
-      { name: '情緒分析', description: '識別使用者情緒狀態，必要時自動觸發轉接人工客服流程。' },
-      { name: '多語言支援', description: '支援繁中、簡中、英文等多語言自動偵測與回覆。' },
+      '問題分類',
+      'FAQ查詢',
+      '情緒分析',
+      '多語言支援',
     ],
     usageScenarios: [
       { title: '處理高峰期大量諮詢', description: '促銷活動期間湧入大量客戶詢問，AI 自動分流處理標準問題，讓人工客服聚焦在複雜投訴與退換貨審核。' },
@@ -316,8 +316,8 @@ const MOCK_SKILLS: Skill[] = [
         instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 如有疑問轉接人工客服',
         triggerHint: '退貨、換貨、退款、品質問題',
         capabilities: [
-          { name: '訂單狀態查詢', description: '根據訂單編號查詢目前處理狀態與物流資訊。' },
-          { name: '退貨資格判斷', description: '依設定的退貨規則自動判斷是否符合退貨條件並給出建議。' },
+          '訂單狀態查詢',
+          '退貨資格判斷',
         ],
         usageScenarios: [
           { title: '標準退貨申請', description: '客戶詢問退貨資格，AI 自動查詢購買日期並比對 30 天退貨政策，直接給出可否退貨的判斷與後續申請步驟。' },
@@ -350,8 +350,8 @@ const MOCK_SKILLS: Skill[] = [
             instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 如有疑問轉接人工客服',
             triggerHint: '退貨、換貨、退款、品質問題',
             capabilities: [
-              { name: '訂單狀態查詢', description: '根據訂單編號查詢目前處理狀態與物流資訊。' },
-              { name: '退貨資格判斷', description: '依設定的退貨規則自動判斷是否符合退貨條件並給出建議。' },
+              '訂單狀態查詢',
+              '退貨資格判斷',
             ],
             createdAt: '2026-05-10T10:00:00Z',
             createdBy: 'jocelyn.tseng',
@@ -371,9 +371,9 @@ const MOCK_SKILLS: Skill[] = [
             instructions: '你是專門處理退貨問題的客服助理。\n\n當客戶提出退貨請求時：\n1. 查詢訂單狀態確認購買日期\n2. 確認是否在 30 天退貨期限內\n3. 依據退貨政策給出具體建議\n4. 若超過期限但有正當理由，提供「主管特批申請」流程\n5. 如有疑問轉接人工客服\n\n特殊規則：\n- 商品瑕疵不受期限限制，隨時可申請\n- VIP 客戶享有 45 天退貨優惠期',
             triggerHint: '退貨、換貨、退款、品質問題、保固、瑕疵、VIP',
             capabilities: [
-              { name: '訂單狀態查詢', description: '根據訂單編號查詢目前處理狀態與物流資訊。' },
-              { name: '退貨資格判斷', description: '依設定的退貨規則自動判斷是否符合退貨條件並給出建議。' },
-              { name: 'VIP 優惠識別', description: '自動識別 VIP 客戶身份，套用對應的延長退貨期政策。' },
+              '訂單狀態查詢',
+              '退貨資格判斷',
+              'VIP優惠識別',
             ],
             createdAt: '2026-06-22T10:00:00Z',
             createdBy: 'jocelyn.tseng',
@@ -416,10 +416,10 @@ const MOCK_SKILLS: Skill[] = [
       },
     ],
     capabilities: [
-      { name: '長文摘要', description: '自動提取文件重點，生成條列式或段落式摘要。' },
-      { name: '多格式支援', description: '解析 PDF、Word、Markdown 等常見格式，保留段落結構。' },
-      { name: '關鍵字提取', description: '識別文件核心主題與高頻關鍵詞，輔助知識分類。' },
-      { name: '結構化輸出', description: '以 JSON 或 Markdown 格式輸出摘要結果，便於下游系統使用。' },
+      '長文摘要',
+      '多格式支援',
+      '關鍵字提取',
+      '結構化輸出',
     ],
     usageScenarios: [
       { title: '快速吸收長篇報告', description: '主管在會議前 15 分鐘收到 30 頁季報，透過此技能取得結構化重點摘要，準確掌握關鍵數據與決策項目。' },
@@ -472,9 +472,9 @@ const MOCK_SKILLS: Skill[] = [
     avgLatencyMs: 520,
     instructions: '你是會議記錄助理，負責將會議錄音轉換為逐字稿，並自動生成結構化摘要，包含重點決策與 action items。輸出時明確標示每個待辦事項的負責人與預計完成日期。',
     capabilities: [
-      { name: '語音轉文字', description: '將會議錄音檔轉換為帶時間戳記的完整文字逐字稿。' },
-      { name: '摘要生成', description: '提取會議重點、關鍵決策與討論結論，生成結構化摘要。' },
-      { name: 'Action Items', description: '自動識別待辦事項並整理負責人與預計完成日期。' },
+      '語音轉文字',
+      '摘要生成',
+      'ActionItems',
     ],
     usageScenarios: [
       { title: '週會後快速產出記錄', description: 'PM 在週會結束後立即上傳錄音，AI 自動生成摘要與 action items，10 分鐘內發送給所有與會者確認，取代人工手記。' },
@@ -531,8 +531,8 @@ const MOCK_SKILLS: Skill[] = [
         upstreamUpdateStatus: 'update_available' as const,
         instructions: '你是工程團隊的會議記錄助理，負責將站立會議與架構討論的錄音轉換為摘要，並自動將識別出的 action items 建立為 Jira Issue，同時保留技術決策記錄與相關 PR 連結。',
         capabilities: [
-          { name: 'Jira 整合', description: '自動將識別出的 action items 建立為 Jira Issue 並指派負責人。' },
-          { name: '工程格式輸出', description: '以工程團隊慣用格式輸出摘要，包含技術決策記錄與 PR 連結。' },
+          'Jira整合',
+          '工程格式輸出',
         ],
         usageScenarios: [
           { title: '站立會議自動建票', description: '每日站立會議結束後，AI 自動識別出的待辦事項直接建立為 Jira Issue 並指派負責人，工程師不用再手動謄寫。' },
@@ -585,8 +585,8 @@ const MOCK_SKILLS: Skill[] = [
       },
     ],
     capabilities: [
-      { name: '即時庫存查詢', description: '根據產品 ID 或 SKU 查詢各倉庫即時庫存量與安全存量狀態。' },
-      { name: '多倉庫整合', description: '整合多個倉庫資料來源，提供統一查詢介面與匯總報表。' },
+      '即時庫存查詢',
+      '多倉庫整合',
     ],
     usageScenarios: [
       { title: '客服即時回覆庫存', description: '客服人員在對話中直接查詢指定 SKU 的各倉庫庫存量，不用切換到 ERP 系統畫面，加快客戶回覆速度。' },
@@ -609,7 +609,7 @@ const MOCK_SKILLS: Skill[] = [
         instructions: '你是 ERP 庫存查詢助理。\n根據 SKU 查詢即時庫存量並回報。',
         triggerHint: '庫存、SKU、庫存查詢',
         capabilities: [
-          { name: '即時庫存查詢', description: '根據產品 ID 或 SKU 查詢各倉庫即時庫存量與安全存量狀態。' },
+          '即時庫存查詢',
         ],
         createdAt: '2026-04-01T08:00:00Z',
         createdBy: 'jocelyn.tseng',
@@ -628,8 +628,8 @@ const MOCK_SKILLS: Skill[] = [
         instructions: '你是 ERP 庫存查詢助理。\n根據 SKU 查詢各倉庫即時庫存量。\n\n支援功能：\n- 指定倉庫查詢\n- 多倉庫匯總\n- 低於安全存量自動標示',
         triggerHint: '庫存、SKU、倉庫、庫存查詢',
         capabilities: [
-          { name: '即時庫存查詢', description: '根據產品 ID 或 SKU 查詢各倉庫即時庫存量與安全存量狀態。' },
-          { name: '多倉庫整合', description: '整合多個倉庫資料來源，提供統一查詢介面與匯總報表。' },
+          '即時庫存查詢',
+          '多倉庫整合',
         ],
         createdAt: '2026-05-15T09:00:00Z',
         createdBy: 'jocelyn.tseng',
@@ -660,8 +660,8 @@ const MOCK_SKILLS: Skill[] = [
     instructions: '你是業務團隊的週報助理。\n\n每週根據提供的銷售數據，自動生成結構化業績週報：\n1. 本週總業績與目標達成率\n2. Top 5 商品銷售排行\n3. 各區域業績比較\n4. 下週改善建議\n\n輸出格式以 Markdown 條列式為主，數字加粗標示。',
     triggerHint: '週報、業績、銷售報告、商品排行、達標率',
     capabilities: [
-      { name: '銷售數據分析', description: '自動整理銷售數據並計算各項 KPI，包含業績達成率與成長趨勢。' },
-      { name: '商品排行生成', description: '根據銷售量或業績金額，自動生成 Top N 商品排行清單。' },
+      '銷售數據分析',
+      '商品排行生成',
     ],
     usageScenarios: [
       { title: '週五業績彙整', description: '每週五業務主管發出週報前，AI 自動整理當週數據並產出草稿，主管只需確認並補充備註即可發送。' },
@@ -683,8 +683,8 @@ const MOCK_SKILLS: Skill[] = [
         instructions: '你是業務團隊的週報助理。\n\n每週根據提供的銷售數據，自動生成結構化業績週報：\n1. 本週總業績與目標達成率\n2. Top 5 商品銷售排行\n3. 各區域業績比較\n4. 下週改善建議',
         triggerHint: '週報、業績、銷售報告',
         capabilities: [
-          { name: '銷售數據分析', description: '自動整理銷售數據並計算各項 KPI，包含業績達成率與成長趨勢。' },
-          { name: '商品排行生成', description: '根據銷售量或業績金額，自動生成 Top N 商品排行清單。' },
+          '銷售數據分析',
+          '商品排行生成',
         ],
         createdAt: '2026-06-15T09:00:00Z',
         createdBy: 'jocelyn.tseng',
@@ -715,8 +715,8 @@ const MOCK_SKILLS: Skill[] = [
     instructions: '你是行銷文案助理，根據活動主題、目標受眾與品牌調性生成行銷文案。\n\n輸出包含：\n1. 社群貼文（Facebook / Instagram / LinkedIn 各一）\n2. EDM 主旨行（3 個選項）\n3. CTA 按鈕文案（2 個選項）\n\n語調依品牌調性調整，預設為專業但親切。',
     triggerHint: '文案、行銷、貼文、EDM、社群、活動',
     capabilities: [
-      { name: '多平台文案生成', description: '針對不同社群平台生成適合的文案格式與字數。' },
-      { name: 'CTA 最佳化', description: '根據活動目標建議最佳行動呼籲文案。' },
+      '多平台文案生成',
+      'CTA最佳化',
     ],
     usageScenarios: [
       { title: '活動上線前趕文案', description: '行銷同仁在活動上線前一天才拿到主題，AI 依目標受眾與品牌調性直接生成三平台貼文與 EDM 標題，省去逐字發想的時間。' },
@@ -824,8 +824,8 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     instructions: '你是一個週報助理，協助使用者根據本週資料自動生成結構化週報。',
     triggerHint: '週報、會議紀錄、任務清單、彙整',
     capabilities: [
-      { name: '資料整合', description: '彙整本週會議記錄與任務清單，去除重複與過時資訊。' },
-      { name: '週報格式輸出', description: '依範本格式輸出結構化週報摘要，段落與條列比例固定。' },
+      '資料整合',
+      '週報格式輸出',
     ],
     usageScenarios: [
       { title: '週五下班前產出草稿', description: '每週五下班前，根據本週會議記錄與任務清單自動整理出週報草稿，使用者只需微調用詞即可送出。' },
@@ -877,8 +877,8 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     avgLatencyMs: 0,
     instructions: '你是客服品質評估助理，分析客服對話品質。',
     capabilities: [
-      { name: '多輪對話分析', description: '分析完整對話脈絡，而非單一回合，評估整體服務品質。' },
-      { name: '情緒辨識', description: '識別對話中客戶的情緒起伏，標記高風險或不滿意的對話。' },
+      '多輪對話分析',
+      '情緒辨識',
     ],
     usageScenarios: [
       { title: '每日客服品質抽查', description: '主管每日抽查數則客服對話，AI 自動評分並標記需要人工複核的對話。' },
@@ -911,8 +911,8 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     avgLatencyMs: 0,
     instructions: '你是合約審核助理，負責擷取合約中的關鍵條款並評估潛在法律風險。請以條列方式輸出摘要，並標示高風險條款。',
     capabilities: [
-      { name: '關鍵條款擷取', description: '自動識別保密、違約、終止等常見合約條款並摘要重點。' },
-      { name: '風險等級標示', description: '依條款內容判斷風險等級，高風險條款會額外標示提醒。' },
+      '關鍵條款擷取',
+      '風險等級標示',
     ],
     usageScenarios: [
       { title: '合約初審快速篩查', description: '法務人員收到新合約時，先由 AI 快速標出高風險條款，縮短逐條人工閱讀的時間。' },
@@ -945,8 +945,8 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     avgLatencyMs: 0,
     instructions: '你是會議記錄助理，根據逐字稿整理結構化會議記錄，包含主題、決議、行動項目與負責人。',
     capabilities: [
-      { name: '多發言人識別', description: '區分不同發言人的內容，避免會議記錄混淆發言歸屬。' },
-      { name: '行動項目配對', description: '自動將識別出的行動項目配對負責人與預計完成時間。' },
+      '多發言人識別',
+      '行動項目配對',
     ],
     usageScenarios: [
       { title: '多人會議記錄整理', description: '5 人以下的會議結束後，AI 自動區分發言人並整理成結構化記錄，減少會後手動謄寫的時間。' },
@@ -974,8 +974,8 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     avgLatencyMs: 0,
     instructions: '你是產品 FAQ 助理，根據內部文件與常見問題資料庫回答用戶問題，無法回答時請引導至人工客服。',
     capabilities: [
-      { name: 'FAQ 比對回覆', description: '比對常見問題資料庫，快速回覆用戶提出的產品相關問題。' },
-      { name: '無法回答時導流', description: '判斷問題超出資料庫涵蓋範圍時，主動引導轉接人工客服。' },
+      'FAQ比對回覆',
+      '無法回答時導流',
     ],
     usageScenarios: [
       { title: '產品頁面即時問答', description: '用戶在產品頁面提出規格或使用方式的問題，AI 直接比對 FAQ 資料庫給出回覆，不用等人工客服上線。' },
@@ -1000,8 +1000,8 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     avgLatencyMs: 0,
     instructions: '你是 ERP 報表助理，整合多系統數據生成週期性報表。',
     capabilities: [
-      { name: '多系統資料彙整', description: '整合 ERP 不同模組的數據來源，統一格式輸出。' },
-      { name: '週期性報表產出', description: '依設定週期（週/月）自動產出報表，不需手動觸發。' },
+      '多系統資料彙整',
+      '週期性報表產出',
     ],
     usageScenarios: [
       { title: '月底報表自動彙整', description: '每月底自動彙整銷售、庫存、財務等模組數據，產出主管需要的週期性報表初稿。' },
@@ -1029,9 +1029,9 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     triggerHint: '當使用者要求產出行銷報告，或提到「TA 用戶畫像、行銷活動成效、渠道績效」相關分析時',
     assignedAgents: [],
     capabilities: [
-      { name: '會員人物誌', description: '性別 × 年齡層 × 主力購買品類 × RFM 行為分群的四維輪廓。' },
-      { name: '活動排行', description: '各促銷活動帶動效果排行，並自動生成圖表。' },
-      { name: '渠道別流量與收益貢獻', description: '各渠道流量佔比與收益貢獻對照，圖表自動生成。' },
+      '會員人物誌',
+      '活動排行',
+      '渠道別流量與收益貢獻',
     ],
     files: [],
     composition: { sectionIds: ['ta_persona', 'promo_ranking', 'ch_traffic'] },
@@ -1061,7 +1061,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     triggerHint: '示範用途，沒有特定觸發情境',
     assignedAgents: [],
     capabilities: [
-      { name: '示範能力', description: '沒有實際功能，純粹用來展示啟用前的測試閘門流程。' },
+      '示範能力',
     ],
   },
 ]
@@ -1385,7 +1385,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (patch.description !== undefined) skill.description = patch.description
     if (patch.instructions !== undefined) skill.instructions = patch.instructions
     if (patch.triggerHint !== undefined) skill.triggerHint = patch.triggerHint
-    if (patch.capabilities !== undefined) skill.capabilities = patch.capabilities.map(c => ({ ...c }))
+    if (patch.capabilities !== undefined) skill.capabilities = [...patch.capabilities]
     if (patch.composition !== undefined) skill.composition = patch.composition ? { sectionIds: [...patch.composition.sectionIds] } : undefined
     if (
       skill.personalStatus === 'draft' &&

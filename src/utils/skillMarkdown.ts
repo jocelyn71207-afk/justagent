@@ -23,9 +23,7 @@ export function buildSkillDefinitionMarkdown(skill: Skill): string {
     lines.push('')
     lines.push('## 覆蓋能力')
     lines.push('')
-    for (const cap of skill.capabilities) {
-      lines.push(`- **${cap.name}**：${cap.description}`)
-    }
+    lines.push(skill.capabilities.map(tag => `#${tag}`).join(' '))
   }
 
   if (skill.usageScenarios?.length) {

@@ -26,7 +26,7 @@ describe('suggestionToPrefill / suggestionOpeningMessage', () => {
     expect(p.description).toBe(SUGGESTION.description)
     expect(p.triggerHint).toBe(SUGGESTION.triggerHint)
     expect(p.instructions).toBe('1. 查詢指定月份產品銷售數據\n2. 套用三諾產品部輸出報告規範自動產出報告')
-    expect(p.capabilities?.map(c => c.name)).toEqual(SUGGESTION.steps)
+    expect(p.capabilities).toEqual(SUGGESTION.steps)
     expect(suggestionOpeningMessage(SUGGESTION)).toBe('這顆技能來自本對話的「查詢銷售資料＋套用部門報告規範」流程，設定我先填好了。想調整就直接說，確認後按「儲存為個人技能」。')
   })
 })

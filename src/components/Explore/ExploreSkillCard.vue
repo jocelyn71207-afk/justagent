@@ -27,5 +27,5 @@ const emit = defineEmits<{
 }>()
 
 const visual = computed(() => getSkillVisual(props.skill.functionType))
-const capabilityText = computed(() => props.skill.capabilities?.[0]?.description ?? props.skill.description)
+const capabilityText = computed(() => props.skill.description)
 </script>

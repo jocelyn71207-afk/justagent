@@ -62,9 +62,9 @@
                   <div class="svc-caps">
                     <span
                       v-for="cap in v1.capabilities ?? []"
-                      :key="cap.name"
-                      :class="['svc-cap', capClass(cap.name, 'old')]"
-                    >{{ cap.name }}</span>
+                      :key="cap"
+                      :class="['svc-cap', capClass(cap, 'old')]"
+                    >#{{ cap }}</span>
                     <span v-if="!v1.capabilities?.length" class="svc-empty">（無）</span>
                   </div>
                 </div>
@@ -117,9 +117,9 @@
                   <div class="svc-caps">
                     <span
                       v-for="cap in v2.capabilities ?? []"
-                      :key="cap.name"
-                      :class="['svc-cap', capClass(cap.name, 'new')]"
-                    >{{ cap.name }}</span>
+                      :key="cap"
+                      :class="['svc-cap', capClass(cap, 'new')]"
+                    >#{{ cap }}</span>
                     <span v-if="!v2.capabilities?.length" class="svc-empty">（無）</span>
                   </div>
                 </div>
@@ -192,8 +192,8 @@ function fieldClass(oldVal: string | undefined, newVal: string | undefined, side
 }
 
 const capNames = computed(() => ({
-  oldSet: new Set((v1.value?.capabilities ?? []).map(c => c.name)),
-  newSet: new Set((v2.value?.capabilities ?? []).map(c => c.name)),
+  oldSet: new Set(v1.value?.capabilities ?? []),
+  newSet: new Set(v2.value?.capabilities ?? []),
 }))
 
 function capClass(name: string, side: 'old' | 'new'): string {

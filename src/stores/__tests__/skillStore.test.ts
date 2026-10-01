@@ -598,7 +598,7 @@ describe('skillStore', () => {
       const ok = store.applyStudioPatch(id, {
         name: '新名',
         instructions: '新指令',
-        capabilities: [{ name: '能力一', description: '說明' }],
+        capabilities: ['能力一'],
       })
       expect(ok).toBe(true)
       const s = store.findSkill(id)!
@@ -606,7 +606,7 @@ describe('skillStore', () => {
       expect(s.skillName).toBe('新名')
       expect(s.instructions).toBe('新指令')
       expect(s.triggerHint).toBe('舊觸發') // 未帶的欄位不動
-      expect(s.capabilities).toEqual([{ name: '能力一', description: '說明' }])
+      expect(s.capabilities).toEqual(['能力一'])
     })
 
     it('applyStudioPatch 對 draft 狀態的複本改了 instructions 後 personalStatus 轉 available', () => {
@@ -645,7 +645,7 @@ describe('skillStore', () => {
   describe('覆蓋能力 capabilities', () => {
     it('createSkill 帶入 capabilities 會存到新技能上', () => {
       const store = useSkillStore()
-      const cap = { name: '問題分類', description: '依語意自動分類問題類型' }
+      const cap = '問題分類'
       store.createSkill({
         name: '測試技能',
         instructions: '',
@@ -673,7 +673,7 @@ describe('skillStore', () => {
 
     it('createPersonalSkill 帶入 capabilities 會存到新的個人技能上', () => {
       const store = useSkillStore()
-      const cap = { name: 'FAQ 查詢', description: '比對知識庫回覆常見問題' }
+      const cap = 'FAQ查詢'
       store.createPersonalSkill({
         name: '測試個人技能',
         instructions: '',
@@ -688,7 +688,7 @@ describe('skillStore', () => {
 
     it('updateSkill 帶入 capabilities 會覆蓋技能的 capabilities', () => {
       const store = useSkillStore()
-      const cap = { name: '情緒分析', description: '識別對話中客戶的情緒起伏' }
+      const cap = '情緒分析'
       store.updateSkill('ext-cs-return-001', {
         name: '客服機器人 (退貨版)',
         instructions: '測試指令',
