@@ -1235,4 +1235,61 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     expect(last.role).toBe('agent')
     expect(last.content).toContain('啟用技能')
   })
+
+  it('沒有全對的引導訊息帶「重新測試」「不改，直接啟用」兩個 action chip', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    c.notifyTestResult({ total: 8, correct: 6, byTag: {} as any, summary: '' })
+    const last = c.messages.value.at(-1)!
+    expect(last.actions?.map(a => a.label)).toEqual(['重新測試', '不改，直接啟用'])
+  })
+
+  it('點「重新測試」：呼叫 store.generateAITestScenarios 重新出題、設定 requestTestTab 單次訊號、轉回 active（不是自由文字編輯）', async () => {
+    vi.useFakeTimers()
+    try {
+      const store = useSkillStore()
+      const id = store.createPersonalSkill({ name: '待重測技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+      const spy = vi.spyOn(store, 'generateAITestScenarios')
+      const c = useSkillStudioConversation()
+      c.loadSkill(id)
+      c.notifyTestResult({ total: 8, correct: 6, byTag: {} as any, summary: '' })
+      expect(c.gateStage.value).toBe('clarify')
+      expect(c.requestTestTab.value).toBe(false)
+
+      const p = c.send('重新測試')
+      await vi.advanceTimersByTimeAsync(800)
+      await p
+      expect(spy).toHaveBeenCalledWith(id)
+      expect(c.requestTestTab.value).toBe(true)
+      expect(c.gateStage.value).toBe('active')
+      expect(c.messages.value.at(-1)!.content).toContain('換一批新題目')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('點「不改，直接啟用」：呼叫 store.overrideAndEnableSkill 直接啟用，不改任何草稿內容，轉回 active', async () => {
+    vi.useFakeTimers()
+    try {
+      const store = useSkillStore()
+      const id = store.createPersonalSkill({ name: '待啟用技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+      expect(store.findSkill(id)!.isEnabled).toBe(false)
+      const c = useSkillStudioConversation()
+      c.loadSkill(id)
+      c.notifyTestResult({ total: 8, correct: 6, byTag: {} as any, summary: '' })
+
+      const p = c.send('不改，直接啟用')
+      await vi.advanceTimersByTimeAsync(800)
+      await p
+      const skill = store.findSkill(id)!
+      expect(skill.isEnabled).toBe(true)
+      expect(skill.aiTestOverridden).toBe(true)
+      expect(skill.instructions).toBe('x') // 沒有改動草稿內容
+      expect(c.gateStage.value).toBe('active')
+      expect(c.messages.value.at(-1)!.content).toContain('已啟用')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

@@ -215,6 +215,11 @@ const ACTION_CONFIRM: StudioAction = { id: 'confirm', label: '看起來沒問題
 const ACTION_TRIGGER: StudioAction = { id: 'trigger', label: '觸發條件要更精準' }
 const ACTION_STEP: StudioAction = { id: 'step', label: '再補一個步驟' }
 
+// 測試沒全對時的引導訊息：使用者可能是自己答錯題目（想重新測），也可能根本不在意
+// 這次沒全對（想先不改直接啟用），不是每次都真的要改技能內容
+const ACTION_RETEST: StudioAction = { id: 'retest', label: '重新測試' }
+const ACTION_FORCE_ENABLE: StudioAction = { id: 'force-enable', label: '不改，直接啟用' }
+
 const CREATE_SUGGESTIONS: StudioSuggestion[] = [
   { icon: 'inventory_2', label: '幫我建立一個能查 ERP 庫存的技能', prefill: '幫我建立一個能查 ERP 庫存的技能' },
   { icon: 'summarize', label: '把每週會議逐字稿整理成週報', prefill: '把每週會議逐字稿整理成週報' },
@@ -356,6 +361,10 @@ export function useSkillStudioConversation() {
   const gatheringRawText = ref('')        // 從零開始建立時，累積的原始文字（第一句描述＋追問答案）
   const gatheringRound = ref(0)           // gathering 階段已經問過幾輪追問（0～2）
   const awaitingSupplement = ref(false)   // confirmKnownInfo 階段是否正在等一句開放式補充內容
+  // 測試沒全對時選「重新測試」：composable 自己呼叫得到 store.generateAITestScenarios，
+  // 但切不了外殼（SkillStudioWorkspace）自己管的 activeTab——這個旗標讓外殼知道要
+  // 切到測試 tab，讀到之後要自己歸零，單次訊號不是常駐狀態
+  const requestTestTab = ref(false)
 
   const isDirty = computed(() => serialize(draft.value) !== snapshot.value)
   const canSave = computed(() => !!draft.value.name.trim() && !!draft.value.instructions.trim())
@@ -546,6 +555,26 @@ export function useSkillStudioConversation() {
     }
 
     if (stage === 'clarify') {
+      // 測試沒全對引導訊息的兩個 action chip（也接受相近的自由輸入）：使用者可能是
+      // 自己答題答錯了想重新測，或根本不在意這次沒全對、先不改直接啟用——兩者都
+      // 不是要改技能內容，提早判斷掉，不要落到下面的自由文字編輯規則
+      if (t === ACTION_RETEST.label || /重新測|重測|換一批|再測一次|重新出題/.test(t)) {
+        if (savedSkillId.value) {
+          store.generateAITestScenarios(savedSkillId.value)
+          requestTestTab.value = true
+        }
+        gateStage.value = 'active'
+        push({ role: 'agent', content: '好，已經換一批新題目了，到「測試」tab 繼續作答。' })
+        return
+      }
+      if (t === ACTION_FORCE_ENABLE.label || /不改.{0,4}啟用|直接啟用|先不改|先不用改/.test(t)) {
+        if (savedSkillId.value) {
+          store.overrideAndEnableSkill(savedSkillId.value)
+        }
+        gateStage.value = 'active'
+        push({ role: 'agent', content: `已啟用「${draft.value.name}」，之後想再調整的話隨時都可以跟我說。` })
+        return
+      }
       if (CLARIFY_DONE_HINT.test(t)) {
         gateStage.value = 'gate3'
         push({
@@ -759,7 +788,8 @@ export function useSkillStudioConversation() {
     gateStage.value = 'clarify'
     push({
       role: 'agent',
-      content: `剛剛的測試沒有全部通過（答對 ${report.correct}/${report.total}，${rate}%），要不要跟我說說看哪裡需要調整？我會幫你補齊或修正做法內容。`,
+      content: `剛剛的測試沒有全部通過（答對 ${report.correct}/${report.total}，${rate}%），要不要跟我說說看哪裡需要調整？我會幫你補齊或修正做法內容。也可能是你剛剛答題時選錯了，或這次先不處理也沒關係。`,
+      actions: [ACTION_RETEST, ACTION_FORCE_ENABLE],
     })
   }
 
@@ -806,7 +836,7 @@ export function useSkillStudioConversation() {
   }
 
   return {
-    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips, gateStage,
+    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, suggestionChips, gateStage, requestTestTab,
     startCreate, chooseMethod, updateBlocks, loadSkill, send, save, updateFiles, notifyTestResult, toSnapshot, hydrate, detachSavedSkill,
   }
 }
