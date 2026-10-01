@@ -52,4 +52,13 @@ describe('SkillStudioDrawer', () => {
     currentWrapper = wrapper
     expect((wrapper.vm as any).isDirty).toBe(false)
   })
+
+  it('工作區觸發放棄修改（discard）：抽屜當成跟按右上角關閉鈕一樣觸發 close', async () => {
+    const wrapper = mount(SkillStudioDrawer, { props: { open: true, query: { skillId: 'personal-001' } } })
+    currentWrapper = wrapper
+    await wrapper.vm.$nextTick()
+    const discardBtn = body().findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))!
+    await discardBtn.trigger('click')
+    expect(wrapper.emitted('close')).toHaveLength(1)
+  })
 })

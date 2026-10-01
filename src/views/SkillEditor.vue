@@ -200,7 +200,9 @@
         </button>
         <span v-else />
         <div class="se-footer-right">
-          <button class="custom-btn" @click="router.push('/view/Skills')">取消</button>
+          <!-- 編輯模式：這份 form 只是從既有技能複製出來改的，沒按「儲存變更」
+               就離開不會動到原本的技能，所以文字講「放棄修改」而不是泛用的「取消」 -->
+          <button class="custom-btn" @click="router.push('/view/Skills')">{{ isEditMode ? '放棄修改' : '取消' }}</button>
           <button
             v-if="currentStep < STEPS.length - 1"
             class="custom-btn custom-main-btn"

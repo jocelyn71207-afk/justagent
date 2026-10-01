@@ -76,6 +76,42 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.find('.ssp-title').text()).toBe('週報自動生成')
   })
 
+  it('修改模式：按「放棄修改」，草稿已變更（dirty）時先確認，確認後草稿重設回已儲存版本並 emit discard', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+      await flushPromises()
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      await input.setValue('名稱改成「亂改的名字」')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+      expect(wrapper.find('.ssp-title').text()).toBe('亂改的名字')
+
+      const discardBtn = wrapper.findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))!
+      await discardBtn.trigger('click')
+      expect(popDialog.confirm).toHaveBeenCalledWith('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', expect.any(Function))
+      expect(wrapper.emitted('discard')).toBeUndefined()
+
+      const onConfirm = vi.mocked(popDialog.confirm).mock.calls[0][3] as () => void
+      onConfirm()
+      await flushPromises()
+      expect(wrapper.find('.ssp-title').text()).toBe('週報自動生成')
+      expect(wrapper.emitted('discard')).toHaveLength(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('修改模式：草稿沒有變更時按「放棄修改」，不用確認，直接 emit discard', async () => {
+    const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+    await flushPromises()
+    const discardBtn = wrapper.findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))!
+    await discardBtn.trigger('click')
+    expect(popDialog.confirm).not.toHaveBeenCalled()
+    expect(wrapper.emitted('discard')).toHaveLength(1)
+  })
+
   it('skillId + intent=ask：修改模式，但開場白是「剛剛測試」的問句，不是預設要改的版本', async () => {
     const { wrapper } = mountWorkspace({ skillId: 'personal-001', intent: 'ask' })
     await flushPromises()
