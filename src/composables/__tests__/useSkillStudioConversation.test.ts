@@ -1282,6 +1282,19 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     expect(last.content).not.toContain('下面')
   })
 
+  it('全對（100%）、已存檔但這顆技能早就啟用中：不叫使用者去點一個不會出現的「啟用技能」按鈕', () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '早就上線的技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    store.overrideAndEnableSkill(id) // 先讓它變成啟用中
+    expect(store.findSkill(id)!.isEnabled).toBe(true)
+    const c = useSkillStudioConversation()
+    c.loadSkill(id)
+    c.notifyTestResult({ total: 8, correct: 8, byTag: {} as any, summary: '' })
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain('啟用中的狀態')
+    expect(last.content).not.toContain('到右側的測試報告點「啟用技能」')
+  })
+
   it('全對（100%）、還沒存檔：引導先儲存，不是叫使用者去點一個還不存在的「啟用技能」按鈕', () => {
     const c = useSkillStudioConversation()
     c.startCreate()

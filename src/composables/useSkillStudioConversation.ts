@@ -935,14 +935,20 @@ export function useSkillStudioConversation() {
   function notifyTestResult(report: AITestReport): void {
     if (report.total === 0) return
     if (report.correct === report.total) {
-      // 還沒存檔的草稿也能先測——但「啟用技能」要有真正存進 store 的技能才會出現，
-      // 還沒存檔的話先引導儲存，不要叫使用者去點一個根本還沒出現的按鈕
-      push({
-        role: 'agent',
-        content: savedSkillId.value
-          ? '太好了，這次全部答對了！到右側的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。'
-          : '太好了，這次全部答對了！先按左下角「儲存」，存檔後就能到測試報告點「啟用技能」了。',
-      })
+      // 「啟用技能」要有真正存進 store、而且還沒啟用的技能才會出現（isFullPass
+      // 的條件，見 SkillTestAI.vue）——這裡的引導訊息要跟那個條件對齊，不然會叫
+      // 使用者去點一個根本不存在的按鈕：還沒存檔先引導儲存；已經是啟用中的技能
+      // （例如修改一顆早就上線的技能，這次又測到滿分）沒有按鈕可點，單純恭喜就好
+      const existingSkill = savedSkillId.value ? store.findSkill(savedSkillId.value) : null
+      let content: string
+      if (!savedSkillId.value) {
+        content = '太好了，這次全部答對了！先按左下角「儲存」，存檔後就能到測試報告點「啟用技能」了。'
+      } else if (existingSkill?.isEnabled) {
+        content = '太好了，這次全部答對了！這顆技能本來就是啟用中的狀態，不用再做其他動作。'
+      } else {
+        content = '太好了，這次全部答對了！到右側的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。'
+      }
+      push({ role: 'agent', content })
       return
     }
     const rate = Math.round((report.correct / report.total) * 100)
