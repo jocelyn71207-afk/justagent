@@ -4,6 +4,8 @@ import { useSkillStore } from '@/stores/skillStore'
 import {
   DEFAULT_OPENING_MESSAGE,
   deriveFromSections,
+  suggestDescriptionVariants,
+  suggestTriggerHintVariants,
   emptyDraft,
   extractSkillName,
   interpretStudioMessage,
@@ -401,7 +403,22 @@ describe('useSkillStudioConversation', () => {
     expect(deriveFromSections(['nope']).instructions).toBe('')
   })
 
-  it('updateBlocks：只在 blocks 方式生效；sectionIds 變動只重推導技能指令，不自動覆蓋說明／觸發情境／覆蓋能力', () => {
+  it('suggestDescriptionVariants／suggestTriggerHintVariants：各回傳 3 句不同措辭；空清單回傳空陣列', () => {
+    const descriptions = suggestDescriptionVariants(['promo_kpi', 'ta_gender'])
+    expect(descriptions).toHaveLength(3)
+    expect(new Set(descriptions).size).toBe(3) // 三句彼此不同，不是同一句重複三次
+    descriptions.forEach(d => expect(d).toContain('TA 用戶畫像、行銷活動成效'))
+
+    const triggerHints = suggestTriggerHintVariants(['promo_kpi', 'ta_gender'])
+    expect(triggerHints).toHaveLength(3)
+    expect(new Set(triggerHints).size).toBe(3)
+    triggerHints.forEach(t => expect(t).toContain('TA 用戶畫像、行銷活動成效'))
+
+    expect(suggestDescriptionVariants([])).toEqual([])
+    expect(suggestTriggerHintVariants([])).toEqual([])
+  })
+
+  it('updateBlocks：只在 blocks 方式生效；sectionIds 變動只重推導技能指令，不自動覆蓋說明／觸發情境／關鍵字／覆蓋能力', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('blocks')
@@ -413,10 +430,11 @@ describe('useSkillStudioConversation', () => {
     // 說明／觸發情境／覆蓋能力改成手動必填欄位，不再隨選章節自動覆蓋
     expect(c.draft.value.capabilities).toHaveLength(0)
     expect(c.draft.value.triggerHint).toBe('')
-    expect(c.canSave.value).toBe(false) // 還缺說明／觸發情境／覆蓋能力／指派 Agent
+    expect(c.canSave.value).toBe(false) // 還缺說明／觸發情境／關鍵字／覆蓋能力／指派 Agent
     expect(c.isDirty.value).toBe(true)
     c.updateBlockDescription('每週一產出')
     c.updateBlockTriggerHint('當使用者要求產出週報時')
+    c.updateBlockKeywords(['週報'])
     c.updateBlockCapabilities(['促銷核心KPI'])
     c.updateBlockAssignedAgents(['客服中心助理'])
     expect(c.draft.value.description).toBe('每週一產出')
@@ -438,6 +456,7 @@ describe('useSkillStudioConversation', () => {
     c.updateBlocks({ name: '行銷週報', sectionIds: ['promo_kpi', 'ch_kpi'] })
     c.updateBlockDescription('每週一產出')
     c.updateBlockTriggerHint('當使用者要求產出週報時')
+    c.updateBlockKeywords(['週報'])
     c.updateBlockCapabilities(['促銷核心KPI'])
     c.updateBlockAssignedAgents(['客服中心助理'])
     const id = c.save()!
@@ -445,12 +464,14 @@ describe('useSkillStudioConversation', () => {
     expect(s.composition).toEqual({ sectionIds: ['promo_kpi', 'ch_kpi'] })
     expect(s.creationMethod).toBe('manual')
     expect(s.assignedAgents).toEqual(['客服中心助理'])
+    expect(s.keywords).toEqual(['週報'])
 
     const d = useSkillStudioConversation()
     expect(d.loadSkill(id)).toBe(true)
     expect(d.draft.value.method).toBe('blocks')
     expect(d.draft.value.sectionIds).toEqual(['promo_kpi', 'ch_kpi'])
     expect(d.draft.value.assignedAgents).toEqual(['客服中心助理'])
+    expect(d.draft.value.keywords).toEqual(['週報'])
     expect(d.messages.value).toHaveLength(0)
     expect(d.isDirty.value).toBe(false)
 

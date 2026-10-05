@@ -18,6 +18,7 @@ export interface SkillDraft {
   triggerHint: string
   capabilities: SkillCapability[]
   assignedAgents: string[]      // 只有積木方式會在這裡填寫；對話方式維持空陣列，走啟用時的指派流程
+  keywords: string[]            // 只有積木方式會在這裡填寫，規則同 assignedAgents
   files: SkillFile[]
   method: StudioMethod | null   // null = 尚未選擇建立方式
   sectionIds: string[]          // 積木方式的已選章節（依序）
@@ -49,7 +50,7 @@ export const DEFAULT_OPENING_MESSAGE = '你好，我是技能建立助理。描�
 const GATE_OPENING_MESSAGE = '你好，我是技能建立助理。跟我說說你想讓 Agent 幫你做什麼，我會先幫你擬一版設定內容。'
 
 export function emptyDraft(): SkillDraft {
-  return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], assignedAgents: [], files: [], method: null, sectionIds: [] }
+  return { name: '', description: '', instructions: '', triggerHint: '', capabilities: [], assignedAgents: [], keywords: [], files: [], method: null, sectionIds: [] }
 }
 
 // ── 意圖判斷與關卡分流（AI 賦能「用對話建立」路徑，接在既有解析規則之前）──
@@ -195,6 +196,7 @@ export function draftFromSkill(s: Skill): SkillDraft {
     triggerHint: s.triggerHint ?? '',
     capabilities: [...(s.capabilities ?? [])],
     assignedAgents: [...(s.assignedAgents ?? [])],
+    keywords: [...(s.keywords ?? [])],
     files: [...(s.files ?? [])],
     method: s.composition ? 'blocks' : 'chat',
     sectionIds: [...(s.composition?.sectionIds ?? [])],
@@ -216,15 +218,33 @@ export function deriveFromSections(sectionIds: string[]): Pick<SkillDraft, 'inst
   }
 }
 
-// 積木 →「說明」建議：跟 deriveFromSections 同一批分類標籤，只是拼成一句話。
-// 獨立成自己的函式（不塞進 deriveFromSections 的回傳物件），因為「說明」在積木流程裡
-// 改成手動必填欄位、不再隨選章節自動覆蓋，這裡只負責「AI 建議」按鈕按下去時要套用的內容
-export function suggestDescriptionFromSections(sectionIds: string[]): string {
+// 積木 →「說明」／「觸發情境」建議：跟 deriveFromSections 同一批分類標籤，只是拼成
+// 一句話。各自獨立成自己的函式（不塞進 deriveFromSections 的回傳物件），因為這兩項
+// 在積木流程裡改成手動必填欄位、不再隨選章節自動覆蓋，只負責「AI 建議」按鈕按下去時
+// 產生候選內容。生成 3 句不同措辭讓使用者挑一句，而不是算一句就直接套用或跳確認覆蓋——
+// 使用者主動挑中哪句，那個動作本身就是確認，不用再多一層「要覆蓋嗎」
+export function suggestDescriptionVariants(sectionIds: string[]): string[] {
   const sections = sectionIds.map(id => SECTION_MAP[id]).filter((s): s is NonNullable<typeof s> => !!s)
-  if (sections.length === 0) return ''
+  if (sections.length === 0) return []
   const catIds = new Set(sections.map(s => s.categoryId))
   const labels = REPORT_CATEGORIES.filter(c => catIds.has(c.id)).map(c => c.label).join('、')
-  return `彙整${labels}相關章節的行銷報告`
+  return [
+    `彙整${labels}相關章節的行銷報告`,
+    `整理${labels}相關資料，產出一份行銷週報`,
+    `依${labels}章節彙總而成的行銷報告摘要`,
+  ]
+}
+
+export function suggestTriggerHintVariants(sectionIds: string[]): string[] {
+  const sections = sectionIds.map(id => SECTION_MAP[id]).filter((s): s is NonNullable<typeof s> => !!s)
+  if (sections.length === 0) return []
+  const catIds = new Set(sections.map(s => s.categoryId))
+  const labels = REPORT_CATEGORIES.filter(c => catIds.has(c.id)).map(c => c.label).join('、')
+  return [
+    `當使用者要求產出行銷報告，或提到「${labels}」相關分析時`,
+    `使用者詢問${labels}相關數據、想了解最新進度時`,
+    `需要彙整${labels}資訊、產出週期性報告時`,
+  ]
 }
 
 const ACTION_CONFIRM: StudioAction = { id: 'confirm', label: '看起來沒問題，儲存' }
@@ -402,6 +422,7 @@ export function useSkillStudioConversation() {
         && !!draft.value.triggerHint.trim()
         && draft.value.capabilities.length > 0
         && draft.value.assignedAgents.length > 0
+        && draft.value.keywords.length > 0
     }
     return true
   })
@@ -418,6 +439,7 @@ export function useSkillStudioConversation() {
     if (!draft.value.description.trim()) missing.push('說明')
     if (!draft.value.triggerHint.trim()) missing.push('觸發情境')
     if (!draft.value.capabilities.length) missing.push('覆蓋能力')
+    if (!draft.value.keywords.length) missing.push('關鍵字')
     if (!draft.value.assignedAgents.length) missing.push('指派 Agent')
     return missing.length ? `還缺：${missing.join('、')}` : ''
   })
@@ -769,6 +791,10 @@ export function useSkillStudioConversation() {
     if (draft.value.method !== 'blocks') return
     draft.value = { ...draft.value, assignedAgents: [...value] }
   }
+  function updateBlockKeywords(value: string[]): void {
+    if (draft.value.method !== 'blocks') return
+    draft.value = { ...draft.value, keywords: [...value] }
+  }
 
   // intent 'edit'：從技能卡片點進來，已經知道要調整內容。
   // intent 'ask'：從測試沙盒點進來，剛測完可能只是想問問題，不代表一定要改東西——
@@ -855,6 +881,7 @@ export function useSkillStudioConversation() {
         triggerHint: d.triggerHint,
         assignedAgents: d.method === 'blocks' ? [...d.assignedAgents] : [],
         capabilities: [...d.capabilities],
+        keywords: d.method === 'blocks' ? [...d.keywords] : [],
         files: [...d.files],
         composition: d.method === 'blocks' ? { sectionIds: [...d.sectionIds] } : undefined,
         creationMethod: d.method === 'blocks' ? 'manual' : 'ai_assisted',
@@ -869,6 +896,7 @@ export function useSkillStudioConversation() {
         triggerHint: d.triggerHint,
         capabilities: d.capabilities,
         assignedAgents: d.method === 'blocks' ? [...d.assignedAgents] : undefined,
+        keywords: d.method === 'blocks' ? [...d.keywords] : undefined,
         composition: d.method === 'blocks' ? { sectionIds: [...d.sectionIds] } : undefined,
       })
       store.updateSkillFiles(savedSkillId.value, d.files)
@@ -946,7 +974,7 @@ export function useSkillStudioConversation() {
 
   return {
     mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, saveEnabled, missingFieldsHint, suggestionChips, gateStage, requestTestTab, requestNewSkillDrawer,
-    startCreate, chooseMethod, updateBlocks, updateBlockDescription, updateBlockTriggerHint, updateBlockCapabilities, updateBlockAssignedAgents,
+    startCreate, chooseMethod, updateBlocks, updateBlockDescription, updateBlockTriggerHint, updateBlockCapabilities, updateBlockAssignedAgents, updateBlockKeywords,
     loadSkill, send, save, updateFiles, notifyTestResult, toSnapshot, hydrate, detachSavedSkill,
   }
 }

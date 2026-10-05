@@ -15,7 +15,7 @@
           type="button"
           class="custom-btn sbbf-ai-btn"
           :disabled="!props.sectionIds.length"
-          @click="applyDescriptionSuggestion"
+          @click="generateDescriptionSuggestions"
         >
           <i class="material-symbols-outlined">auto_awesome</i>AI 建議
         </button>
@@ -28,6 +28,21 @@
         rows="3"
         @input="emit('update:description', ($event.target as HTMLTextAreaElement).value)"
       />
+      <div v-if="descriptionCandidates.length" class="sbbf-suggestions">
+        <div class="sbbf-suggestions-head">
+          <span class="se-hint">選一句套用：</span>
+          <button type="button" class="sbbf-suggestions-close" aria-label="關閉建議" @click="descriptionCandidates = []">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <button
+          v-for="(candidate, i) in descriptionCandidates"
+          :key="i"
+          type="button"
+          class="sbbf-suggestion-chip"
+          @click="pickDescription(candidate)"
+        >{{ candidate }}</button>
+      </div>
     </div>
 
     <div class="sbbf-field">
@@ -37,7 +52,7 @@
           type="button"
           class="custom-btn sbbf-ai-btn"
           :disabled="!props.sectionIds.length"
-          @click="applyTriggerHintSuggestion"
+          @click="generateTriggerHintSuggestions"
         >
           <i class="material-symbols-outlined">auto_awesome</i>AI 建議
         </button>
@@ -50,6 +65,27 @@
         rows="3"
         @input="emit('update:triggerHint', ($event.target as HTMLTextAreaElement).value)"
       />
+      <div v-if="triggerHintCandidates.length" class="sbbf-suggestions">
+        <div class="sbbf-suggestions-head">
+          <span class="se-hint">選一句套用：</span>
+          <button type="button" class="sbbf-suggestions-close" aria-label="關閉建議" @click="triggerHintCandidates = []">
+            <i class="material-symbols-outlined">close</i>
+          </button>
+        </div>
+        <button
+          v-for="(candidate, i) in triggerHintCandidates"
+          :key="i"
+          type="button"
+          class="sbbf-suggestion-chip"
+          @click="pickTriggerHint(candidate)"
+        >{{ candidate }}</button>
+      </div>
+    </div>
+
+    <div class="sbbf-field">
+      <span class="sbc-label">關鍵字 <span class="se-required">*</span></span>
+      <p class="se-hint">輸入會觸發這顆技能的關鍵字，至少新增一個。</p>
+      <SkillKeywordsEditor :model-value="props.keywords" @update:model-value="emit('update:keywords', $event)" />
     </div>
 
     <div class="sbbf-field">
@@ -76,13 +112,16 @@
 </template>
 
 <script setup lang="ts">
-// 積木流程「基本設定」步驟：技能名稱／說明／觸發情境／覆蓋能力／指派 Agent 都是
-// 使用者手動輸入的必填欄位，不再隨「積木組成」步驟選的章節自動覆蓋——
-// 觸發情境／覆蓋能力可以按「AI 建議」套用依目前已選章節算出來的建議內容，
-// 但套用與否、要不要覆蓋既有輸入由這裡的確認對話框把關，不會悄悄蓋掉手改的內容
+// 積木流程「基本設定」步驟：技能名稱／說明／觸發情境／關鍵字／覆蓋能力／指派 Agent
+// 都是使用者手動輸入的必填欄位，不再隨「積木組成」步驟選的章節自動覆蓋——
+// 說明／觸發情境按「AI 建議」會生成 3 句不同措辭的候選，使用者挑一句直接套用
+// （挑選本身就是確認，不用再跳一層「要覆蓋嗎」的對話框）；覆蓋能力的「AI 建議」
+// 維持原本單一建議＋覆蓋確認的流程，不在這次調整範圍內
+import { ref, watch } from 'vue'
 import type { SkillCapability } from '@/stores/skillStore'
-import { deriveFromSections, suggestDescriptionFromSections } from '@/composables/useSkillStudioConversation'
+import { deriveFromSections, suggestDescriptionVariants, suggestTriggerHintVariants } from '@/composables/useSkillStudioConversation'
 import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
+import SkillKeywordsEditor from '@/components/Skill/SkillKeywordsEditor.vue'
 import AgentAssignGrid from '@/components/Skill/AgentAssignGrid.vue'
 import popDialog from '@/services/popDialog'
 
@@ -90,6 +129,7 @@ const props = defineProps<{
   name: string
   description: string
   triggerHint: string
+  keywords: string[]
   capabilities: SkillCapability[]
   assignedAgents: string[]
   sectionIds: string[]
@@ -100,40 +140,38 @@ const emit = defineEmits<{
   'update:name': [value: string]
   'update:description': [value: string]
   'update:triggerHint': [value: string]
+  'update:keywords': [value: string[]]
   'update:capabilities': [value: SkillCapability[]]
   'update:assignedAgents': [value: string[]]
 }>()
 
-function applyDescriptionSuggestion() {
+const descriptionCandidates = ref<string[]>([])
+const triggerHintCandidates = ref<string[]>([])
+
+// 選的章節變了，先前那批候選是依舊章節算出來的，不該繼續留著讓人誤選
+watch(() => props.sectionIds, () => {
+  descriptionCandidates.value = []
+  triggerHintCandidates.value = []
+})
+
+function generateDescriptionSuggestions() {
   if (!props.sectionIds.length) return
-  const suggestion = suggestDescriptionFromSections(props.sectionIds)
-  if (!suggestion) return
-  if (!props.description.trim()) {
-    emit('update:description', suggestion)
-    return
-  }
-  popDialog.confirm(
-    `套用 AI 建議的說明？將取代目前輸入的內容：\n「${suggestion}」`,
-    '套用建議',
-    '保留原內容',
-    () => emit('update:description', suggestion),
-  )
+  descriptionCandidates.value = suggestDescriptionVariants(props.sectionIds)
 }
 
-function applyTriggerHintSuggestion() {
+function pickDescription(candidate: string) {
+  emit('update:description', candidate)
+  descriptionCandidates.value = []
+}
+
+function generateTriggerHintSuggestions() {
   if (!props.sectionIds.length) return
-  const suggestion = deriveFromSections(props.sectionIds).triggerHint
-  if (!suggestion) return
-  if (!props.triggerHint.trim()) {
-    emit('update:triggerHint', suggestion)
-    return
-  }
-  popDialog.confirm(
-    `套用 AI 建議的觸發情境？將取代目前輸入的內容：\n「${suggestion}」`,
-    '套用建議',
-    '保留原內容',
-    () => emit('update:triggerHint', suggestion),
-  )
+  triggerHintCandidates.value = suggestTriggerHintVariants(props.sectionIds)
+}
+
+function pickTriggerHint(candidate: string) {
+  emit('update:triggerHint', candidate)
+  triggerHintCandidates.value = []
 }
 
 function applyCapabilitiesSuggestion() {

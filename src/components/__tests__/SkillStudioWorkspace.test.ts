@@ -407,8 +407,12 @@ describe('SkillStudioWorkspace', () => {
     await wrapper.findAll('.sbc-step-tab')[0].trigger('click')
     await wrapper.find('.sbbf-textarea').setValue('每週一產出的行銷週報')
     const aiBtns = wrapper.findAll('.sbbf-ai-btn')
-    await aiBtns[1].trigger('click') // 觸發情境：欄位是空的，AI 建議直接套用、不跳確認
-    await aiBtns[2].trigger('click') // 覆蓋能力：同上
+    await aiBtns[1].trigger('click') // 觸發情境：開出 3 句候選
+    await flushPromises()
+    await wrapper.findAll('.sbbf-suggestion-chip')[0].trigger('click') // 選第一句套用
+    await wrapper.find('.sce-tag-input').setValue('週報')
+    await wrapper.find('.sce-tag-input').trigger('keydown.enter') // 關鍵字
+    await aiBtns[2].trigger('click') // 覆蓋能力：欄位是空的，AI 建議直接套用、不跳確認
     await wrapper.find('.se-agent-chip').trigger('click')
     await flushPromises()
 
