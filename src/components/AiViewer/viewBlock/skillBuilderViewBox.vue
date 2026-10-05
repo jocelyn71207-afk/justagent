@@ -94,6 +94,7 @@
         :draft="conv.draft.value"
         :mode="conv.mode.value"
         :saved-skill-id="conv.savedSkillId.value"
+        :test-skill-id="conv.testSkillId.value"
         :is-dirty="conv.isDirty.value"
         :can-save="conv.canSave.value"
         :name-conflict="nameConflict"

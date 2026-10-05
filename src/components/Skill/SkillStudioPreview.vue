@@ -116,23 +116,17 @@
       </div>
     </template>
 
-    <!-- ── 測試 ── -->
+    <!-- ── 測試：不用先存檔，草稿內容就能先測；題目跟目前草稿內容不一致時
+         （改過 name／triggerHint／覆蓋能力）才提示重新生成，跟存不存檔無關 ── -->
     <template v-else>
-      <div v-if="!props.savedSkillId" class="ssp-test-empty">
-        <i class="material-symbols-outlined">science</i>
-        <p>先儲存技能，就能讓 AI 自動產生測試情境並逐條驗證</p>
-        <button v-if="!props.hideFooter" type="button" class="custom-btn custom-main-btn" :disabled="!props.canSave" @click="emit('save')">
-          <i class="material-symbols-outlined">save</i>儲存為個人技能
-        </button>
-      </div>
-      <div v-else class="ssp-test-body">
-        <div v-if="props.isDirty" class="ssp-stale-banner">
+      <div v-if="effectiveTestId" class="ssp-test-body">
+        <div v-if="testContentStale" class="ssp-stale-banner">
           <i class="material-symbols-outlined">info</i>
-          目前測試的是上次儲存的版本，請先儲存修改
+          內容已變更，建議重新生成測試情境
         </div>
         <SkillSampleOutputTest v-if="props.draft.method === 'blocks'" :section-ids="props.draft.sectionIds" />
-        <SkillTestAI :skill-id="props.savedSkillId" />
-        <div class="ssp-test-foot">
+        <SkillTestAI :skill-id="effectiveTestId!" :draft-context="testDraftContext" />
+        <div v-if="props.savedSkillId" class="ssp-test-foot">
           <span class="ssp-test-foot-text">想手動模擬使用者對話，或比較不同版本？</span>
           <button type="button" class="custom-btn ssp-sandbox-btn" @click="goSandbox">
             <i class="material-symbols-outlined">science</i>到技能測試沙盒
@@ -148,16 +142,23 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import 'github-markdown-css/github-markdown.css'
-import type { SkillFile } from '@/stores/skillStore'
+import { useSkillStore } from '@/stores/skillStore'
+import type { SkillFile, TriggerEdgeSource } from '@/stores/skillStore'
 import type { SkillDraft, StudioMode } from '@/composables/useSkillStudioConversation'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
 import SkillSampleOutputTest from '@/components/Skill/SkillSampleOutputTest.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 
+const store = useSkillStore()
+
 const props = defineProps<{
   draft: SkillDraft
   mode: StudioMode
   savedSkillId: string | null
+  // 測試要掛在哪個 id 底下：已存檔用真正的技能 id，還沒存檔的話呼叫端可以傳一個
+  // 草稿佔位 id（見 useSkillStudioConversation.ts 的 testSkillId）讓測試提早可用；
+  // 沒傳就退回 savedSkillId，維持舊行為（例如獨立測試沙盒一定是已存檔的技能）
+  testSkillId?: string | null
   isDirty: boolean
   canSave: boolean
   activeTab: 'preview' | 'test'
@@ -191,6 +192,30 @@ function goSandbox() {
 const instructionsHtml = computed(() =>
   props.draft.instructions.trim() ? md.render(props.draft.instructions) : ''
 )
+
+// 測試要掛在哪個 id 底下：呼叫端沒傳 testSkillId（例如獨立測試沙盒）就退回 savedSkillId，
+// 維持「一定要先存檔」的舊行為
+const effectiveTestId = computed(() => props.testSkillId ?? props.savedSkillId)
+
+// 草稿還沒存檔、或技能已存在但草稿改過還沒存時，用來補齊組題關鍵字的來源
+const testDraftContext = computed<TriggerEdgeSource>(() => ({
+  name: props.draft.name,
+  triggerHint: props.draft.triggerHint,
+  capabilities: props.draft.capabilities,
+}))
+
+// 題目是不是跟不上最新的草稿內容了——不是看存不存檔，是看「產生題目當下的
+// name／triggerHint／capabilities」跟「現在的草稿內容」是否還一致
+const testContentStale = computed(() => {
+  if (!store.aiTestReport) return false
+  if (store.aiTestScenariosSkillId !== effectiveTestId.value) return false
+  const current = JSON.stringify({
+    name: props.draft.name,
+    triggerHint: props.draft.triggerHint,
+    capabilities: props.draft.capabilities,
+  })
+  return current !== store.aiTestScenariosSnapshot
+})
 
 // 建立模式：有名稱＋指令就能存；修改模式：還要真的有改動
 const saveEnabled = computed(() =>

@@ -114,10 +114,13 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSkillStore } from '@/stores/skillStore'
-import type { AITestTag } from '@/stores/skillStore'
+import type { AITestTag, TriggerEdgeSource } from '@/stores/skillStore'
 import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 
-const props = defineProps<{ skillId: string }>()
+// draftContext：抽屜裡測試還沒存檔的草稿時，store 裡找不到這顆技能（或技能存在
+// 但草稿已經改過還沒存），用這個當作組題關鍵字的來源。獨立測試沙盒（一定是已存檔
+// 的技能）不用傳這個，退回讀 store 裡的技能資料
+const props = defineProps<{ skillId: string; draftContext?: TriggerEdgeSource }>()
 const store = useSkillStore()
 const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
 const router = useRouter()
@@ -174,7 +177,7 @@ const ratePercent = computed(() => {
 })
 
 function regenerate() {
-  store.generateAITestScenarios(props.skillId)
+  store.generateAITestScenarios(props.skillId, props.draftContext)
 }
 
 function answer(scenarioId: string, userAnswer: boolean) {

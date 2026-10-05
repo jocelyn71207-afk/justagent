@@ -1263,10 +1263,11 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     expect(last.content).toContain('75%')
   })
 
-  it('全對（100%）：不轉關卡，但主動推一句引導啟用的訊息', () => {
+  it('全對（100%）、已存檔：不轉關卡，推一句引導去右側測試報告點「啟用技能」的訊息', () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '已存檔技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
     const c = useSkillStudioConversation()
-    c.startCreate()
-    c.chooseMethod('chat')
+    c.loadSkill(id)
     const before = c.messages.value.length
     const stageBefore = c.gateStage.value
     c.notifyTestResult({ total: 8, correct: 8, byTag: {} as any, summary: '' })
@@ -1279,6 +1280,18 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     // 「下面」會指錯方向，固定成「右側」跟其他引導訊息的措辭一致
     expect(last.content).toContain('右側的測試報告')
     expect(last.content).not.toContain('下面')
+  })
+
+  it('全對（100%）、還沒存檔：引導先儲存，不是叫使用者去點一個還不存在的「啟用技能」按鈕', () => {
+    const c = useSkillStudioConversation()
+    c.startCreate()
+    c.chooseMethod('chat')
+    const before = c.messages.value.length
+    c.notifyTestResult({ total: 8, correct: 8, byTag: {} as any, summary: '' })
+    expect(c.messages.value.length).toBe(before + 1)
+    const last = c.messages.value.at(-1)!
+    expect(last.content).toContain('儲存')
+    expect(last.content).not.toContain('右側的測試報告')
   })
 
   it('沒有全對的引導訊息帶「重新測試」「不改，直接啟用」兩個 action chip', () => {
@@ -1305,10 +1318,33 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
       const p = c.send('重新測試')
       await vi.advanceTimersByTimeAsync(800)
       await p
-      expect(spy).toHaveBeenCalledWith(id)
+      // 已存檔：testSkillId 就是真正的技能 id；draftContext 補上目前草稿的
+      // name／triggerHint／capabilities，store 裡找不到技能或技能內容是舊版時可以退回用它
+      expect(spy).toHaveBeenCalledWith(id, { name: '待重測技能', triggerHint: 'y', capabilities: [] })
       expect(c.requestTestTab.value).toBe(true)
       expect(c.gateStage.value).toBe('active')
       expect(c.messages.value.at(-1)!.content).toContain('換一批新題目')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('還沒存檔的草稿點「重新測試」：一樣能重新出題，掛在草稿佔位 testSkillId 底下，不要求先存檔', async () => {
+    vi.useFakeTimers()
+    try {
+      const store = useSkillStore()
+      const spy = vi.spyOn(store, 'generateAITestScenarios')
+      const c = useSkillStudioConversation()
+      c.startCreate()
+      c.chooseMethod('chat')
+      c.notifyTestResult({ total: 8, correct: 6, byTag: {} as any, summary: '' })
+
+      const p = c.send('重新測試')
+      await vi.advanceTimersByTimeAsync(800)
+      await p
+      expect(c.savedSkillId.value).toBeNull()
+      expect(spy).toHaveBeenCalledWith(c.testSkillId.value, expect.objectContaining({ name: c.draft.value.name }))
+      expect(c.requestTestTab.value).toBe(true)
     } finally {
       vi.useRealTimers()
     }
