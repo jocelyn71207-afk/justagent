@@ -757,6 +757,12 @@ function handleEdit(skill: Skill) {
   }
   detailSkillId.value = null
   showLibraryModal.value = false
+  // 用積木組裝出來的技能只有一種修改方式（積木面板），不需要先跳「選擇修改方式」
+  // 彈窗讓使用者在只有一個選項的情況下還要多點一次
+  if (skill.composition) {
+    router.push({ query: { skillId: skill.id } })
+    return
+  }
   editChoiceSkill.value = skill
   editChoiceIsFreshDuplicate.value = false
 }

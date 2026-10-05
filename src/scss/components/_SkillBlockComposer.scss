@@ -1,3 +1,8 @@
+// .sbc-field／.sbc-label 是獨立頂層選擇器：SkillBlockBasicsForm.vue（積木流程
+// 「基本設定」步驟）也共用同一套欄位標籤樣式，不能巢狀寫在 .SkillBlockComposer 裡面
+.sbc-field { display: flex; flex-direction: column; gap: 4px; }
+.sbc-label { font-size: 11px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+
 .SkillBlockComposer {
   height: 100%;
   overflow-y: auto;
@@ -7,10 +12,6 @@
   gap: 18px;
   background: var(--page-bg);
   @include use-scroll-bar(var(--scrollbar));
-
-  .sbc-head { display: flex; flex-direction: column; gap: 10px; }
-  .sbc-field { display: flex; flex-direction: column; gap: 4px; }
-  .sbc-label { font-size: 11px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
 
   .sbc-selected { display: flex; flex-direction: column; gap: 10px; }
   .sbc-selected-head { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text); .material-symbols-outlined { font-size: 18px; } }

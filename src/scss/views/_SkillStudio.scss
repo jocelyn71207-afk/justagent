@@ -53,6 +53,31 @@
   background: var(--page-bg);
 }
 
+// 儲存／放棄固定在左欄（對話區）底部，不隨右欄的「技能預覽／測試」tab 切換而消失——
+// 跟 .ssp-footer 同一套視覺語彙，差別只在這裡不跟著 activeTab 增減內容
+.studio-save-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--divider-a50);
+  background: var(--surface);
+
+  .custom-btn { gap: 4px; .material-symbols-outlined { font-size: 16px; } }
+}
+
+.studio-missing-hint {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  .material-symbols-outlined { font-size: 15px; color: var(--text-faint); }
+}
+
 @media (max-width: 1023px) {
   .skill-studio-layout {
     grid-template-columns: 1fr;
@@ -68,13 +93,47 @@
   }
 }
 
-.studio-composer-col { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+// flex:1（不是 height:100%）：要跟 .studio-chat-col 底部固定的 .studio-save-footer 分享剩餘空間
+.studio-composer-col { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .studio-composer-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 16px; border-bottom: 1px solid var(--divider-a50); flex-shrink: 0;
   .studio-new-btn { gap: 4px; font-size: 12.5px; white-space: nowrap; .material-symbols-outlined { font-size: 16px; } }
 }
-.studio-composer-col .SkillBlockComposer { flex: 1; min-height: 0; overflow-y: auto; }
+.studio-composer-col .SkillBlockComposer,
+.studio-composer-col .SkillBlockBasicsForm { flex: 1; min-height: 0; overflow-y: auto; }
+
+// 積木流程「基本設定／積木組成」步驟切換——跟 .ssp-tabs（右側預覽/測試）同一套視覺語彙，
+// 但這裡是獨立頂層選擇器而非巢狀在 .SkillStudioPreview 裡
+.sbc-step-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--divider-a50);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.sbc-step-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined { font-size: 17px; }
+
+  &.is-active {
+    color: $color_main_1;
+    border-bottom-color: $color_main_1;
+  }
+}
 .studio-chat-col .SkillMethodChooser { height: 100%; }
 
 // 方案三：conv4 交接過來的草稿，帶一條回原對話的路
@@ -137,7 +196,9 @@
 .SkillStudioChat {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  // flex:1（不是 height:100%）：抽屜的 .studio-chat-col 底部固定了一條
+  // .studio-save-footer，這裡要能跟它分享剩餘空間，不能直接撐滿整欄高度
+  flex: 1;
   min-height: 0;
 
   .ssc-head {
@@ -433,6 +494,14 @@
     color: var(--tag-teal-text);
   }
 
+  .ssp-agent-chip {
+    @extend %badge-shape;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--tag-slate-bg);
+    color: var(--tag-slate-text);
+  }
+
   .ssp-footer {
     display: flex;
     flex-wrap: wrap;
@@ -443,6 +512,17 @@
     flex-shrink: 0;
 
     .custom-btn { gap: 4px; .material-symbols-outlined { font-size: 16px; } }
+  }
+
+  .ssp-missing-hint {
+    flex-basis: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    .material-symbols-outlined { font-size: 15px; color: var(--text-faint); }
   }
 
   .ssp-test-empty {
@@ -469,6 +549,7 @@
     overflow: hidden;
 
     .SkillTestAI { flex: 1; min-height: 0; }
+    .SkillSampleOutputTest { flex-shrink: 0; border-bottom: 1px solid var(--divider-a50); }
   }
 
   .ssp-stale-banner {

@@ -264,22 +264,6 @@
 
             <div class="drawer-body-side">
 
-              <!-- 附加檔案：唯讀，要改檔案得走「編輯」按鈕進 SkillEditor，
-                   不能在抽屜裡直接單改附加檔案。這是技能層級的檔案，不是
-                   逐版本記錄——團隊技能範本管理（condensed）主要在切換版本，
-                   顯示技能層級的檔案容易被誤會成「這一版」的附加檔案，故不顯示 -->
-              <div v-if="!condensed" class="drawer-section">
-                <div class="section-label">附加檔案</div>
-                <div v-if="skill.files?.length" class="attached-file-list">
-                  <div v-for="f in skill.files" :key="f.id" class="attached-file-item">
-                    <i class="material-symbols-outlined">{{ skillFileIcon(f.fileType) }}</i>
-                    <span class="af-name">{{ f.fileName }}</span>
-                    <span class="af-size">{{ formatFileSize(f.fileSize) }}</span>
-                  </div>
-                </div>
-                <p v-else class="section-empty-hint">尚未附加檔案</p>
-              </div>
-
               <!-- 來源關係：企業技能是全公司唯一一份的正式發佈技能，沒有「延伸自
                    誰／自建」這種個人層級的血緣關係可看，顯示反而是雜訊 -->
               <div v-if="skill.scope !== 'enterprise'" class="drawer-section">
@@ -418,8 +402,6 @@ import type { Skill, SkillVersion, SkillVersionStatus, OperationRecord } from '@
 import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
-import { skillFileIcon } from '@/components/Skill/skillFileUpload'
-import { formatFileSize } from '@/utils/file'
 import { buildSkillDefinitionMarkdown } from '@/utils/skillMarkdown'
 
 const CHART_LABELS = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
@@ -430,8 +412,7 @@ const props = defineProps<{
   manageable?: boolean
   // 從 Library 技能庫瀏覽進來（唯讀情境）：不顯示版本歷史、待審核提示區塊
   libraryView?: boolean
-  // 從團隊技能範本管理進來：重點是切換版本，收合技能內容說明區塊、
-  // 不顯示技能層級的附加檔案（因為檔案內容實際上是逐版本而非固定的）
+  // 從團隊技能範本管理進來：重點是切換版本，收合技能內容說明區塊
   condensed?: boolean
 }>()
 const emit = defineEmits<{

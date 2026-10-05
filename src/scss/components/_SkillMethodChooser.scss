@@ -1,5 +1,8 @@
 .SkillMethodChooser {
-  height: 100%;
+  // flex:1（不是 height:100%）：抽屜的 .studio-chat-col 底部固定了一條
+  // .studio-save-footer，這裡要能跟它分享剩餘空間，不能直接撐滿整欄高度
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;

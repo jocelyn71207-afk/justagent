@@ -56,6 +56,14 @@
           <p v-else class="ssp-empty">尚未拆解覆蓋能力項目</p>
         </div>
 
+        <div v-if="props.draft.method === 'blocks'" class="ssp-section">
+          <div class="ssp-section-label">指派 Agent</div>
+          <div v-if="props.draft.assignedAgents.length" class="ssp-caps">
+            <span v-for="agent in props.draft.assignedAgents" :key="agent" class="ssp-agent-chip">{{ agent }}</span>
+          </div>
+          <p v-else class="ssp-empty">尚未指派 Agent</p>
+        </div>
+
         <div v-if="!props.hideFiles" class="ssp-section">
           <button type="button" class="ssp-section-label ssp-files-toggle" @click="filesExpanded = !filesExpanded">
             附加檔案<template v-if="props.draft.files.length">（{{ props.draft.files.length }}）</template>
@@ -70,21 +78,28 @@
       </div>
 
       <div class="ssp-footer">
-        <button
-          type="button"
-          class="custom-btn custom-main-btn ssp-save-btn"
-          :disabled="!saveEnabled"
-          @click="emit('save')"
-        >
-          <i class="material-symbols-outlined">save</i>
-          {{ props.mode === 'create' ? '儲存為個人技能' : '儲存修改' }}
-        </button>
-        <template v-if="props.mode === 'edit' && props.savedSkillId">
+        <!-- 抽屜把儲存／放棄移到固定不隨 tab 切換的位置（studio-save-footer），
+             這裡不重複渲染，避免兩個儲存按鈕同時存在 -->
+        <template v-if="!props.hideFooter">
+          <button
+            type="button"
+            class="custom-btn custom-main-btn ssp-save-btn"
+            :disabled="!saveEnabled"
+            @click="emit('save')"
+          >
+            <i class="material-symbols-outlined">save</i>
+            {{ props.mode === 'create' ? '儲存為個人技能' : '儲存修改' }}
+          </button>
+          <p v-if="missingFieldsHint" class="ssp-missing-hint">
+            <i class="material-symbols-outlined">info</i>{{ missingFieldsHint }}
+          </p>
           <!-- 修改既有技能：這份草稿只是複製出來改的，沒按這顆鍵就不會寫回原本的技能——
                按了就把草稿重設回目前已儲存的版本，並請外殼關閉／離開 -->
-          <button v-if="props.showDiscard" type="button" class="custom-btn" @click="emit('discard')">
+          <button v-if="props.mode === 'edit' && props.savedSkillId && props.showDiscard" type="button" class="custom-btn" @click="emit('discard')">
             <i class="material-symbols-outlined">undo</i>放棄修改
           </button>
+        </template>
+        <template v-if="props.mode === 'edit' && props.savedSkillId">
           <template v-if="!props.hideNavLinks">
             <button type="button" class="custom-btn" @click="router.push({ path: '/view/SkillEditor', query: { skillId: props.savedSkillId } })">
               <i class="material-symbols-outlined">edit</i>直接編輯
@@ -106,7 +121,7 @@
       <div v-if="!props.savedSkillId" class="ssp-test-empty">
         <i class="material-symbols-outlined">science</i>
         <p>先儲存技能，就能讓 AI 自動產生測試情境並逐條驗證</p>
-        <button type="button" class="custom-btn custom-main-btn" :disabled="!props.canSave" @click="emit('save')">
+        <button v-if="!props.hideFooter" type="button" class="custom-btn custom-main-btn" :disabled="!props.canSave" @click="emit('save')">
           <i class="material-symbols-outlined">save</i>儲存為個人技能
         </button>
       </div>
@@ -115,6 +130,7 @@
           <i class="material-symbols-outlined">info</i>
           目前測試的是上次儲存的版本，請先儲存修改
         </div>
+        <SkillSampleOutputTest v-if="props.draft.method === 'blocks'" :section-ids="props.draft.sectionIds" />
         <SkillTestAI :skill-id="props.savedSkillId" />
         <div class="ssp-test-foot">
           <span class="ssp-test-foot-text">想手動模擬使用者對話，或比較不同版本？</span>
@@ -135,6 +151,7 @@ import 'github-markdown-css/github-markdown.css'
 import type { SkillFile } from '@/stores/skillStore'
 import type { SkillDraft, StudioMode } from '@/composables/useSkillStudioConversation'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
+import SkillSampleOutputTest from '@/components/Skill/SkillSampleOutputTest.vue'
 import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 
 const props = defineProps<{
@@ -149,6 +166,9 @@ const props = defineProps<{
   hideFiles?: boolean
   hideNavLinks?: boolean
   showDiscard?: boolean
+  // 外殼（例如抽屜）把儲存／放棄移到固定不隨 tab 切換的位置時，這裡不用重複渲染
+  // 自己的版本——見 SkillStudioWorkspace.vue 的 studio-save-footer
+  hideFooter?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -176,6 +196,20 @@ const instructionsHtml = computed(() =>
 const saveEnabled = computed(() =>
   props.mode === 'create' ? props.canSave : props.canSave && props.isDirty
 )
+
+// 積木方式必填欄位比較多（說明／觸發情境／覆蓋能力／指派 Agent），存不了的時候
+// 直接列出還缺什麼，不要讓使用者自己猜按鈕為什麼反灰
+const missingFieldsHint = computed(() => {
+  if (saveEnabled.value || props.draft.method !== 'blocks') return ''
+  const missing: string[] = []
+  if (!props.draft.name.trim()) missing.push('技能名稱')
+  if (!props.draft.instructions.trim()) missing.push('積木組成（至少選一個章節）')
+  if (!props.draft.description.trim()) missing.push('說明')
+  if (!props.draft.triggerHint.trim()) missing.push('觸發情境')
+  if (!props.draft.capabilities.length) missing.push('覆蓋能力')
+  if (!props.draft.assignedAgents.length) missing.push('指派 Agent')
+  return missing.length ? `還缺：${missing.join('、')}` : ''
+})
 
 const status = computed<{ label: string; tone: 'amber' | 'slate' }>(() => {
   if (!props.savedSkillId) return { label: '未儲存草稿', tone: 'amber' }

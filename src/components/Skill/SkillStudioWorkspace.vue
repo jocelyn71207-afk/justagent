@@ -29,15 +29,57 @@
             <i class="material-symbols-outlined">dashboard_customize</i>{{ conv.mode.value === 'create' ? '用行銷積木組裝' : `修改：${conv.draft.value.name}` }}
           </span>
         </div>
-        <SkillBlockComposer
+        <!-- 原本所有欄位擠在同一頁，內容一多看起來很雜——拆成兩步驟：先定義這顆技能
+             本身（基本設定），再決定報告要包含哪些章節（積木組成）。兩個 tab 可以自由
+             切換、不是鎖死的精靈，因為「基本設定」的 AI 建議要吃「積木組成」選的章節 -->
+        <div class="sbc-step-tabs">
+          <button type="button" :class="['sbc-step-tab', { 'is-active': blockStep === 'basics' }]" @click="blockStep = 'basics'">
+            <i class="material-symbols-outlined">tune</i>基本設定
+          </button>
+          <button type="button" :class="['sbc-step-tab', { 'is-active': blockStep === 'compose' }]" @click="blockStep = 'compose'">
+            <i class="material-symbols-outlined">dashboard_customize</i>積木組成
+          </button>
+        </div>
+        <SkillBlockBasicsForm
+          v-if="blockStep === 'basics'"
           :name="conv.draft.value.name"
           :description="conv.draft.value.description"
+          :trigger-hint="conv.draft.value.triggerHint"
+          :capabilities="conv.draft.value.capabilities"
+          :assigned-agents="conv.draft.value.assignedAgents"
           :section-ids="conv.draft.value.sectionIds"
           :name-conflict="nameConflict"
           @update:name="v => conv.updateBlocks({ name: v })"
-          @update:description="v => conv.updateBlocks({ description: v })"
+          @update:description="conv.updateBlockDescription"
+          @update:trigger-hint="conv.updateBlockTriggerHint"
+          @update:capabilities="conv.updateBlockCapabilities"
+          @update:assigned-agents="conv.updateBlockAssignedAgents"
+        />
+        <SkillBlockComposer
+          v-else
+          :section-ids="conv.draft.value.sectionIds"
           @update:section-ids="ids => conv.updateBlocks({ sectionIds: ids })"
         />
+      </div>
+
+      <!-- 儲存／放棄固定在這裡，不隨右欄「技能預覽／測試」tab 切換而消失或跑到
+           看不到的地方——見 SkillStudioPreview.vue 的 hideFooter -->
+      <div class="studio-save-footer">
+        <button
+          type="button"
+          class="custom-btn custom-main-btn studio-save-btn"
+          :disabled="!conv.saveEnabled.value"
+          @click="onSave"
+        >
+          <i class="material-symbols-outlined">save</i>
+          {{ conv.mode.value === 'create' ? '儲存為個人技能' : '儲存修改' }}
+        </button>
+        <p v-if="conv.missingFieldsHint.value" class="studio-missing-hint">
+          <i class="material-symbols-outlined">info</i>{{ conv.missingFieldsHint.value }}
+        </p>
+        <button v-if="conv.mode.value === 'edit' && conv.savedSkillId.value" type="button" class="custom-btn" @click="onDiscard">
+          <i class="material-symbols-outlined">undo</i>放棄修改
+        </button>
       </div>
     </div>
     <div class="studio-side-col">
@@ -45,7 +87,7 @@
         v-model:active-tab="activeTab"
         hide-files
         hide-nav-links
-        show-discard
+        hide-footer
         :draft="conv.draft.value"
         :mode="conv.mode.value"
         :saved-skill-id="conv.savedSkillId.value"
@@ -67,6 +109,7 @@ import SkillStudioChat from '@/components/Skill/SkillStudioChat.vue'
 import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
 import SkillMethodChooser from '@/components/Skill/SkillMethodChooser.vue'
 import SkillBlockComposer from '@/components/Skill/SkillBlockComposer.vue'
+import SkillBlockBasicsForm from '@/components/Skill/SkillBlockBasicsForm.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import { useAiviewerStore } from '@/stores/AiViewerStore'
 import { useSkillStudioConversation } from '@/composables/useSkillStudioConversation'
@@ -86,6 +129,9 @@ const store = useSkillStore()
 const aiviewerStore = useAiviewerStore()
 const conv = useSkillStudioConversation()
 const activeTab = ref<'preview' | 'test'>('preview')
+// 積木流程「基本設定／積木組成」兩個 tab 可以自由切換，不是鎖死的精靈——
+// 預設停在「基本設定」，跟使用者確認過的步驟順序一致
+const blockStep = ref<'basics' | 'compose'>('basics')
 // 方案三：conv4 的建議卡按「是」交接過來的來源；只在真的套用了交接草稿時設，
 // 換去別的技能／重新開一顆新技能後清空——「返回原對話」連結才不會誤導
 const handoffOrigin = ref<SkillHandoffOrigin | null>(null)

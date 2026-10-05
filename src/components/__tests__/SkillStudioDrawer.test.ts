@@ -57,7 +57,7 @@ describe('SkillStudioDrawer', () => {
     const wrapper = mount(SkillStudioDrawer, { props: { open: true, query: { skillId: 'personal-001' } } })
     currentWrapper = wrapper
     await wrapper.vm.$nextTick()
-    const discardBtn = body().findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))!
+    const discardBtn = body().findAll('.studio-save-footer button').find(b => b.text().includes('放棄修改'))!
     await discardBtn.trigger('click')
     expect(wrapper.emitted('close')).toHaveLength(1)
   })

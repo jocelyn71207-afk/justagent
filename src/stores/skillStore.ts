@@ -187,8 +187,10 @@ export interface UpdateSkillPayload {
   capabilities?: SkillCapability[]
 }
 
-// AI 賦能對話修改用：只允許動這六個內容欄位，不碰狀態／版本／來源關係
-export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities' | 'composition'>>
+// AI 賦能對話修改用：只允許動這幾個內容欄位，不碰狀態／版本／來源關係。
+// assignedAgents 只有積木方式的「基本設定」步驟會帶到；對話方式不傳這個欄位
+// （composable 的 save() 傳 undefined），維持原本「指派 Agent 只能透過啟用流程調整」的行為
+export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities' | 'assignedAgents' | 'composition'>>
 
 export interface DraftSkill {
   id: string
@@ -795,13 +797,56 @@ const MOCK_AI_SCENARIO_TEMPLATES: Record<string, ScenarioTemplate[]> = {
   ],
 }
 
-const DEFAULT_AI_SCENARIOS: ScenarioTemplate[] = [
-  { tag: 'normal', input: '請執行這個技能的主要功能', expectedTrigger: true, expectedBehavior: '直接對應技能的主要功能，應該觸發並回傳預期輸出。' },
-  { tag: 'normal', input: '我需要協助處理一個標準任務', expectedTrigger: true, expectedBehavior: '屬於技能能處理的標準情境，應該觸發。' },
-  { tag: 'boundary', input: '這個任務有點不一樣，你能處理嗎？', expectedTrigger: true, expectedBehavior: '雖然措辭模糊，仍在技能可處理的邊界內，應該觸發並給出合理回應。' },
-  { tag: 'boundary', input: '今天天氣真好，你覺得呢？', expectedTrigger: false, expectedBehavior: '純聊天、與技能功能無關，不應該觸發。' },
-  { tag: 'trigger_edge', input: '觸發關鍵詞測試', expectedTrigger: true, expectedBehavior: '關鍵字直接對應技能觸發意圖，應該觸發。' },
-]
+// 觸發情境是一整句話，簡單切出長度 ≥2 的詞塊當關鍵字──不是真的中文斷詞，
+// 只是要湊出幾個看起來像關鍵字的片段，跟 findSimilarSkill() 的 bigram 比對是不同用途
+function extractTriggerKeywords(triggerHint: string | undefined): string[] {
+  const hint = triggerHint?.trim()
+  if (!hint) return []
+  return hint
+    .replace(/[，。！？、；：,.!?;:「」『』]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length >= 2)
+    .slice(0, 4)
+}
+
+// MOCK_AI_SCENARIO_TEMPLATES 只收錄了少數幾顆精心撰寫的系統／企業技能；其餘絕大多數
+// 都是使用者自己建立的個人技能，原本落到固定寫死的 DEFAULT_AI_SCENARIOS，裡面「請執行這個
+// 技能的主要功能」「今天天氣真好」這類「正常流程」「邊界情況」範例句子其實跟這顆技能的
+// 實際內容完全無關，對使用者來說沒有驗證意義——那兩個標籤需要真正理解技能完整語意才寫得出
+// 有意義的題目，沒辦法無中生有。只留「觸發邊緣」：用這顆技能自己的覆蓋能力標籤（沒有的話
+// 退回觸發情境裡的關鍵字，再沒有就用技能名稱本身）組成片語輸入，測的是「關鍵字夠不夠精準
+// 讓它正確判斷要不要觸發」，這點所有技能都適用、也都跟內容本身相關
+function generateDynamicTriggerEdgeScenarios(skill: Skill | undefined): ScenarioTemplate[] {
+  const name = skill?.name?.trim() || '這顆技能'
+  const keywords = skill?.capabilities?.length ? skill.capabilities : extractTriggerKeywords(skill?.triggerHint)
+
+  const scenarios: ScenarioTemplate[] = []
+  for (let i = 0; i < keywords.length && scenarios.length < 3; i += 2) {
+    const group = keywords.slice(i, i + 2)
+    scenarios.push({
+      tag: 'trigger_edge',
+      input: group.join(' '),
+      expectedTrigger: true,
+      expectedBehavior: `雖然只有關鍵字沒有完整句子，但都是「${name}」涵蓋的關鍵字，應該觸發。`,
+    })
+  }
+  if (scenarios.length === 0) {
+    scenarios.push({
+      tag: 'trigger_edge',
+      input: name,
+      expectedTrigger: true,
+      expectedBehavior: `直接是技能名稱本身的關鍵字，應該觸發。`,
+    })
+  }
+  // 反例：跟這顆技能完全無關的關鍵字組合，不然整組題目「永遠選該觸發」就沒有鑑別度
+  scenarios.push({
+    tag: 'trigger_edge',
+    input: '天氣 心情 電影',
+    expectedTrigger: false,
+    expectedBehavior: `這些關鍵字跟「${name}」的能力範圍無關，不應該觸發。`,
+  })
+  return scenarios
+}
 
 const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
@@ -1386,6 +1431,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (patch.instructions !== undefined) skill.instructions = patch.instructions
     if (patch.triggerHint !== undefined) skill.triggerHint = patch.triggerHint
     if (patch.capabilities !== undefined) skill.capabilities = [...patch.capabilities]
+    if (patch.assignedAgents !== undefined) skill.assignedAgents = [...patch.assignedAgents]
     if (patch.composition !== undefined) skill.composition = patch.composition ? { sectionIds: [...patch.composition.sectionIds] } : undefined
     if (
       skill.personalStatus === 'draft' &&
@@ -1877,7 +1923,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestReport.value = null
     aiTestScenariosSkillId.value = skillId
     await new Promise(r => setTimeout(r, 900))
-    const templates = MOCK_AI_SCENARIO_TEMPLATES[skillId] ?? DEFAULT_AI_SCENARIOS
+    const skill = findSkill(skillId)
+    const templates = MOCK_AI_SCENARIO_TEMPLATES[skillId] ?? generateDynamicTriggerEdgeScenarios(skill)
     aiTestScenarios.value = templates.map((t, i) => ({
       ...t,
       id: `ai-sc-${skillId}-${i}`,
@@ -1886,7 +1933,6 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestIsGenerating.value = false
     // 新一批題目，舊的測試結果不算數：重設這顆技能的測試狀態（不動 isEnabled，
     // 已經啟用的技能不會因為重新出題就被打回停用，見 canEnableSkill 只管「切成啟用」這個動作本身）
-    const skill = findSkill(skillId)
     if (skill) {
       skill.aiTestPassRate = null
       skill.aiTestOverridden = false
@@ -1948,7 +1994,9 @@ export const useSkillStore = defineStore('skillStore', () => {
     testConversationHistory.value = []
   }
 
-  async function sendChatMessage(_skillId: string, message: string): Promise<void> {
+  // 回覆內容要帶出這顆技能實際的名稱／覆蓋能力，不能不管測哪顆技能都回同一句通用罐頭訊息——
+  // 不然使用者在對話測試裡完全看不出這次模擬有沒有真的對應到技能內容
+  async function sendChatMessage(skillId: string, message: string): Promise<void> {
     testIsRunning.value = true
     testConversationHistory.value.push({
       id: `msg-${Date.now()}`,
@@ -1956,13 +2004,18 @@ export const useSkillStore = defineStore('skillStore', () => {
       content: message,
     })
     await new Promise(r => setTimeout(r, 800))
+    const skill = findSkill(skillId)
+    const name = skill?.name ?? '這顆技能'
+    const capsText = skill?.capabilities?.length
+      ? `（涉及 ${skill.capabilities.map(c => `#${c}`).join('、')}）`
+      : ''
     testConversationHistory.value.push({
       id: `msg-${Date.now() + 1}`,
       role: 'agent',
-      content: `（Mock）已收到您的問題：「${message}」，正在處理中...`,
+      content: `（Mock）已依「${name}」的技能指令處理您的問題：「${message}」${capsText}，正在產生結果...`,
       toolTrace: [
-        { name: 'query-knowledge-base', latencyMs: 156 },
-        { name: 'generate-response', latencyMs: 234 },
+        { name: 'match-trigger-hint', latencyMs: 156 },
+        { name: 'apply-instructions', latencyMs: 234 },
       ],
     })
     testIsRunning.value = false

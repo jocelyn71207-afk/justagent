@@ -84,7 +84,7 @@
             </div>
           </div>
 
-          <div class="se-secondary-row">
+          <div class="se-section">
             <div class="se-secondary-section">
               <label class="se-label">觸發時機（選填）</label>
               <p class="se-hint">描述 Agent 在什麼情境下應優先選用此技能，幫助路由判斷更準確。</p>
@@ -96,11 +96,6 @@
                 maxlength="300"
               />
             </div>
-            <div class="se-secondary-section">
-              <label class="se-label">所需檔案（選填）</label>
-              <p class="se-hint">上傳技能執行時需要參考的檔案，例如規則表、範本、FAQ 文件。</p>
-              <SkillFileUpload v-model="form.files" />
-            </div>
           </div>
 
           <div class="se-section">
@@ -110,21 +105,9 @@
           </div>
 
           <div class="se-section">
-            <label class="se-label">指派 Agent（選填）</label>
-            <p class="se-hint">選擇哪些 Agent 可以調用此技能。未指派時技能仍可建立，之後可再補充。</p>
-            <div class="se-agent-grid lively-stagger">
-              <button
-                v-for="agent in AVAILABLE_AGENTS"
-                :key="agent"
-                type="button"
-                :class="['se-agent-chip', 'lively-card', { 'is-selected': form.assignedAgents.includes(agent) }]"
-                @click="toggleAgent(agent)"
-              >
-                <i class="material-symbols-outlined">smart_toy</i>
-                {{ agent }}
-                <i v-if="form.assignedAgents.includes(agent)" class="material-symbols-outlined se-chip-check">check</i>
-              </button>
-            </div>
+            <label class="se-label">指派 Agent <span class="se-required">*</span></label>
+            <p class="se-hint">選擇哪些 Agent 可以調用此技能，至少指派一位。</p>
+            <AgentAssignGrid v-model="form.assignedAgents" />
           </div>
         </template>
 
@@ -147,13 +130,6 @@
               <div v-if="form.triggerHint" class="se-confirm-row">
                 <span class="se-confirm-key">觸發時機</span>
                 <span class="se-confirm-val">{{ form.triggerHint }}</span>
-              </div>
-              <div class="se-confirm-row">
-                <span class="se-confirm-key">所需檔案</span>
-                <span class="se-confirm-val">
-                  <span v-if="form.files.length">{{ form.files.length }} 個檔案</span>
-                  <span v-else class="se-empty">（未上傳）</span>
-                </span>
               </div>
               <div class="se-confirm-row">
                 <span class="se-confirm-key">覆蓋能力</span>
@@ -215,7 +191,7 @@
           <button
             v-if="currentStep < STEPS.length - 1"
             class="custom-btn custom-main-btn"
-            :disabled="currentStep === 0 && !form.name.trim()"
+            :disabled="(currentStep === 0 && !form.name.trim()) || (isNewCreate && currentStep === STEPS.length - 2 && !canSubmit)"
             @click="handleNext"
           >
             下一步<i class="material-symbols-outlined">arrow_forward</i>
@@ -230,7 +206,7 @@
           <button
             v-else
             class="custom-btn custom-main-btn"
-            :disabled="!form.name.trim()"
+            :disabled="!canSubmit"
             @click="handleSubmit"
           >
             <i class="material-symbols-outlined">check</i>
@@ -238,6 +214,9 @@
           </button>
         </div>
       </div>
+      <p v-if="!isTestStep && !canSubmit && (currentStep === STEPS.length - 1 || (isNewCreate && currentStep === STEPS.length - 2))" class="se-confirm-note se-submit-missing-hint">
+        <i class="material-symbols-outlined">info</i>請先填寫：{{ missingRequiredFields.join('、') }}
+      </p>
 
       <SkillEnableFlow ref="enableFlowRef" />
 
@@ -249,11 +228,11 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
-import SkillFileUpload from '@/components/Skill/SkillFileUpload.vue'
 import SkillCapabilityEditor from '@/components/Skill/SkillCapabilityEditor.vue'
+import AgentAssignGrid from '@/components/Skill/AgentAssignGrid.vue'
 import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
-import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
+import { useSkillStore } from '@/stores/skillStore'
 import type { DraftSkill, SkillFile, SkillCapability } from '@/stores/skillStore'
 
 const router = useRouter()
@@ -315,6 +294,24 @@ const form = reactive({
 
 const fillWidth = computed(() => `${(currentStep.value / (STEPS.length - 1)) * 100}%`)
 
+// 「原本停用、這次要切成啟用」會走下面 handleSubmit 裡的 SkillEnableFlow 共用流程，
+// 那個流程自己就有一關「確認可調用 Agent」，會把指派結果寫回 form.assignedAgents
+// 再送出——這裡不能同時也要求 assignedAgents 必填，不然使用者永遠按不下去這顆鍵，
+// 進不了那個本來就是設計來補齊 Agent 指派的流程
+const willGoThroughEnableFlow = computed(() =>
+  isEditMode && !!existingSkill && form.isEnabled && !existingSkill.isEnabled
+)
+
+// 唯一的必填限制（名稱）只卡在能不能往下一步走；指派 Agent 必填只卡在真正送出
+// （建立技能／儲存變更）那一刻，中途步驟之間可以留白
+const missingRequiredFields = computed(() => {
+  const missing: string[] = []
+  if (!form.name.trim()) missing.push('技能名稱')
+  if (!willGoThroughEnableFlow.value && !form.assignedAgents.length) missing.push('指派 Agent')
+  return missing
+})
+const canSubmit = computed(() => missingRequiredFields.value.length === 0)
+
 const instructionsPlaceholder = `你是一個專門處理 ERP 庫存查詢的助理。
 
 ## 行為規則
@@ -324,12 +321,6 @@ const instructionsPlaceholder = `你是一個專門處理 ERP 庫存查詢的助
 
 ## 輸出格式
 以條列式呈現各倉庫庫存，最後附上總計。`
-
-function toggleAgent(agent: string) {
-  const idx = form.assignedAgents.indexOf(agent)
-  if (idx === -1) form.assignedAgents.push(agent)
-  else form.assignedAgents.splice(idx, 1)
-}
 
 function buildPayload() {
   return {
@@ -346,7 +337,7 @@ function buildPayload() {
 }
 
 async function handleSubmit() {
-  if (!form.name.trim()) return
+  if (!canSubmit.value) return
 
   // 編輯模式下，如果是「原本停用、這次要切成啟用」而且還沒過測試關卡，
   // 先跑「檢查閘門 → 確認 Agent」共用流程，通過才繼續送出

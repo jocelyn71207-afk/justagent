@@ -62,10 +62,13 @@ describe('SkillStudioWorkspace', () => {
     expect(wrapper.find('.SkillStudioChat').exists()).toBe(true)
   })
 
-  it('method: blocks：跳過 SkillMethodChooser，直接進積木面板', async () => {
+  it('method: blocks：跳過 SkillMethodChooser，直接進積木流程（預設停在「基本設定」子步驟）', async () => {
     const { wrapper } = mountWorkspace({ method: 'blocks' })
     await flushPromises()
     expect(wrapper.find('.SkillMethodChooser').exists()).toBe(false)
+    expect(wrapper.find('.SkillBlockBasicsForm').exists()).toBe(true)
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(false)
+    await wrapper.findAll('.sbc-step-tab')[1].trigger('click')
     expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
   })
 
@@ -88,7 +91,7 @@ describe('SkillStudioWorkspace', () => {
       await flushPromises()
       expect(wrapper.find('.ssp-title').text()).toBe('亂改的名字')
 
-      const discardBtn = wrapper.findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))!
+      const discardBtn = wrapper.findAll('.studio-save-footer button').find(b => b.text().includes('放棄修改'))!
       await discardBtn.trigger('click')
       expect(popDialog.confirm).toHaveBeenCalledWith('有未儲存的變更，確定要放棄嗎？', '放棄變更', '留下', expect.any(Function))
       expect(wrapper.emitted('discard')).toBeUndefined()
@@ -103,10 +106,43 @@ describe('SkillStudioWorkspace', () => {
     }
   })
 
+  it('儲存／放棄固定在左欄，切到「測試」tab 依然看得到、按得到，不會跟著 tab 消失', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
+      await flushPromises()
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      await input.setValue('名稱改成「亂改的名字」')
+      await input.trigger('keydown.enter')
+      await vi.advanceTimersByTimeAsync(800)
+      await flushPromises()
+
+      // 切到測試 tab
+      await wrapper.findAll('.ssp-tab-btn')[1].trigger('click')
+      await flushPromises()
+      expect(wrapper.find('.ssp-test-body').exists()).toBe(true)
+
+      // SkillStudioPreview 本身不再重複渲染儲存／放棄（hideFooter）
+      expect(wrapper.find('.ssp-footer').exists()).toBe(false)
+
+      // 左欄的儲存／放棄仍然看得到、按得到
+      const saveBtn = wrapper.find('.studio-save-btn')
+      expect(saveBtn.exists()).toBe(true)
+      expect(saveBtn.attributes('disabled')).toBeUndefined()
+      const discardBtn = wrapper.findAll('.studio-save-footer button').find(b => b.text().includes('放棄修改'))!
+      expect(discardBtn.exists()).toBe(true)
+
+      await saveBtn.trigger('click')
+      expect(popDialog.toast).toHaveBeenCalledWith('已儲存修改')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('修改模式：草稿沒有變更時按「放棄修改」，不用確認，直接 emit discard', async () => {
     const { wrapper } = mountWorkspace({ skillId: 'personal-001' })
     await flushPromises()
-    const discardBtn = wrapper.findAll('.ssp-footer button').find(b => b.text().includes('放棄修改'))!
+    const discardBtn = wrapper.findAll('.studio-save-footer button').find(b => b.text().includes('放棄修改'))!
     await discardBtn.trigger('click')
     expect(popDialog.confirm).not.toHaveBeenCalled()
     expect(wrapper.emitted('discard')).toHaveLength(1)
@@ -181,7 +217,7 @@ describe('SkillStudioWorkspace', () => {
       await flushPromises()
 
       expect(wrapper.find('.ssp-title').text()).toBe('查 ERP 庫存')
-      await wrapper.find('.ssp-save-btn').trigger('click')
+      await wrapper.find('.studio-save-btn').trigger('click')
       await flushPromises()
       expect(store.myPersonalSkills.length).toBe(before + 1)
       expect(popDialog.toast).toHaveBeenCalledWith('已儲存為個人技能，可到「測試」tab 驗證')
@@ -241,7 +277,7 @@ describe('SkillStudioWorkspace', () => {
       await vi.advanceTimersByTimeAsync(800)
       await flushPromises()
       expect(wrapper.find('.name-conflict-banner').exists()).toBe(true)
-      expect(wrapper.find('.ssp-save-btn').attributes('disabled')).toBeUndefined()
+      expect(wrapper.find('.studio-save-btn').attributes('disabled')).toBeUndefined()
 
       await input.setValue('名稱改成「庫存速查」')
       await input.trigger('keydown.enter')
@@ -351,31 +387,46 @@ describe('SkillStudioWorkspace', () => {
     }
   })
 
-  it('選「用行銷積木組裝」：左欄變成積木面板；勾章節、命名、儲存 → 個人技能有 composition', async () => {
+  it('選「用行銷積木組裝」：基本設定／積木組成兩個子步驟；填必填欄位、勾章節、儲存 → 個人技能有 composition 與指派 Agent', async () => {
     const { wrapper } = mountWorkspace()
     await flushPromises()
     await wrapper.findAll('.smc-card')[1].trigger('click')
     await flushPromises()
-    expect(wrapper.find('.studio-chat-col .SkillBlockComposer').exists()).toBe(true)
+    expect(wrapper.find('.studio-chat-col .SkillBlockBasicsForm').exists()).toBe(true)
     expect(wrapper.find('.SkillStudioChat').exists()).toBe(false)
     expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--create')
-    await wrapper.find('.sbc-name-input').setValue('行銷週報')
+    await wrapper.find('.sbbf-name-input').setValue('行銷週報')
+
+    await wrapper.findAll('.sbc-step-tab')[1].trigger('click')
     await wrapper.findAll('.sbc-palette-item').find(i => i.text().includes('活動排行'))!.find('.sbc-add-btn').trigger('click')
     await flushPromises()
     expect(wrapper.find('.ssp-title').text()).toBe('行銷週報')
     expect(wrapper.text()).toContain('活動排行：各促銷活動帶動效果排行')
-    await wrapper.find('.ssp-save-btn').trigger('click')
+
+    // 回「基本設定」補齊其餘必填欄位：存不了，按鈕才有意義可以測
+    await wrapper.findAll('.sbc-step-tab')[0].trigger('click')
+    await wrapper.find('.sbbf-textarea').setValue('每週一產出的行銷週報')
+    const aiBtns = wrapper.findAll('.sbbf-ai-btn')
+    await aiBtns[1].trigger('click') // 觸發情境：欄位是空的，AI 建議直接套用、不跳確認
+    await aiBtns[2].trigger('click') // 覆蓋能力：同上
+    await wrapper.find('.se-agent-chip').trigger('click')
+    await flushPromises()
+
+    await wrapper.find('.studio-save-btn').trigger('click')
     await flushPromises()
     const store = useSkillStore()
     expect(store.myPersonalSkills[0].composition).toEqual({ sectionIds: ['promo_ranking'] })
+    expect(store.myPersonalSkills[0].assignedAgents).toHaveLength(1)
   })
 
-  it('skillId 指向有 composition 的技能：左欄直接是積木面板且勾選還原', async () => {
+  it('skillId 指向有 composition 的技能：切到積木組成子步驟可見勾選還原', async () => {
     setActivePinia(createPinia())
     const store = useSkillStore()
     const id = store.createPersonalSkill({ name: '渠道週報', instructions: '依序產出以下章節：\n1. 渠道核心 KPI', triggerHint: 't', isEnabled: true, assignedAgents: [], composition: { sectionIds: ['ch_kpi'] } })
     const { wrapper } = mountWorkspace({ skillId: id })
     await flushPromises()
+    expect(wrapper.find('.SkillBlockBasicsForm').exists()).toBe(true)
+    await wrapper.findAll('.sbc-step-tab')[1].trigger('click')
     expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
     expect(wrapper.findAll('.sbc-list .sbc-item-name').map(n => n.text())).toEqual(['渠道核心 KPI'])
     expect(wrapper.find('.studio-composer-head .ssc-mode-chip').classes()).toContain('ssc-mode-chip--edit')
@@ -422,7 +473,7 @@ describe('SkillStudioWorkspace', () => {
       })
       const { wrapper, router } = mountWorkspace({ from: 'conv4' })
       await flushPromises()
-      await wrapper.find('.ssp-save-btn').trigger('click')
+      await wrapper.find('.studio-save-btn').trigger('click')
       await flushPromises()
       await wrapper.find('.studio-back-link').trigger('click')
       await flushPromises()

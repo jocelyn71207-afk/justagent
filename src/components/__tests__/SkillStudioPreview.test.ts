@@ -157,4 +157,39 @@ describe('SkillStudioPreview', () => {
     const normal = mountPreview()
     expect(normal.find('.ssp-tabs').exists()).toBe(true)
   })
+
+  it('積木方式：多一個「指派 Agent」區塊；必填欄位沒填齊時顯示還缺什麼', () => {
+    const w = mountPreview({
+      draft: { ...emptyDraft(), method: 'blocks', name: '行銷週報', instructions: '1. a' },
+      canSave: false,
+    })
+    expect(w.findAll('.ssp-section-label').some(l => l.text() === '指派 Agent')).toBe(true)
+    expect(w.text()).toContain('尚未指派 Agent')
+    expect(w.text()).toContain('還缺')
+    expect(w.text()).toContain('指派 Agent')
+
+    const filled = mountPreview({
+      draft: {
+        ...emptyDraft(), method: 'blocks', name: '行銷週報', instructions: '1. a',
+        description: 'd', triggerHint: 't', capabilities: ['x'], assignedAgents: ['通用助理'],
+      },
+      canSave: true,
+    })
+    expect(filled.text()).not.toContain('還缺')
+    expect(filled.findAll('.ssp-agent-chip').map(c => c.text())).toContain('通用助理')
+  })
+
+  it('積木方式的測試 tab：多顯示「一鍵產生範例成果」；對話方式不顯示', () => {
+    const blocks = mountPreview({
+      draft: { ...emptyDraft(), method: 'blocks', sectionIds: ['promo_kpi'] },
+      activeTab: 'test', savedSkillId: 'p1', mode: 'edit',
+    })
+    expect(blocks.findComponent({ name: 'SkillSampleOutputTest' }).exists()).toBe(true)
+
+    const chat = mountPreview({
+      draft: { ...emptyDraft(), method: 'chat' },
+      activeTab: 'test', savedSkillId: 'p1', mode: 'edit',
+    })
+    expect(chat.findComponent({ name: 'SkillSampleOutputTest' }).exists()).toBe(false)
+  })
 })

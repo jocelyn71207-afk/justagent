@@ -155,22 +155,38 @@ describe('skillBuilderViewBox', () => {
     expect(block.data.data.snapshot.mode).toBe('create')
   })
 
-  it('選積木：tab 為 積木／預覽／測試；勾章節＋命名 → 預覽步驟 → 儲存寫入 composition → 出現「產一份報告」→ 點擊放上報告 block 且列消失', async () => {
+  it('選積木：tab 為 積木／預覽／測試，積木 tab 內又分「基本設定／積木組成」兩步驟；填必填欄位＋勾章節 → 預覽步驟 → 儲存寫入 composition → 出現「產一份報告」→ 點擊放上報告 block 且列消失', async () => {
     const { wrapper, block, store } = mountBlock()
     const skillStore = useSkillStore()
     await wrapper.findAll('.smc-card')[1].trigger('click')
     await flushPromises()
     expect(block.data.data.snapshot.draft.method).toBe('blocks')
     expect(wrapper.findAll('.skb-tab-btn').map(t => t.text())).toEqual([expect.stringContaining('積木'), expect.stringContaining('預覽'), expect.stringContaining('測試')])
-    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(true)
+    // 預設停在「基本設定」子步驟，不是直接看到積木組成面板
+    expect(wrapper.find('.SkillBlockBasicsForm').exists()).toBe(true)
+    expect(wrapper.find('.SkillBlockComposer').exists()).toBe(false)
 
-    await wrapper.find('.sbc-name-input').setValue('行銷週報')
+    await wrapper.find('.sbbf-name-input').setValue('行銷週報')
+
+    // 切到「積木組成」子步驟勾章節
+    const stepTabs = wrapper.findAll('.sbc-step-tab')
+    await stepTabs[1].trigger('click')
     const items = wrapper.findAll('.sbc-palette-item')
     await items.find(i => i.text().includes('促銷核心 KPI'))!.find('.sbc-add-btn').trigger('click')
     await items.find(i => i.text().includes('渠道核心 KPI'))!.find('.sbc-add-btn').trigger('click')
     await flushPromises()
     expect(block.data.data.snapshot.draft.sectionIds).toEqual(['promo_kpi', 'ch_kpi'])
     expect(block.blockName).toBe('行銷週報')
+
+    // 回「基本設定」填其餘必填欄位：說明手打，觸發情境／覆蓋能力用「AI 建議」套用依章節算出的建議
+    // （欄位目前是空的，直接套用不會跳確認對話框），指派 Agent 至少勾一個
+    await stepTabs[0].trigger('click')
+    await wrapper.find('.sbbf-textarea').setValue('每週一產出的行銷週報')
+    const aiBtns = wrapper.findAll('.sbbf-ai-btn')
+    await aiBtns[1].trigger('click') // 觸發情境
+    await aiBtns[2].trigger('click') // 覆蓋能力
+    await wrapper.find('.se-agent-chip').trigger('click')
+    await flushPromises()
 
     await wrapper.findAll('.skb-tab-btn')[1].trigger('click')
     expect(wrapper.find('.ssp-title').text()).toBe('行銷週報')
@@ -185,6 +201,7 @@ describe('skillBuilderViewBox', () => {
     const saved = skillStore.myPersonalSkills[0]
     expect(saved.composition).toEqual({ sectionIds: ['promo_kpi', 'ch_kpi'] })
     expect(saved.creationMethod).toBe('manual')
+    expect(saved.assignedAgents).toHaveLength(1)
     expect(block.data.data.activeTab).toBe('test')
     const bar = wrapper.find('.skb-after-save-bar')
     expect(bar.exists()).toBe(true)

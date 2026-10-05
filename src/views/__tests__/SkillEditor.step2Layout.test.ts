@@ -5,7 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import SkillEditor from '../SkillEditor.vue'
 
 describe('SkillEditor 第 2 步版面', () => {
-  it('技能指令在 se-primary-section，觸發時機與所需檔案在 se-secondary-row 的雙欄內', async () => {
+  it('技能指令在 se-primary-section，觸發時機在 se-secondary-section（所需檔案區塊已移除）', async () => {
     setActivePinia(createPinia())
     const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: { template: '<div/>' } }] })
     const wrapper = mount(SkillEditor, {
@@ -20,8 +20,11 @@ describe('SkillEditor 第 2 步版面', () => {
     expect(primary.exists()).toBe(true)
     expect(primary.text()).toContain('技能指令')
 
-    const secondaryRow = wrapper.find('.se-secondary-row')
-    expect(secondaryRow.exists()).toBe(true)
-    expect(secondaryRow.findAll('.se-secondary-section').length).toBe(2)
+    const secondary = wrapper.find('.se-secondary-section')
+    expect(secondary.exists()).toBe(true)
+    expect(secondary.text()).toContain('觸發時機')
+    expect(wrapper.find('.se-secondary-row').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('所需檔案')
+    expect(wrapper.find('.SkillFileUpload').exists()).toBe(false)
   })
 })

@@ -61,11 +61,43 @@ describe('generateAITestScenarios', () => {
     }
   })
 
-  it('uses DEFAULT_AI_SCENARIOS for unknown skillId', async () => {
+  it('未收錄進模板表的 skillId（含完全不存在的 id）：只產生「觸發邊緣」題目，不再有固定寫死、跟內容無關的「正常流程」「邊界情況」', async () => {
     const store = useSkillStore()
     await store.generateAITestScenarios('unknown-skill-xyz')
     expect(store.aiTestScenarios.length).toBeGreaterThan(0)
     expect(store.aiTestScenarios[0].status).toBe('pending')
+    expect(store.aiTestScenarios.every(s => s.tag === 'trigger_edge')).toBe(true)
+    // 沒有任何內容可用時，至少要有一個會觸發、一個不會觸發，選擇題才有鑑別度
+    const triggers = store.aiTestScenarios.map(s => s.expectedTrigger)
+    expect(triggers).toContain(true)
+    expect(triggers).toContain(false)
+  })
+
+  it('個人技能有覆蓋能力標籤：觸發邊緣題目用這些標籤組成關鍵字輸入，而不是通用句子', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報快篩',
+      instructions: 'x',
+      triggerHint: '當使用者要求產出行銷報告時',
+      assignedAgents: [],
+      capabilities: ['會員人物誌', '活動排行'],
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.every(s => s.tag === 'trigger_edge')).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(true)
+  })
+
+  it('個人技能沒有覆蓋能力標籤：退回用觸發情境裡的關鍵字；兩者都沒有則退回技能名稱', async () => {
+    const store = useSkillStore()
+    const withHint = store.createPersonalSkill({
+      name: '查詢技能', instructions: 'x', triggerHint: '當使用者詢問庫存數量、倉庫存量、缺貨狀態等相關問題時使用', assignedAgents: [],
+    })
+    await store.generateAITestScenarios(withHint)
+    expect(store.aiTestScenarios.some(s => s.input.includes('庫存'))).toBe(true)
+
+    const bare = store.createPersonalSkill({ name: '裸技能', instructions: 'x', triggerHint: '', assignedAgents: [] })
+    await store.generateAITestScenarios(bare)
+    expect(store.aiTestScenarios.some(s => s.input === '裸技能')).toBe(true)
   })
 
   it('resets previous scenarios and report when called again', async () => {

@@ -83,6 +83,16 @@
     .SkillStudioChat,
     .SkillStudioPreview { height: 100%; min-height: 0; }
     .SkillBlockComposer,
+    .SkillBlockBasicsForm,
     .SkillMethodChooser { height: 100%; min-height: 0; overflow-y: auto; }
+  }
+
+  .skb-blocks-col {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    .SkillBlockComposer,
+    .SkillBlockBasicsForm { flex: 1; min-height: 0; }
   }
 }

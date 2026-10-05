@@ -69,6 +69,7 @@ describe('SkillEditor 全新建立多一個「測試」步驟', () => {
     const { wrapper, router } = await mountCreate()
     const editor = wrapper.findComponent(SkillEditor)
     ;(editor.vm as any).form.name = '全新技能A'
+    ;(editor.vm as any).form.assignedAgents = ['通用助理']
     ;(editor.vm as any).currentStep = 2
     await wrapper.vm.$nextTick()
 
@@ -91,6 +92,7 @@ describe('SkillEditor 全新建立多一個「測試」步驟', () => {
     const { wrapper, router } = await mountCreate()
     const editor = wrapper.findComponent(SkillEditor)
     ;(editor.vm as any).form.name = '全新技能B'
+    ;(editor.vm as any).form.assignedAgents = ['通用助理']
     ;(editor.vm as any).currentStep = 2
     await wrapper.vm.$nextTick()
     await wrapper.findAll('.se-footer button.custom-main-btn').find(b => b.text().includes('下一步'))!.trigger('click')
@@ -110,6 +112,7 @@ describe('SkillEditor 全新建立多一個「測試」步驟', () => {
     const { wrapper } = await mountCreate()
     const editor = wrapper.findComponent(SkillEditor)
     ;(editor.vm as any).form.name = '全新技能C'
+    ;(editor.vm as any).form.assignedAgents = ['通用助理']
     ;(editor.vm as any).currentStep = 2
     await wrapper.vm.$nextTick()
     await wrapper.findAll('.se-footer button.custom-main-btn').find(b => b.text().includes('下一步'))!.trigger('click')
@@ -130,6 +133,7 @@ describe('SkillEditor 全新建立多一個「測試」步驟', () => {
     const { wrapper } = await mountCreate()
     const editor = wrapper.findComponent(SkillEditor)
     ;(editor.vm as any).form.name = '全新技能D'
+    ;(editor.vm as any).form.assignedAgents = ['通用助理']
     ;(editor.vm as any).currentStep = 2
     await wrapper.vm.$nextTick()
     await wrapper.findAll('.se-footer button.custom-main-btn').find(b => b.text().includes('下一步'))!.trigger('click')
@@ -146,6 +150,7 @@ describe('SkillEditor 全新建立多一個「測試」步驟', () => {
     const { wrapper } = await mountCreate()
     const editor = wrapper.findComponent(SkillEditor)
     ;(editor.vm as any).form.name = '全新技能E'
+    ;(editor.vm as any).form.assignedAgents = ['通用助理']
     ;(editor.vm as any).currentStep = 2
     await wrapper.vm.$nextTick()
     await wrapper.findAll('.se-footer button.custom-main-btn').find(b => b.text().includes('下一步'))!.trigger('click')

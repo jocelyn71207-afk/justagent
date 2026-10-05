@@ -88,7 +88,8 @@
               </div>
             </div>
 
-            <SkillTestChat :skill-id="selectedSkill.id" />
+            <SkillSampleOutputTest v-if="selectedSkill.composition" :section-ids="selectedSkill.composition.sectionIds" />
+            <SkillTestChat v-else :skill-id="selectedSkill.id" />
           </template>
 
           <div v-else class="panel-empty">
@@ -136,6 +137,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import SkillTestChat from '@/components/Skill/SkillTestChat.vue'
+import SkillSampleOutputTest from '@/components/Skill/SkillSampleOutputTest.vue'
 import SkillVersionPicker from '@/components/Skill/SkillVersionPicker.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import type { Skill } from '@/stores/skillStore'

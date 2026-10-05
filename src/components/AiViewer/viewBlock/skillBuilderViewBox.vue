@@ -54,17 +54,37 @@
         :personal-skills="[]"
         @send="conv.send"
       />
-      <SkillBlockComposer
-        v-else-if="activeTab === 'blocks'"
-        compact
-        :name="conv.draft.value.name"
-        :description="conv.draft.value.description"
-        :section-ids="conv.draft.value.sectionIds"
-        :name-conflict="nameConflict"
-        @update:name="v => conv.updateBlocks({ name: v })"
-        @update:description="v => conv.updateBlocks({ description: v })"
-        @update:section-ids="ids => conv.updateBlocks({ sectionIds: ids })"
-      />
+      <div v-else-if="activeTab === 'blocks'" class="skb-blocks-col">
+        <div class="sbc-step-tabs">
+          <button type="button" :class="['sbc-step-tab', { 'is-active': blockStep === 'basics' }]" @click="blockStep = 'basics'">
+            <i class="material-symbols-outlined">tune</i>基本設定
+          </button>
+          <button type="button" :class="['sbc-step-tab', { 'is-active': blockStep === 'compose' }]" @click="blockStep = 'compose'">
+            <i class="material-symbols-outlined">dashboard_customize</i>積木組成
+          </button>
+        </div>
+        <SkillBlockBasicsForm
+          v-if="blockStep === 'basics'"
+          :name="conv.draft.value.name"
+          :description="conv.draft.value.description"
+          :trigger-hint="conv.draft.value.triggerHint"
+          :capabilities="conv.draft.value.capabilities"
+          :assigned-agents="conv.draft.value.assignedAgents"
+          :section-ids="conv.draft.value.sectionIds"
+          :name-conflict="nameConflict"
+          @update:name="v => conv.updateBlocks({ name: v })"
+          @update:description="conv.updateBlockDescription"
+          @update:trigger-hint="conv.updateBlockTriggerHint"
+          @update:capabilities="conv.updateBlockCapabilities"
+          @update:assigned-agents="conv.updateBlockAssignedAgents"
+        />
+        <SkillBlockComposer
+          v-else
+          compact
+          :section-ids="conv.draft.value.sectionIds"
+          @update:section-ids="ids => conv.updateBlocks({ sectionIds: ids })"
+        />
+      </div>
       <SkillStudioPreview
         v-else
         hide-tabs
@@ -97,6 +117,7 @@ import type { StudioSnapshot, StudioMethod } from '@/composables/useSkillStudioC
 import type { SkillBuilderBlockData } from '@/types/AiViewer'
 import SkillMethodChooser from '@/components/Skill/SkillMethodChooser.vue'
 import SkillBlockComposer from '@/components/Skill/SkillBlockComposer.vue'
+import SkillBlockBasicsForm from '@/components/Skill/SkillBlockBasicsForm.vue'
 import SkillStudioChat from '@/components/Skill/SkillStudioChat.vue'
 import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
 import popDialog from '@/services/popDialog'
@@ -121,6 +142,7 @@ const activeTab = computed<BlockTab>(() => props.source.data.activeTab)
 const previewTab = computed<'preview' | 'test'>(() => (activeTab.value === 'test' ? 'test' : 'preview'))
 const missingSkill = ref(false)
 let applyingExternal = false
+const blockStep = ref<'basics' | 'compose'>('basics')
 
 const method = computed(() => conv.draft.value.method)
 const tabs = computed<{ id: BlockTab; icon: string; label: string }[]>(() => [

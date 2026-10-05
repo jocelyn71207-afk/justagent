@@ -1,19 +1,5 @@
 <template>
   <div :class="['SkillBlockComposer', { 'is-compact': props.compact }]">
-    <div class="sbc-head">
-      <label class="sbc-field">
-        <span class="sbc-label">技能名稱</span>
-        <input class="custom-input sbc-name-input" :value="props.name" placeholder="例：行銷週報" @input="emit('update:name', ($event.target as HTMLInputElement).value)" />
-      </label>
-      <label class="sbc-field">
-        <span class="sbc-label">一句說明（選填）</span>
-        <input class="custom-input sbc-desc-input" :value="props.description" placeholder="這份報告給誰看、多久產一次" @input="emit('update:description', ($event.target as HTMLInputElement).value)" />
-      </label>
-      <div v-if="props.nameConflict" class="name-conflict-banner">
-        <i class="material-symbols-outlined">info</i>你已經有一個同名的個人技能，建議修改名稱以便區分。
-      </div>
-    </div>
-
     <div class="sbc-selected">
       <div class="sbc-selected-head">
         <i class="material-symbols-outlined">stacks</i>已選 {{ props.sectionIds.length }} 個章節
@@ -87,16 +73,11 @@ import { ref } from 'vue'
 import { REPORT_CATEGORIES, SECTION_MAP, sectionsByCategory } from '@/constants/reportSections'
 
 const props = defineProps<{
-  name: string
-  description: string
   sectionIds: string[]
   compact?: boolean
-  nameConflict?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:name': [value: string]
-  'update:description': [value: string]
   'update:sectionIds': [ids: string[]]
 }>()
 

@@ -4,20 +4,12 @@ import SkillBlockComposer from '@/components/Skill/SkillBlockComposer.vue'
 
 function mountComposer(over: Partial<Record<string, unknown>> = {}) {
   return mount(SkillBlockComposer, {
-    props: { name: '', description: '', sectionIds: [], ...over },
+    props: { sectionIds: [], ...over },
     global: { directives: { tooltip: {} } },
   })
 }
 
 describe('SkillBlockComposer', () => {
-  it('名稱／說明輸入 emit update:name / update:description', async () => {
-    const w = mountComposer()
-    await w.find('.sbc-name-input').setValue('行銷週報')
-    await w.find('.sbc-desc-input').setValue('每週一')
-    expect(w.emitted('update:name')?.[0]).toEqual(['行銷週報'])
-    expect(w.emitted('update:description')?.[0]).toEqual(['每週一'])
-  })
-
   it('積木庫三個分類、計數 n/總數；點＋ emit 加入；已加入顯示 check 且再點不重複', async () => {
     const w = mountComposer({ sectionIds: ['promo_kpi'] })
     const cats = w.findAll('.sbc-category')
@@ -53,8 +45,7 @@ describe('SkillBlockComposer', () => {
     expect(w.emitted('update:sectionIds')?.at(-1)).toEqual([['ch_kpi', 'ta_gender', 'promo_kpi']])
   })
 
-  it('nameConflict 顯示提示條；compact 加 is-compact', () => {
-    expect(mountComposer({ nameConflict: true }).find('.name-conflict-banner').exists()).toBe(true)
+  it('compact 加 is-compact', () => {
     expect(mountComposer({ compact: true }).classes()).toContain('is-compact')
   })
 
@@ -75,7 +66,7 @@ describe('SkillBlockComposer', () => {
     expect(detailsEl.open).toBe(true)
     // 強迫重新渲染：若 @toggle 沒有把狀態記進 openCategories，
     // :open="isCategoryOpen(...)" 會在這次 patch 把它蓋回 false
-    await w.setProps({ name: '行銷週報' })
+    await w.setProps({ compact: true })
     expect((w.findAll('.sbc-category')[0].element as HTMLDetailsElement).open).toBe(true)
   })
 

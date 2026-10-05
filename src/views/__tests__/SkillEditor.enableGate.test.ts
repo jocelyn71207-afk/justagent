@@ -182,6 +182,7 @@ describe('SkillEditor 編輯模式的啟用測試閘門', () => {
 
     const editor = wrapper.findComponent(SkillEditor)
     ;(editor.vm as any).form.name = '全新技能'
+    ;(editor.vm as any).form.assignedAgents = ['通用助理']
     ;(editor.vm as any).currentStep = 2
     await wrapper.vm.$nextTick()
     await wrapper.find('.se-footer button.custom-main-btn').trigger('click')
