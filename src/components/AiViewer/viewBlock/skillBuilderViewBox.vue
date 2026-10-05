@@ -68,6 +68,7 @@
           :name="conv.draft.value.name"
           :description="conv.draft.value.description"
           :trigger-hint="conv.draft.value.triggerHint"
+          :keywords="conv.draft.value.keywords"
           :capabilities="conv.draft.value.capabilities"
           :assigned-agents="conv.draft.value.assignedAgents"
           :section-ids="conv.draft.value.sectionIds"
@@ -75,6 +76,7 @@
           @update:name="v => conv.updateBlocks({ name: v })"
           @update:description="conv.updateBlockDescription"
           @update:trigger-hint="conv.updateBlockTriggerHint"
+          @update:keywords="conv.updateBlockKeywords"
           @update:capabilities="conv.updateBlockCapabilities"
           @update:assigned-agents="conv.updateBlockAssignedAgents"
         />

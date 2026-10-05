@@ -123,6 +123,7 @@ export interface Skill {
   instructions?: string
   triggerHint?: string
   capabilities?: SkillCapability[]
+  keywords?: string[]          // 只有積木組裝必填；對話方式不會有這個欄位
   functionType?: SkillFunctionType   // 探索頁分類/篩選用，選填不影響既有消費者
   usageScenarios?: UsageScenario[]
   assignedAgents?: string[]
@@ -172,6 +173,7 @@ export interface CreateSkillPayload {
   scope?: 'enterprise' | 'team'
   files?: SkillFile[]
   capabilities?: SkillCapability[]
+  keywords?: string[]
   creationMethod?: 'ai_assisted' | 'manual'
   composition?: { sectionIds: string[] }
 }
@@ -185,12 +187,13 @@ export interface UpdateSkillPayload {
   assignedAgents: string[]
   files?: SkillFile[]
   capabilities?: SkillCapability[]
+  keywords?: string[]
 }
 
 // AI 賦能對話修改用：只允許動這幾個內容欄位，不碰狀態／版本／來源關係。
-// assignedAgents 只有積木方式的「基本設定」步驟會帶到；對話方式不傳這個欄位
-// （composable 的 save() 傳 undefined），維持原本「指派 Agent 只能透過啟用流程調整」的行為
-export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities' | 'assignedAgents' | 'composition'>>
+// assignedAgents／keywords 只有積木方式的「基本設定」步驟會帶到；對話方式不傳這兩個
+// 欄位（composable 的 save() 傳 undefined），維持原本「指派 Agent 只能透過啟用流程調整」的行為
+export type StudioPatch = Partial<Pick<Skill, 'name' | 'description' | 'instructions' | 'triggerHint' | 'capabilities' | 'assignedAgents' | 'keywords' | 'composition'>>
 
 export interface DraftSkill {
   id: string
@@ -1412,6 +1415,7 @@ export const useSkillStore = defineStore('skillStore', () => {
       assignedAgents: data.assignedAgents,
       files: data.files ?? [],
       capabilities: data.capabilities ?? [],
+      keywords: data.keywords ?? [],
       composition: data.composition ? { sectionIds: [...data.composition.sectionIds] } : undefined,
     })
     return id
@@ -1432,6 +1436,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (patch.triggerHint !== undefined) skill.triggerHint = patch.triggerHint
     if (patch.capabilities !== undefined) skill.capabilities = [...patch.capabilities]
     if (patch.assignedAgents !== undefined) skill.assignedAgents = [...patch.assignedAgents]
+    if (patch.keywords !== undefined) skill.keywords = [...patch.keywords]
     if (patch.composition !== undefined) skill.composition = patch.composition ? { sectionIds: [...patch.composition.sectionIds] } : undefined
     if (
       skill.personalStatus === 'draft' &&
@@ -1474,6 +1479,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.assignedAgents = data.assignedAgents
     skill.files = data.files ?? []
     skill.capabilities = data.capabilities ?? []
+    skill.keywords = data.keywords ?? []
     if (skill.personalStatus === 'draft' && skill.instructions !== findSkill(skill.derivedFrom ?? '')?.instructions) {
       skill.personalStatus = 'available'
     }

@@ -32,4 +32,45 @@
     color: var(--primary-hover);
     .material-symbols-outlined { font-size: 15px; }
   }
+
+  // AI 建議三選一：清單緊貼在對應的 textarea 下方，點其中一句直接套用
+  .sbbf-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--divider);
+    border-radius: $radius;
+    background: var(--page-bg);
+  }
+
+  .sbbf-suggestions-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sbbf-suggestions-close {
+    display: inline-flex;
+    color: var(--text-muted);
+    .material-symbols-outlined { font-size: 16px; }
+    &:hover { color: var(--text); }
+  }
+
+  .sbbf-suggestion-chip {
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: $radius-sm;
+    border: 1px solid var(--divider);
+    background: var(--surface);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text);
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: var(--accent-soft);
+      border-color: $color_main_3;
+    }
+  }
 }

@@ -207,6 +207,7 @@ const missingFieldsHint = computed(() => {
   if (!props.draft.description.trim()) missing.push('說明')
   if (!props.draft.triggerHint.trim()) missing.push('觸發情境')
   if (!props.draft.capabilities.length) missing.push('覆蓋能力')
+  if (!props.draft.keywords.length) missing.push('關鍵字')
   if (!props.draft.assignedAgents.length) missing.push('指派 Agent')
   return missing.length ? `還缺：${missing.join('、')}` : ''
 })

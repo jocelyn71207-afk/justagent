@@ -1,0 +1,39 @@
+// 跟 _SkillCapabilityEditor.scss 的 .sce-tag-* 同一套標籤樣式（故意沿用同樣的 class
+// 名稱前綴，視覺上是同一種「標籤輸入」元件語言）——關鍵字沒有常見範本那排 chip，
+// 所以只複製標籤清單／輸入框這兩塊，不複製 .sce-presets
+.SkillKeywordsEditor {
+  .sce-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .sce-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px 5px 12px;
+    border-radius: 9999px;
+    background: var(--accent-soft);
+    color: var(--primary);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .sce-tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    opacity: 0.7;
+
+    &:hover { opacity: 1; }
+    .material-symbols-outlined { font-size: 15px; }
+  }
+
+  .sce-tag-input {
+    width: 100%;
+    font-size: 13px;
+  }
+}
