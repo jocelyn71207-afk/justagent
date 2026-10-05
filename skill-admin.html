@@ -736,7 +736,7 @@ This product is broken, I need help
               <div class="chat-bubble user">我需要一個能查詢我們 ERP 系統庫存的 Skill，要能根據品項 ID 查出即時庫存量</div>
               <div class="chat-bubble bot">了解，我建議使用以下 Tool 組合：<br><br>📋 <strong>MCP: erp-server/query_inventory</strong> - 查詢庫存量<br>📋 <strong>MCP: erp-server/get_product_detail</strong> - 獲取商品詳情<br><br>ERP MCP Server 已連線正常。要繼續嗎？</div>
               <div class="chat-bubble user">好的，繼續</div>
-              <div class="chat-bubble bot">✅ Skill 配置已生成，我也產生了 4 個測試案例。右側「配置預覽」可查看詳情，確認後可直接執行測試或發佈。</div>
+              <div class="chat-bubble bot">✅ Skill 配置已生成，我也產生了 5 個測試案例（最少需 5 個才能送審發佈）。右側「配置預覽」可查看詳情，確認後可直接執行測試或發佈。</div>
             </div>
             <div class="chat-input-bar">
               <input type="text" placeholder="描述你的 Skill 需求...">
@@ -748,7 +748,7 @@ This product is broken, I need help
               <h4>📋 Skill 配置預覽</h4>
               <div style="font-size:13px;line-height:2;"><strong>名稱:</strong> ERP 庫存查詢<br><strong>層級:</strong> <span class="tag tag-indigo">企業</span><br><strong>版本名稱:</strong> 初始版本<br><strong>狀態:</strong> <span class="tag tag-gray">草稿</span></div>
               <div style="margin-top:12px;"><strong style="font-size:13px;">綁定 Tools:</strong><div class="tool-chips" style="margin-top:6px;"><div class="tool-chip">📋 erp-server/query_inventory</div><div class="tool-chip">📋 erp-server/get_product_detail</div></div></div>
-              <div style="margin-top:12px;"><strong style="font-size:13px;">測試案例 (自動生成):</strong><div style="font-size:12px;color:var(--gray-400);margin-top:4px;line-height:1.8;">✓ 正常查詢<br>✓ 商品不存在<br>✓ 倉庫不存在<br>✓ MCP 逾時 fallback</div></div>
+              <div style="margin-top:12px;"><strong style="font-size:13px;">測試案例 (自動生成) <span style="font-weight:400;color:var(--gray-400);font-size:11px;">· 最少需 5 個</span>:</strong><div style="font-size:12px;color:var(--gray-400);margin-top:4px;line-height:1.8;">✓ 正常查詢<br>✓ 商品不存在<br>✓ 倉庫不存在<br>✓ 品項 ID 格式錯誤<br>✓ MCP 逾時 fallback</div></div>
             </div>
             <div style="display:flex;gap:8px;margin-top:10px;">
               <button class="btn btn-default" style="flex:1;" onclick="openModal('modal-edit-skill')">✏️ 編輯配置</button>
