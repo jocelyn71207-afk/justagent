@@ -97,6 +97,7 @@
         :is-dirty="conv.isDirty.value"
         :can-save="conv.canSave.value"
         :name-conflict="nameConflict"
+        :request-save-draft="conv.save"
         @save="onSave"
         @discard="onDiscard"
       />

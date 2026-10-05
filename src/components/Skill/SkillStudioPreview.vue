@@ -125,7 +125,12 @@
           內容已變更，建議重新生成測試情境
         </div>
         <SkillSampleOutputTest v-if="props.draft.method === 'blocks'" :section-ids="props.draft.sectionIds" />
-        <SkillTestAI :skill-id="effectiveTestId!" :draft-context="testDraftContext" />
+        <SkillTestAI
+          :skill-id="effectiveTestId!"
+          :draft-context="testDraftContext"
+          :can-save="props.canSave"
+          :request-save-draft="props.requestSaveDraft"
+        />
         <div v-if="props.savedSkillId" class="ssp-test-foot">
           <span class="ssp-test-foot-text">想手動模擬使用者對話，或比較不同版本？</span>
           <button type="button" class="custom-btn ssp-sandbox-btn" @click="goSandbox">
@@ -170,6 +175,9 @@ const props = defineProps<{
   // 外殼（例如抽屜）把儲存／放棄移到固定不隨 tab 切換的位置時，這裡不用重複渲染
   // 自己的版本——見 SkillStudioWorkspace.vue 的 studio-save-footer
   hideFooter?: boolean
+  // 轉傳給 SkillTestAI 的「儲存並啟用」用：同步存草稿、回傳新技能 id（見
+  // useSkillStudioConversation.ts 的 save()）。這裡純轉手，不自己呼叫
+  requestSaveDraft?: () => string | null
 }>()
 
 const emit = defineEmits<{
