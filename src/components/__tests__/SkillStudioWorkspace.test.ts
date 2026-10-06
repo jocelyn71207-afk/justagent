@@ -524,13 +524,13 @@ describe('SkillStudioWorkspace', () => {
 
     // 回「基本設定」補齊其餘必填欄位：存不了，按鈕才有意義可以測
     await wrapper.findAll('.sbc-step-tab')[0].trigger('click')
+    await wrapper.find('.sce-tag-input').setValue('週報')
+    await wrapper.find('.sce-tag-input').trigger('keydown.enter') // 關鍵字：AI 建議要先有關鍵字才給產生
     await wrapper.find('.sbbf-textarea').setValue('每週一產出的行銷週報')
     const aiBtns = wrapper.findAll('.sbbf-ai-btn')
     await aiBtns[1].trigger('click') // 觸發情境：開出 3 句候選
     await flushPromises()
     await wrapper.findAll('.sbbf-suggestion-chip')[0].trigger('click') // 選第一句套用
-    await wrapper.find('.sce-tag-input').setValue('週報')
-    await wrapper.find('.sce-tag-input').trigger('keydown.enter') // 關鍵字
     await aiBtns[2].trigger('click') // 覆蓋能力：欄位是空的，AI 建議直接套用、不跳確認
     await wrapper.find('.se-agent-chip').trigger('click')
     await flushPromises()

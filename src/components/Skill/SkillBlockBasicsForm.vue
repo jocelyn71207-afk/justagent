@@ -9,6 +9,12 @@
     </div>
 
     <div class="sbbf-field">
+      <span class="sbc-label">關鍵字 <span class="se-required">*</span></span>
+      <p class="se-hint">輸入會觸發這顆技能的關鍵字，至少新增一個。</p>
+      <SkillKeywordsEditor :model-value="props.keywords" @update:model-value="emit('update:keywords', $event)" />
+    </div>
+
+    <div class="sbbf-field">
       <div class="sbbf-label-row">
         <span class="sbc-label">說明 <span class="se-required">*</span></span>
         <button
@@ -83,12 +89,6 @@
     </div>
 
     <div class="sbbf-field">
-      <span class="sbc-label">關鍵字 <span class="se-required">*</span></span>
-      <p class="se-hint">輸入會觸發這顆技能的關鍵字，至少新增一個。</p>
-      <SkillKeywordsEditor :model-value="props.keywords" @update:model-value="emit('update:keywords', $event)" />
-    </div>
-
-    <div class="sbbf-field">
       <div class="sbbf-label-row">
         <span class="sbc-label">覆蓋能力 <span class="se-required">*</span></span>
         <button
@@ -156,6 +156,7 @@ watch(() => props.sectionIds, () => {
 
 function generateDescriptionSuggestions() {
   if (!props.sectionIds.length) return
+  if (!props.keywords.length) { popDialog.toast('請先填寫關鍵字，才能產生 AI 建議'); return }
   descriptionCandidates.value = suggestDescriptionVariants(props.sectionIds)
 }
 
@@ -166,6 +167,7 @@ function pickDescription(candidate: string) {
 
 function generateTriggerHintSuggestions() {
   if (!props.sectionIds.length) return
+  if (!props.keywords.length) { popDialog.toast('請先填寫關鍵字，才能產生 AI 建議'); return }
   triggerHintCandidates.value = suggestTriggerHintVariants(props.sectionIds)
 }
 
@@ -176,6 +178,7 @@ function pickTriggerHint(candidate: string) {
 
 function applyCapabilitiesSuggestion() {
   if (!props.sectionIds.length) return
+  if (!props.keywords.length) { popDialog.toast('請先填寫關鍵字，才能產生 AI 建議'); return }
   const suggestion = deriveFromSections(props.sectionIds).capabilities
   if (!suggestion.length) return
   if (!props.capabilities.length) {

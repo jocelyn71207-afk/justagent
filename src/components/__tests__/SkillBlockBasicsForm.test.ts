@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SkillBlockBasicsForm from '../Skill/SkillBlockBasicsForm.vue'
+import popDialog from '@/services/popDialog'
+
+vi.mock('@/services/popDialog', () => ({
+  default: { toast: vi.fn(), confirm: vi.fn(), alert: vi.fn() },
+}))
 
 function mountForm(over: Partial<Record<string, unknown>> = {}) {
   return mount(SkillBlockBasicsForm, {
@@ -8,7 +13,7 @@ function mountForm(over: Partial<Record<string, unknown>> = {}) {
       name: '',
       description: '',
       triggerHint: '',
-      keywords: [],
+      keywords: ['預設關鍵字'],
       capabilities: [],
       assignedAgents: [],
       sectionIds: ['promo_kpi'],
@@ -86,5 +91,22 @@ describe('SkillBlockBasicsForm', () => {
     await wrapper.findAll('.sbbf-ai-btn')[2].trigger('click') // 覆蓋能力
     expect(wrapper.emitted('update:capabilities')).toBeTruthy()
     expect(wrapper.find('.sbbf-suggestions').exists()).toBe(false)
+  })
+
+  it('已選章節但還沒填關鍵字：按任一個「AI 建議」跳提示，不產生候選也不套用', async () => {
+    const wrapper = mountForm({ keywords: [] })
+    const aiBtns = wrapper.findAll('.sbbf-ai-btn')
+
+    await aiBtns[0].trigger('click') // 說明
+    expect(popDialog.toast).toHaveBeenCalledWith('請先填寫關鍵字，才能產生 AI 建議')
+    expect(wrapper.find('.sbbf-suggestions').exists()).toBe(false)
+
+    await aiBtns[1].trigger('click') // 觸發情境
+    expect(wrapper.find('.sbbf-suggestions').exists()).toBe(false)
+
+    await aiBtns[2].trigger('click') // 覆蓋能力
+    expect(wrapper.emitted('update:capabilities')).toBeFalsy()
+
+    expect(popDialog.toast).toHaveBeenCalledTimes(3)
   })
 })
