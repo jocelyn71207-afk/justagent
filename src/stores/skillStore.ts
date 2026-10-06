@@ -825,14 +825,23 @@ const NEGATIVE_KEYWORD_SETS = ['天氣 心情 電影', '旅遊 美食 運動', '
 // 讓它正確判斷要不要觸發」，這點所有技能都適用、也都跟內容本身相關。
 // 題數至少 5 題：關鍵字夠多時正例最多到 4 題、反例固定 2 題；關鍵字很少（甚至只有技能名稱
 // 這一個）時正例可能只有 1 題，改從反例池多補幾題撐到底線，而不是讓題目少到沒驗證意義
-// 只收 name／triggerHint／capabilities 三個欄位：草稿還沒存檔時沒有完整的 Skill
-// 物件可用，只需要這三個就能組題目關鍵字，不用整顆 Skill
-export type TriggerEdgeSource = Pick<Skill, 'name' | 'triggerHint' | 'capabilities'>
+// 只收 name／triggerHint／capabilities／composition 四個欄位：草稿還沒存檔時沒有完整的
+// Skill 物件可用，只需要這四個就能組題目關鍵字，不用整顆 Skill
+export type TriggerEdgeSource = Pick<Skill, 'name' | 'triggerHint' | 'capabilities' | 'composition'>
 
 function generateDynamicTriggerEdgeScenarios(skill: TriggerEdgeSource | undefined): ScenarioTemplate[] {
   const MIN_TOTAL = 5
   const name = skill?.name?.trim() || '這顆技能'
-  const keywords = skill?.capabilities?.length ? skill.capabilities : extractTriggerKeywords(skill?.triggerHint)
+  const fromTriggerHint = extractTriggerKeywords(skill?.triggerHint)
+  const fromCapabilities = skill?.capabilities ?? []
+  // 積木組裝的技能（有 composition）：「觸發情境」是使用者在「基本設定」步驟手寫、
+  // 專門描述「什麼時候該觸發」的必填欄位，比覆蓋能力（偏「這顆技能做什麼」而非
+  // 「什麼時候該用」）更貼近是非題要驗證的東西，優先用它抓關鍵字，沒抓到字才退回
+  // 覆蓋能力。對話建立的技能沒有這層區分（兩個欄位都是 AI 推導或口語補充的，沒有
+  // 「哪個更權威」的差異），維持原本「覆蓋能力優先」不變
+  const keywords = skill?.composition
+    ? (fromTriggerHint.length ? fromTriggerHint : fromCapabilities)
+    : (fromCapabilities.length ? fromCapabilities : fromTriggerHint)
   const pool = keywords.length ? keywords : [name]
 
   const positives: ScenarioTemplate[] = pool.slice(0, 3).map(kw => ({

@@ -205,11 +205,14 @@ const instructionsHtml = computed(() =>
 // 維持「一定要先存檔」的舊行為
 const effectiveTestId = computed(() => props.testSkillId ?? props.savedSkillId)
 
-// 草稿還沒存檔、或技能已存在但草稿改過還沒存時，用來補齊組題關鍵字的來源
+// 草稿還沒存檔、或技能已存在但草稿改過還沒存時，用來補齊組題關鍵字的來源。
+// composition 要帶上：積木組裝的草稿測試時，組題要優先用觸發情境而不是覆蓋能力
+// （見 generateDynamicTriggerEdgeScenarios），沒有這個欄位會被誤判成對話建立的技能
 const testDraftContext = computed<TriggerEdgeSource>(() => ({
   name: props.draft.name,
   triggerHint: props.draft.triggerHint,
   capabilities: props.draft.capabilities,
+  composition: props.draft.method === 'blocks' ? { sectionIds: [...props.draft.sectionIds] } : undefined,
 }))
 
 // 題目是不是跟不上最新的草稿內容了——不是看存不存檔，是看「產生題目當下的

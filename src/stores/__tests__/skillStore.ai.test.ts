@@ -100,6 +100,49 @@ describe('generateAITestScenarios', () => {
     expect(store.aiTestScenarios.some(s => s.input === '裸技能')).toBe(true)
   })
 
+  it('積木組裝的技能（有 composition）：觸發情境優先於覆蓋能力，就算覆蓋能力有填也不用', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報',
+      instructions: 'x',
+      triggerHint: '當使用者詢問庫存查詢相關問題時',
+      assignedAgents: [],
+      capabilities: ['會員人物誌', '活動排行'],
+      composition: { sectionIds: ['promo_kpi'] },
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.some(s => s.input.includes('庫存查詢'))).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(false)
+  })
+
+  it('積木組裝的技能：觸發情境抓不到字（太短／空白）才退回覆蓋能力', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報',
+      instructions: 'x',
+      triggerHint: '',
+      assignedAgents: [],
+      capabilities: ['會員人物誌'],
+      composition: { sectionIds: ['promo_kpi'] },
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(true)
+  })
+
+  it('對話建立的技能（沒有 composition）：維持原本覆蓋能力優先，不受這次調整影響', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報',
+      instructions: 'x',
+      triggerHint: '當使用者詢問庫存查詢相關問題時',
+      assignedAgents: [],
+      capabilities: ['會員人物誌'],
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('庫存查詢'))).toBe(false)
+  })
+
   it('動態產生的觸發邊緣題目，不管關鍵字多寡都至少 5 題（反例題庫會補齊）', async () => {
     const store = useSkillStore()
     // 完全沒有任何可用內容：只能退回技能名稱當唯一的正例關鍵字
