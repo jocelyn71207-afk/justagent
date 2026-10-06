@@ -1307,13 +1307,13 @@ describe('notifyTestResult：AI 快速測試沒有全對時，左側對話主動
     expect(last.content).not.toContain('右側的測試報告')
   })
 
-  it('沒有全對的引導訊息帶「重新測試」「不改，直接啟用」兩個 action chip', () => {
+  it('沒有全對的引導訊息不附快捷按鈕——全部靠使用者自己打字（「重新測試」「不改，直接啟用」）', () => {
     const c = useSkillStudioConversation()
     c.startCreate()
     c.chooseMethod('chat')
     c.notifyTestResult({ total: 8, correct: 6, byTag: {} as any, summary: '' })
     const last = c.messages.value.at(-1)!
-    expect(last.actions?.map(a => a.label)).toEqual(['重新測試', '不改，直接啟用'])
+    expect(last.actions).toBeUndefined()
   })
 
   it('點「重新測試」：呼叫 store.generateAITestScenarios 重新出題、設定 requestTestTab 單次訊號、轉回 active（不是自由文字編輯）', async () => {

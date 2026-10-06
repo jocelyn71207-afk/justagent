@@ -434,7 +434,7 @@ describe('SkillStudioWorkspace', () => {
     expect(last.text()).toContain('60%')
   })
 
-  it('引導訊息點「重新測試」：工作區切到測試 tab（conv 自己切不了，靠 requestTestTab 訊號橋接）', async () => {
+  it('引導訊息後打字說「重新測試」：工作區切到測試 tab（conv 自己切不了，靠 requestTestTab 訊號橋接）', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
       const store = useSkillStore()
@@ -444,8 +444,12 @@ describe('SkillStudioWorkspace', () => {
       await flushPromises()
       expect(wrapper.findAll('.ssp-tab-btn')[0].classes()).toContain('is-active')
 
-      const retestChip = wrapper.findAll('.ssc-action-chip').find(b => b.text().includes('重新測試'))!
-      await retestChip.trigger('click')
+      const last = wrapper.findAll('.chat-bubble').at(-1)!
+      expect(last.find('.ssc-action-chip').exists()).toBe(false)
+
+      const input = wrapper.find('.SkillStudioChat input.custom-input')
+      await input.setValue('重新測試')
+      await input.trigger('keydown.enter')
       await vi.advanceTimersByTimeAsync(800)
       await flushPromises()
       expect(wrapper.findAll('.ssp-tab-btn')[1].classes()).toContain('is-active')

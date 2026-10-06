@@ -953,10 +953,11 @@ export function useSkillStudioConversation() {
     }
     const rate = Math.round((report.correct / report.total) * 100)
     gateStage.value = 'clarify'
+    // 不附快捷按鈕——全部靠使用者自己打字，下面 clarify 分支本來就認得
+    // 「重新測試」「不改，直接啟用」這兩種意圖（含同義的自由輸入）
     push({
       role: 'agent',
       content: `剛剛的測試沒有全部通過（答對 ${report.correct}/${report.total}，${rate}%），要不要跟我說說看哪裡需要調整？我會幫你補齊或修正做法內容。也可能是你剛剛答題時選錯了，或這次先不處理也沒關係。`,
-      actions: [ACTION_RETEST, ACTION_FORCE_ENABLE],
     })
   }
 
