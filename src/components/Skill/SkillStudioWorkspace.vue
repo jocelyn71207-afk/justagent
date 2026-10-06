@@ -65,16 +65,19 @@
       </div>
 
       <!-- 儲存／放棄固定在這裡，不隨右欄「技能預覽／測試」tab 切換而消失或跑到
-           看不到的地方——見 SkillStudioPreview.vue 的 hideFooter -->
+           看不到的地方——見 SkillStudioPreview.vue 的 hideFooter。
+           有測試紀錄時（不限 100%、不管技能原本有沒有啟用、存不存過檔）這顆鍵
+           升級成「儲存並啟用」：存檔之後順便走一次啟用確認流程；沒有測試紀錄
+           就是單純存檔，不碰啟用——見 handleSaveClick -->
       <div class="studio-save-footer">
         <button
           type="button"
           class="custom-btn custom-main-btn studio-save-btn"
-          :disabled="!conv.saveEnabled.value"
-          @click="onSave"
+          :disabled="!saveClickEnabled"
+          @click="handleSaveClick"
         >
           <i class="material-symbols-outlined">save</i>
-          {{ conv.mode.value === 'create' ? '儲存為個人技能' : '儲存修改' }}
+          {{ saveButtonLabel }}
         </button>
         <p v-if="conv.missingFieldsHint.value" class="studio-missing-hint">
           <i class="material-symbols-outlined">info</i>{{ conv.missingFieldsHint.value }}
@@ -83,6 +86,7 @@
           <i class="material-symbols-outlined">undo</i>放棄修改
         </button>
       </div>
+      <SkillEnableFlow ref="enableFlowRef" />
     </div>
     <div class="studio-side-col">
       <SkillStudioPreview
@@ -93,9 +97,11 @@
         :draft="conv.draft.value"
         :mode="conv.mode.value"
         :saved-skill-id="conv.savedSkillId.value"
+        :test-skill-id="conv.testSkillId.value"
         :is-dirty="conv.isDirty.value"
         :can-save="conv.canSave.value"
         :name-conflict="nameConflict"
+        :request-save-draft="conv.save"
         @save="onSave"
         @discard="onDiscard"
       />
@@ -112,6 +118,7 @@ import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
 import SkillMethodChooser from '@/components/Skill/SkillMethodChooser.vue'
 import SkillBlockComposer from '@/components/Skill/SkillBlockComposer.vue'
 import SkillBlockBasicsForm from '@/components/Skill/SkillBlockBasicsForm.vue'
+import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 import { useSkillStore } from '@/stores/skillStore'
 import { useAiviewerStore } from '@/stores/AiViewerStore'
 import { useSkillStudioConversation } from '@/composables/useSkillStudioConversation'
@@ -137,11 +144,29 @@ const blockStep = ref<'basics' | 'compose'>('basics')
 // 方案三：conv4 的建議卡按「是」交接過來的來源；只在真的套用了交接草稿時設，
 // 換去別的技能／重新開一顆新技能後清空——「返回原對話」連結才不會誤導
 const handoffOrigin = ref<SkillHandoffOrigin | null>(null)
+const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
 
 const nameConflict = computed(() => {
   const n = conv.draft.value.name.trim()
   return !!n && store.myPersonalSkills.some(s => s.id !== conv.savedSkillId.value && s.name === n)
 })
+
+// 有沒有一份屬於目前這份草稿（不管存不存過檔）的測試紀錄——不限 100%，
+// 也不管技能原本是不是已經啟用中，只要測過就算
+const hasTestRecord = computed(() =>
+  store.aiTestScenariosSkillId === conv.testSkillId.value && !!store.aiTestReport
+)
+
+const saveButtonLabel = computed(() => {
+  if (hasTestRecord.value) return '儲存並啟用'
+  return conv.mode.value === 'create' ? '儲存為個人技能' : '儲存修改'
+})
+
+// 「儲存並啟用」只要草稿本身是完整、可存的狀態（canSave）就能點，不用額外要求
+// isDirty——使用者可能只是重新測了一次、內容其實沒改，但仍然想走一次啟用確認
+// 流程（例如重新確認 Agent 指派）。沒有測試紀錄的一般存檔維持原本 saveEnabled
+// 的規則（要有改動才能按）
+const saveClickEnabled = computed(() => hasTestRecord.value ? conv.canSave.value : conv.saveEnabled.value)
 
 // AI 快速測試完成（store.aiTestReport 從 null 變成一份報告，一輪測驗只會發生一次
 // 這樣的轉換——見 _computeAITestReport 在所有題目答完前都是 no-op）：交給 conv 判斷
@@ -231,6 +256,31 @@ function onSave() {
   } else {
     popDialog.toast('已儲存修改')
   }
+}
+
+// 有測試紀錄：存檔之後順便走一次啟用確認流程，不管技能原本有沒有啟用中——
+// 已經啟用的話，confirmed 不會再把它 toggle 成停用（見下面 !skill.isEnabled），
+// 單純更新 assignedAgents／把這次測試結果透過 override 或正常流程記上去
+async function handleSaveAndEnable() {
+  const id = conv.save()
+  if (!id) return
+  const skill = store.findSkill(id)
+  if (!skill) return
+  const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
+  // cancelled／goToTest／revise 都是留在原地：這裡本來就是編輯畫面本身，
+  // 「去修改技能內容」「前往測試」沒有別的地方好導過去，單純關掉對話框就好
+  if (outcome.type !== 'confirmed') return
+  store.setAssignedAgents(skill.id, outcome.agents)
+  if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
+  else if (!skill.isEnabled) store.toggleSkill(skill.id)
+}
+
+function handleSaveClick() {
+  if (hasTestRecord.value) {
+    handleSaveAndEnable()
+    return
+  }
+  onSave()
 }
 
 // 放棄修改：草稿只是從已儲存版本複製出來改的，從沒呼叫過 save() 就不會寫回原本的

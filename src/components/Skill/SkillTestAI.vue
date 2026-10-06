@@ -102,6 +102,15 @@
           >
             <i class="material-symbols-outlined">check_circle</i>啟用技能
           </button>
+          <button
+            v-else-if="showSaveAndEnable"
+            type="button"
+            class="custom-btn custom-main-btn ai-save-enable-btn"
+            :disabled="!props.canSave"
+            @click="handleSaveAndEnable"
+          >
+            <i class="material-symbols-outlined">save</i>儲存並啟用
+          </button>
         </div>
       </div>
     </template>
@@ -114,10 +123,24 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSkillStore } from '@/stores/skillStore'
-import type { AITestTag } from '@/stores/skillStore'
+import type { AITestTag, TriggerEdgeSource } from '@/stores/skillStore'
 import SkillEnableFlow from '@/components/Skill/SkillEnableFlow.vue'
 
-const props = defineProps<{ skillId: string }>()
+// draftContext：抽屜裡測試還沒存檔的草稿時，store 裡找不到這顆技能（或技能存在
+// 但草稿已經改過還沒存），用這個當作組題關鍵字的來源。獨立測試沙盒（一定是已存檔
+// 的技能）不用傳這個，退回讀 store 裡的技能資料
+// canSave：還沒存檔時，「儲存並啟用」按鈕要知道草稿目前能不能存（名稱／指令等
+// 必填欄位有沒有填），不能存的時候要讓按鈕反灰，不能讓使用者點了卻靜默失敗。
+// requestSaveDraft：還沒存檔的草稿想「存檔並啟用」一次做完，但這個元件本身不知道怎麼
+// 存草稿（那是 conv.save() 的事）——用一個同步的 callback prop 直接拿到新技能 id，
+// 不用靠 emit 再等 props.skillId 反應更新那種跨好幾層元件的非同步 prop 傳遞，
+// 省掉一輪 nextTick 等待、也比較好測試
+const props = defineProps<{
+  skillId: string
+  draftContext?: TriggerEdgeSource
+  canSave?: boolean
+  requestSaveDraft?: () => string | null
+}>()
 const store = useSkillStore()
 const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
 const router = useRouter()
@@ -154,6 +177,33 @@ async function handleEnableClick() {
   else store.toggleSkill(skill.id)
 }
 
+// 還沒存檔、但已經有一份測試紀錄（不限 100%——沒全對的話存檔後會先看到
+// 「還不能啟用」閘門對話框，使用者可以當場選視為通過／去修改／取消，
+// 不用先存檔再回來找另一顆按鈕重新走一次）
+const showSaveAndEnable = computed(() => {
+  if (store.findSkill(props.skillId)) return false
+  if (store.aiTestScenariosSkillId !== props.skillId) return false
+  return !!store.aiTestReport && store.aiTestReport.total > 0
+})
+
+async function handleSaveAndEnable() {
+  const newId = props.requestSaveDraft?.()
+  if (!newId) return  // canSave 是 false，存檔沒有真的發生
+  const skill = store.findSkill(newId)
+  if (!skill) return
+  const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
+  if (outcome.type === 'cancelled') return
+  if (outcome.type === 'revise') {
+    router.push({ path: '/view/Skills', query: { skillId: skill.id } })
+    return
+  }
+  // 使用者在閘門對話框選「前往測試」：已經就在測試頁面了，不用額外導頁
+  if (outcome.type === 'goToTest') return
+  store.setAssignedAgents(skill.id, outcome.agents)
+  if (outcome.wasOverridden) store.overrideAndEnableSkill(skill.id)
+  else store.toggleSkill(skill.id)
+}
+
 const TAG_LABELS: Record<AITestTag, string> = {
   normal: '正常流程',
   boundary: '邊界情況',
@@ -174,7 +224,7 @@ const ratePercent = computed(() => {
 })
 
 function regenerate() {
-  store.generateAITestScenarios(props.skillId)
+  store.generateAITestScenarios(props.skillId, props.draftContext)
 }
 
 function answer(scenarioId: string, userAnswer: boolean) {

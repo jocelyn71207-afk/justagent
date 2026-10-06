@@ -392,6 +392,17 @@ export function useSkillStudioConversation() {
 
   const mode = ref<StudioMode>('create')
   const savedSkillId = ref<string | null>(null)
+  // 還沒存檔的草稿想先測試：AI 測試狀態是用 id 當 key 掛在 store 上的，草稿沒有
+  // 真正的技能 id 可用，所以產生一個不會跟真正技能 id 撞衫的佔位 id。每次開始
+  // 一份全新草稿（startCreate）都重新產生一個，這樣切換到另一份全新草稿時，
+  // store 的 ensureAITestStateForSkill 才能正確判斷「這是不同一份」、清掉舊測試結果
+  function generateDraftTestId(): string {
+    return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  }
+  const draftTestId = ref(generateDraftTestId())
+  // 任何需要「這份草稿的 AI 測試要掛在哪個 id 底下」的地方都讀這個，不要直接讀
+  // savedSkillId——已經存檔就用真正的技能 id，還沒存檔就退回草稿佔位 id
+  const testSkillId = computed(() => savedSkillId.value ?? draftTestId.value)
   const draft = ref<SkillDraft>(emptyDraft())
   const snapshot = ref(serialize(draft.value))
   const messages = ref<StudioMessage[]>([])
@@ -655,10 +666,15 @@ export function useSkillStudioConversation() {
       // 自己答題答錯了想重新測，或根本不在意這次沒全對、先不改直接啟用——兩者都
       // 不是要改技能內容，提早判斷掉，不要落到下面的自由文字編輯規則
       if (t === ACTION_RETEST.label || /重新測|重測|換一批|再測一次|重新出題/.test(t)) {
-        if (savedSkillId.value) {
-          store.generateAITestScenarios(savedSkillId.value)
-          requestTestTab.value = true
-        }
+        // testSkillId：還沒存檔就用草稿佔位 id，draftContext 補上草稿目前的
+        // name／triggerHint／capabilities 當作組題關鍵字的來源（store 裡還找不到
+        // 這顆技能，或技能存在但草稿已經改過還沒存）
+        store.generateAITestScenarios(testSkillId.value, {
+          name: draft.value.name,
+          triggerHint: draft.value.triggerHint,
+          capabilities: draft.value.capabilities,
+        })
+        requestTestTab.value = true
         gateStage.value = 'active'
         push({ role: 'agent', content: '好，已經換一批新題目了，到「測試」tab 繼續作答。' })
         return
@@ -724,6 +740,7 @@ export function useSkillStudioConversation() {
   function startCreate(prefill?: Partial<SkillDraft>, openingMessage?: string): void {
     mode.value = 'create'
     savedSkillId.value = null
+    draftTestId.value = generateDraftTestId()
     const base = emptyDraft()
     draft.value = {
       ...base,
@@ -887,6 +904,9 @@ export function useSkillStudioConversation() {
         creationMethod: d.method === 'blocks' ? 'manual' : 'ai_assisted',
       })
       mode.value = 'edit'
+      // 存檔前如果已經用草稿佔位 id 測過，把測試結果轉記到這個剛拿到的真正 id 上，
+      // 不要讓 testSkillId 從 draftTestId 換成 id 後，被當成「另一顆技能」清掉
+      store.migrateAITestState(draftTestId.value, id)
       savedSkillId.value = id
     } else if (savedSkillId.value) {
       store.applyStudioPatch(savedSkillId.value, {
@@ -915,18 +935,29 @@ export function useSkillStudioConversation() {
   function notifyTestResult(report: AITestReport): void {
     if (report.total === 0) return
     if (report.correct === report.total) {
-      push({
-        role: 'agent',
-        content: '太好了，這次全部答對了！到右側的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。',
-      })
+      // 「啟用技能」要有真正存進 store、而且還沒啟用的技能才會出現（isFullPass
+      // 的條件，見 SkillTestAI.vue）——這裡的引導訊息要跟那個條件對齊，不然會叫
+      // 使用者去點一個根本不存在的按鈕：還沒存檔先引導儲存；已經是啟用中的技能
+      // （例如修改一顆早就上線的技能，這次又測到滿分）沒有按鈕可點，單純恭喜就好
+      const existingSkill = savedSkillId.value ? store.findSkill(savedSkillId.value) : null
+      let content: string
+      if (!savedSkillId.value) {
+        content = '太好了，這次全部答對了！先按左下角「儲存」，存檔後就能到測試報告點「啟用技能」了。'
+      } else if (existingSkill?.isEnabled) {
+        content = '太好了，這次全部答對了！這顆技能本來就是啟用中的狀態，不用再做其他動作。'
+      } else {
+        content = '太好了，這次全部答對了！到右側的測試報告點「啟用技能」，確認一下哪些 Agent 可以用之後就能上線了。'
+      }
+      push({ role: 'agent', content })
       return
     }
     const rate = Math.round((report.correct / report.total) * 100)
     gateStage.value = 'clarify'
+    // 不附快捷按鈕——全部靠使用者自己打字，下面 clarify 分支本來就認得
+    // 「重新測試」「不改，直接啟用」這兩種意圖（含同義的自由輸入）
     push({
       role: 'agent',
       content: `剛剛的測試沒有全部通過（答對 ${report.correct}/${report.total}，${rate}%），要不要跟我說說看哪裡需要調整？我會幫你補齊或修正做法內容。也可能是你剛剛答題時選錯了，或這次先不處理也沒關係。`,
-      actions: [ACTION_RETEST, ACTION_FORCE_ENABLE],
     })
   }
 
@@ -973,7 +1004,7 @@ export function useSkillStudioConversation() {
   }
 
   return {
-    mode, savedSkillId, draft, messages, isRunning, isDirty, canSave, saveEnabled, missingFieldsHint, suggestionChips, gateStage, requestTestTab, requestNewSkillDrawer,
+    mode, savedSkillId, testSkillId, draft, messages, isRunning, isDirty, canSave, saveEnabled, missingFieldsHint, suggestionChips, gateStage, requestTestTab, requestNewSkillDrawer,
     startCreate, chooseMethod, updateBlocks, updateBlockDescription, updateBlockTriggerHint, updateBlockCapabilities, updateBlockAssignedAgents, updateBlockKeywords,
     loadSkill, send, save, updateFiles, notifyTestResult, toSnapshot, hydrate, detachSavedSkill,
   }

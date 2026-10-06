@@ -4,9 +4,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import SkillStudioPreview from '@/components/Skill/SkillStudioPreview.vue'
 import { emptyDraft } from '@/composables/useSkillStudioConversation'
+import { useSkillStore } from '@/stores/skillStore'
 
-function mountPreview(over: Partial<Record<string, unknown>> = {}) {
+function mountPreview(over: Partial<Record<string, unknown>> = {}, beforeMount?: () => void) {
   setActivePinia(createPinia())
+  beforeMount?.()
   const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -121,19 +123,45 @@ describe('SkillStudioPreview', () => {
     expect(push).toHaveBeenLastCalledWith({ path: '/view/SkillTest', query: { skillId: 'p1' } })
   })
 
-  it('測試 tab：未儲存顯示空狀態與儲存鈕；已儲存掛載 SkillTestAI 並帶 skillId', async () => {
-    const w = mountPreview({ activeTab: 'test' })
-    expect(w.text()).toContain('先儲存技能')
-    expect(w.findComponent({ name: 'SkillTestAI' }).exists()).toBe(false)
-    await w.setProps({ savedSkillId: 'p1', mode: 'edit' })
+  it('測試 tab：還沒存檔也能測，帶草稿佔位 testSkillId；存檔後改帶真正的 skillId', async () => {
+    const w = mountPreview({ activeTab: 'test', testSkillId: 'draft-xyz' })
     const ai = w.findComponent({ name: 'SkillTestAI' })
     expect(ai.exists()).toBe(true)
-    expect(ai.attributes('skillid') ?? ai.props('skillId')).toBe('p1')
+    expect(ai.attributes('skillid') ?? ai.props('skillId')).toBe('draft-xyz')
+    await w.setProps({ savedSkillId: 'p1', testSkillId: 'p1', mode: 'edit' })
+    const ai2 = w.findComponent({ name: 'SkillTestAI' })
+    expect(ai2.attributes('skillid') ?? ai2.props('skillId')).toBe('p1')
   })
 
-  it('已儲存但 isDirty 時，測試 tab 頂端顯示「目前測試的是上次儲存的版本」提示', () => {
-    const w = mountPreview({ activeTab: 'test', savedSkillId: 'p1', mode: 'edit', isDirty: true })
-    expect(w.text()).toContain('目前測試的是上次儲存的版本')
+  it('沒有 testSkillId 也沒有 savedSkillId（理論上不會發生）：不掛載 SkillTestAI', () => {
+    const w = mountPreview({ activeTab: 'test' })
+    expect(w.findComponent({ name: 'SkillTestAI' }).exists()).toBe(false)
+  })
+
+  it('題目跟目前草稿內容不一致時，測試 tab 頂端顯示「內容已變更，建議重新生成測試情境」提示', () => {
+    const w = mountPreview(
+      { activeTab: 'test', testSkillId: 'draft-xyz', draft: { ...emptyDraft(), name: '新名稱' } },
+      () => {
+        const store = useSkillStore()
+        store.aiTestScenariosSkillId = 'draft-xyz'
+        store.aiTestScenariosSnapshot = JSON.stringify({ name: '舊名稱', triggerHint: '', capabilities: [] })
+        store.aiTestReport = { total: 3, correct: 3, byTag: { normal: { total: 1, correct: 1 }, boundary: { total: 1, correct: 1 }, trigger_edge: { total: 1, correct: 1 } }, summary: '' }
+      }
+    )
+    expect(w.text()).toContain('內容已變更，建議重新生成測試情境')
+  })
+
+  it('題目跟目前草稿內容一致時，不顯示重新生成提示', () => {
+    const w = mountPreview(
+      { activeTab: 'test', testSkillId: 'draft-xyz', draft: { ...emptyDraft(), name: '同名稱' } },
+      () => {
+        const store = useSkillStore()
+        store.aiTestScenariosSkillId = 'draft-xyz'
+        store.aiTestScenariosSnapshot = JSON.stringify({ name: '同名稱', triggerHint: '', capabilities: [] })
+        store.aiTestReport = { total: 3, correct: 3, byTag: { normal: { total: 1, correct: 1 }, boundary: { total: 1, correct: 1 }, trigger_edge: { total: 1, correct: 1 } }, summary: '' }
+      }
+    )
+    expect(w.text()).not.toContain('內容已變更')
   })
 
   it('點 tab 按鈕 emit update:activeTab', async () => {
@@ -151,9 +179,9 @@ describe('SkillStudioPreview', () => {
   })
 
   it('hideTabs：不渲染 .ssp-tabs，但 activeTab 仍決定內容', () => {
-    const w = mountPreview({ hideTabs: true, activeTab: 'test' })
+    const w = mountPreview({ hideTabs: true, activeTab: 'test', testSkillId: 'draft-xyz' })
     expect(w.find('.ssp-tabs').exists()).toBe(false)
-    expect(w.text()).toContain('先儲存技能')
+    expect(w.findComponent({ name: 'SkillTestAI' }).exists()).toBe(true)
     const normal = mountPreview()
     expect(normal.find('.ssp-tabs').exists()).toBe(true)
   })

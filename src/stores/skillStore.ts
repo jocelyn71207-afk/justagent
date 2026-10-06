@@ -812,43 +812,64 @@ function extractTriggerKeywords(triggerHint: string | undefined): string[] {
     .slice(0, 4)
 }
 
+// 跟這顆技能完全無關的關鍵字組合，不然整組題目「永遠選該觸發」就沒有鑑別度。
+// 備好 4 組，對應關鍵字很少（正例題目也跟著少）的技能，仍然湊得滿最低題數
+const NEGATIVE_KEYWORD_SETS = ['天氣 心情 電影', '旅遊 美食 運動', '股票 房價 利率', '音樂 遊戲 寵物']
+
 // MOCK_AI_SCENARIO_TEMPLATES 只收錄了少數幾顆精心撰寫的系統／企業技能；其餘絕大多數
 // 都是使用者自己建立的個人技能，原本落到固定寫死的 DEFAULT_AI_SCENARIOS，裡面「請執行這個
 // 技能的主要功能」「今天天氣真好」這類「正常流程」「邊界情況」範例句子其實跟這顆技能的
 // 實際內容完全無關，對使用者來說沒有驗證意義——那兩個標籤需要真正理解技能完整語意才寫得出
 // 有意義的題目，沒辦法無中生有。只留「觸發邊緣」：用這顆技能自己的覆蓋能力標籤（沒有的話
 // 退回觸發情境裡的關鍵字，再沒有就用技能名稱本身）組成片語輸入，測的是「關鍵字夠不夠精準
-// 讓它正確判斷要不要觸發」，這點所有技能都適用、也都跟內容本身相關
-function generateDynamicTriggerEdgeScenarios(skill: Skill | undefined): ScenarioTemplate[] {
-  const name = skill?.name?.trim() || '這顆技能'
-  const keywords = skill?.capabilities?.length ? skill.capabilities : extractTriggerKeywords(skill?.triggerHint)
+// 讓它正確判斷要不要觸發」，這點所有技能都適用、也都跟內容本身相關。
+// 題數至少 5 題：關鍵字夠多時正例最多到 4 題、反例固定 2 題；關鍵字很少（甚至只有技能名稱
+// 這一個）時正例可能只有 1 題，改從反例池多補幾題撐到底線，而不是讓題目少到沒驗證意義
+// 只收 name／triggerHint／capabilities／composition 四個欄位：草稿還沒存檔時沒有完整的
+// Skill 物件可用，只需要這四個就能組題目關鍵字，不用整顆 Skill
+export type TriggerEdgeSource = Pick<Skill, 'name' | 'triggerHint' | 'capabilities' | 'composition'>
 
-  const scenarios: ScenarioTemplate[] = []
-  for (let i = 0; i < keywords.length && scenarios.length < 3; i += 2) {
-    const group = keywords.slice(i, i + 2)
-    scenarios.push({
+function generateDynamicTriggerEdgeScenarios(skill: TriggerEdgeSource | undefined): ScenarioTemplate[] {
+  const MIN_TOTAL = 5
+  const name = skill?.name?.trim() || '這顆技能'
+  const fromTriggerHint = extractTriggerKeywords(skill?.triggerHint)
+  const fromCapabilities = skill?.capabilities ?? []
+  // 積木組裝的技能（有 composition）：「觸發情境」是使用者在「基本設定」步驟手寫、
+  // 專門描述「什麼時候該觸發」的必填欄位，比覆蓋能力（偏「這顆技能做什麼」而非
+  // 「什麼時候該用」）更貼近是非題要驗證的東西，優先用它抓關鍵字，沒抓到字才退回
+  // 覆蓋能力。對話建立的技能沒有這層區分（兩個欄位都是 AI 推導或口語補充的，沒有
+  // 「哪個更權威」的差異），維持原本「覆蓋能力優先」不變
+  const keywords = skill?.composition
+    ? (fromTriggerHint.length ? fromTriggerHint : fromCapabilities)
+    : (fromCapabilities.length ? fromCapabilities : fromTriggerHint)
+  const pool = keywords.length ? keywords : [name]
+
+  const positives: ScenarioTemplate[] = pool.slice(0, 3).map(kw => ({
+    tag: 'trigger_edge',
+    input: kw,
+    expectedTrigger: true,
+    expectedBehavior: `「${kw}」是「${name}」涵蓋的關鍵字，應該觸發。`,
+  }))
+  // 關鍵字不只一個才疊一句「全部關鍵字湊在一起」的片語輸入；只有一個關鍵字（含退回技能
+  // 名稱本身）的話疊出來會是同一個詞重複兩次，沒有意義
+  if (pool.length > 1) {
+    positives.push({
       tag: 'trigger_edge',
-      input: group.join(' '),
+      input: pool.join(' '),
       expectedTrigger: true,
       expectedBehavior: `雖然只有關鍵字沒有完整句子，但都是「${name}」涵蓋的關鍵字，應該觸發。`,
     })
   }
-  if (scenarios.length === 0) {
-    scenarios.push({
-      tag: 'trigger_edge',
-      input: name,
-      expectedTrigger: true,
-      expectedBehavior: `直接是技能名稱本身的關鍵字，應該觸發。`,
-    })
-  }
-  // 反例：跟這顆技能完全無關的關鍵字組合，不然整組題目「永遠選該觸發」就沒有鑑別度
-  scenarios.push({
+
+  const negativeCount = Math.max(2, MIN_TOTAL - positives.length)
+  const negatives: ScenarioTemplate[] = NEGATIVE_KEYWORD_SETS.slice(0, negativeCount).map(kws => ({
     tag: 'trigger_edge',
-    input: '天氣 心情 電影',
+    input: kws,
     expectedTrigger: false,
     expectedBehavior: `這些關鍵字跟「${name}」的能力範圍無關，不應該觸發。`,
-  })
-  return scenarios
+  }))
+
+  return [...positives, ...negatives]
 }
 
 const MOCK_PERSONAL_SKILLS: Skill[] = [
@@ -1190,6 +1211,10 @@ export const useSkillStore = defineStore('skillStore', () => {
   const aiTestScenarios = ref<AITestScenario[]>([])
   const aiTestReport = ref<AITestReport | null>(null)
   const aiTestScenariosSkillId = ref<string | null>(null)
+  // 產生題目當下用來組關鍵字的 name／triggerHint／capabilities 快照（JSON 字串）：
+  // 跟「目前的草稿內容」比對，用來判斷題目是不是已經跟不上最新的編輯內容，
+  // 跟存不存檔無關——草稿還沒存檔也一樣可能需要提醒「重新生成」
+  const aiTestScenariosSnapshot = ref<string | null>(null)
   const aiTestIsGenerating = ref(false)
 
   const flatSkills = computed<Skill[]>(() => {
@@ -1909,6 +1934,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestScenarios.value = []
     aiTestReport.value = null
     aiTestScenariosSkillId.value = null
+    aiTestScenariosSnapshot.value = null
     aiTestIsGenerating.value = false
   }
 
@@ -1920,17 +1946,42 @@ export const useSkillStore = defineStore('skillStore', () => {
       aiTestScenarios.value = []
       aiTestReport.value = null
       aiTestScenariosSkillId.value = null
+      aiTestScenariosSnapshot.value = null
     }
   }
 
-  async function generateAITestScenarios(skillId: string): Promise<void> {
+  // draftContext：還沒存檔的草稿想先測試時，store 裡找不到這顆技能（或還是舊版本），
+  // 用呼叫端目前編輯中的 name／triggerHint／capabilities 當作組題關鍵字的來源
+  // 還沒存檔的草稿先測試過，存檔那一刻才拿到真正的技能 id：測試結果是同一份草稿
+  // 測出來的，不該因為 id 從佔位的草稿 id 換成真正的技能 id，就被
+  // ensureAITestStateForSkill 誤判成「換了一顆技能」而清掉。已經有完整報告的話，
+  // 也把答對比例寫回這顆剛存檔的技能，使用者不用為了同一份內容重新作答一次
+  function migrateAITestState(fromId: string, toId: string): void {
+    if (aiTestScenariosSkillId.value !== fromId) return
+    aiTestScenariosSkillId.value = toId
+    const report = aiTestReport.value
+    if (!report || report.total === 0) return
+    const skill = findSkill(toId)
+    if (!skill) return
+    const rate = report.correct / report.total
+    skill.aiTestPassRate = rate
+    if (rate === 1) skill.aiTestOverridden = false
+  }
+
+  async function generateAITestScenarios(skillId: string, draftContext?: TriggerEdgeSource): Promise<void> {
     aiTestIsGenerating.value = true
     aiTestScenarios.value = []
     aiTestReport.value = null
     aiTestScenariosSkillId.value = skillId
     await new Promise(r => setTimeout(r, 900))
     const skill = findSkill(skillId)
-    const templates = MOCK_AI_SCENARIO_TEMPLATES[skillId] ?? generateDynamicTriggerEdgeScenarios(skill)
+    const source: TriggerEdgeSource | undefined = skill ?? draftContext
+    aiTestScenariosSnapshot.value = JSON.stringify({
+      name: source?.name ?? '',
+      triggerHint: source?.triggerHint ?? '',
+      capabilities: source?.capabilities ?? [],
+    })
+    const templates = MOCK_AI_SCENARIO_TEMPLATES[skillId] ?? generateDynamicTriggerEdgeScenarios(source)
     aiTestScenarios.value = templates.map((t, i) => ({
       ...t,
       id: `ai-sc-${skillId}-${i}`,
@@ -2057,6 +2108,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     aiTestScenarios,
     aiTestReport,
     aiTestScenariosSkillId,
+    aiTestScenariosSnapshot,
+    migrateAITestState,
     aiTestIsGenerating,
     flatSkills,
     enabledCount,

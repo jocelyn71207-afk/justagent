@@ -100,12 +100,141 @@ describe('generateAITestScenarios', () => {
     expect(store.aiTestScenarios.some(s => s.input === '裸技能')).toBe(true)
   })
 
+  it('積木組裝的技能（有 composition）：觸發情境優先於覆蓋能力，就算覆蓋能力有填也不用', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報',
+      instructions: 'x',
+      triggerHint: '當使用者詢問庫存查詢相關問題時',
+      assignedAgents: [],
+      capabilities: ['會員人物誌', '活動排行'],
+      composition: { sectionIds: ['promo_kpi'] },
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.some(s => s.input.includes('庫存查詢'))).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(false)
+  })
+
+  it('積木組裝的技能：觸發情境抓不到字（太短／空白）才退回覆蓋能力', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報',
+      instructions: 'x',
+      triggerHint: '',
+      assignedAgents: [],
+      capabilities: ['會員人物誌'],
+      composition: { sectionIds: ['promo_kpi'] },
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(true)
+  })
+
+  it('對話建立的技能（沒有 composition）：維持原本覆蓋能力優先，不受這次調整影響', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '行銷週報',
+      instructions: 'x',
+      triggerHint: '當使用者詢問庫存查詢相關問題時',
+      assignedAgents: [],
+      capabilities: ['會員人物誌'],
+    })
+    await store.generateAITestScenarios(id)
+    expect(store.aiTestScenarios.some(s => s.input.includes('會員人物誌'))).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('庫存查詢'))).toBe(false)
+  })
+
+  it('動態產生的觸發邊緣題目，不管關鍵字多寡都至少 5 題（反例題庫會補齊）', async () => {
+    const store = useSkillStore()
+    // 完全沒有任何可用內容：只能退回技能名稱當唯一的正例關鍵字
+    const bare = store.createPersonalSkill({ name: '裸技能', instructions: 'x', triggerHint: '', assignedAgents: [] })
+    await store.generateAITestScenarios(bare)
+    expect(store.aiTestScenarios.length).toBeGreaterThanOrEqual(5)
+    // 只有一個關鍵字時不該出現「關鍵字重複兩次」的疊字題目
+    expect(store.aiTestScenarios.some(s => s.input === '裸技能 裸技能')).toBe(false)
+
+    // 覆蓋能力標籤很多：正例題目變多，但不會爆量也一樣有反例
+    const rich = store.createPersonalSkill({
+      name: '多能力技能', instructions: 'x', triggerHint: 'y', assignedAgents: [],
+      capabilities: ['能力A', '能力B', '能力C', '能力D', '能力E'],
+    })
+    await store.generateAITestScenarios(rich)
+    expect(store.aiTestScenarios.length).toBeGreaterThanOrEqual(5)
+    expect(store.aiTestScenarios.some(s => s.expectedTrigger === false)).toBe(true)
+  })
+
   it('resets previous scenarios and report when called again', async () => {
     const store = useSkillStore()
     await store.generateAITestScenarios('sys-cs-001')
     store.aiTestScenarios[0].status = 'correct'
     await store.generateAITestScenarios('sys-cs-001')
     expect(store.aiTestScenarios.every(s => s.status === 'pending')).toBe(true)
+  })
+
+  // 還沒存檔的草稿想先測試：store 裡還沒有這顆技能（或這個 id 根本不是真正的技能
+  // id，只是草稿佔位 id），draftContext 補上目前草稿的 name／triggerHint／capabilities
+  // 當作組題關鍵字的來源
+  it('skillId 在 store 裡找不到技能、但有帶 draftContext：用 draftContext 的內容組題目關鍵字', async () => {
+    const store = useSkillStore()
+    await store.generateAITestScenarios('draft-abc', {
+      name: '草稿技能',
+      triggerHint: '當使用者詢問庫存時',
+      capabilities: ['庫存查詢', '缺貨提醒'],
+    })
+    expect(store.aiTestScenarios.every(s => s.tag === 'trigger_edge')).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('庫存查詢'))).toBe(true)
+  })
+
+  it('skillId 真的對應到技能：優先用 store 裡的技能內容，忽略 draftContext（例如技能已存檔但 draftContext 是舊的）', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({
+      name: '已存檔技能', instructions: 'x', triggerHint: 'y', assignedAgents: [], capabilities: ['真正的能力'],
+    })
+    await store.generateAITestScenarios(id, { name: '不該被用到', triggerHint: '', capabilities: ['不該出現的標籤'] })
+    expect(store.aiTestScenarios.some(s => s.input.includes('真正的能力'))).toBe(true)
+    expect(store.aiTestScenarios.some(s => s.input.includes('不該出現的標籤'))).toBe(false)
+  })
+
+  it('每次產生題目都記下當下的 name／triggerHint／capabilities 快照', async () => {
+    const store = useSkillStore()
+    await store.generateAITestScenarios('draft-abc', { name: '草稿技能', triggerHint: 'y', capabilities: ['a'] })
+    expect(store.aiTestScenariosSnapshot).toBe(JSON.stringify({ name: '草稿技能', triggerHint: 'y', capabilities: ['a'] }))
+  })
+})
+
+describe('migrateAITestState', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('草稿佔位 id 換成真正的技能 id：aiTestScenariosSkillId 跟著改，不會被當成換了一顆技能而清掉', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '剛存檔的技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios('draft-abc', { name: '剛存檔的技能', triggerHint: 'y', capabilities: [] })
+    store.migrateAITestState('draft-abc', id)
+    expect(store.aiTestScenariosSkillId).toBe(id)
+    expect(store.aiTestScenarios.length).toBeGreaterThan(0)
+    // 原本因為 id 不對應不到技能而沒寫入的 ensureAITestStateForSkill，現在用新 id 檢查應該維持現狀
+    store.ensureAITestStateForSkill(id)
+    expect(store.aiTestScenariosSkillId).toBe(id)
+  })
+
+  it('已經有完整測試報告：把答對比例寫回剛存檔的技能，不用為了同樣內容重新作答一次', async () => {
+    const store = useSkillStore()
+    const id = store.createPersonalSkill({ name: '剛存檔的技能', instructions: 'x', triggerHint: 'y', assignedAgents: [] })
+    await store.generateAITestScenarios('draft-abc', { name: '剛存檔的技能', triggerHint: 'y', capabilities: [] })
+    for (const sc of [...store.aiTestScenarios]) {
+      store.answerAITestScenario('draft-abc', sc.id, sc.expectedTrigger)
+    }
+    expect(store.aiTestReport!.correct).toBe(store.aiTestReport!.total)
+
+    store.migrateAITestState('draft-abc', id)
+    expect(store.findSkill(id)!.aiTestPassRate).toBe(1)
+  })
+
+  it('fromId 跟目前的 aiTestScenariosSkillId 不一致：什麼都不做（例如使用者沒測過就直接存檔）', () => {
+    const store = useSkillStore()
+    store.migrateAITestState('draft-never-tested', 'personal-some-id')
+    expect(store.aiTestScenariosSkillId).toBeNull()
   })
 })
 
