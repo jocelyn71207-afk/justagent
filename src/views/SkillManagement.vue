@@ -254,6 +254,7 @@
       @delete="handlePersonalDelete"
       @duplicate="handleDuplicate"
       @submit="handlePersonalSubmit"
+      @withdraw="handlePersonalWithdraw"
       @review="(skillId, versionId) => { detailSkillId = null; openReview(skillId, versionId) }"
       @open-upstream-update="openUpstreamUpdate"
     />
@@ -975,6 +976,13 @@ function confirmSubmitSkill() {
   submitConfirmSkill.value = null
   submitNote.value = ''
   submitVersionName.value = ''
+}
+
+function handlePersonalWithdraw(skill: Skill) {
+  popDialog.confirm('確定要撤回此審核申請嗎？撤回後技能會回到「可使用」狀態。', '撤回', '取消', () => {
+    store.withdrawPersonalSkill(skill.id)
+    popDialog.toast('已撤回審核', 2000)
+  })
 }
 
 function handlePersonalDelete(skill: Skill) {

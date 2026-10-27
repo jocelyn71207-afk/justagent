@@ -277,6 +277,43 @@ describe('skillStore', () => {
       expect(store.myPersonalSkills.find(s => s.id === skill.id)!.updateTargetId).toBeUndefined()
     })
 
+    it('withdrawPersonalSkill 撤回後 personalStatus 回到 available，並清掉這次送審資料', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills[0]
+      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本', 'team', '客服組')
+
+      store.withdrawPersonalSkill(skill.id)
+
+      const after = store.myPersonalSkills.find(s => s.id === skill.id)!
+      expect(after.personalStatus).toBe('available')
+      expect(after.submitNote).toBeUndefined()
+      expect(after.submitMode).toBeUndefined()
+      expect(after.targetScope).toBeUndefined()
+      expect(after.targetTeamName).toBeUndefined()
+      expect(after.submittedBy).toBeUndefined()
+    })
+
+    it('withdrawPersonalSkill 在 version_update 模式下，移除掛在目標 Library 技能上的審核中版本', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.derivedFrom)!
+      const before = store.getSkillVersions(skill.derivedFrom!).length
+      store.submitPersonalSkill(skill.id, 'version_update', '改動說明', 'VIP 退貨優惠更新')
+
+      store.withdrawPersonalSkill(skill.id)
+
+      const versions = store.getSkillVersions(skill.derivedFrom!)
+      expect(versions.length).toBe(before)
+      expect(versions.some(v => v.versionName === 'VIP 退貨優惠更新')).toBe(false)
+      expect(store.myPersonalSkills.find(s => s.id === skill.id)!.updateTargetId).toBeUndefined()
+    })
+
+    it('withdrawPersonalSkill 對不是審核中的技能不做任何事', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.personalStatus === 'available')!
+      store.withdrawPersonalSkill(skill.id)
+      expect(store.myPersonalSkills.find(s => s.id === skill.id)!.personalStatus).toBe('available')
+    })
+
     it('suggestVersionName 有說明文字時，摘要成短標題（優先參考使用者已填的內容）', async () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]

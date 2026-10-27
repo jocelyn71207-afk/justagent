@@ -150,6 +150,8 @@ export interface Skill {
   // 「更新版本」送審時使用者選定要更新的 Library 技能；預設帶入 derivedFrom，
   // 但使用者可以改選其他技能（或手寫建立、沒有來源的技能也能指定要更新哪一個）
   updateTargetId?: string
+  // 「更新版本」送審時掛到目標 Library 技能上的那筆審核中版本 id，撤回審核時靠它找回來移除
+  submittedVersionId?: string
   targetScope?: 'enterprise' | 'team'
   targetTeamName?: string
   submittedBy?: string
@@ -1982,10 +1984,12 @@ export const useSkillStore = defineStore('skillStore', () => {
       if (target) {
         target.versions ??= []
         const now = new Date().toISOString()
+        const versionId = `v-${id}-${Date.now()}`
+        skill.submittedVersionId = versionId
         // versions[] 是按時間由舊到新存放（SkillDetailDrawer 顯示時會 reverse
         // 成新到舊），新版本要 push 到最後面，不能 unshift 到最前面
         target.versions.push({
-          id: `v-${id}-${Date.now()}`,
+          id: versionId,
           versionName,
           status: 'reviewing',
           name: skill.name,
@@ -2000,6 +2004,31 @@ export const useSkillStore = defineStore('skillStore', () => {
         })
       }
     }
+  }
+
+  // 撤回審核：技能回到送審前的「可使用」，這次送審填的資料一併清掉；
+  // 「更新版本」模式掛在目標 Library 技能上的審核中版本也要移除，不然審核者還會看到它
+  function withdrawPersonalSkill(id: string): void {
+    const skill = myPersonalSkillsRef.value.find(s => s.id === id)
+    if (!skill || skill.personalStatus !== 'reviewing') return
+
+    if (skill.updateTargetId && skill.submittedVersionId) {
+      const target = _findAny(skill.updateTargetId)
+      if (target?.versions) {
+        target.versions = target.versions.filter(
+          v => !(v.id === skill.submittedVersionId && v.status === 'reviewing'),
+        )
+      }
+    }
+
+    skill.personalStatus = 'available'
+    skill.submitNote = undefined
+    skill.submitMode = undefined
+    skill.updateTargetId = undefined
+    skill.submittedVersionId = undefined
+    skill.targetScope = undefined
+    skill.targetTeamName = undefined
+    skill.submittedBy = undefined
   }
 
   function setLibraryActiveVersion(skillId: string, versionId: string): void {
@@ -2538,6 +2567,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     deleteDraft,
     submitDraft,
     submitPersonalSkill,
+    withdrawPersonalSkill,
     suggestVersionName,
     deletePersonalSkill,
     duplicateAsPersonalSkill,

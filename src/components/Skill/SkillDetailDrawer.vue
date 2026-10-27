@@ -76,6 +76,13 @@
               >
                 <i class="material-symbols-outlined">send</i>送審
               </button>
+              <button
+                v-if="isPersonal && !isBackend && skill.personalStatus === 'reviewing'"
+                class="custom-btn dh-btn"
+                @click="emit('withdraw', skill!)"
+              >
+                <i class="material-symbols-outlined">undo</i>撤回審核
+              </button>
               <button class="custom-btn dh-btn" @click="showMarkdown = true">
                 <i class="material-symbols-outlined">description</i>skill.md
               </button>
@@ -435,6 +442,7 @@ const emit = defineEmits<{
   review: [skillId: string, versionId: string]
   openUpstreamUpdate: [skill: Skill]
   submit: [skill: Skill]
+  withdraw: [skill: Skill]
   editVersion: [skill: Skill, version: number]
 }>()
 
