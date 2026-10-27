@@ -44,7 +44,8 @@
     </div>
 
     <!-- ── 技能定義：RD 六段（技能描述／步驟／例外或特殊情況／固定輸出格式／適用範圍／
-         覆蓋能力），審核要看的主體內容，預設展開；跟詳情抽屜、skill.md 同一份組法 ── -->
+         覆蓋能力），跟詳情抽屜、skill.md 同一份組法。預設收合：面板固定高度，
+         全部展開會把通過／退回按鈕擠到很下面，要看內容再點開 ── -->
     <div v-if="definitionHtml" class="src-section">
       <div class="src-section-label" @click="showDefinition = !showDefinition">
         <i class="material-symbols-outlined">description</i>
@@ -158,7 +159,7 @@ const emit = defineEmits<{
 
 const store = useSkillStore()
 const showInstructions = ref(false)
-const showDefinition = ref(true)
+const showDefinition = ref(false)
 const showMarkdown = ref(false)
 const showRejectDialog = ref(false)
 const rejectFeedback = ref('')

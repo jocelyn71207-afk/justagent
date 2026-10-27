@@ -215,13 +215,14 @@
   .src-actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     flex-wrap: wrap;
     padding: 10px 16px;
     gap: 8px;
   }
 
+  // 左邊兩顆輔助按鈕靠在一起，審核動作推到最右邊
   .src-actions-right {
+    margin-left: auto;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
