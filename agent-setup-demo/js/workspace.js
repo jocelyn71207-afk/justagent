@@ -6,13 +6,30 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+// 嵌入大後台時，技能／工具的新增與編輯歸 Skills Repository、Tool 管理所有，這裡的工具庫只負責挑選掛載。
+function wsCatalogReadOnly() {
+  return !!(window.WS_CONFIG && window.WS_CONFIG.catalogReadOnly);
+}
+
+function wsCatalogLink(kind, text) {
+  var page = kind === 'gem' ? 'tools' : 'skills';
+  return '<a class="ws-catalog-link" data-catalog-link="' + page + '" onclick="wsGoToCatalogPage(\'' + page + '\')">' + escapeHtml(text) + ' ↗</a>';
+}
+
+function wsGoToCatalogPage(page) {
+  if (typeof window.showPage !== 'function') return;
+  window.appState.uiState.bagDetail = null;
+  window.rerender();
+  window.showPage(page);
+}
+
 function renderNavTree(state) {
   var expanded = state.uiState.expandedNpcs;
   var rows = state.data.npcs.map(function (npc) {
     var isExpanded = !!expanded[npc.code];
     var isSwitchType = npc.type === 'SWITCH';
     var npcRow =
-      '<div class="ws-nav-npc" data-npc-row="' + npc.code + '">' +
+      '<div class="ws-nav-npc' + (state.selection.npcCode === npc.code && !state.selection.variantCode ? ' ws-nav-npc--active' : '') + '" data-npc-row="' + npc.code + '">' +
         '<span class="ws-nav-toggle" data-npc-toggle="' + npc.code + '" onclick="wsToggleNpcExpand(\'' + npc.code + '\')">' +
           (isExpanded ? '▾' : '▸') +
         '</span>' +
@@ -25,18 +42,19 @@ function renderNavTree(state) {
     var variantRows = '';
     if (isExpanded) {
       variantRows = npc.variants.map(function (variant) {
-        var versionLabel = variant.publishedVersion ? ('已發布 v' + variant.publishedVersion) : '尚未發布';
+        var versionLabel = variant.publishedVersion ? ('已發佈 v' + variant.publishedVersion) : '尚未發佈';
+        var isActive = state.selection.npcCode === npc.code && state.selection.variantCode === variant.code;
         return (
-          '<div class="ws-nav-variant" data-variant-row="' + npc.code + '.' + variant.code + '" ' +
+          '<div class="ws-nav-variant' + (isActive ? ' ws-nav-variant--active' : '') + '" data-variant-row="' + npc.code + '.' + variant.code + '" ' +
             'onclick="wsSelectVariant(\'' + npc.code + '\', \'' + variant.code + '\')">' +
             '<span class="ws-nav-variant-name">' + escapeHtml(variant.name) + '</span>' +
-            '<span class="hint">' + versionLabel + '</span>' +
+            '<span class="ws-status-tag' + (variant.publishedVersion ? ' ws-status-tag--live' : '') + '">' + versionLabel + '</span>' +
           '</div>'
         );
       }).join('');
 
       if (isSwitchType) {
-        variantRows += '<div class="ws-nav-variant ws-nav-variant--disabled hint">只有 AGENT 型才能建立人物卡</div>';
+        variantRows += '<div class="ws-nav-variant ws-nav-variant--disabled hint">只有 AGENT 型才能建立方案</div>';
       } else if (state.uiState.creatingVariantFor === npc.code) {
         var vErr = state.uiState.variantFormError;
         variantRows +=
@@ -50,7 +68,7 @@ function renderNavTree(state) {
             '</div>' +
           '</div>';
       } else {
-        variantRows += '<div class="ws-nav-variant ws-nav-create" data-create-variant="' + npc.code + '" onclick="wsShowCreateVariantForm(\'' + npc.code + '\')">＋ 新人物卡</div>';
+        variantRows += '<div class="ws-nav-variant ws-nav-create" data-create-variant="' + npc.code + '" onclick="wsShowCreateVariantForm(\'' + npc.code + '\')">＋ 新方案</div>';
       }
     }
 
@@ -75,7 +93,7 @@ function renderNavTree(state) {
   }
 
   return (
-    '<div class="label">Agent／人物卡</div>' +
+    '<div class="ws-pane-title">Agent／方案</div>' +
     rows +
     createNpcBlock
   );
@@ -149,6 +167,7 @@ function wsResetVariantTransientUi() {
   window.appState.uiState.editingVariantBasics = false;
   window.appState.uiState.editingVariantInstructions = false;
   window.appState.uiState.variantTab = 'basics';
+  window.appState.uiState.modelPublishConfirm = null;
   window.appState.uiState.bagMode = 'bag';
   window.appState.uiState.packDetail = null;
   window.appState.uiState.packDetailEditing = null;
@@ -193,7 +212,7 @@ function wsValidateVariantCode(code, npc) {
   }
   var duplicate = npc.variants.some(function (v) { return v.code === code; });
   if (duplicate) {
-    return '這個 Agent 底下已有相同代碼的人物卡';
+    return '這個 Agent 底下已有相同代碼的方案';
   }
   return null;
 }
@@ -267,21 +286,18 @@ function renderNpcPane(state) {
       '<div class="ws-npc-header">' +
         '<span class="ws-npc-avatar">' + npc.avatar + '</span>' +
         '<span class="ws-npc-name">' + escapeHtml(npc.displayName) + '</span>' +
-        '<button class="btn" data-npc-edit-pencil onclick="wsStartEditNpcBasics()">✎</button>' +
+        '<button class="btn btn-icon" data-npc-edit-pencil title="編輯名稱" onclick="wsStartEditNpcBasics()">✎</button>' +
       '</div>';
   }
 
   container.innerHTML =
     headerBlock +
-    '<div class="ws-npc-field">' +
-      '<span class="badge badge-locked">🔒 代碼</span> ' + escapeHtml(npc.code) +
+    '<div class="ws-npc-meta" title="建立後不可修改">' +
+      '<span class="badge badge-locked">代碼 <b>' + escapeHtml(npc.code) + '</b></span>' +
+      '<span class="badge badge-locked">類型 <b>' + escapeHtml(npc.type) + '</b></span>' +
+      '<span class="badge badge-locked">場域 <b>' + escapeHtml(npc.usedFor) + '</b></span>' +
     '</div>' +
-    '<div class="ws-npc-field">' +
-      '<span class="badge badge-locked">🔒 類型</span> ' + escapeHtml(npc.type) +
-    '</div>' +
-    '<div class="ws-npc-field">' +
-      '<span class="badge badge-locked">🔒 場域</span> ' + escapeHtml(npc.usedFor) +
-    '</div>' +
+    '<div class="ws-section-title">模型設定<span class="hint">Agent 層共用，底下所有方案都會沿用</span></div>' +
     '<div id="ws-npc-model-section"></div>';
 }
 
@@ -356,14 +372,39 @@ function renderModelBlock(npc, kind) {
 
     var paramError = window.appState.uiState.modelParamErrors[wsParamErrorStateKey(npc.code, kind)];
 
+    // 模型掛在 Agent 層、方案沒有鎖版本，所以發佈會直接改變所有已發佈方案的行為——發佈前要讓人看見影響範圍。
+    var impacted = wsPublishedVariants(npc);
+    var impactText = impacted.map(function (v) { return v.name + ' v' + v.publishedVersion; }).join('、');
+    var impactHtml = impacted.length === 0
+      ? ''
+      : '<div class="ws-model-impact" data-model-impact="' + kind + '">影響範圍：已發佈的 ' + impacted.length + ' 個方案（' + escapeHtml(impactText) + '）會在發佈後立即改用新設定</div>';
+    var confirmHtml = window.appState.uiState.modelPublishConfirm === kind
+      ? (
+        '<div class="ws-model-confirm" data-model-publish-confirm-box="' + kind + '">' +
+          '<div>確定發佈 ' + label + ' v' + (model.version + 1) + '？以下已上線方案會立即套用：' + escapeHtml(impactText) + '</div>' +
+          '<div class="ws-model-confirm-actions">' +
+            '<button class="btn" data-model-publish-cancel="' + kind + '" onclick="wsCancelPublishModel()">取消</button>' +
+            '<button class="btn btn-primary" data-model-publish-confirm="' + kind + '" onclick="wsConfirmPublishModel(\'' + kind + '\')">確認發佈</button>' +
+          '</div>' +
+        '</div>'
+      )
+      : '';
+
     return (
       '<div class="ws-model-block">' +
-        '<div class="label">' + label + '</div>' +
-        '<div>' + escapeHtml(template ? template.label : model.key) + ' <span class="hint">v' + model.version + '</span></div>' +
-        paramsHtml +
+        '<div class="ws-model-head">' +
+          '<span class="ws-model-kind">' + label + '</span>' +
+          '<span class="ws-model-name">' + escapeHtml(template ? template.label : model.key) + '</span>' +
+          '<span class="ws-status-tag ws-status-tag--live">已發佈 v' + model.version + '</span>' +
+        '</div>' +
+        '<div class="ws-param-grid">' + paramsHtml + '</div>' +
         (paramError ? '<div class="ws-param-error" data-model-param-error="' + kind + '">' + escapeHtml(paramError) + '</div>' : '') +
-        '<button class="btn btn-primary" data-model-param-save="' + kind + '" onclick="wsSaveModelParams(\'' + kind + '\')">儲存參數</button>' +
-        '<button class="btn" data-model-publish="' + kind + '" onclick="wsPublishModel(\'' + kind + '\')">🚀 發布</button>' +
+        impactHtml +
+        '<div class="ws-model-actions">' +
+          '<button class="btn" data-model-param-save="' + kind + '" onclick="wsSaveModelParams(\'' + kind + '\')">儲存參數</button>' +
+          '<button class="btn btn-primary" data-model-publish="' + kind + '" onclick="wsPublishModel(\'' + kind + '\')">發佈</button>' +
+        '</div>' +
+        confirmHtml +
       '</div>'
     );
   }
@@ -374,21 +415,22 @@ function renderModelBlock(npc, kind) {
     }).join('');
     return (
       '<div class="ws-model-block">' +
-        '<div class="label">' + label + '</div>' +
+        '<div class="ws-model-head"><span class="ws-model-kind">' + label + '</span></div>' +
         '<select data-model-template-select="' + kind + '">' +
           '<option value="">-- 選擇樣板 --</option>' +
           options +
         '</select>' +
-        '<button class="btn btn-primary" data-model-confirm="' + kind + '" onclick="wsConfirmAddModel(\'' + kind + '\')">確認加入</button>' +
-        '<button class="btn" onclick="wsCancelAddModel()">取消</button>' +
+        '<div class="ws-model-actions">' +
+          '<button class="btn" onclick="wsCancelAddModel()">取消</button>' +
+          '<button class="btn btn-primary" data-model-confirm="' + kind + '" onclick="wsConfirmAddModel(\'' + kind + '\')">確認加入</button>' +
+        '</div>' +
       '</div>'
     );
   }
 
   return (
-    '<div class="ws-model-block">' +
-      '<div class="label">' + label + '</div>' +
-      '<div class="hint">尚未設定' + label + '</div>' +
+    '<div class="ws-model-block ws-model-block--empty">' +
+      '<div class="ws-model-head"><span class="ws-model-kind">' + label + '</span><span class="hint">尚未設定' + label + '</span></div>' +
       '<button class="btn" data-add-model="' + kind + '" onclick="wsStartAddModel(\'' + kind + '\')">＋ 加入模型</button>' +
     '</div>'
   );
@@ -499,21 +541,54 @@ function wsPublishModelErrors(npc, kind) {
   return errors;
 }
 
+function wsPublishedVariants(npc) {
+  return npc.variants.filter(function (v) { return !!v.publishedVersion; });
+}
+
 function wsPublishModel(kind) {
   var npc = wsFindNpc(window.appState);
   var errors = wsPublishModelErrors(npc, kind);
+  if (errors.length > 0) {
+    window.appState.uiState.modelPublishConfirm = null;
+    window.appState.uiState.modelParamErrors[wsParamErrorStateKey(npc.code, kind)] = errors.join('；');
+    window.rerender();
+    return;
+  }
+  if (wsPublishedVariants(npc).length > 0) {
+    window.appState.uiState.modelPublishConfirm = kind;
+    window.appState.uiState.modelParamErrors[wsParamErrorStateKey(npc.code, kind)] = null;
+    window.rerender();
+    return;
+  }
+  wsCommitPublishModel(npc, kind);
+}
+
+function wsConfirmPublishModel(kind) {
+  var npc = wsFindNpc(window.appState);
+  var errors = wsPublishModelErrors(npc, kind);
+  window.appState.uiState.modelPublishConfirm = null;
   if (errors.length > 0) {
     window.appState.uiState.modelParamErrors[wsParamErrorStateKey(npc.code, kind)] = errors.join('；');
     window.rerender();
     return;
   }
+  wsCommitPublishModel(npc, kind);
+}
+
+function wsCancelPublishModel() {
+  window.appState.uiState.modelPublishConfirm = null;
+  window.rerender();
+}
+
+function wsCommitPublishModel(npc, kind) {
   npc[kind].version += 1;
+  window.appState.uiState.modelPublishConfirm = null;
   window.appState.uiState.modelParamErrors[wsParamErrorStateKey(npc.code, kind)] = null;
   window.rerender();
 }
 
 function renderBagPlaceholder() {
-  return '<div class="hint">請從左側選擇一張人物卡以檢視工具庫。</div>';
+  return '<div class="hint">請從左側選擇 Agent 查看方案總覽，或選擇方案掛載技能與工具。</div>';
 }
 
 function wsVariantSnapshotKey(npcCode, variantCode) {
@@ -569,21 +644,25 @@ function renderVariantPane(state) {
 
   wsEnsureVariantSnapshot(npc.code, variant);
   var dirty = wsVariantIsDirty(npc.code, variant);
-  var publishLabel = variant.publishedVersion ? ('已發布 v' + variant.publishedVersion) : '尚未發布';
+  var publishLabel = variant.publishedVersion ? ('已發佈 v' + variant.publishedVersion) : '尚未發佈';
   var savedLabel = dirty ? '有未儲存的修改' : '已儲存';
   var hasHistory = variant.publishedVersion || (variant.publishHistory && variant.publishHistory.length > 0);
 
   container.innerHTML =
     '<div class="ws-variant-titlebar">' +
-      '<span class="ws-variant-titlebar-name">' + escapeHtml(variant.name) + '</span>' +
-      '<button class="btn" data-variant-history ' + (hasHistory ? '' : 'disabled') + ' onclick="wsOpenVariantHistoryModal()">公開記錄 📖</button>' +
-      '<span class="hint">' + publishLabel + '</span>' +
-      '<span class="hint">' + savedLabel + '</span>' +
+      '<div class="ws-variant-titlebar-main">' +
+        '<div class="ws-variant-crumb hint">' + escapeHtml(npc.displayName) + ' ／ 方案</div>' +
+        '<div class="ws-variant-titlebar-row">' +
+          '<span class="ws-variant-titlebar-name">' + escapeHtml(variant.name) + '</span>' +
+          '<span class="ws-status-tag' + (variant.publishedVersion ? ' ws-status-tag--live' : '') + '">' + publishLabel + '</span>' +
+          '<button class="btn btn-link" data-variant-history ' + (hasHistory ? '' : 'disabled') + ' onclick="wsOpenVariantHistoryModal()">發佈紀錄</button>' +
+          '<span class="ws-status-tag' + (dirty ? ' ws-status-tag--warn' : '') + '">' + savedLabel + '</span>' +
+        '</div>' +
+      '</div>' +
       '<div class="ws-variant-titlebar-actions">' +
         '<button class="btn" data-variant-discard ' + (dirty ? '' : 'disabled') + ' onclick="wsDiscardVariantChanges()">放棄修改</button>' +
-        '<button class="btn btn-primary" data-variant-save ' + (dirty ? '' : 'disabled') + ' onclick="wsSaveVariant()">💾 儲存</button>' +
-        '<button class="btn" data-variant-publish onclick="wsOpenPublishVariantModal()">🚀 發布</button>' +
-        '<button class="btn" data-variant-pack-toggle onclick="wsSetBagMode(\'pack\')">📦 打包</button>' +
+        '<button class="btn" data-variant-save ' + (dirty ? '' : 'disabled') + ' onclick="wsSaveVariant()">儲存</button>' +
+        '<button class="btn btn-primary" data-variant-publish ' + (dirty ? 'disabled title="有未儲存的修改，請先儲存再發佈"' : '') + ' onclick="wsOpenPublishVariantModal()">發佈</button>' +
       '</div>' +
     '</div>' +
     '<div id="ws-variant-body"></div>';
@@ -625,7 +704,7 @@ function renderVariantModelTab(npc) {
   return (
     '<div class="ws-variant-field"><span class="label">對話模型</span>' + escapeHtml(chat) + '</div>' +
     '<div class="ws-variant-field"><span class="label">向量模型</span>' + escapeHtml(vector) + '</div>' +
-    '<div class="hint">模型版本鎖定將於後續階段提供；目前人物卡沿用 Agent 目前生效的模型。</div>'
+    '<div class="hint">本方案沿用 Agent 層的模型設定；Agent 發佈新的模型版本時，本方案會立即跟著改用。</div>'
   );
 }
 
@@ -847,11 +926,11 @@ function wsCommitBagDetailKindProtocol() {
 function renderBagDetailGemFields(gemDef, ver, editing) {
   var refs = wsGemReferences(gemDef.name, ver.level);
   var refList = (refs.equipment.length === 0 && refs.variants.length === 0)
-    ? '<div class="ws-flyout-ref-list hint">尚未被任何技能或人物卡引用</div>'
+    ? '<div class="ws-flyout-ref-list hint">尚未被任何技能或方案引用</div>'
     : (
       '<div class="ws-flyout-ref-list">' +
-        refs.equipment.map(function (e) { return '<div class="ws-flyout-ref-item">技能：' + escapeHtml(e.displayName) + ' Lv' + e.level + '</div>'; }).join('') +
-        refs.variants.map(function (v) { return '<div class="ws-flyout-ref-item">人物卡：' + escapeHtml(v.variantName) + '</div>'; }).join('') +
+        refs.equipment.map(function (e) { return '<div class="ws-flyout-ref-item">技能：' + escapeHtml(e.displayName) + ' v' + e.level + '</div>'; }).join('') +
+        refs.variants.map(function (v) { return '<div class="ws-flyout-ref-item">方案：' + escapeHtml(v.variantName) + '</div>'; }).join('') +
       '</div>'
     );
 
@@ -874,16 +953,16 @@ function renderBagDetailGemFields(gemDef, ver, editing) {
   } else if (wsGemEverPublished(gemDef)) {
     kindProtocolBlock =
       '<div class="ws-flyout-field"><span class="label">種類／協定</span> ' + escapeHtml(gemDef.kind) + ' / ' + escapeHtml(gemDef.protocol) + ' ' +
-      '<span class="badge badge-locked" data-flyout-kindprotocol-locked>🔒 已公開過，不可改</span></div>';
+      '<span class="badge badge-locked" data-flyout-kindprotocol-locked>🔒 已發佈過，不可改</span></div>';
   } else {
     kindProtocolBlock =
       '<div class="ws-flyout-field"><span class="label">種類／協定</span> ' + escapeHtml(gemDef.kind) + ' / ' + escapeHtml(gemDef.protocol) + ' ' +
-      '<button class="btn" data-flyout-kindprotocol-pencil onclick="wsStartEditBagDetailField(\'kindProtocol\')">✎</button></div>';
+      (wsCatalogReadOnly() ? '' : '<button class="btn" data-flyout-kindprotocol-pencil onclick="wsStartEditBagDetailField(\'kindProtocol\')">✎</button>') + '</div>';
   }
 
   return (
     kindProtocolBlock +
-    '<div class="ws-flyout-field"><span class="label">從哪一級複製</span> ' + (ver.copiedFromLevel ? ('Lv' + ver.copiedFromLevel) : '（原始建立）') + '</div>' +
+    '<div class="ws-flyout-field"><span class="label">複製自版本</span> ' + (ver.copiedFromLevel ? ('v' + ver.copiedFromLevel) : '（原始建立）') + '</div>' +
     '<div class="ws-flyout-field"><span class="label">被引用清單</span></div>' +
     refList
   );
@@ -908,14 +987,14 @@ function wsAddGemToBagDetailDraft(gemName, level) {
   var draft = window.appState.uiState.bagDetailGemsDraft;
   var already = draft.some(function (g) { return g.gemName === gemName; });
   if (already) {
-    window.appState.uiState.bagDetailError = '這個工具已在鑲嵌清單中';
+    window.appState.uiState.bagDetailError = '這個工具已在內含清單中';
     window.rerender();
     return;
   }
   var gemDef = wsGemByName(gemName);
   var ver = wsGemVersion(gemDef, level);
   if (!ver || ver.status === 'draft') {
-    window.appState.uiState.bagDetailError = '只能鑲嵌已公開的工具版本';
+    window.appState.uiState.bagDetailError = '只能加入已發佈的工具版本';
     window.rerender();
     return;
   }
@@ -957,22 +1036,22 @@ function renderBagDetailEquipmentFields(eqDef, ver, editing, gemsDraft) {
       var gemDef = wsGemByName(g.gemName);
       return (
         '<div class="ws-flyout-gem-row">' +
-          '<span>' + escapeHtml(gemDef.displayName) + ' Lv' + g.level + '</span>' +
+          '<span>' + escapeHtml(gemDef.displayName) + ' v' + g.level + '</span>' +
           '<button class="btn" data-flyout-remove-gem="' + g.gemName + '" onclick="wsRemoveGemFromBagDetailDraft(\'' + g.gemName + '\')">⊖</button>' +
         '</div>'
       );
-    }).join('') || '<div class="hint">尚未鑲嵌任何工具</div>';
+    }).join('') || '<div class="hint">未內含任何工具</div>';
     var publishedOptions = [];
     window.appState.data.gems.forEach(function (gemDef) {
       gemDef.versions.forEach(function (v) {
-        if (v.status === 'published') publishedOptions.push({ gemName: gemDef.name, level: v.level, label: gemDef.displayName + ' Lv' + v.level });
+        if (v.status === 'published') publishedOptions.push({ gemName: gemDef.name, level: v.level, label: gemDef.displayName + ' v' + v.level });
       });
     });
     var optionsHtml = publishedOptions.map(function (o) {
       return '<option value="' + o.gemName + '@' + o.level + '">' + escapeHtml(o.label) + '</option>';
     }).join('');
     gemsBlock =
-      '<div class="ws-flyout-field"><span class="label">鑲嵌工具</span></div>' +
+      '<div class="ws-flyout-field"><span class="label">內含工具</span></div>' +
       rows +
       '<select data-flyout-add-gem-select>' + optionsHtml + '</select>' +
       '<button class="btn" data-flyout-add-gem onclick="wsAddGemFromSelect()">加入</button>' +
@@ -983,24 +1062,26 @@ function renderBagDetailEquipmentFields(eqDef, ver, editing, gemsDraft) {
   } else {
     var viewRows = (ver.gems || []).map(function (g) {
       var gemDef = wsGemByName(g.gemName);
-      return '<span class="ws-gem-chip">' + escapeHtml(gemDef.displayName) + ' Lv' + g.level + '</span>';
-    }).join('') || '<span class="hint">尚未鑲嵌任何工具</span>';
+      return '<span class="ws-gem-chip">' + escapeHtml(gemDef.displayName) + ' v' + g.level + '</span>';
+    }).join('') || '<span class="hint">未內含任何工具</span>';
     gemsBlock =
-      '<div class="ws-flyout-field"><span class="label">鑲嵌工具</span> ' + viewRows + ' ' +
-      (ver.status === 'draft'
+      '<div class="ws-flyout-field"><span class="label">內含工具</span> ' + viewRows + ' ' +
+      (wsCatalogReadOnly()
+        ? ''
+        : ver.status === 'draft'
         ? '<button class="btn" data-flyout-gems-pencil onclick="wsStartEditBagDetailGems()">✎</button>'
-        : '<span class="badge badge-locked" data-flyout-gems-locked>🔒 已公開版本不可改</span>') +
+        : '<span class="badge badge-locked" data-flyout-gems-locked>🔒 已發佈版本不可改</span>') +
       '</div>';
   }
 
   var refList = refs.variants.length === 0
-    ? '<div class="ws-flyout-ref-list hint">尚未被任何人物卡掛載</div>'
-    : '<div class="ws-flyout-ref-list">' + refs.variants.map(function (v) { return '<div class="ws-flyout-ref-item">人物卡：' + escapeHtml(v.variantName) + '</div>'; }).join('') + '</div>';
+    ? '<div class="ws-flyout-ref-list hint">尚未被任何方案掛載</div>'
+    : '<div class="ws-flyout-ref-list">' + refs.variants.map(function (v) { return '<div class="ws-flyout-ref-item">方案：' + escapeHtml(v.variantName) + '</div>'; }).join('') + '</div>';
 
   return (
     gemsBlock +
-    '<div class="ws-flyout-field"><span class="label">從哪一級複製</span> ' + (ver.copiedFromLevel ? ('Lv' + ver.copiedFromLevel) : '（原始建立）') + '</div>' +
-    '<div class="ws-flyout-field"><span class="label">被哪些人物卡掛載</span></div>' +
+    '<div class="ws-flyout-field"><span class="label">複製自版本</span> ' + (ver.copiedFromLevel ? ('v' + ver.copiedFromLevel) : '（原始建立）') + '</div>' +
+    '<div class="ws-flyout-field"><span class="label">被哪些方案掛載</span></div>' +
     refList
   );
 }
@@ -1058,6 +1139,7 @@ function wsDeleteBagDetailVersion() {
 }
 
 function wsOpenBagDetailCreate() {
+  if (wsCatalogReadOnly()) return;
   window.appState.uiState.bagDetail = { kind: null, name: null, level: null, mode: 'create' };
   wsResetBagDetailTransient();
   window.rerender();
@@ -1130,7 +1212,7 @@ function renderBagDetailCreateBody(state) {
     (error ? '<div class="ws-flyout-error" data-flyout-error>' + escapeHtml(error) + '</div>' : '') +
     '<div class="ws-flyout-actions">' +
       '<button class="btn" onclick="wsCancelBagDetailCreate()">取消</button> ' +
-      '<button class="btn btn-primary" data-bag-create-submit onclick="wsSubmitCreateBagItem()">建立 Lv1 草稿</button>' +
+      '<button class="btn btn-primary" data-bag-create-submit onclick="wsSubmitCreateBagItem()">建立 v1 草稿</button>' +
     '</div>'
   );
 }
@@ -1139,14 +1221,14 @@ function renderBagDetailViewBody(state) {
   var detail = state.uiState.bagDetail;
   var def = wsBagDetailDef(detail);
   var ver = def.versions.find(function (v) { return v.level === detail.level; });
-  var icon = detail.kind === 'gem' ? '💎' : '🛡️';
+  var icon = '';
   var typeLabel = detail.kind === 'gem' ? '工具' : '技能';
 
   var levelButtons = def.versions.slice().sort(function (a, b) { return a.level - b.level; }).map(function (v) {
     return (
       '<button class="ws-flyout-level-btn' + (v.level === detail.level ? ' ws-flyout-level-btn--active' : '') + (v.status === 'draft' ? ' ws-flyout-level-btn--draft' : '') + '" ' +
         'data-flyout-level-btn="' + v.level + '" onclick="wsSwitchBagDetailLevel(' + v.level + ')">' +
-        'Lv' + v.level + (v.status === 'draft' ? ' 草稿' : '') +
+        'v' + v.level + (v.status === 'draft' ? ' 草稿' : '') +
       '</button>'
     );
   }).join('');
@@ -1156,13 +1238,15 @@ function renderBagDetailViewBody(state) {
   var editing = state.uiState.bagDetailEditing;
   var maxLevel = wsBagDetailMaxLevel(def);
   var actionsHtml;
-  if (ver.status === 'draft') {
+  if (wsCatalogReadOnly()) {
+    actionsHtml = '<span class="hint">此處僅供檢視與挑選；要新增版本或修改內容，請' + wsCatalogLink(detail.kind, detail.kind === 'gem' ? '到 Tool 管理編輯' : '到 Skills Repository 編輯') + '</span>';
+  } else if (ver.status === 'draft') {
     var disabled = wsBagDetailVersionHasReferences(detail) ? 'disabled' : '';
     actionsHtml =
-      '<button class="btn btn-primary" data-flyout-publish onclick="wsPublishBagDetailVersion()">公開</button> ' +
+      '<button class="btn btn-primary" data-flyout-publish onclick="wsPublishBagDetailVersion()">發佈</button> ' +
       '<button class="btn btn-danger" data-flyout-delete ' + disabled + ' onclick="wsDeleteBagDetailVersion()">刪除</button>';
   } else if (ver.level === maxLevel) {
-    actionsHtml = '<button class="btn" data-flyout-open-draft onclick="wsOpenNewBagDetailDraft()">開 Lv' + (maxLevel + 1) + ' 草稿</button>';
+    actionsHtml = '<button class="btn" data-flyout-open-draft onclick="wsOpenNewBagDetailDraft()">開 v' + (maxLevel + 1) + ' 草稿</button>';
   } else {
     actionsHtml = '<span class="hint">較舊版本，唯讀</span>';
   }
@@ -1175,14 +1259,14 @@ function renderBagDetailViewBody(state) {
     )
     : (
       '<span class="ws-flyout-name">' + escapeHtml(def.displayName) + '</span>' +
-      '<button class="btn" data-flyout-displayname-pencil onclick="wsStartEditBagDetailField(\'displayName\')">✎</button>'
+      (wsCatalogReadOnly() ? '' : '<button class="btn" data-flyout-displayname-pencil onclick="wsStartEditBagDetailField(\'displayName\')">✎</button>')
     );
 
   return (
     '<button class="btn ws-flyout-close" data-flyout-close onclick="wsCloseBagDetail()">✕</button>' +
     '<div class="ws-flyout-header">' +
-      '<span class="ws-flyout-icon">' + icon + '</span>' +
-      '<span class="ws-flyout-type-label">' + typeLabel + '</span>' +
+      icon +
+      '<span class="ws-flyout-type-label ws-status-tag">' + typeLabel + '</span>' +
       nameBlock +
     '</div>' +
     '<div class="ws-flyout-level-row">' + levelButtons + '</div>' +
@@ -1224,31 +1308,46 @@ function renderAbilityArea(state) {
     var ver = wsEquipmentVersion(eqDef, eq.level);
     var gemChips = (ver.gems || []).map(function (g) {
       var gemDef = wsGemByName(g.gemName);
-      return '<span class="ws-gem-chip">' + escapeHtml(gemDef.displayName) + ' Lv' + g.level + '</span>';
+      return '<span class="ws-gem-chip">' + escapeHtml(gemDef.displayName) + ' v' + g.level + '</span>';
     }).join('');
     return (
       '<div class="ws-equipped-item">' +
-        '<span>' + escapeHtml(eqDef.displayName) + ' Lv' + eq.level + '</span>' +
-        gemChips +
-        '<button class="btn" data-unequip-equipment="' + eq.name + '" onclick="wsUnequipEquipmentClick(\'' + eq.name + '\')">⊖</button>' +
+        '<span class="ws-equipped-name">' + escapeHtml(eqDef.displayName) + '</span>' +
+        '<span class="ws-version-tag">v' + eq.level + '</span>' +
+        (gemChips ? '<span class="ws-equipped-sub">內含 ' + gemChips + '</span>' : '') +
+        '<button class="btn btn-link" data-unequip-equipment="' + eq.name + '" onclick="wsUnequipEquipmentClick(\'' + eq.name + '\')">卸下</button>' +
       '</div>'
     );
-  }).join('') || '<div class="hint">尚未啟用任何技能</div>';
+  }).join('') || '<div class="hint">尚未掛載任何技能</div>';
 
   var gemHtml = variant.wornGems.map(function (g) {
     var gemDef = wsGemByName(g.name);
     return (
       '<div class="ws-equipped-item">' +
-        '<span>' + escapeHtml(gemDef.displayName) + ' Lv' + g.level + '</span>' +
-        '<button class="btn" data-unwear-gem="' + g.name + '" onclick="wsUnwearGemClick(\'' + g.name + '\')">⊖</button>' +
+        '<span class="ws-equipped-name">' + escapeHtml(gemDef.displayName) + '</span>' +
+        '<span class="ws-version-tag">v' + g.level + '</span>' +
+        '<button class="btn btn-link" data-unwear-gem="' + g.name + '" onclick="wsUnwearGemClick(\'' + g.name + '\')">卸下</button>' +
       '</div>'
     );
-  }).join('') || '<div class="hint">尚未佩掛任何工具</div>';
+  }).join('') || '<div class="hint">尚未掛載任何工具</div>';
+
+  var npc = wsFindNpc(state);
+  var bundles = wsBundlesContainingVariant(npc.code, variant.code);
+  var bundleHtml = bundles.length === 0
+    ? '<div class="hint">尚未收錄於任何組合包</div>'
+    : bundles.map(function (b) { return '<span class="ws-gem-chip">' + escapeHtml(b.displayName) + '・' + escapeHtml(b.status) + '</span>'; }).join('');
 
   container.innerHTML =
-    '<div class="label">🎒 能力</div>' +
-    '<div class="ws-ability-section"><div class="label">技能欄</div>' + equipmentHtml + '</div>' +
-    '<div class="ws-ability-section"><div class="label">佩掛工具</div>' + gemHtml + '</div>';
+    '<div class="ws-section-title">能力配置<span class="hint">從右側工具庫選版本加入</span></div>' +
+    '<div class="ws-ability-section"><div class="ws-ability-head">已掛載技能<span class="ws-count">' + variant.equippedEquipment.length + '</span></div>' + equipmentHtml + '</div>' +
+    '<div class="ws-ability-section"><div class="ws-ability-head">已掛載工具<span class="ws-count">' + variant.wornGems.length + '</span></div>' + gemHtml + '</div>' +
+    '<div class="ws-ability-section" data-variant-bundles><div class="ws-ability-head">收錄於組合包<span class="ws-count">' + bundles.length + '</span>' +
+      '<a class="ws-catalog-link ws-ability-head-link" data-go-npc-pack onclick="wsGoToNpcPack()">到 Agent 層管理打包</a></div>' + bundleHtml + '</div>';
+}
+
+function wsGoToNpcPack() {
+  wsSelectNpc(window.appState.selection.npcCode);
+  wsSetBagMode('pack');
 }
 
 function wsUnequipEquipmentClick(eqName) {
@@ -1265,51 +1364,169 @@ function wsUnwearGemClick(gemName) {
   window.rerender();
 }
 
-function renderBagForVariant(state) {
-  var variant = wsFindVariant(state);
-  var gemRows = state.data.gems.map(function (gemDef) {
-    return gemDef.versions.map(function (ver) {
-      var isDraft = ver.status === 'draft';
-      var worn = variant.wornGems.some(function (g) { return g.name === gemDef.name && g.level === ver.level; });
-      return (
-        '<div class="ws-bag-item' + (worn ? ' ws-bag-item--active' : '') + (isDraft ? ' ws-bag-item--draft' : '') + '" ' +
-          'data-bag-gem="' + gemDef.name + '" data-bag-gem-level="' + ver.level + '" ' +
-          (isDraft ? 'aria-disabled="true" ' : '') +
-          'onclick="wsBagWear(\'' + gemDef.name + '\', ' + ver.level + ')">' +
-          '<span class="ws-bag-item-name">' + escapeHtml(gemDef.displayName) + '</span>' +
-          '<span class="hint">Lv' + ver.level + (isDraft ? ' · 草稿・不可選' : (worn ? ' · 已佩掛' : '')) + '</span>' +
-          '<button class="ws-bag-item-detail-btn" data-bag-gem-detail="' + gemDef.name + '.' + ver.level + '" onclick="event.stopPropagation(); wsOpenBagDetail(\'gem\', \'' + gemDef.name + '\', ' + ver.level + ')">⋯</button>' +
-        '</div>'
-      );
-    }).join('');
+function wsBagPickKey(kind, name) {
+  return kind + ':' + name;
+}
+
+// 預設選版本：已掛載就停在掛載的版本，否則挑最新的已發佈版本。
+function wsBagPickedLevel(kind, def, mounted) {
+  var picked = window.appState.uiState.bagVersionPick[wsBagPickKey(kind, def.name)];
+  if (mounted) return mounted.level;
+  if (picked !== undefined && def.versions.some(function (v) { return v.level === picked; })) return picked;
+  var published = def.versions.filter(function (v) { return v.status === 'published'; });
+  var pool = published.length > 0 ? published : def.versions;
+  return Math.max.apply(null, pool.map(function (v) { return v.level; }));
+}
+
+function wsBagPickVersion(kind, name, rawLevel) {
+  window.appState.uiState.bagVersionPick[wsBagPickKey(kind, name)] = Number(rawLevel);
+}
+
+function wsBagAddPicked(kind, name) {
+  var def = kind === 'gem' ? wsGemByName(name) : wsEquipmentByName(name);
+  var level = wsBagPickedLevel(kind, def, null);
+  if (kind === 'gem') wsBagWear(name, level); else wsBagEquip(name, level);
+}
+
+function wsBagRemove(kind, name) {
+  if (kind === 'gem') wsUnwearGemClick(name); else wsUnequipEquipmentClick(name);
+}
+
+function renderBagRow(kind, def, variant) {
+  var mounted = kind === 'gem'
+    ? variant.wornGems.find(function (g) { return g.name === def.name; })
+    : variant.equippedEquipment.find(function (e) { return e.name === def.name; });
+  var carried = kind === 'gem' ? wsCarriedGems(variant).find(function (cg) { return cg.gemName === def.name; }) : null;
+  var level = wsBagPickedLevel(kind, def, mounted);
+  var hasPublished = def.versions.some(function (v) { return v.status === 'published'; });
+  var latestPublished = hasPublished
+    ? Math.max.apply(null, def.versions.filter(function (v) { return v.status === 'published'; }).map(function (v) { return v.level; }))
+    : null;
+
+  var options = def.versions.slice().sort(function (a, b) { return b.level - a.level; }).map(function (v) {
+    var isDraft = v.status === 'draft';
+    var label = 'v' + v.level + (isDraft ? ' 草稿・不可選' : (v.level === latestPublished ? '（最新）' : ''));
+    return '<option value="' + v.level + '"' + (v.level === level ? ' selected' : '') + (isDraft ? ' disabled' : '') + '>' + label + '</option>';
   }).join('');
 
-  var equipmentRows = state.data.equipment.map(function (eqDef) {
-    return eqDef.versions.map(function (ver) {
-      var isDraft = ver.status === 'draft';
-      var worn = variant.equippedEquipment.some(function (e) { return e.name === eqDef.name && e.level === ver.level; });
-      return (
-        '<div class="ws-bag-item' + (worn ? ' ws-bag-item--active' : '') + (isDraft ? ' ws-bag-item--draft' : '') + '" ' +
-          'data-bag-equipment="' + eqDef.name + '" data-bag-equipment-level="' + ver.level + '" ' +
-          (isDraft ? 'aria-disabled="true" ' : '') +
-          'onclick="wsBagEquip(\'' + eqDef.name + '\', ' + ver.level + ')">' +
-          '<span class="ws-bag-item-name">' + escapeHtml(eqDef.displayName) + '</span>' +
-          '<span class="hint">Lv' + ver.level + (isDraft ? ' · 草稿・不可選' : (worn ? ' · 已啟用' : '')) + '</span>' +
-          '<button class="ws-bag-item-detail-btn" data-bag-equipment-detail="' + eqDef.name + '.' + ver.level + '" onclick="event.stopPropagation(); wsOpenBagDetail(\'equipment\', \'' + eqDef.name + '\', ' + ver.level + ')">⋯</button>' +
-        '</div>'
-      );
-    }).join('');
-  }).join('');
+  var status;
+  var action;
+  if (mounted) {
+    status = '<span class="ws-bag-item-status" data-bag-' + kind + '-mounted="' + def.name + '">已掛載 v' + mounted.level + '</span>';
+    action = '<button class="btn" data-bag-' + kind + '-remove="' + def.name + '" onclick="wsBagRemove(\'' + kind + '\', \'' + def.name + '\')">卸下</button>';
+  } else {
+    status = carried
+      ? '<span class="hint" data-bag-gem-carried="' + def.name + '">已由技能內含 v' + carried.level + '</span>'
+      : (hasPublished ? '' : '<span class="hint">尚無已發佈版本</span>');
+    action = '<button class="btn" data-bag-' + kind + '-add="' + def.name + '" ' +
+      (!hasPublished ? 'disabled ' : (carried ? 'disabled title="已掛載的技能內含這個工具，不需另外掛載" ' : '')) +
+      'onclick="wsBagAddPicked(\'' + kind + '\', \'' + def.name + '\')">＋ 加入</button>';
+  }
+
+  return (
+    '<div class="ws-bag-item ws-bag-row' + (mounted ? ' ws-bag-item--active' : '') + (hasPublished ? '' : ' ws-bag-item--draft') + '" data-bag-' + kind + '="' + def.name + '">' +
+      '<div class="ws-bag-row-main">' +
+        '<span class="ws-bag-item-name">' + escapeHtml(def.displayName) + '</span>' +
+        status +
+      '</div>' +
+      '<div class="ws-bag-row-actions">' +
+        '<select class="ws-bag-version-select" data-bag-' + kind + '-version="' + def.name + '" ' + (mounted ? 'disabled title="要換版本請先卸下" ' : '') +
+          'onchange="wsBagPickVersion(\'' + kind + '\', \'' + def.name + '\', this.value)">' + options + '</select>' +
+        action +
+        '<button class="ws-bag-item-detail-btn" data-bag-' + kind + '-detail="' + def.name + '" title="查看詳情" ' +
+          'onclick="wsOpenBagDetail(\'' + kind + '\', \'' + def.name + '\', wsBagPickedLevel(\'' + kind + '\', ' + (kind === 'gem' ? 'wsGemByName' : 'wsEquipmentByName') + '(\'' + def.name + '\'), null))">⋯</button>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function renderBagForVariant(state) {
+  var variant = wsFindVariant(state);
+  var gemRows = state.data.gems.map(function (gemDef) { return renderBagRow('gem', gemDef, variant); }).join('');
+  var equipmentRows = state.data.equipment.map(function (eqDef) { return renderBagRow('equipment', eqDef, variant); }).join('');
 
   var error = state.uiState.bagError;
   var warning = state.uiState.bagWarning;
   return (
-    '<div class="ws-bag-header"><span class="label">🧰 工具庫</span><button class="btn" data-bag-add onclick="wsOpenBagDetailCreate()">＋ 新增</button></div>' +
+    (wsCatalogReadOnly()
+      ? '<div class="ws-bag-header"><span class="ws-pane-title">工具庫</span></div>' +
+        '<div class="ws-bag-readonly-hint hint" data-bag-readonly-hint>選好版本按「＋ 加入」即可掛載到此方案（草稿版本不可選）。要新增或修改，請' + wsCatalogLink('equipment', '到 Skills Repository') + '或' + wsCatalogLink('gem', '到 Tool 管理') + '</div>'
+      : '<div class="ws-bag-header"><span class="ws-pane-title">工具庫</span><button class="btn btn-sm" data-bag-add onclick="wsOpenBagDetailCreate()">＋ 新增</button></div>') +
     (error ? '<div class="ws-bag-error" data-bag-error>' + escapeHtml(error) + '</div>' : '') +
     (warning ? '<div class="ws-bag-warning" data-bag-warning>' + escapeHtml(warning) + '</div>' : '') +
-    '<div class="label">🧰 工具庫 — 工具</div>' + gemRows +
-    '<div class="label" style="margin-top:var(--space-3);">🧰 工具庫 — 技能</div>' + equipmentRows
+    '<div class="ws-bag-group-title">技能<span class="ws-count">' + state.data.equipment.length + '</span></div>' + equipmentRows +
+    '<div class="ws-bag-group-title">工具<span class="ws-count">' + state.data.gems.length + '</span></div>' + gemRows
   );
+}
+
+// ---------- Agent 層右欄：方案總覽／打包 ----------
+function renderNpcSideTabs(state) {
+  var tab = state.uiState.bagMode === 'pack' ? 'pack' : 'overview';
+  return (
+    '<div class="ws-variant-tabs ws-npc-side-tabs">' +
+      '<span class="ws-variant-tab' + (tab === 'overview' ? ' ws-variant-tab--active' : '') + '" data-npc-side-tab="overview" onclick="wsSetBagMode(\'bag\')">方案總覽</span>' +
+      '<span class="ws-variant-tab' + (tab === 'pack' ? ' ws-variant-tab--active' : '') + '" data-npc-side-tab="pack" onclick="wsSetBagMode(\'pack\')">打包</span>' +
+    '</div>'
+  );
+}
+
+function wsFormatDate(iso) {
+  return iso ? iso.slice(0, 10) : '';
+}
+
+function wsBundlesContainingVariant(npcCode, variantCode) {
+  return window.appState.data.bundles.filter(function (b) {
+    return (b.variantRefs || []).some(function (r) { return r.npcCode === npcCode && r.variantCode === variantCode; });
+  });
+}
+
+function renderNpcOverviewPane(state) {
+  var npc = wsFindNpc(state);
+  var body;
+  if (npc.type === 'SWITCH') {
+    body = '<div class="hint">' + escapeHtml(npc.displayName) + ' 是分流型（SWITCH）Agent，不建立方案。</div>';
+  } else if (npc.variants.length === 0) {
+    body =
+      '<div class="ws-overview-empty" data-overview-empty>' +
+        '<div class="hint">這個 Agent 還沒有方案。方案決定對外提供的指令與能力組合，至少要有一個已發佈的方案才能上線。</div>' +
+        '<button class="btn btn-primary" data-overview-create-variant onclick="wsOverviewCreateVariant()">＋ 建立第一個方案</button>' +
+      '</div>';
+  } else {
+    var publishedCount = wsPublishedVariants(npc).length;
+    body =
+      '<div class="hint ws-overview-summary" data-overview-summary>共 ' + npc.variants.length + ' 個方案・已發佈 ' + publishedCount + ' 個</div>' +
+      npc.variants.map(function (v) {
+        var lastPublish = (v.publishHistory && v.publishHistory.length > 0) ? v.publishHistory[0].publishedAt : null;
+        var bundles = wsBundlesContainingVariant(npc.code, v.code);
+        var dirty = wsVariantIsDirty(npc.code, v);
+        return (
+          '<div class="ws-overview-card" data-overview-variant="' + npc.code + '.' + v.code + '" onclick="wsSelectVariant(\'' + npc.code + '\', \'' + v.code + '\')">' +
+            '<div class="ws-overview-card-head">' +
+              '<span class="ws-bag-item-name">' + escapeHtml(v.name) + '</span>' +
+              '<span class="ws-overview-status' + (v.publishedVersion ? ' ws-overview-status--live' : '') + '">' + (v.publishedVersion ? ('已發佈 v' + v.publishedVersion) : '尚未發佈') + '</span>' +
+            '</div>' +
+            '<div class="hint">' +
+              '技能 ' + v.equippedEquipment.length + '・工具 ' + v.wornGems.length +
+              (lastPublish ? '・最後發佈 ' + wsFormatDate(lastPublish) : '') +
+              (bundles.length > 0 ? '・收錄於 ' + bundles.length + ' 個組合包' : '') +
+            '</div>' +
+            (dirty ? '<div class="ws-bag-warning">有未儲存的修改</div>' : '') +
+          '</div>'
+        );
+      }).join('') +
+      '<button class="btn" data-overview-create-variant onclick="wsOverviewCreateVariant()">＋ 新方案</button>';
+  }
+  return '<div data-npc-overview>' + renderNpcSideTabs(state) + body + '</div>';
+}
+
+function wsOverviewCreateVariant() {
+  var npc = wsFindNpc(window.appState);
+  window.appState.uiState.expandedNpcs[npc.code] = true;
+  wsShowCreateVariantForm(npc.code);
+}
+
+function renderNpcSidePane(state) {
+  return state.uiState.bagMode === 'pack' ? renderPackPane(state) : renderNpcOverviewPane(state);
 }
 
 function wsSwitchPackListKind(kind) {
@@ -1343,13 +1560,12 @@ function renderPackPane(state) {
   var kind = state.uiState.packListKind || 'bundle';
   if (state.uiState.packCreateForm) {
     var form = state.uiState.packCreateForm;
-    return '<div data-pack-pane>' + (form.kind === 'bundle' ? renderPackCreateBundleForm(state) : renderPackCreateExtensionForm(state)) + '</div>';
+    return '<div data-pack-pane>' + renderNpcSideTabs(state) + (form.kind === 'bundle' ? renderPackCreateBundleForm(state) : renderPackCreateExtensionForm(state)) + '</div>';
   }
   return (
     '<div data-pack-pane>' +
-      '<div class="ws-bag-header"><span class="label">📦 打包</span>' +
-        '<button class="btn" data-pack-mode-toggle onclick="wsSetBagMode(\'bag\')">🧰 工具庫</button>' +
-      '</div>' +
+      renderNpcSideTabs(state) +
+      '<div class="hint ws-pack-scope">組合包收錄同場域（' + escapeHtml(wsFindNpc(state).usedFor) + '）的已發佈方案；擴充包為這個 Agent 加掛額外能力。</div>' +
       '<div class="ws-variant-tabs">' +
         '<span class="ws-variant-tab' + (kind === 'bundle' ? ' ws-variant-tab--active' : '') + '" data-pack-list-kind="bundle" onclick="wsSwitchPackListKind(\'bundle\')">組合包</span>' +
         '<span class="ws-variant-tab' + (kind === 'extension' ? ' ws-variant-tab--active' : '') + '" data-pack-list-kind="extension" onclick="wsSwitchPackListKind(\'extension\')">擴充包</span>' +
@@ -1403,7 +1619,7 @@ function wsTransitionPackStatus(newStatus) {
 }
 
 var WS_PACK_TRANSITION_LABELS = {
-  PUBLISHED: '🚀 發布',
+  PUBLISHED: '🚀 發佈',
   MAINTENANCE: '🛠 進入維護',
   EOS: '⏹ 結束'
 };
@@ -1462,7 +1678,7 @@ function wsCommitPackMembers() {
   }
   var draft = window.appState.uiState.packMembershipDraft;
   if (draft.length === 0) {
-    window.appState.uiState.packDetailError = detail.kind === 'bundle' ? '至少要選一張人物卡' : '至少要選一個工具或技能';
+    window.appState.uiState.packDetailError = detail.kind === 'bundle' ? '至少要選一個方案' : '至少要選一個工具或技能';
     window.rerender();
     return;
   }
@@ -1535,7 +1751,7 @@ function renderPackMembersList(detail, def) {
   }
   var itemRows = def.itemRefs.map(function (ref) {
     var itemDef = ref.kind === 'gem' ? wsGemByName(ref.name) : wsEquipmentByName(ref.name);
-    return '<div class="ws-flyout-ref-item">' + escapeHtml(itemDef.displayName) + ' Lv' + ref.level + '</div>';
+    return '<div class="ws-flyout-ref-item">' + escapeHtml(itemDef.displayName) + ' v' + ref.level + '</div>';
   }).join('') || '<div class="hint">沒有項目</div>';
   return '<div data-pack-members>' + itemRows + '</div>';
 }
@@ -1577,14 +1793,14 @@ function renderPackDetailViewBody(state) {
     '<div class="ws-flyout-field"><span class="label">狀態</span> <span data-pack-status>' + escapeHtml(def.status) + '</span></div>' +
     '<div class="ws-flyout-field"><span class="label">說明</span></div>' +
     descriptionBlock +
-    '<div class="ws-flyout-field"><span class="label">' + (detail.kind === 'bundle' ? '成員人物卡' : '成員能力') + '</span>' +
+    '<div class="ws-flyout-field"><span class="label">' + (detail.kind === 'bundle' ? '成員方案' : '成員能力') + '</span>' +
       (def.status === 'DRAFT' && editing !== 'members' ? '<button class="btn" data-pack-members-pencil onclick="wsStartEditPackMembers()">✎</button>' : '') +
     '</div>' +
     (editing === 'members' ? renderPackMembershipEditor(detail, def) : renderPackMembersList(detail, def)) +
     (state.uiState.packDetailError ? '<div class="ws-flyout-error" data-flyout-error>' + escapeHtml(state.uiState.packDetailError) + '</div>' : '') +
     '<div class="ws-flyout-actions">' +
       wsPackNextStatuses(def.status).map(function (next) {
-        var label = (next === 'PUBLISHED' && def.status === 'MAINTENANCE') ? '▶ 恢復發布' : WS_PACK_TRANSITION_LABELS[next];
+        var label = (next === 'PUBLISHED' && def.status === 'MAINTENANCE') ? '▶ 恢復發佈' : WS_PACK_TRANSITION_LABELS[next];
         return '<button class="btn' + (next === 'EOS' ? ' btn-danger' : ' btn-primary') + '" data-pack-transition="' + next + '" onclick="wsTransitionPackStatus(\'' + next + '\')">' + label + '</button>';
       }).join(' ') +
     '</div>'
@@ -1637,7 +1853,7 @@ function wsSubmitCreateBundle() {
   var displayName = (form.displayName || '').trim();
   var selected = form.selectedVariants || [];
   if (selected.length === 0) {
-    window.appState.uiState.packDetailError = '至少要選一張人物卡';
+    window.appState.uiState.packDetailError = '至少要選一個方案';
     window.rerender();
     return;
   }
@@ -1670,11 +1886,11 @@ function renderPackCreateBundleForm(state) {
         '<span class="hint">' + (checked ? '已選取' : '') + '</span>' +
       '</div>'
     );
-  }).join('') || '<div class="hint">此場域沒有已發布的人物卡</div>';
+  }).join('') || '<div class="hint">此場域沒有已發佈的方案</div>';
   return (
     '<div class="ws-flyout-field"><label class="label">代碼</label><input data-pack-create-name value="' + escapeHtml(form.code || '') + '" oninput="wsUpdatePackCreateField(\'code\', this.value)" placeholder="e.g. CS_BUNDLE_1"></div>' +
     '<div class="ws-flyout-field"><label class="label">顯示名稱</label><input data-pack-create-display-name value="' + escapeHtml(form.displayName || '') + '" oninput="wsUpdatePackCreateField(\'displayName\', this.value)" placeholder="顯示名稱"></div>' +
-    '<div class="label">選擇人物卡（同場域：' + escapeHtml(npc.usedFor) + '）</div>' +
+    '<div class="label">選擇方案（同場域：' + escapeHtml(npc.usedFor) + '）</div>' +
     rows +
     (error ? '<div class="ws-flyout-error" data-flyout-error>' + escapeHtml(error) + '</div>' : '') +
     '<div class="ws-flyout-actions">' +
@@ -1704,12 +1920,12 @@ function wsPublishedCatalogItems() {
   var items = [];
   window.appState.data.gems.forEach(function (gemDef) {
     gemDef.versions.forEach(function (v) {
-      if (v.status === 'published') items.push({ kind: 'gem', name: gemDef.name, level: v.level, label: gemDef.displayName + ' Lv' + v.level });
+      if (v.status === 'published') items.push({ kind: 'gem', name: gemDef.name, level: v.level, label: gemDef.displayName + ' v' + v.level });
     });
   });
   window.appState.data.equipment.forEach(function (eqDef) {
     eqDef.versions.forEach(function (v) {
-      if (v.status === 'published') items.push({ kind: 'equipment', name: eqDef.name, level: v.level, label: eqDef.displayName + ' Lv' + v.level });
+      if (v.status === 'published') items.push({ kind: 'equipment', name: eqDef.name, level: v.level, label: eqDef.displayName + ' v' + v.level });
     });
   });
   return items;
@@ -1797,19 +2013,19 @@ function wsOpenPackCreate(kind) {
 function wsWearGem(variant, gemName, level) {
   var already = variant.wornGems.find(function (g) { return g.name === gemName; });
   if (already) {
-    return { ok: false, message: '這個工具已佩掛，請先卸下才能換等級' };
+    return { ok: false, message: '這個工具已掛載，請先卸下才能換版本' };
   }
   var gemDef = wsGemByName(gemName);
   var ver = wsGemVersion(gemDef, level);
   if (ver.status === 'draft') {
-    return { ok: false, message: '這個等級是草稿，人物卡只能引用公開版' };
+    return { ok: false, message: '這個版本是草稿，方案只能引用已發佈版本' };
   }
   var carried = wsCarriedGems(variant).find(function (cg) { return cg.gemName === gemName; });
   if (carried) {
     if (carried.level === level) {
-      return { ok: false, message: '目前啟用的技能已鑲嵌同名同級工具，無需另外佩掛' };
+      return { ok: false, message: '目前掛載的技能已內含同名同級工具，無需另外掛載' };
     }
-    return { ok: false, message: '目前啟用的技能已鑲嵌「' + gemDef.displayName + '」Lv' + carried.level + '，無法佩掛不同等級' };
+    return { ok: false, message: '目前掛載的技能已內含「' + gemDef.displayName + '」v' + carried.level + '，無法掛載不同版本' };
   }
   variant.wornGems.push({ name: gemName, level: level });
   return { ok: true };
@@ -1818,12 +2034,12 @@ function wsWearGem(variant, gemName, level) {
 function wsEquipEquipment(variant, eqName, level) {
   var already = variant.equippedEquipment.find(function (e) { return e.name === eqName; });
   if (already) {
-    return { ok: false, message: '這個技能已啟用，請先卸下才能換等級' };
+    return { ok: false, message: '這個技能已掛載，請先卸下才能換版本' };
   }
   var eqDef = wsEquipmentByName(eqName);
   var ver = wsEquipmentVersion(eqDef, level);
   if (ver.status === 'draft') {
-    return { ok: false, message: '這個等級是草稿，人物卡只能引用公開版' };
+    return { ok: false, message: '這個版本是草稿，方案只能引用已發佈版本' };
   }
   var incomingGems = ver.gems || [];
   for (var i = 0; i < incomingGems.length; i++) {
@@ -1831,7 +2047,7 @@ function wsEquipEquipment(variant, eqName, level) {
     var conflict = wsCarriedGems(variant).find(function (cg) { return cg.gemName === ig.gemName && cg.level !== ig.level; });
     if (conflict) {
       var conflictGemDef = wsGemByName(ig.gemName);
-      return { ok: false, message: '另一個技能已鑲嵌「' + conflictGemDef.displayName + '」不同等級，請先卸下其中一個' };
+      return { ok: false, message: '另一個技能已內含「' + conflictGemDef.displayName + '」不同版本，請先卸下其中一個' };
     }
   }
   variant.equippedEquipment.push({ name: eqName, level: level });
@@ -1842,7 +2058,7 @@ function wsEquipEquipment(variant, eqName, level) {
       var worn = variant.wornGems[wornIdx];
       var gemDef2 = wsGemByName(ig2.gemName);
       if (worn.level !== ig2.level) {
-        warnings.push('佩掛的「' + gemDef2.displayName + '」已從 Lv' + worn.level + ' 換成 Lv' + ig2.level);
+        warnings.push('掛載的「' + gemDef2.displayName + '」已從 v' + worn.level + ' 換成 v' + ig2.level);
       }
       variant.wornGems.splice(wornIdx, 1);
     }
@@ -1925,7 +2141,7 @@ function wsPublishVariantErrors(npc, variant) {
   allCapabilityRefs.forEach(function (ref) {
     var ver = ref.kind === 'equipment' ? wsEquipmentVersion(ref.def, ref.level) : wsGemVersion(ref.def, ref.level);
     if (ver.status === 'draft') {
-      errors.push('能力含草稿版本（' + ref.def.displayName + '），不能發布');
+      errors.push('能力含草稿版本（' + ref.def.displayName + '），不能發佈');
     }
   });
   return errors;
@@ -1938,13 +2154,13 @@ function renderPublishVariantModalBody() {
   var modal = document.getElementById('modal-publish-variant-body');
   if (!modal) return;
   modal.innerHTML =
-    '<div>發布「' + escapeHtml(variant.name) + '」？目前版本：' + (variant.publishedVersion ? ('v' + variant.publishedVersion) : '尚未發布') + '</div>' +
+    '<div>發佈「' + escapeHtml(variant.name) + '」？目前版本：' + (variant.publishedVersion ? ('v' + variant.publishedVersion) : '尚未發佈') + '</div>' +
     (errors.length > 0
       ? '<div class="ws-bag-error" data-publish-variant-error>' + escapeHtml(errors.join('；')) + '</div>'
       : '<div class="hint" data-publish-variant-error></div>') +
     '<div class="ws-variant-titlebar-actions" style="margin-top:12px;">' +
       '<button class="btn" data-publish-variant-close onclick="wsClosePublishVariantModal()">取消</button>' +
-      '<button class="btn btn-primary" data-publish-variant-confirm ' + (errors.length > 0 ? 'disabled' : '') + ' onclick="wsConfirmPublishVariant()">確認發布</button>' +
+      '<button class="btn btn-primary" data-publish-variant-confirm ' + (errors.length > 0 ? 'disabled' : '') + ' onclick="wsConfirmPublishVariant()">確認發佈</button>' +
     '</div>';
 }
 
@@ -1979,7 +2195,7 @@ function renderVariantHistoryModalBody() {
   if (!container) return;
   var rows = (variant.publishHistory || []).map(function (entry) {
     return '<div class="ws-history-row">v' + entry.version + ' <span class="hint">' + escapeHtml(entry.publishedAt) + '</span></div>';
-  }).join('') || '<div class="hint">尚無發布紀錄</div>';
+  }).join('') || '<div class="hint">尚無發佈紀錄</div>';
   container.innerHTML = rows;
 }
 
@@ -1999,7 +2215,7 @@ function wsCloseVariantHistoryModal() {
 function renderCenterPane(state) {
   var sel = state.selection;
   if (!sel.npcCode) {
-    return '<div class="hint">請從左側選擇一個 Agent 或人物卡開始編輯。</div>';
+    return '<div class="hint">請從左側選擇一個 Agent 或方案開始編輯。</div>';
   }
   if (sel.variantCode) {
     return '<div id="ws-variant-pane"></div>';

@@ -596,7 +596,7 @@ This product is broken, I need help
       </div>
     </div>
 
-    <!-- ========== AGENT 配置（Agent 基礎設定：Agent／人物卡工作區） ========== -->
+    <!-- ========== AGENT 配置（Agent 基礎設定：Agent／方案工作區） ========== -->
     <div class="page" id="page-agents">
       <div class="page-header"><h2>Agent 配置</h2></div>
       <div class="page-content">
@@ -727,63 +727,6 @@ This product is broken, I need help
         <div class="form-item"><label>認證方式</label><select><option>None</option><option>API Key</option><option>OAuth 2.0</option></select></div>
       </div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-mcp')">取消</button><button class="btn btn-primary">連線並發現 Tools</button></div>
-    </div>
-  </div>
-
-  <div class="modal-mask" id="modal-create-agent">
-    <div class="modal-box is-md">
-      <div class="modal-head">新增 Agent <span class="close-btn" onclick="closeModal('modal-create-agent')">×</span></div>
-      <div class="modal-body">
-        <div class="form-item"><label>Agent 名稱 <span style="color:var(--danger-text);">*</span></label><input type="text" placeholder="e.g. 客服機器人"></div>
-        <div class="form-item"><label>描述</label><textarea rows="2" placeholder="描述 Agent 的用途..."></textarea></div>
-        <div class="form-item"><label>System Prompt</label><textarea rows="3" placeholder="設定 Agent 的系統提示詞..."></textarea></div>
-        <div class="form-item">
-          <label>啟用 Skills</label>
-          <div style="border:1px solid var(--gray-300);border-radius:4px;padding:10px;max-height:120px;overflow-y:auto;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox" checked> 通用客服答覆 <span class="tag tag-blue" style="margin-left:auto;">Platform</span></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px;cursor:pointer;"><input type="checkbox"> ERP 庫存查詢 <span class="tag tag-orange" style="margin-left:auto;">企業</span></label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" checked> 會議摘要 <span class="tag tag-blue" style="margin-left:auto;">Platform</span></label>
-          </div>
-        </div>
-        <div class="form-item" style="margin-bottom:0;">
-          <label>綁定 Tools / MCP <span style="font-weight:400;color:var(--gray-400);font-size:11px;">· 除了上方 Skills 帶來的工具，也可以直接為此 Agent 額外加掛</span></label>
-          <div style="border:1px solid var(--gray-300);border-radius:4px;padding:10px;max-height:180px;overflow-y:auto;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
-              <input type="checkbox" checked>
-              <span style="display:flex;flex-direction:column;">
-                <span>knowledge-base-search</span>
-                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">平台知識庫全文搜尋</span>
-              </span>
-              <span class="tag tag-cyan" style="margin-left:auto;">Native</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
-              <input type="checkbox" checked>
-              <span style="display:flex;flex-direction:column;">
-                <span>sentiment-analysis/analyze</span>
-                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">情緒分析與語氣偵測</span>
-              </span>
-              <span class="tag tag-purple" style="margin-left:auto;">MCP</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;cursor:pointer;">
-              <input type="checkbox">
-              <span style="display:flex;flex-direction:column;">
-                <span>order-query</span>
-                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">查詢訂單狀態與物流</span>
-              </span>
-              <span class="tag tag-cyan" style="margin-left:auto;">Native</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-              <input type="checkbox">
-              <span style="display:flex;flex-direction:column;">
-                <span>erp-server/query_inventory</span>
-                <span style="font-size:11px;color:var(--gray-400);font-weight:400;">查詢 ERP 即時庫存</span>
-              </span>
-              <span class="tag tag-purple" style="margin-left:auto;">MCP</span>
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-create-agent')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-create-agent')">建立 Agent</button></div>
     </div>
   </div>
 
@@ -1061,7 +1004,7 @@ This product is broken, I need help
     </div>
   </div>
 
-  <!-- Agent 基礎設定（agent-setup-demo）的發布／公開記錄彈窗，與其 index.html 放置方式一致 -->
+  <!-- Agent 基礎設定（agent-setup-demo）的發佈／發佈紀錄彈窗，與其 index.html 放置方式一致 -->
   <div class="ws-modal-mask" id="modal-publish-variant">
     <div class="ws-modal-box">
       <div id="modal-publish-variant-body"></div>
@@ -1077,6 +1020,8 @@ This product is broken, I need help
   </div>
 
   <script src="skill-admin/app.js"></script>
+  <!-- 大後台內技能／工具的新增與編輯歸 Skills Repository、Tool 管理，Agent 配置的工具庫只做挑選掛載 -->
+  <script>window.WS_CONFIG = { catalogReadOnly: true };</script>
   <script src="agent-setup-demo/js/data.js"></script>
   <script src="agent-setup-demo/js/workspace.js"></script>
   <script src="agent-setup-demo/js/app.js"></script>

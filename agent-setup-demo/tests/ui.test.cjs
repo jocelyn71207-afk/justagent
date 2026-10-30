@@ -16,6 +16,28 @@ async function main() {
 
   await page.goto('file://' + path.resolve(__dirname, '../index.html'));
 
+  // The 工具庫 lists one row per item with a version picker: add = pick version + ＋加入, remove = 卸下.
+  async function bagToggle(kind, name, level) {
+    const mounted = await page.locator('[data-bag-' + kind + '-remove="' + name + '"]').count();
+    if (mounted) {
+      await page.click('[data-bag-' + kind + '-remove="' + name + '"]');
+      return;
+    }
+    await page.selectOption('[data-bag-' + kind + '-version="' + name + '"]', String(level));
+    await page.click('[data-bag-' + kind + '-add="' + name + '"]');
+  }
+  // ⋯ opens the item's detail; the flyout's own version buttons reach any version, drafts included.
+  async function openBagDetail(kind, name, level) {
+    await page.click('[data-bag-' + kind + '-detail="' + name + '"]');
+    await page.click('[data-flyout-level-btn="' + level + '"]');
+  }
+  // 打包 now lives on the Agent level's right pane, not on the variant titlebar.
+  async function openPackPane() {
+    const npcCode = await page.evaluate(() => window.appState.selection.npcCode);
+    await page.click('[data-npc-select="' + npcCode + '"]');
+    await page.click('[data-npc-side-tab="pack"]');
+  }
+
   const paneCount = await page.locator('.ws-pane').count();
   record('three pane containers exist', paneCount === 3, 'found ' + paneCount);
 
@@ -91,7 +113,7 @@ async function main() {
   await page.click('[data-npc-toggle="ORDER_ASSIST"]');
   await page.click('[data-create-variant="ORDER_ASSIST"]');
   const variantFormVisible = await page.locator('[data-variant-form="ORDER_ASSIST"]').count();
-  record('clicking + 新人物卡 opens inline form', variantFormVisible === 1);
+  record('clicking + 新方案 opens inline form', variantFormVisible === 1);
 
   await page.fill('[data-variant-form-code="ORDER_ASSIST"]', 'bad-code');
   await page.click('[data-variant-form-submit="ORDER_ASSIST"]');
@@ -121,7 +143,7 @@ async function main() {
 
   await page.click('[data-npc-toggle="INTENT_SWITCH"]');
   const switchCreateDisabled = await page.locator('[data-npc-row="INTENT_SWITCH"] + .ws-nav-variant.ws-nav-create').count();
-  record('SWITCH-type NPC has no clickable + 新人物卡 trigger', switchCreateDisabled === 0);
+  record('SWITCH-type NPC has no clickable + 新方案 trigger', switchCreateDisabled === 0);
 
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   const npcPaneText = await page.locator('#ws-npc-pane').innerText();
@@ -213,7 +235,20 @@ async function main() {
 
   // Save first, then publish should succeed.
   await page.click('[data-model-param-save="chatModel"]');
+  const impactHint = await page.locator('[data-model-impact="chatModel"]').innerText();
+  record('model block lists the published variants a publish would affect', impactHint.indexOf('一般版 v2') !== -1 && impactHint.indexOf('豪華版 v1') !== -1, impactHint);
   await page.click('[data-model-publish="chatModel"]');
+  const confirmBoxCount = await page.locator('[data-model-publish-confirm-box="chatModel"]').count();
+  record('publishing a model with published variants asks for confirmation first', confirmBoxCount === 1);
+  const versionBeforeConfirm = await page.evaluate(function () {
+    return window.appState.data.npcs.find(function (n) { return n.code === 'FAQ_ANSWER'; }).chatModel.version;
+  });
+  record('version does not bump until the impact confirmation is accepted', versionBeforeConfirm === 3, versionBeforeConfirm);
+  await page.click('[data-model-publish-cancel="chatModel"]');
+  const confirmBoxAfterCancel = await page.locator('[data-model-publish-confirm-box="chatModel"]').count();
+  record('cancelling the impact confirmation closes it', confirmBoxAfterCancel === 0);
+  await page.click('[data-model-publish="chatModel"]');
+  await page.click('[data-model-publish-confirm="chatModel"]');
   const versionBumped = await page.evaluate(function () {
     return window.appState.data.npcs.find(function (n) { return n.code === 'FAQ_ANSWER'; }).chatModel.version;
   });
@@ -241,7 +276,7 @@ async function main() {
   record('version did not bump while empty-param publish was blocked', notPublishedWithEmptyParam === 1, notPublishedWithEmptyParam);
 
   const bagPlaceholderText = await page.locator('#ws-bag').innerText();
-  record('right pane shows a placeholder prompting variant selection when only an NPC is selected', bagPlaceholderText.indexOf('請從左側選擇一張人物卡') !== -1, bagPlaceholderText);
+  record('right pane shows the 方案總覽 when only an NPC is selected', (await page.locator('[data-npc-overview]').count()) === 1, bagPlaceholderText);
 
   await page.click('[data-reset-data]');
   const npcCountAfterReset = await page.evaluate(() => window.appState.data.npcs.length);
@@ -324,7 +359,7 @@ async function main() {
   record('SEED has an equipment catalog', equipmentCount >= 2, 'found ' + equipmentCount);
 
   const orderLookup = await page.evaluate(() => window.appState.data.equipment.find((e) => e.name === 'order-lookup'));
-  record('order-lookup equipment carries get_order_status at Lv1 and Lv2', !!orderLookup && orderLookup.versions.length === 2 && orderLookup.versions[0].gems[0].gemName === 'get_order_status');
+  record('order-lookup equipment carries get_order_status at v1 and v2', !!orderLookup && orderLookup.versions.length === 2 && orderLookup.versions[0].gems[0].gemName === 'get_order_status');
 
   const standardVariant = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'STANDARD'));
   record('STANDARD variant seeds equippedEquipment/wornGems arrays', !!standardVariant && Array.isArray(standardVariant.equippedEquipment) && Array.isArray(standardVariant.wornGems));
@@ -337,7 +372,7 @@ async function main() {
   record('the Phase 2 stub is gone', stubGoneCount === 0);
 
   const variantPaneText = await page.locator('#ws-variant-pane').innerText();
-  record('variant pane shows published-version status', variantPaneText.indexOf('已發布 v2') !== -1, variantPaneText);
+  record('variant pane shows published-version status', variantPaneText.indexOf('已發佈 v2') !== -1, variantPaneText);
   record('variant pane shows saved status', variantPaneText.indexOf('已儲存') !== -1, variantPaneText);
 
   const discardDisabled = await page.locator('[data-variant-discard]').isDisabled();
@@ -345,7 +380,7 @@ async function main() {
   const saveDisabled = await page.locator('[data-variant-save]').isDisabled();
   record('儲存 starts disabled (nothing to save yet)', saveDisabled === true);
   const publishEnabled = await page.locator('[data-variant-publish]').isDisabled();
-  record('發布 is always clickable (not disabled by having no changes)', publishEnabled === false);
+  record('發佈 is always clickable (not disabled by having no changes)', publishEnabled === false);
 
   const tabsText = await page.locator('#ws-variant-body').innerText();
   record('variant body shows the three tab labels', tabsText.indexOf('基本資料') !== -1 && tabsText.indexOf('模型') !== -1 && tabsText.indexOf('基礎指令') !== -1, tabsText);
@@ -390,32 +425,45 @@ async function main() {
   record('bag in variant mode lists the equipment catalog', bagListText.indexOf('訂單查詢術') !== -1, bagListText);
   record('bag in variant mode lists the gem catalog', bagListText.indexOf('查詢訂單狀態') !== -1, bagListText);
 
-  const sqlGemCount = await page.locator('[data-bag-gem="run_sql_query"][data-bag-gem-level="1"]').count();
-  record('bag shows run_sql_query Lv1 as a clickable entry', sqlGemCount === 1);
-  await page.click('[data-bag-gem="run_sql_query"][data-bag-gem-level="1"]');
+  const sqlGemCount = await page.locator('[data-bag-gem="run_sql_query"]').count();
+  record('bag shows run_sql_query as a single row (versions live in its picker)', sqlGemCount === 1, 'found ' + sqlGemCount);
+  const sqlGemOptions = await page.locator('[data-bag-gem-version="run_sql_query"] option').allInnerTexts();
+  record('the row\'s version picker lists every version, newest first', sqlGemOptions.length === 2 && sqlGemOptions[0].indexOf('v2') === 0 && sqlGemOptions[0].indexOf('最新') !== -1, JSON.stringify(sqlGemOptions));
+  const sqlGemDefaultPick = await page.locator('[data-bag-gem-version="run_sql_query"]').inputValue();
+  record('the version picker defaults to the latest published version', sqlGemDefaultPick === '2', sqlGemDefaultPick);
+  await bagToggle('gem', 'run_sql_query', 1);
   const premiumWornAfter = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'PREMIUM').wornGems.some((g) => g.name === 'run_sql_query' && g.level === 1));
   record('clicking an unworn gem in the bag wears it', premiumWornAfter === true);
 
-  const sqlAnalysisEqCount = await page.locator('[data-bag-equipment="sql-analysis"][data-bag-equipment-level="1"]').count();
-  record('bag shows sql-analysis Lv1 as a clickable entry', sqlAnalysisEqCount === 1);
-  await page.click('[data-bag-equipment="sql-analysis"][data-bag-equipment-level="1"]');
+  const sqlGemMountedLabel = await page.locator('[data-bag-gem-mounted="run_sql_query"]').innerText();
+  record('a mounted row shows which version is mounted', sqlGemMountedLabel.indexOf('v1') !== -1, sqlGemMountedLabel);
+  const sqlGemPickerLocked = await page.locator('[data-bag-gem-version="run_sql_query"]').isDisabled();
+  record('a mounted row locks its version picker (unmount first to switch)', sqlGemPickerLocked === true);
+
+  const sqlAnalysisEqCount = await page.locator('[data-bag-equipment="sql-analysis"]').count();
+  record('bag shows sql-analysis as a single row', sqlAnalysisEqCount === 1);
+  await bagToggle('equipment', 'sql-analysis', 1);
   const premiumEquippedAfter = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'PREMIUM').equippedEquipment.some((e) => e.name === 'sql-analysis' && e.level === 1));
   record('clicking an unequipped item in the bag equips it', premiumEquippedAfter === true);
 
-  // Scenario 1: wear get_order_status Lv1, then equip order-lookup Lv2 (carries Lv2) -> auto-upgrade with warning.
+  // Scenario 1: wear get_order_status v1, then equip order-lookup v2 (carries v2) -> auto-upgrade with warning.
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.PREMIUM"]');
-  await page.click('[data-bag-gem="get_order_status"][data-bag-gem-level="1"]');
-  await page.click('[data-bag-equipment="order-lookup"][data-bag-equipment-level="2"]');
+  await bagToggle('gem', 'get_order_status', 1);
+  await bagToggle('equipment', 'order-lookup', 2);
   const scenario1Worn = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'PREMIUM').wornGems.find((g) => g.name === 'get_order_status'));
   record('scenario 1: worn gem auto-upgrades to match the equipped item\'s carried level, no duplicate entry', !!scenario1Worn === false, JSON.stringify(scenario1Worn));
   // (the gem is now carried by the equipment, not separately worn — wornGems should no longer list it)
 
   await page.click('[data-unequip-equipment="order-lookup"]');
 
-  // Scenario 3: equip order-lookup Lv2 (carries Lv2) first, then try to wear get_order_status Lv1 -> blocked.
-  await page.click('[data-bag-equipment="order-lookup"][data-bag-equipment-level="2"]');
-  await page.click('[data-bag-gem="get_order_status"][data-bag-gem-level="1"]');
+  // Scenario 3: equip order-lookup v2 (carries v2) first, then try to wear get_order_status v1 -> blocked.
+  await bagToggle('equipment', 'order-lookup', 2);
+  const carriedAddDisabled = await page.locator('[data-bag-gem-add="get_order_status"]').isDisabled();
+  record('＋加入 is disabled for a tool an equipped skill already carries', carriedAddDisabled === true);
+  const carriedHint = await page.locator('[data-bag-gem-carried="get_order_status"]').innerText();
+  record('the carried tool\'s row explains which version the skill carries', carriedHint.indexOf('v2') !== -1, carriedHint);
+  await page.evaluate(() => wsBagWear('get_order_status', 1));
   const scenario3Worn = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'PREMIUM').wornGems.some((g) => g.name === 'get_order_status'));
   record('scenario 3: wearing a conflicting-level gem while the equipment already carries it is blocked', scenario3Worn === false);
   const scenario3Error = await page.evaluate(() => window.appState.uiState.bagError);
@@ -423,14 +471,14 @@ async function main() {
 
   await page.click('[data-unequip-equipment="order-lookup"]');
 
-  // Draft block: gem Lv4 is seeded as status:'draft'.
+  // Draft block: gem v4 is seeded as status:'draft'.
   const draftAttempt = await page.evaluate(function () {
     var variant = window.appState.data.npcs.find(function (n) { return n.code === 'FAQ_ANSWER'; }).variants.find(function (v) { return v.code === 'PREMIUM'; });
     return wsWearGem(variant, 'get_order_status', 4);
   });
-  record('wearing a draft-status gem is blocked by the pure rule function', draftAttempt.ok === false && draftAttempt.message.indexOf('公開版') !== -1, JSON.stringify(draftAttempt));
+  record('wearing a draft-status gem is blocked by the pure rule function', draftAttempt.ok === false && draftAttempt.message.indexOf('已發佈版本') !== -1, JSON.stringify(draftAttempt));
 
-  // Two-equipment conflict: equip order-lookup Lv1 (carries Lv1), then try sql-analysis would not conflict
+  // Two-equipment conflict: equip order-lookup v1 (carries v1), then try sql-analysis would not conflict
   // (different gem name) — instead prove the conflict with a second order-lookup-like equip attempt directly
   // against the pure function, since the bag only ever shows one entry per equipment name.
   const conflictResult = await page.evaluate(function () {
@@ -447,8 +495,8 @@ async function main() {
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.PREMIUM"]');
   // PREMIUM currently has no equipment (unequipped during Task 6's test); wear a conflicting-level gem path.
-  await page.click('[data-bag-equipment="order-lookup"][data-bag-equipment-level="2"]');
-  await page.click('[data-bag-gem="get_order_status"][data-bag-gem-level="1"]');
+  await bagToggle('equipment', 'order-lookup', 2);
+  await page.evaluate(() => wsBagWear('get_order_status', 1));
   const errorVisible = await page.locator('[data-bag-error]').innerText();
   record('bag error from a blocked wear is visible in the DOM, not just state', errorVisible.length > 0, errorVisible);
   await page.click('[data-unequip-equipment="order-lookup"]');
@@ -500,9 +548,12 @@ async function main() {
   await page.click('[data-variant-edit-basics]');
   await page.fill('[data-variant-name-input]', '豪華版 未儲存');
   await page.click('[data-variant-edit-commit]');
-  await page.click('[data-variant-publish]');
+  const publishDisabledWhileDirty = await page.locator('[data-variant-publish]').isDisabled();
+  record('發佈 is disabled while the variant has unsaved changes', publishDisabledWhileDirty === true);
+  // The modal still guards on its own, in case it is opened some other way.
+  await page.evaluate(() => wsOpenPublishVariantModal());
   const modalVisible = await page.locator('#modal-publish-variant.ws-modal--active').count();
-  record('發布 opens the publish modal', modalVisible === 1);
+  record('發佈 opens the publish modal', modalVisible === 1);
   const blockedHint = await page.locator('[data-publish-variant-error]').innerText();
   record('modal shows the unsaved-changes block before confirming', blockedHint.indexOf('未儲存') !== -1, blockedHint);
 
@@ -514,12 +565,12 @@ async function main() {
   record('confirming publish bumps publishedVersion by 1', versionAfterPublish === 2, versionAfterPublish);
 
   const historyBtnDisabledBeforePublish = await page.locator('[data-variant-history]').isDisabled();
-  record('公開記錄 is disabled before any publish exists for this variant', historyBtnDisabledBeforePublish === false, 'PREMIUM was just published above in Task 9\'s test');
+  record('發佈記錄 is disabled before any publish exists for this variant', historyBtnDisabledBeforePublish === false, 'PREMIUM was just published above in Task 9\'s test');
   // (PREMIUM already has 1 publish from Task 9's test, so the button should already be enabled here.)
 
   await page.click('[data-variant-history]');
   const historyModalVisible = await page.locator('#modal-variant-history.ws-modal--active').count();
-  record('公開記錄 opens the history modal', historyModalVisible === 1);
+  record('發佈記錄 opens the history modal', historyModalVisible === 1);
   const historyText = await page.locator('#modal-variant-history-body').innerText();
   record('history modal lists the v2 publish', historyText.indexOf('v2') !== -1, historyText);
   await page.click('[data-variant-history-close]');
@@ -527,7 +578,7 @@ async function main() {
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
   const historyBtnDisabledForNeverPublished = await page.locator('[data-variant-history]').isDisabled();
-  record('公開記錄 stays enabled for an already-published variant (STANDARD was seeded at v2)', historyBtnDisabledForNeverPublished === false);
+  record('發佈記錄 stays enabled for an already-published variant (STANDARD was seeded at v2)', historyBtnDisabledForNeverPublished === false);
 
   // --- Final-review fix verification: Important #4, stale bag/editing uiState leaks across variant switches ---
   await page.evaluate(function () {
@@ -546,16 +597,14 @@ async function main() {
   // --- Final-review fix verification: Important #2, draft catalog entries must be visible-but-blocked in the bag, not hidden ---
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.PREMIUM"]');
-  const draftGemTileCount = await page.locator('[data-bag-gem="get_order_status"][data-bag-gem-level="4"]').count();
-  record('draft-status gem (Lv4) is rendered in the bag, not filtered out', draftGemTileCount === 1, 'found ' + draftGemTileCount);
-  const draftGemDisabledMarker = await page.evaluate(function () {
-    var el = document.querySelector('[data-bag-gem="get_order_status"][data-bag-gem-level="4"]');
-    return el ? el.getAttribute('aria-disabled') : null;
-  });
-  record('draft-status gem tile is marked aria-disabled', draftGemDisabledMarker === 'true', draftGemDisabledMarker);
-  await page.click('[data-bag-gem="get_order_status"][data-bag-gem-level="4"]');
+  const draftOption = page.locator('[data-bag-gem-version="get_order_status"] option[value="4"]');
+  record('draft-status gem (v4) is listed in the version picker, not filtered out', (await draftOption.count()) === 1);
+  record('the draft option is disabled', (await draftOption.isDisabled()) === true);
+  record('the draft option is labelled as not selectable', (await draftOption.innerText()).indexOf('草稿') !== -1, await draftOption.innerText());
+  // Even if the pick is forced onto the draft, adding it is still refused with a reason.
+  await page.evaluate(() => { window.appState.uiState.bagVersionPick['gem:get_order_status'] = 4; wsBagAddPicked('gem', 'get_order_status'); });
   const draftClickBlockedError = await page.evaluate(() => window.appState.uiState.bagError);
-  record('clicking a draft gem in the bag is blocked with a visible reason, not silently ignored', typeof draftClickBlockedError === 'string' && draftClickBlockedError.indexOf('公開版') !== -1, draftClickBlockedError);
+  record('adding a draft version is blocked with a visible reason, not silently ignored', typeof draftClickBlockedError === 'string' && draftClickBlockedError.indexOf('已發佈版本') !== -1, draftClickBlockedError);
   const draftClickDidNotWear = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'PREMIUM').wornGems.some((g) => g.name === 'get_order_status' && g.level === 4));
   record('clicking a draft gem does not actually wear it', draftClickDidNotWear === false);
 
@@ -568,7 +617,7 @@ async function main() {
   });
   record('every seeded gem/equipment version has a copiedFromLevel field', allVersionsHaveCopiedFromLevel === true);
 
-  // STANDARD's seeded order-lookup Lv1 equip was unequipped by an earlier test in this stateful
+  // STANDARD's seeded order-lookup v1 equip was unequipped by an earlier test in this stateful
   // suite (the 單一裝備解除/置換 scenarios around line 378) and never re-equipped — re-establish it
   // deterministically here so this task's reference-lookup checks don't depend on suite ordering.
   await page.evaluate(function () {
@@ -577,17 +626,17 @@ async function main() {
   });
 
   const orderLookupGemRefs = await page.evaluate(function () { return wsGemReferences('get_order_status', 1); });
-  record('wsGemReferences finds order-lookup Lv1 as an equipment reference for get_order_status Lv1', orderLookupGemRefs.equipment.some(function (e) { return e.name === 'order-lookup' && e.level === 1; }), JSON.stringify(orderLookupGemRefs));
-  record('wsGemReferences finds FAQ_ANSWER.STANDARD as a variant reference (via equipped order-lookup Lv1)', orderLookupGemRefs.variants.some(function (v) { return v.npcCode === 'FAQ_ANSWER' && v.variantCode === 'STANDARD'; }), JSON.stringify(orderLookupGemRefs));
+  record('wsGemReferences finds order-lookup v1 as an equipment reference for get_order_status v1', orderLookupGemRefs.equipment.some(function (e) { return e.name === 'order-lookup' && e.level === 1; }), JSON.stringify(orderLookupGemRefs));
+  record('wsGemReferences finds FAQ_ANSWER.STANDARD as a variant reference (via equipped order-lookup v1)', orderLookupGemRefs.variants.some(function (v) { return v.npcCode === 'FAQ_ANSWER' && v.variantCode === 'STANDARD'; }), JSON.stringify(orderLookupGemRefs));
 
   const refundGemRefs = await page.evaluate(function () { return wsGemReferences('create_refund', 1); });
-  record('wsGemReferences finds FAQ_ANSWER.PREMIUM as a direct wornGems reference for create_refund Lv1', refundGemRefs.variants.some(function (v) { return v.npcCode === 'FAQ_ANSWER' && v.variantCode === 'PREMIUM'; }), JSON.stringify(refundGemRefs));
+  record('wsGemReferences finds FAQ_ANSWER.PREMIUM as a direct wornGems reference for create_refund v1', refundGemRefs.variants.some(function (v) { return v.npcCode === 'FAQ_ANSWER' && v.variantCode === 'PREMIUM'; }), JSON.stringify(refundGemRefs));
 
   const unreferencedGemRefs = await page.evaluate(function () { return wsGemReferences('render_chart', 1); });
   record('wsGemReferences returns empty arrays for a never-used gem', unreferencedGemRefs.equipment.length === 0 && unreferencedGemRefs.variants.length === 0, JSON.stringify(unreferencedGemRefs));
 
   const orderLookupEqRefs = await page.evaluate(function () { return wsEquipmentReferences('order-lookup', 1); });
-  record('wsEquipmentReferences finds FAQ_ANSWER.STANDARD as a reference for order-lookup Lv1', orderLookupEqRefs.variants.some(function (v) { return v.npcCode === 'FAQ_ANSWER' && v.variantCode === 'STANDARD'; }), JSON.stringify(orderLookupEqRefs));
+  record('wsEquipmentReferences finds FAQ_ANSWER.STANDARD as a reference for order-lookup v1', orderLookupEqRefs.variants.some(function (v) { return v.npcCode === 'FAQ_ANSWER' && v.variantCode === 'STANDARD'; }), JSON.stringify(orderLookupEqRefs));
 
   const sqlAnalysisEqRefs = await page.evaluate(function () { return wsEquipmentReferences('sql-analysis', 1); });
   record('wsEquipmentReferences returns an empty array for an unequipped equipment', sqlAnalysisEqRefs.variants.length === 0, JSON.stringify(sqlAnalysisEqRefs));
@@ -595,7 +644,7 @@ async function main() {
   // --- Phase 3 Task 2: flyout shell + view-mode content ---
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-bag-gem-detail="get_order_status.1"]');
+  await openBagDetail('gem', 'get_order_status', 1);
   const flyoutActiveAfterOpen = await page.locator('#ws-bag-detail-flyout.ws-flyout--active').count();
   record('clicking a gem\'s ⋯ button opens the flyout', flyoutActiveAfterOpen === 1);
   const centerDimmed = await page.locator('#ws-center.ws-center--dim').count();
@@ -615,8 +664,8 @@ async function main() {
 
   await page.click('[data-flyout-level-btn="1"]');
   const refListTextLv1 = await page.locator('.ws-flyout-ref-list').innerText();
-  record('Lv1 的被引用清單 includes the equipment carrying it', refListTextLv1.indexOf('訂單查詢術') !== -1, refListTextLv1);
-  record('Lv1 的被引用清單 includes the variant that equips it', refListTextLv1.indexOf('一般版') !== -1, refListTextLv1);
+  record('v1 的被引用清單 includes the equipment carrying it', refListTextLv1.indexOf('訂單查詢術') !== -1, refListTextLv1);
+  record('v1 的被引用清單 includes the variant that equips it', refListTextLv1.indexOf('一般版') !== -1, refListTextLv1);
 
   // Esc closes it
   await page.keyboard.press('Escape');
@@ -639,7 +688,7 @@ async function main() {
   // `inert` were never applied. [data-variant-history] is enabled here (STANDARD was
   // seeded with a publish history), so this targets an element that is only blocked
   // by `inert`, and a control step below proves the check can actually fail.
-  await page.click('[data-bag-gem-detail="get_order_status.1"]');
+  await openBagDetail('gem', 'get_order_status', 1);
   let historyClickBlockedByInert = false;
   try {
     await page.click('[data-variant-history]', { timeout: 2000 });
@@ -664,16 +713,16 @@ async function main() {
   const flyoutActiveAfterCloseBtn = await page.locator('#ws-bag-detail-flyout.ws-flyout--active').count();
   record('✕ button closes the flyout', flyoutActiveAfterCloseBtn === 0);
 
-  // equipment ⋯ button + 被哪些人物卡掛載
-  await page.click('[data-bag-equipment-detail="order-lookup.1"]');
+  // equipment ⋯ button + 被哪些方案掛載
+  await openBagDetail('equipment', 'order-lookup', 1);
   const eqFlyoutName = await page.locator('.ws-flyout-name').innerText();
   record('equipment ⋯ button opens the flyout on the equipment', eqFlyoutName.indexOf('訂單查詢術') !== -1, eqFlyoutName);
   const eqRefListText = await page.locator('.ws-flyout-ref-list').innerText();
-  record('equipment 被哪些人物卡掛載 lists the variant that equips it', eqRefListText.indexOf('一般版') !== -1, eqRefListText);
+  record('equipment 被哪些方案掛載 lists the variant that equips it', eqRefListText.indexOf('一般版') !== -1, eqRefListText);
   await page.click('[data-flyout-close]');
 
   // --- Phase 3 Task 3: pencil-edit 顯示名稱 ---
-  await page.click('[data-bag-gem-detail="get_order_status.1"]');
+  await openBagDetail('gem', 'get_order_status', 1);
   await page.click('[data-flyout-displayname-pencil]');
   const nameInputVisible = await page.locator('[data-flyout-displayname-input]').count();
   record('clicking the displayName pencil shows an input', nameInputVisible === 1);
@@ -686,12 +735,12 @@ async function main() {
   await page.click('[data-flyout-close]');
 
   // Review Focus: an uncommitted pencil edit on one item must not leak into the next item opened
-  await page.click('[data-bag-gem-detail="get_order_status.1"]');
+  await openBagDetail('gem', 'get_order_status', 1);
   await page.click('[data-flyout-displayname-pencil]');
   const editingBeforeSwitch = await page.locator('[data-flyout-displayname-input]').count();
   record('setup: displayName edit is open before switching items', editingBeforeSwitch === 1);
   await page.click('[data-flyout-close]');
-  await page.click('[data-bag-equipment-detail="order-lookup.1"]');
+  await openBagDetail('equipment', 'order-lookup', 1);
   const leakedEditInputOnNewItem = await page.locator('[data-flyout-displayname-input]').count();
   record('opening a different item after an uncommitted edit does not leak the open edit input', leakedEditInputOnNewItem === 0);
   const leakedEditingState = await page.evaluate(() => window.appState.uiState.bagDetailEditing);
@@ -699,7 +748,7 @@ async function main() {
   await page.click('[data-flyout-close]');
 
   // --- Phase 3 Task 4: pencil-edit 種類／協定, locked after first publish ---
-  await page.click('[data-bag-gem-detail="get_order_status.1"]');
+  await openBagDetail('gem', 'get_order_status', 1);
   const kindProtocolLockedForPublishedGem = await page.locator('[data-flyout-kindprotocol-pencil]').count();
   record('種類／協定 pencil is absent for a gem that has ever been published', kindProtocolLockedForPublishedGem === 0);
   const kindProtocolLockedBadge = await page.locator('[data-flyout-kindprotocol-locked]').count();
@@ -720,7 +769,7 @@ async function main() {
   // a draft must stay reachable even though wearing it is blocked, and nothing in the page actually
   // prevents the click (no pointer-events:none on the button) — this is a Playwright heuristic
   // false positive on a real, intentionally-clickable button, not a production bug.
-  await page.click('[data-bag-gem-detail="send_email.1"]', { force: true });
+  await openBagDetail('gem', 'send_email', 1);
   const kindProtocolPencilForNewGem = await page.locator('[data-flyout-kindprotocol-pencil]').count();
   record('種類／協定 pencil is present for a never-published gem', kindProtocolPencilForNewGem === 1);
   await page.click('[data-flyout-kindprotocol-pencil]');
@@ -733,8 +782,8 @@ async function main() {
   record('committing the 種類／協定 edit updates protocol', updatedProtocol === 'MCP-TOOL', updatedProtocol);
   await page.click('[data-flyout-close]');
 
-  // --- Phase 3 Task 5: 裝備草稿鑲嵌寶石編輯器 ---
-  // order-lookup only has published versions; create a draft Lv3 directly in app state to exercise the editor
+  // --- Phase 3 Task 5: 裝備草稿內含寶石編輯器 ---
+  // order-lookup only has published versions; create a draft v3 directly in app state to exercise the editor
   // without depending on Task 6's "open new draft" action.
   await page.evaluate(function () {
     window.appState.data.equipment.find(function (e) { return e.name === 'order-lookup'; }).versions.push({
@@ -742,10 +791,10 @@ async function main() {
     });
     window.rerender();
   });
-  await page.click('[data-bag-equipment-detail="order-lookup.1"]');
+  await openBagDetail('equipment', 'order-lookup', 1);
   await page.click('[data-flyout-level-btn="3"]');
   const gemsPencilOnDraft = await page.locator('[data-flyout-gems-pencil]').count();
-  record('鑲嵌寶石 pencil is present on a draft equipment version', gemsPencilOnDraft === 1);
+  record('內含寶石 pencil is present on a draft equipment version', gemsPencilOnDraft === 1);
 
   await page.click('[data-flyout-gems-pencil]');
   const removeButtonCount = await page.locator('[data-flyout-remove-gem]').count();
@@ -766,23 +815,23 @@ async function main() {
   // published versions never show the pencil
   await page.click('[data-flyout-level-btn="1"]');
   const gemsPencilOnPublished = await page.locator('[data-flyout-gems-pencil]').count();
-  record('鑲嵌寶石 pencil is absent on a published equipment version', gemsPencilOnPublished === 0);
+  record('內含寶石 pencil is absent on a published equipment version', gemsPencilOnPublished === 0);
   const gemsLockedBadge = await page.locator('[data-flyout-gems-locked]').count();
   record('published equipment version shows a locked badge instead', gemsLockedBadge === 1);
   await page.click('[data-flyout-close]');
 
-  // --- Phase 3 Task 6: 開新草稿／公開／刪除 action bar ---
-  await page.click('[data-bag-gem-detail="render_chart.1"]');
+  // --- Phase 3 Task 6: 開新草稿／發佈／刪除 action bar ---
+  await openBagDetail('gem', 'render_chart', 1);
   const openDraftBtnOnMaxPublished = await page.locator('[data-flyout-open-draft]').count();
   record('開新草稿 button shows when viewing the highest, published level', openDraftBtnOnMaxPublished === 1);
   await page.click('[data-flyout-open-draft]');
   const newDraftLevel = await page.evaluate(() => window.appState.uiState.bagDetail.level);
-  record('開新草稿 switches the flyout to the newly created Lv2 draft', newDraftLevel === 2, newDraftLevel);
+  record('開新草稿 switches the flyout to the newly created v2 draft', newDraftLevel === 2, newDraftLevel);
   const newDraftExists = await page.evaluate(() => window.appState.data.gems.find((g) => g.name === 'render_chart').versions.some((v) => v.level === 2 && v.status === 'draft' && v.copiedFromLevel === 1));
   record('the new draft is appended to the gem\'s versions with copiedFromLevel set', newDraftExists === true);
 
   const publishBtnOnDraft = await page.locator('[data-flyout-publish]').count();
-  record('公開 button shows while viewing a draft version', publishBtnOnDraft === 1);
+  record('發佈 button shows while viewing a draft version', publishBtnOnDraft === 1);
   const deleteBtnOnDraft = await page.locator('[data-flyout-delete]').count();
   record('刪除 button shows while viewing a draft version', deleteBtnOnDraft === 1);
   const openDraftBtnGoneOnDraft = await page.locator('[data-flyout-open-draft]').count();
@@ -790,11 +839,11 @@ async function main() {
 
   await page.click('[data-flyout-publish]');
   const statusAfterPublish = await page.evaluate(() => window.appState.data.gems.find((g) => g.name === 'render_chart').versions.find((v) => v.level === 2).status);
-  record('公開 flips the draft\'s status to published', statusAfterPublish === 'published', statusAfterPublish);
+  record('發佈 flips the draft\'s status to published', statusAfterPublish === 'published', statusAfterPublish);
   await page.click('[data-flyout-close]');
 
-  // delete guard: get_order_status Lv4 is a draft with zero references (nothing equips/wears it)
-  await page.click('[data-bag-gem-detail="get_order_status.4"]', { force: true });
+  // delete guard: get_order_status v4 is a draft with zero references (nothing equips/wears it)
+  await openBagDetail('gem', 'get_order_status', 4);
   const deleteBtnEnabledForUnreferencedDraft = await page.locator('[data-flyout-delete]').isDisabled();
   record('刪除 is enabled for an unreferenced draft', deleteBtnEnabledForUnreferencedDraft === false);
   await page.click('[data-flyout-delete]');
@@ -815,7 +864,7 @@ async function main() {
     });
     window.rerender();
   });
-  await page.click('[data-bag-gem-detail="send_sms.1"]', { force: true });
+  await openBagDetail('gem', 'send_sms', 1);
   const deleteBtnDisabledForReferencedDraft = await page.locator('[data-flyout-delete]').isDisabled();
   record('刪除 is disabled for a draft referenced by an equipment\'s carried-gems list', deleteBtnDisabledForReferencedDraft === true);
   // A native <button disabled> never dispatches a click event, even via a programmatic
@@ -865,7 +914,7 @@ async function main() {
   await page.fill('[data-bag-create-display-name]', '發送 Slack 訊息');
   await page.click('[data-bag-create-submit]');
   const newGemCreated = await page.evaluate(() => window.appState.data.gems.find((g) => g.name === 'send_slack_message'));
-  record('a valid gem submission creates a new Lv1 draft gem', !!newGemCreated && newGemCreated.versions.length === 1 && newGemCreated.versions[0].level === 1 && newGemCreated.versions[0].status === 'draft', JSON.stringify(newGemCreated));
+  record('a valid gem submission creates a new v1 draft gem', !!newGemCreated && newGemCreated.versions.length === 1 && newGemCreated.versions[0].level === 1 && newGemCreated.versions[0].status === 'draft', JSON.stringify(newGemCreated));
   const flyoutNowViewsNewGem = await page.evaluate(() => window.appState.uiState.bagDetail);
   record('after creation the flyout switches to view mode on the new gem', flyoutNowViewsNewGem.kind === 'gem' && flyoutNowViewsNewGem.name === 'send_slack_message' && flyoutNowViewsNewGem.mode === 'view', JSON.stringify(flyoutNowViewsNewGem));
   await page.click('[data-flyout-close]');
@@ -877,7 +926,7 @@ async function main() {
   await page.fill('[data-bag-create-display-name]', 'Slack 發文術');
   await page.click('[data-bag-create-submit]');
   const newEquipmentCreated = await page.evaluate(() => window.appState.data.equipment.find((e) => e.name === 'slack-poster'));
-  record('a valid equipment submission creates a new Lv1 draft equipment', !!newEquipmentCreated && newEquipmentCreated.versions.length === 1 && newEquipmentCreated.versions[0].status === 'draft' && Array.isArray(newEquipmentCreated.versions[0].gems), JSON.stringify(newEquipmentCreated));
+  record('a valid equipment submission creates a new v1 draft equipment', !!newEquipmentCreated && newEquipmentCreated.versions.length === 1 && newEquipmentCreated.versions[0].status === 'draft' && Array.isArray(newEquipmentCreated.versions[0].gems), JSON.stringify(newEquipmentCreated));
   await page.click('[data-flyout-close]');
 
   // --- Final-review fix verification: Important #1, an uncommitted gems-editor edit leaks
@@ -888,7 +937,7 @@ async function main() {
     });
     window.rerender();
   });
-  await page.click('[data-bag-equipment-detail="order-lookup.1"]', { force: true });
+  await openBagDetail('equipment', 'order-lookup', 1);
   await page.click('[data-flyout-level-btn="4"]');
   await page.click('[data-flyout-gems-pencil]');
   const editingGemsBeforeAdd = await page.evaluate(() => window.appState.uiState.bagDetailEditing);
@@ -906,11 +955,11 @@ async function main() {
 
   // --- Final-review fix verification: Important #2, publishing mid-edit must not leave a
   // stale editor open on what is now a published (read-only) version ---
-  await page.click('[data-bag-equipment-detail="order-lookup.1"]', { force: true });
+  await openBagDetail('equipment', 'order-lookup', 1);
   await page.click('[data-flyout-level-btn="4"]');
   await page.click('[data-flyout-gems-pencil]');
   const gemsEditingBeforePublish = await page.evaluate(() => window.appState.uiState.bagDetailEditing);
-  record('setup: gems editor is open on the Lv4 draft before publishing', gemsEditingBeforePublish === 'gems');
+  record('setup: gems editor is open on the v4 draft before publishing', gemsEditingBeforePublish === 'gems');
   await page.click('[data-flyout-publish]');
   const gemsEditingAfterPublish = await page.evaluate(() => window.appState.uiState.bagDetailEditing);
   record('publishing while the gems editor is open closes the editor instead of leaving it open on a now-published version', gemsEditingAfterPublish === null, gemsEditingAfterPublish);
@@ -960,30 +1009,43 @@ async function main() {
 
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  const packButtonCount = await page.locator('[data-variant-pack-toggle]').count();
-  record('variant titlebar has a 打包 button', packButtonCount === 1);
+  record('variant titlebar no longer carries a 打包 button', (await page.locator('[data-variant-pack-toggle]').count()) === 0);
+  const variantBundlesText = await page.locator('[data-variant-bundles]').innerText();
+  record('variant pane shows which 組合包 include it instead', variantBundlesText.indexOf('收錄於組合包') !== -1, variantBundlesText);
 
   const bagModeDefault = await page.evaluate(() => window.appState.uiState.bagMode);
   record('bagMode defaults to bag', bagModeDefault === 'bag', bagModeDefault);
 
-  await page.click('[data-variant-pack-toggle]');
-  const bagModeAfterToggle = await page.evaluate(() => window.appState.uiState.bagMode);
-  record('clicking 打包 switches bagMode to pack', bagModeAfterToggle === 'pack', bagModeAfterToggle);
+  await page.click('[data-go-npc-pack]');
+  const afterGoToPack = await page.evaluate(() => ({ variantCode: window.appState.selection.variantCode, bagMode: window.appState.uiState.bagMode }));
+  record('the variant pane\'s 打包 link jumps to the Agent level with the pack tab open', afterGoToPack.variantCode === null && afterGoToPack.bagMode === 'pack', JSON.stringify(afterGoToPack));
   const packPaneVisible = await page.locator('[data-pack-pane]').count();
-  record('ws-bag now renders the pack pane instead of the bag', packPaneVisible === 1);
-  const bagPaneGoneInPackMode = await page.locator('[data-bag-add]').count();
-  record('the ordinary bag UI is gone while in pack mode', bagPaneGoneInPackMode === 0);
+  record('ws-bag now renders the pack pane', packPaneVisible === 1);
+  const overviewGoneInPackMode = await page.locator('[data-overview-variant]').count();
+  record('the 方案總覽 cards are gone while the pack tab is open', overviewGoneInPackMode === 0);
 
-  // leaving the variant resets bagMode back to bag
+  // leaving and coming back resets bagMode to the overview
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   const bagModeAfterLeavingVariant = await page.evaluate(() => window.appState.uiState.bagMode);
   record('selecting a different NPC/variant resets bagMode to bag', bagModeAfterLeavingVariant === 'bag', bagModeAfterLeavingVariant);
 
-  await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-variant-pack-toggle]');
-  await page.click('[data-pack-mode-toggle]');
+  await page.click('[data-npc-side-tab="pack"]');
+  await page.click('[data-npc-side-tab="overview"]');
   const bagModeAfterPaneToggle = await page.evaluate(() => window.appState.uiState.bagMode);
-  record('the pack pane\'s own toggle button switches back to bag mode', bagModeAfterPaneToggle === 'bag', bagModeAfterPaneToggle);
+  record('the 方案總覽 tab switches back from the pack tab', bagModeAfterPaneToggle === 'bag', bagModeAfterPaneToggle);
+
+  const overviewCards = await page.locator('[data-overview-variant]').count();
+  record('方案總覽 lists one card per variant', overviewCards === 2, 'found ' + overviewCards);
+  const standardCardText = await page.locator('[data-overview-variant="FAQ_ANSWER.STANDARD"]').innerText();
+  record('an overview card shows publish status, capability counts and last publish date', standardCardText.indexOf('已發佈 v2') !== -1 && standardCardText.indexOf('技能 1') !== -1 && standardCardText.indexOf('2026-09-01') !== -1, standardCardText);
+  await page.click('[data-overview-variant="FAQ_ANSWER.PREMIUM"]');
+  const selAfterCardClick = await page.evaluate(() => window.appState.selection.variantCode);
+  record('clicking an overview card opens that variant', selAfterCardClick === 'PREMIUM', selAfterCardClick);
+  await page.click('[data-npc-select="ORDER_ASSIST"]');
+  record('an Agent with no variants shows an empty state with a create button', (await page.locator('[data-overview-empty] [data-overview-create-variant]').count()) === 1);
+  await page.click('[data-overview-create-variant]');
+  record('the empty-state create button opens the new-variant form in the nav', (await page.locator('[data-variant-form="ORDER_ASSIST"]').count()) === 1);
+  await page.evaluate(() => { wsCancelCreateVariantForm(); window.appState.uiState.expandedNpcs.ORDER_ASSIST = false; window.rerender(); });
 
   // --- Phase 4 Task 2: pack-mode narrow list, zone/agent filtered ---
   // Seed two bundles (one in FAQ_ANSWER's zone, one in a different zone) and two extensions
@@ -1001,7 +1063,7 @@ async function main() {
   });
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-variant-pack-toggle]');
+  await openPackPane();
 
   const bundleKindActiveByDefault = await page.evaluate(() => window.appState.uiState.packListKind);
   record('pack list defaults to 組合包 kind', bundleKindActiveByDefault === 'bundle', bundleKindActiveByDefault);
@@ -1077,10 +1139,10 @@ async function main() {
   const draftItemOfferedCount = await page.locator('[data-extension-item-checkbox="gem.get_order_status.4"]').count();
   record('a draft-status catalog version is never offered as a selectable item', draftItemOfferedCount === 0);
 
-  // one-level-per-name: checking Lv1 then Lv2 of the same gem replaces the selection, not adds to it
+  // one-level-per-name: checking v1 then v2 of the same gem replaces the selection, not adds to it
   await page.click('[data-extension-item-checkbox="gem.get_order_status.1"]');
   const selectedAfterLv1 = await page.evaluate(() => window.appState.uiState.packCreateForm.selectedItems);
-  record('checking get_order_status Lv1 selects it', selectedAfterLv1.some((i) => i.kind === 'gem' && i.name === 'get_order_status' && i.level === 1), JSON.stringify(selectedAfterLv1));
+  record('checking get_order_status v1 selects it', selectedAfterLv1.some((i) => i.kind === 'gem' && i.name === 'get_order_status' && i.level === 1), JSON.stringify(selectedAfterLv1));
   await page.click('[data-extension-item-checkbox="gem.get_order_status.2"]');
   const selectedAfterLv2 = await page.evaluate(() => window.appState.uiState.packCreateForm.selectedItems);
   const lv1StillSelected = selectedAfterLv2.some((i) => i.kind === 'gem' && i.name === 'get_order_status' && i.level === 1);
@@ -1137,11 +1199,11 @@ async function main() {
   // Task 5's last test left selection at FAQ_ANSWER (no variant) / bagMode 'bag'; re-enter
   // pack mode on STANDARD and the bundle list to reach CS_BUNDLE_1's row again.
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-variant-pack-toggle]');
+  await openPackPane();
   await page.click('[data-pack-list-kind="bundle"]');
   await page.click('[data-pack-row="bundle.CS_BUNDLE_1"]');
   const publishBtnOnDraftPack = await page.locator('[data-pack-transition="PUBLISHED"]').count();
-  record('DRAFT pack shows a 發布 (→PUBLISHED) button', publishBtnOnDraftPack === 1);
+  record('DRAFT pack shows a 發佈 (→PUBLISHED) button', publishBtnOnDraftPack === 1);
   const eosBtnOnDraftPack = await page.locator('[data-pack-transition="EOS"]').count();
   record('DRAFT pack shows an 結束(EOS) button (DRAFT can jump straight to EOS)', eosBtnOnDraftPack === 1);
   const maintenanceBtnOnDraftPack = await page.locator('[data-pack-transition="MAINTENANCE"]').count();
@@ -1153,7 +1215,7 @@ async function main() {
   const maintenanceBtnOnPublished = await page.locator('[data-pack-transition="MAINTENANCE"]').count();
   record('PUBLISHED pack shows a 進入維護 button', maintenanceBtnOnPublished === 1);
   const publishBtnGoneOnPublished = await page.locator('[data-pack-transition="PUBLISHED"]').count();
-  record('PUBLISHED pack no longer shows a 發布 button (can\'t publish an already-published pack)', publishBtnGoneOnPublished === 0);
+  record('PUBLISHED pack no longer shows a 發佈 button (can\'t publish an already-published pack)', publishBtnGoneOnPublished === 0);
 
   await page.click('[data-pack-transition="MAINTENANCE"]');
   const packStatusAfterMaintenance = await page.evaluate(() => window.appState.data.bundles.find((b) => b.code === 'CS_BUNDLE_1').status);
@@ -1209,18 +1271,18 @@ async function main() {
   await page.evaluate(function () { window.appState.uiState.bagDetail = null; window.appState.uiState.packDetail = null; window.appState.uiState.bagMode = 'bag'; window.rerender(); });
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-variant-pack-toggle]');
+  await openPackPane();
   await page.click('[data-pack-list-kind="bundle"]');
   await page.click('[data-pack-create="bundle"]');
   await page.click('[data-bundle-variant-checkbox="FAQ_ANSWER.STANDARD"]');
   await page.fill('[data-pack-create-name]', 'LEAK_BUNDLE');
   await page.fill('[data-pack-create-display-name]', '洩漏組合包');
-  // Use ORDER_ASSIST's own "+新人物卡" (a different NPC/zone) to trigger wsSubmitCreateVariant's
+  // Use ORDER_ASSIST's own "+新方案" (a different NPC/zone) to trigger wsSubmitCreateVariant's
   // selection change while the FAQ_ANSWER-zone bundle form above is still open.
   await page.click('[data-npc-toggle="ORDER_ASSIST"]');
   await page.click('[data-create-variant="ORDER_ASSIST"]');
   await page.fill('[data-variant-form-code="ORDER_ASSIST"]', 'NEWV');
-  await page.fill('[data-variant-form-name="ORDER_ASSIST"]', '新人物卡');
+  await page.fill('[data-variant-form-name="ORDER_ASSIST"]', '新方案');
   await page.click('[data-variant-form-submit="ORDER_ASSIST"]');
   const packCreateFormGoneAfterNavCreate = await page.evaluate(() => window.appState.uiState.packCreateForm);
   record('creating a variant from the left nav while a pack-creation form is open closes that form (no stale cross-zone submission is possible)', packCreateFormGoneAfterNavCreate === null, JSON.stringify(packCreateFormGoneAfterNavCreate));
@@ -1232,7 +1294,7 @@ async function main() {
   // Important #1's own repro: an open pack flyout closes when a new NPC is created from the left nav
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-variant-pack-toggle]');
+  await openPackPane();
   await page.click('[data-pack-list-kind="bundle"]');
   await page.click('[data-pack-row="bundle.CS_BUNDLE_2"]');
   const packFlyoutOpenBeforeNpcCreate = await page.locator('#ws-bag-detail-flyout.ws-flyout--active').count();
@@ -1253,10 +1315,10 @@ async function main() {
   await page.evaluate(function () { window.appState.uiState.bagDetail = null; window.appState.uiState.packDetail = null; window.appState.uiState.bagMode = 'bag'; window.rerender(); });
   await page.click('[data-npc-select="FAQ_ANSWER"]');
   await page.click('[data-variant-row="FAQ_ANSWER.STANDARD"]');
-  await page.click('[data-variant-pack-toggle]');
+  await openPackPane();
   await page.click('[data-pack-list-kind="bundle"]');
   await page.click('[data-pack-row="bundle.CS_BUNDLE_2"]');
-  await page.click('[data-pack-mode-toggle]');
+  await page.click('[data-npc-side-tab="overview"]');
   const packFlyoutClosedAfterBagModeToggle = await page.locator('#ws-bag-detail-flyout.ws-flyout--active').count();
   record('switching back to 背包 mode via the pane\'s own toggle closes an open pack flyout', packFlyoutClosedAfterBagModeToggle === 0);
   const packDetailNullAfterBagModeToggle = await page.evaluate(() => window.appState.uiState.packDetail);
@@ -1266,7 +1328,7 @@ async function main() {
   // to commit once the pack has left DRAFT (publishing while the editor is open), and must
   // refuse an empty member selection the same way creation already does ---
   await page.evaluate(function () { window.appState.uiState.bagDetail = null; window.appState.uiState.packDetail = null; window.appState.uiState.bagMode = 'bag'; window.rerender(); });
-  await page.click('[data-variant-pack-toggle]');
+  await openPackPane();
   await page.click('[data-pack-list-kind="bundle"]');
   await page.click('[data-pack-row="bundle.CS_BUNDLE_2"]');
   await page.click('[data-pack-members-pencil]');
@@ -1295,6 +1357,35 @@ async function main() {
   const membersStillPresentAfterEmptyCommitAttempt = await page.evaluate(() => window.appState.data.bundles.find((b) => b.code === 'CS_BUNDLE_3').variantRefs.length);
   record('the pack still has its original member after a rejected empty commit', membersStillPresentAfterEmptyCommitAttempt === 1, membersStillPresentAfterEmptyCommitAttempt);
   await page.click('[data-flyout-close]');
+
+  // Read-only catalog mode (what skill-admin.html's embed turns on): the 工具庫 only picks.
+  await page.evaluate(() => {
+    window.appState.uiState.bagDetail = null;
+    window.appState.uiState.packDetail = null;
+    window.WS_CONFIG = { catalogReadOnly: true };
+    wsSelectVariant('FAQ_ANSWER', 'STANDARD');
+  });
+  record('read-only mode hides the 工具庫 ＋新增 button', (await page.locator('[data-bag-add]').count()) === 0);
+  const readonlyHint = await page.locator('[data-bag-readonly-hint]').innerText();
+  record('read-only mode points to Skills Repository and Tool 管理', readonlyHint.indexOf('Skills Repository') !== -1 && readonlyHint.indexOf('Tool 管理') !== -1, readonlyHint);
+  await page.evaluate(() => wsOpenBagDetailCreate());
+  record('read-only mode refuses to open the create flyout', (await page.evaluate(() => window.appState.uiState.bagDetail)) === null);
+  await bagToggle('equipment', 'refund-helper', 1);
+  const equippedInReadonly = await page.evaluate(() => window.appState.data.npcs.find((n) => n.code === 'FAQ_ANSWER').variants.find((v) => v.code === 'STANDARD').equippedEquipment.some((e) => e.name === 'refund-helper'));
+  record('read-only mode still lets a catalog item be equipped', equippedInReadonly === true);
+  // Earlier steps may have published or deleted the seeded draft, so add a fresh one to inspect.
+  const draftLevel = await page.evaluate(() => {
+    const gem = window.appState.data.gems.find((g) => g.name === 'run_sql_query');
+    const level = Math.max.apply(null, gem.versions.map((v) => v.level)) + 1;
+    gem.versions.push({ level: level, status: 'draft', copiedFromLevel: level - 1 });
+    window.rerender();
+    return level;
+  });
+  await page.evaluate((lv) => wsOpenBagDetail('gem', 'run_sql_query', lv), draftLevel);
+  const readonlyEditControls = await page.locator('[data-flyout-displayname-pencil], [data-flyout-kindprotocol-pencil], [data-flyout-gems-pencil], [data-flyout-publish], [data-flyout-delete], [data-flyout-open-draft]').count();
+  record('read-only flyout has no edit / publish / delete controls, even on a draft', readonlyEditControls === 0, 'found ' + readonlyEditControls);
+  record('read-only flyout links out to Tool 管理', (await page.locator('#ws-bag-detail-flyout [data-catalog-link="tools"]').count()) === 1);
+  await page.evaluate(() => { window.WS_CONFIG = null; wsCloseBagDetail(); });
 
   await browser.close();
 

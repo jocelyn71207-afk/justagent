@@ -23,16 +23,18 @@ window.appState = {
     packMembershipDraft: null,
     packDetailError: null,
     packCreateForm: null,
-    packListKind: 'bundle'
+    packListKind: 'bundle',
+    bagVersionPick: {}
   }
 };
 
 function render() {
   document.getElementById('ws-nav').innerHTML = renderNavTree(window.appState);
   document.getElementById('ws-center').innerHTML = renderCenterPane(window.appState);
-  document.getElementById('ws-bag').innerHTML = window.appState.selection.variantCode
-    ? (window.appState.uiState.bagMode === 'pack' ? renderPackPane(window.appState) : renderBagForVariant(window.appState))
-    : renderBagPlaceholder();
+  var sel = window.appState.selection;
+  document.getElementById('ws-bag').innerHTML = sel.variantCode
+    ? renderBagForVariant(window.appState)
+    : (sel.npcCode ? renderNpcSidePane(window.appState) : renderBagPlaceholder());
   renderNpcPane(window.appState);
   renderModelSection(window.appState);
   renderVariantPane(window.appState);
@@ -73,7 +75,8 @@ window.resetData = function resetData() {
     packMembershipDraft: null,
     packDetailError: null,
     packCreateForm: null,
-    packListKind: 'bundle'
+    packListKind: 'bundle',
+    bagVersionPick: {}
   };
   render();
 };
