@@ -12,13 +12,17 @@
                 <i class="material-symbols-outlined">{{ iconName }}</i>
               </div>
               <div class="dh-title">
-                <div class="dh-name">{{ skill.name }}</div>
+                <div class="dh-name-row">
+                  <div class="dh-name">{{ skill.name }}</div>
+                </div>
                 <div class="dh-badges">
                   <span v-if="!isPersonal" class="skill-tag tag--version">
                     {{ activeVersion?.versionName ?? skill.version }}
                   </span>
-                  <!-- 個人技能的狀態（草稿/審核中/可使用）跟啟用/停用一樣都是
-                       「目前狀態」，放在同一排徽章，不用另外佔一個區塊 -->
+                  <!-- 技能代號（skill_name）放在版本旁邊：AI Agent 辨識、調用技能用，列表磚塊不顯示 -->
+                  <span class="dh-code" :title="`技能代號（skill_name），AI Agent 辨識、調用技能用：${skillCode}`">{{ skillCode }}</span>
+                  <!-- 個人技能只有「審核中」要另外貼標籤（草稿／可使用都不標：啟用狀態文字
+                       已經說明技能能不能用），跟啟用／停用放在同一排徽章 -->
                   <span
                     v-if="isPersonal && personalStatusLabel"
                     :class="['skill-tag', personalStatusClass]"
@@ -34,6 +38,8 @@
                     <span class="dh-status-dot"></span>
                     {{ statusText }}
                   </span>
+                  <!-- 測過沒不是狀態，另外標在狀態旁邊；Library 技能沒有這一關（tested 為 null）不標 -->
+                  <SkillTestMark v-if="!libraryView && tested !== null" :tested="tested" />
                 </div>
               </div>
             </div>
@@ -165,8 +171,18 @@
                           {{ versionStatusLabel(ver.status) }}
                         </span>
                         <span class="vt-date">{{ formatDate(ver.createdAt) }}</span>
+                        <!-- 版本名稱只在這裡逐筆改（卡片上的「編輯」只改範本名稱） -->
+                        <button
+                          v-if="props.manageable && !isPersonal"
+                          type="button"
+                          class="icon-btn vt-delete-btn"
+                          aria-label="修改版本名稱"
+                          @click="openRenameVersion(ver)"
+                        >
+                          <i class="material-symbols-outlined">edit</i>
+                        </button>
                         <!-- 版本會隨時間越積越多，讓管理者能清掉不需要的舊版本；
-                             生效中的版本不能刪，要刪之前得先切換到別的版本 -->
+                             使用中的版本不能刪，要刪之前得先切換到別的版本 -->
                         <button
                           v-if="props.manageable && !isPersonal && ver.status !== 'active'"
                           type="button"
@@ -219,7 +235,7 @@
               <div v-if="isPersonal && hasPersonalStatusDetails" class="psv-details">
                 <div v-if="skill.submitMode || (skill.personalStatus === 'reviewing' && skill.targetScope)" class="psv-head">
                   <span v-if="skill.submitMode" class="psv-mode">
-                    {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}<template v-if="updateTargetName">：{{ updateTargetName }}</template>
+                    {{ skill.submitMode === 'version_update' ? '更新版本' : '建立新技能' }}<template v-if="updateTargetName">：{{ updateTargetName }}</template><template v-else-if="skill.submitMode === 'new_skill'">：{{ skill.libraryName || skill.name }}</template>
                   </span>
                   <span
                     v-if="skill.personalStatus === 'reviewing' && skill.targetScope"
@@ -285,14 +301,12 @@
               <div v-if="skill.scope !== 'enterprise'" class="drawer-section">
                 <div class="section-label">來源關係</div>
                 <div class="lineage-row">
-                  <template v-if="lineageSourceName">
-                    <span class="lineage-text">
-                      <i class="material-symbols-outlined lineage-icon">call_split</i>
-                      延伸自「{{ lineageSourceName }}」
-                    </span>
-                    <span v-if="lineageSourceVersion" class="skill-tag tag--version">{{ lineageSourceVersion }}</span>
-                    <span v-if="lineageSourceScopeLabel" :class="['skill-tag', lineageSourceScopeClass]">{{ lineageSourceScopeLabel }}</span>
-                  </template>
+                  <!-- 只講延伸自哪一顆，不再附來源的版本名稱與層級標籤（例如「Action Items
+                       自動識別」「系統技能」），那些是來源技能自己的資訊，點來源再看 -->
+                  <span v-if="lineageSourceName" class="lineage-text">
+                    <i class="material-symbols-outlined lineage-icon">call_split</i>
+                    延伸自「{{ lineageSourceName }}」
+                  </span>
                   <span v-else class="lineage-text">
                     <i class="material-symbols-outlined lineage-icon">edit</i>
                     自建
@@ -312,20 +326,20 @@
                 <div v-else class="agent-empty">尚未指派給任何 Agent</div>
               </div>
 
-              <!-- 近 7 天使用趨勢 -->
-              <div class="drawer-section">
+              <!-- 近 7 天使用趨勢（暫時隱藏，要恢復拿掉 v-if 即可） -->
+              <div v-if="false" class="drawer-section">
                 <div class="section-label chart-section-label">
                   <span>近 7 天使用趨勢</span>
                 </div>
                 <div class="chart-wrap">
                   <svg viewBox="0 0 400 100" preserveAspectRatio="none" class="trend-svg">
                     <defs>
-                      <linearGradient :id="`grad-${skill.id}`" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient :id="`grad-${skill?.id}`" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stop-color="#059669" stop-opacity="0.18" />
                         <stop offset="100%" stop-color="#059669" stop-opacity="0" />
                       </linearGradient>
                     </defs>
-                    <path :d="chartData.area" :fill="`url(#grad-${skill.id})`" />
+                    <path :d="chartData.area" :fill="`url(#grad-${skill?.id})`" />
                     <path :d="chartData.line" fill="none" stroke="#059669" stroke-width="2"
                       stroke-linecap="round" stroke-linejoin="round" />
                     <circle
@@ -388,6 +402,37 @@
       </div>
     </Transition>
 
+    <!-- 修改版本名稱 -->
+    <Transition name="confirm-fade">
+      <div
+        v-if="versionPendingRename && skill"
+        class="drawer-confirm-overlay"
+        @click.self="versionPendingRename = null"
+      >
+        <div class="drawer-confirm-dialog">
+          <div class="confirm-icon confirm-icon--update"><i class="material-symbols-outlined">edit</i></div>
+          <h4>修改版本名稱</h4>
+          <label class="dsd-note-label pdd-name-label">版本名稱</label>
+          <input
+            v-model="versionRenameValue"
+            class="custom-input pdd-name-input"
+            placeholder="輸入版本名稱"
+            @keydown.enter="confirmRenameVersion"
+          />
+          <div class="confirm-actions">
+            <button class="custom-btn" @click="versionPendingRename = null">取消</button>
+            <button
+              class="custom-btn custom-main-btn"
+              :disabled="!versionRenameValue.trim()"
+              @click="confirmRenameVersion"
+            >
+              <i class="material-symbols-outlined">check_circle</i>儲存
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- 刪除版本確認 -->
     <Transition name="confirm-fade">
       <div
@@ -419,7 +464,9 @@ import { useSkillStore } from '@/stores/skillStore'
 import SkillVersionCompareModal from '@/components/Skill/SkillVersionCompareModal.vue'
 import SkillMarkdownModal from '@/components/Skill/SkillMarkdownModal.vue'
 import BackendSkillVersions from '@/components/Skill/BackendSkillVersions.vue'
-import { buildSkillDefinitionMarkdown } from '@/utils/skillMarkdown'
+import { buildSkillDefinitionMarkdown, skillCodeOf } from '@/utils/skillMarkdown'
+import { skillEnableStatus, skillTested } from '@/utils/skillStatus'
+import SkillTestMark from '@/components/Skill/SkillTestMark.vue'
 
 const CHART_LABELS = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
 
@@ -449,6 +496,8 @@ const emit = defineEmits<{
 const skillStore = useSkillStore()
 const showConfirm = ref(false)
 const versionPendingDelete = ref<SkillVersion | null>(null)
+const versionPendingRename = ref<SkillVersion | null>(null)
+const versionRenameValue = ref('')
 const showMarkdown = ref(false)
 const showMoreSkillInfo = ref(false)
 const showCompare = ref(false)
@@ -461,14 +510,10 @@ const isPersonal = computed(() => props.skill?.zone === 'personal')
 // 後端技能：編輯、測試、啟用（只能啟用，後端沒有停用）與版本可用，複製／送審／刪除還沒接後端
 const isBackend = computed(() => !!props.skill?.backendVersion)
 
-const statusText = computed(() => {
-  const s = props.skill
-  if (!s) return ''
-  // 「我的技能」不顯示版本號，只留啟用與測試狀態
-  if (s.backendVersion) return `${s.isEnabled ? '啟用中 · ' : ''}${s.backendVersion.tested ? '測過' : '沒測過'}`
-  if (s.isEnabled) return '啟用中'
-  return isPersonal.value && s.aiTestPassRate == null ? '尚未測試' : '已停用'
-})
+// 狀態只有啟用中／停用中（「我的技能」不顯示版本號）；測過沒另外用 SkillTestMark 標
+const statusText = computed(() => props.skill ? skillEnableStatus(props.skill) : '')
+const tested = computed(() => props.skill ? skillTested(props.skill) : null)
+const skillCode = computed(() => props.skill ? skillCodeOf(props.skill) : '')
 
 // 技能定義直接 render 成 markdown，跟 skill.md 內容共用同一份組法
 // （buildSkillDefinitionMarkdown），沒有的段落就不會出現。後端技能的 content（對到
@@ -481,20 +526,17 @@ const skillDefinitionHtml = computed(() => {
   return source ? md.render(source) : ''
 })
 
-// 只分「審核中」跟「可使用」：草稿不另外貼標籤（草稿就是「尚未測試／停用中」，
-// 狀態文字已經表達了，跟我的技能卡片一致）；has_library（已核准並發布至 Library）
-// 也退回「可使用」——都是後台狀態，personalStatus 本身跟送審層級鎖定邏輯不受影響
-const personalStatusLabel = computed(() => {
-  if (!props.skill) return null
-  return props.skill.personalStatus === 'reviewing' ? '審核中' : '可使用'
-})
-
-const personalStatusClass = computed(() =>
-  props.skill?.personalStatus === 'reviewing' ? 'tag--reviewing' : 'tag--available'
+// 只有「審核中」貼標籤：草稿／可使用／已發布到 Library 都不標——技能能不能用看啟用狀態
+// （啟用中／停用中）＋測試標註就夠了，再貼「可使用」會跟「停用中」互相矛盾。
+// personalStatus 本身跟送審層級鎖定邏輯不受影響
+const personalStatusLabel = computed(() =>
+  props.skill?.personalStatus === 'reviewing' ? '審核中' : null
 )
 
+const personalStatusClass = 'tag--reviewing'
+
 // 狀態標籤本身已經移到標頭，這裡只要判斷「除了狀態以外還有沒有別的
-// 送審脈絡可以顯示」，沒有的話（多數「可使用」的個人技能）整塊都不顯示
+// 送審脈絡可以顯示」，沒有的話（多數沒在審核的個人技能）整塊都不顯示
 const hasPersonalStatusDetails = computed(() => {
   const s = props.skill
   if (!s) return false
@@ -560,32 +602,6 @@ const lineageSourceName = computed(() => {
   return lineageSource.value?.name ?? sourceId
 })
 
-const lineageSourceVersion = computed(() => {
-  const s = props.skill
-  if (!s) return ''
-  return s.forkSourceVersion ?? s.derivedFromVersion ?? ''
-})
-
-const lineageSourceScopeLabel = computed(() => {
-  const src = lineageSource.value
-  if (!src) return ''
-  if (src.zone === 'personal') return '個人技能'
-  if (src.scope === 'team') return `團隊技能${src.teamName ? `・${src.teamName}` : ''}`
-  if (src.scope === 'enterprise') return '企業技能'
-  if (src.scope === 'system') return '系統技能'
-  return ''
-})
-
-const lineageSourceScopeClass = computed(() => {
-  const src = lineageSource.value
-  if (!src) return ''
-  if (src.zone === 'personal') return 'tag--personal'
-  if (src.scope === 'team') return 'tag--team'
-  if (src.scope === 'enterprise') return 'tag--enterprise'
-  if (src.scope === 'system') return 'tag--sys'
-  return ''
-})
-
 const auditLog = computed(() => (props.skill?.auditLog ?? []).slice(0, 5))
 
 function auditActionLabel(action: OperationRecord['action']): string {
@@ -607,7 +623,7 @@ function formatAuditDate(iso: string): string {
 
 function versionStatusLabel(status: SkillVersionStatus): string {
   const map: Record<SkillVersionStatus, string> = {
-    draft: '草稿', reviewing: '審核中', approved: '待啟用', active: '生效中', history: '歷史', rejected: '已退回',
+    draft: '草稿', reviewing: '審核中', approved: '待啟用', active: '使用中', history: '歷史', rejected: '已退回',
   }
   return map[status] ?? status
 }
@@ -673,6 +689,17 @@ function formatDate(iso: string): string {
 function confirmDelete() {
   showConfirm.value = false
   emit('delete', props.skill!)
+}
+
+function openRenameVersion(ver: SkillVersion) {
+  versionPendingRename.value = ver
+  versionRenameValue.value = ver.versionName
+}
+
+function confirmRenameVersion() {
+  if (!props.skill || !versionPendingRename.value || !versionRenameValue.value.trim()) return
+  skillStore.renameSkillVersion(props.skill.id, versionPendingRename.value.id, versionRenameValue.value)
+  versionPendingRename.value = null
 }
 
 function confirmDeleteVersion() {

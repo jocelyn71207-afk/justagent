@@ -1,0 +1,12 @@
+.SkillTestMark {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  white-space: nowrap;
+
+  .material-symbols-outlined { font-size: 14px; }
+
+  &.is-tested { color: var(--primary); }
+  &.is-untested { color: var(--text-faint); }
+}

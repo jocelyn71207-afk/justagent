@@ -2,10 +2,9 @@ import { ref, computed } from 'vue'
 import { useSkillStore, AVAILABLE_AGENTS } from '@/stores/skillStore'
 import type { Skill, SkillVersion } from '@/stores/skillStore'
 
-// 全系統對話測試沙盒（V2 版型 A／B 共用）：使用者面對的是「所有 Agent＋所有已啟用技能」，
-// 不是預先鎖定一顆技能。每則訊息都跑一次模擬路由——在技能池裡比對內容相似度，
-// 決定由哪個 Agent 接手、觸發哪顆技能，並把沒被選上的候選一起留下來給追蹤面板看，
-// 這樣「誤觸發／漏觸發」才看得出來。
+// 全系統對話測試沙盒的模擬路由（假大腦 useSandboxBrain 用它決定分工）：使用者面對的是
+// 「所有 Agent＋所有已啟用技能」，不是預先鎖定一顆技能。每則訊息在技能池裡比對內容相似度，
+// 決定由哪個 Agent 接手、觸發哪顆技能。相似度只用來排序，不顯示在畫面上。
 //
 // 「包含草稿」開關：關＝只有已啟用技能的生效版本（等同正式環境）；
 // 開＝草稿也一起進池子，看它們上線後會不會被觸發、會不會搶走別人：
@@ -21,22 +20,15 @@ export interface RoutingCandidate {
   score: number
   matchedTerms: string[]
   isDraft: boolean
+  // 技能描述與覆蓋能力：假大腦拿結果回頭解釋「為什麼」時引用
+  description: string
+  capabilities: string[]
+  hasAssignedAgent: boolean
 }
 
 export interface RoutingTrace {
   agent: string
   triggered: RoutingCandidate | null
-  reason: string
-  // 有分數但沒被選上的候選（依分數排序，最多 4 筆）
-  runnersUp: RoutingCandidate[]
-  tools: { name: string; latencyMs: number }[]
-}
-
-export interface SandboxMessage {
-  id: string
-  role: 'user' | 'agent'
-  content: string
-  trace?: RoutingTrace
 }
 
 // 分數低於這個值視為「沒有任何技能符合」，由通用助理直接回覆
@@ -46,7 +38,7 @@ const TRIGGER_MIN_SCORE = 1
 const STOP_BIGRAMS = new Set(['幫我', '一下', '怎麼', '如何', '什麼', '可以', '這個', '這週', '今天', '我們', '你們', '一個'])
 // 含這些虛字的雙字詞（例如「週的」「好了」）也不算，同樣沒有鑑別度
 const FILLER_CHARS = /[的了嗎呢吧啊喔和與及或]/
-const FALLBACK_AGENT = '通用助理'
+export const FALLBACK_AGENT = '通用助理'
 
 const DEFAULT_PROMPTS = [
   '幫我整理這週的業績週報',
@@ -86,8 +78,6 @@ function latestDraftVersion(skill: Skill): SkillVersion | undefined {
 export function useSandboxRouting() {
   const store = useSkillStore()
 
-  const messages = ref<SandboxMessage[]>([])
-  const isRunning = ref(false)
   const includeDrafts = ref(false)
 
   // 個人＋Library，同 id 只留一筆
@@ -148,79 +138,42 @@ export function useSandboxRouting() {
   const draftCount = computed(() => draftEntries.value.length)
   const suggestedPrompts = DEFAULT_PROMPTS
 
-  function route(message: string): RoutingTrace {
+  // agents：限定參與分工的 Agent（使用者在沙盒選）。只有這些 Agent 調用得到的技能才進得了
+  // 候選；還沒指派 Agent 的技能算在通用助理身上。沒傳＝所有 Agent 都參與
+  function route(message: string, agents?: readonly string[]): RoutingTrace {
+    const callersOf = (e: PoolEntry) => e.skill.assignedAgents?.length ? e.skill.assignedAgents : [FALLBACK_AGENT]
     const scored: RoutingCandidate[] = pool.value
+      .filter(e => !agents || callersOf(e).some(a => agents.includes(a)))
       .map(e => {
         const terms = matchedBigrams(message, e.text)
         return {
           skillId: e.skill.id,
           name: e.skill.name,
           versionName: e.versionName,
-          agent: e.skill.assignedAgents?.[0] ?? FALLBACK_AGENT,
+          agent: callersOf(e).find(a => !agents || agents.includes(a)) ?? FALLBACK_AGENT,
           score: terms.length,
           matchedTerms: terms.slice(0, 4),
           isDraft: e.isDraft,
+          description: e.skill.description ?? '',
+          capabilities: e.skill.capabilities ?? [],
+          hasAssignedAgent: !!e.skill.assignedAgents?.length,
         }
       })
       .filter(c => c.score > 0)
       .sort((a, b) => b.score - a.score)
 
     const top = scored[0] && scored[0].score >= TRIGGER_MIN_SCORE ? scored[0] : null
-    const runnersUp = scored.filter(c => c !== top).slice(0, 4)
-    const agent = top?.agent ?? FALLBACK_AGENT
-
-    let reason: string
-    if (top) {
-      const terms = top.matchedTerms.map(t => `「${t}」`).join('、')
-      const unassigned = !pool.value.find(e => e.skill.id === top.skillId)?.skill.assignedAgents?.length
-      reason = `訊息中的 ${terms} 與「${top.name}」的技能說明相符（相似度 ${top.score}），分數最高。`
-        + (unassigned ? `這顆技能還沒指派 Agent，暫由${FALLBACK_AGENT}調用。` : `由指派的「${agent}」接手。`)
-    } else {
-      reason = '沒有任何技能與這句話相關，不調用技能。'
-    }
-
-    const tools = top
-      ? [
-          { name: 'route-to-agent', latencyMs: 42 + Math.round(Math.random() * 30) },
-          { name: 'match-skill-description', latencyMs: 120 + Math.round(Math.random() * 80) },
-          { name: 'apply-instructions', latencyMs: 200 + Math.round(Math.random() * 120) },
-        ]
-      : [{ name: 'route-to-agent', latencyMs: 40 + Math.round(Math.random() * 30) }]
-
-    return { agent, triggered: top, reason, runnersUp, tools }
-  }
-
-  async function send(text: string): Promise<void> {
-    const message = text.trim()
-    if (!message || isRunning.value) return
-    isRunning.value = true
-    messages.value.push({ id: `sb-${Date.now()}`, role: 'user', content: message })
-    await new Promise(r => setTimeout(r, 800))
-    const trace = route(message)
-    messages.value.push({
-      id: `sb-${Date.now() + 1}`,
-      role: 'agent',
-      content: trace.triggered
-        ? `（Mock）已調用「${trace.triggered.name}」處理：「${message}」，正在產生結果...`
-        : `（Mock）沒有符合的技能，直接以一般對話回覆：「${message}」`,
-      trace,
-    })
-    isRunning.value = false
-  }
-
-  function reset(): void {
-    messages.value = []
+    // 沒有技能符合：通用助理有參與就由它回，沒有就交給第一個參與的 Agent
+    const idleAgent = !agents || agents.includes(FALLBACK_AGENT) ? FALLBACK_AGENT : agents[0] ?? FALLBACK_AGENT
+    return { agent: top?.agent ?? idleAgent, triggered: top }
   }
 
   return {
-    messages,
-    isRunning,
     includeDrafts,
     agentCount,
     liveSkillCount,
     draftCount,
     suggestedPrompts,
-    send,
-    reset,
+    route,
   }
 }

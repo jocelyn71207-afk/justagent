@@ -16,12 +16,19 @@ function personal(over: Partial<Skill>): Skill {
 describe('SkillDetailDrawer：個人技能狀態標籤', () => {
   beforeEach(() => { setActivePinia(createPinia()) })
 
-  it('草稿顯示「可使用」，不出現「草稿」', () => {
+  it('沒在審核的個人技能（含草稿）不貼狀態標籤，不出現「草稿」「可使用」', () => {
     const w = mount(SkillDetailDrawer, { props: { skill: personal({ personalStatus: 'draft' }) }, global: { stubs: { Teleport: true } } })
-    const tag = w.find('.tag--available')
-    expect(tag.exists()).toBe(true)
-    expect(tag.text()).toBe('可使用')
     expect(w.find('.tag--draft').exists()).toBe(false)
+    expect(w.find('.tag--available').exists()).toBe(false)
+    expect(w.text()).not.toContain('可使用')
+    expect(w.find('.dh-status').text()).toBe('停用中')
+    expect(w.find('.SkillTestMark .stm-label').text()).toBe('未測試')
+  })
+
+  it('停用狀態一律叫「停用中」', () => {
+    const w = mount(SkillDetailDrawer, { props: { skill: personal({ personalStatus: 'available', aiTestPassRate: 0.8 }) }, global: { stubs: { Teleport: true } } })
+    expect(w.text()).toContain('停用中')
+    expect(w.text()).not.toContain('已停用')
   })
 
   it('審核中仍顯示「審核中」', () => {

@@ -152,10 +152,16 @@ export interface Skill {
   updateTargetId?: string
   // 「更新版本」送審時掛到目標 Library 技能上的那筆審核中版本 id，撤回審核時靠它找回來移除
   submittedVersionId?: string
+  // 「建立新技能」送審時填的範本名稱，審核通過後作為 Library 上的顯示名稱；
+  // 預設帶入送審這一版的技能名稱，使用者可以改。「更新版本」沿用目標技能的名稱，不會有這個值
+  libraryName?: string
   targetScope?: 'enterprise' | 'team'
   targetTeamName?: string
   submittedBy?: string
   skillName?: string
+  // 技能代號（skill_name）：AI Agent 辨識、調用技能用的英文代號（小寫英文與連字號），跟給人看的 name 分開。
+  // 後端技能對到後端的 name；沒有代號的技能（多半是前端新建的）用 skillCodeOf() 從名稱推一個
+  skillCode?: string
   derivedFromVersion?: string
   reviewedBy?: string
   reviewedAt?: string
@@ -275,6 +281,7 @@ const MOCK_SKILLS: Skill[] = [
   {
     id: 'sys-cs-001',
     name: '通用客服機器人',
+    skillCode: 'customer-service-bot',
     description: '處理客戶諮詢與 FAQ，支援多語言與情緒分析',
     functionType: '溝通協作',
     type: 'system',
@@ -353,6 +360,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'ext-cs-return-001',
         name: '客服機器人 (退貨版)',
+        skillCode: 'customer-service-returns',
         description: '針對退貨問題，依設定的服務原則回應退貨政策與審核',
         type: 'extension',
         origin: 'custom_version',
@@ -457,6 +465,7 @@ const MOCK_SKILLS: Skill[] = [
   {
     id: 'sys-doc-001',
     name: '文件摘要生成',
+    skillCode: 'document-summary',
     description: '自動摘要長文件，支援 PDF / Word / Markdown',
     functionType: '文字生成',
     type: 'system',
@@ -534,6 +543,7 @@ const MOCK_SKILLS: Skill[] = [
   {
     id: 'sys-meeting-001',
     name: '會議摘要',
+    skillCode: 'meeting-summary',
     description: '會議錄音轉文字並生成摘要與 action items',
     functionType: '文字生成',
     type: 'system',
@@ -601,6 +611,7 @@ const MOCK_SKILLS: Skill[] = [
       {
         id: 'ext-meeting-eng-001',
         name: '會議摘要 (工程版)',
+        skillCode: 'meeting-summary-engineering',
         description: '工程會議格式，自動標記 action items 至 Jira',
         type: 'extension',
         origin: 'custom_version',
@@ -656,6 +667,7 @@ const MOCK_SKILLS: Skill[] = [
   {
     id: 'ext-erp-001',
     name: 'ERP 庫存查詢',
+    skillCode: 'erp-inventory-lookup',
     description: '根據產品 ID 查詢即時庫存量，支援多個倉庫',
     functionType: '資料查詢',
     type: 'extension',
@@ -748,6 +760,7 @@ const MOCK_SKILLS: Skill[] = [
   {
     id: 'team-weekly-001',
     name: '業績週報生成',
+    skillCode: 'sales-weekly-report',
     description: '根據本週銷售數據自動整理業績摘要，含商品排行與目標達成率分析',
     functionType: '分析報表',
     type: 'extension',
@@ -809,6 +822,7 @@ const MOCK_SKILLS: Skill[] = [
   {
     id: 'team-marketing-001',
     name: '行銷文案生成',
+    skillCode: 'marketing-copywriter',
     description: '根據活動主題與目標受眾，自動生成社群貼文、EDM 標題與 CTA 文案',
     functionType: '文字生成',
     type: 'extension',
@@ -1148,9 +1162,11 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
     id: 'personal-001',
     name: '週報自動生成',
+    skillCode: 'weekly-report-generator',
     description: '根據本週的會議記錄、任務清單，自動整理生成週報摘要',
     type: 'extension',
     origin: 'manually_created',
+    aiTestPassRate: 1,   // 啟用中的技能預設都測過（啟用需先測過）
     creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'available',
@@ -1195,9 +1211,11 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
     id: 'personal-002',
     name: '客服對話品質評估',
+    skillCode: 'cs-conversation-qa',
     description: '自動分析客服對話品質，評估回答準確度與客戶滿意度',
     type: 'extension',
     origin: 'manually_created',
+    aiTestPassRate: 0.9,   // 啟用中的技能預設都測過（啟用需先測過）
     creationMethod: 'ai_assisted',
     zone: 'personal',
     personalStatus: 'reviewing',
@@ -1237,6 +1255,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
     id: 'personal-004',
     name: '合約審核摘要',
+    skillCode: 'contract-review-summary',
     description: '自動擷取合約關鍵條款，生成風險摘要與審核建議',
     type: 'extension',
     origin: 'manually_created',
@@ -1276,6 +1295,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
     id: 'personal-005',
     name: '會議記錄自動生成',
+    skillCode: 'meeting-minutes-generator',
     description: '根據會議逐字稿或音訊，自動輸出結構化會議記錄與行動項目',
     type: 'extension',
     origin: 'manually_created',
@@ -1315,6 +1335,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
     id: 'personal-006',
     name: '產品 FAQ 自動回覆',
+    skillCode: 'product-faq-reply',
     description: '根據產品文件與常見問題資料庫，自動回答用戶提問',
     type: 'extension',
     origin: 'manually_created',
@@ -1349,6 +1370,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
   {
     id: 'personal-003',
     name: 'ERP 報表彙整',
+    skillCode: 'erp-report-aggregation',
     description: '整合 ERP 系統數據，自動生成週期性報表',
     type: 'extension',
     origin: 'manually_created',
@@ -1383,9 +1405,11 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     // deriveFromSections() 依選中的章節依序組出來的內容，格式要跟那份邏輯一致
     id: 'personal-007',
     name: '行銷週報快篩',
+    skillCode: 'marketing-weekly-digest',
     description: '結合會員輪廓、促銷成效與渠道貢獻，一鍵產出行銷週報三大重點章節',
     type: 'extension',
     origin: 'manually_created',
+    aiTestPassRate: 0.8,   // 啟用中的技能預設都測過（啟用需先測過）
     creationMethod: 'manual',
     zone: 'personal',
     personalStatus: 'available',
@@ -1415,6 +1439,7 @@ const MOCK_PERSONAL_SKILLS: Skill[] = [
     // 閘門對話框——demo 時不用先去找哪顆技能符合條件
     id: 'personal-008',
     name: '待測試新流程示範（demo）',
+    skillCode: 'untested-flow-demo',
     description: '示範項目：尚未通過 AI 快速測試，點「啟用」會先看到測試閘門對話框',
     type: 'extension',
     origin: 'manually_created',
@@ -1485,6 +1510,12 @@ export function isSkillTested(skill: Skill): boolean {
 // Library／系統技能（zone 不是 'personal'）不受這條規則限制，一律視為可以啟用。
 export function canEnableSkill(skill: Skill): boolean {
   if (skill.zone !== 'personal') return true
+  return isSkillTested(skill)
+}
+
+// 個人技能是否可以送審：一樣只看這一版測過沒有、不要求全對，但跟啟用不同，這關不能略過——
+// 送審通過後會進 Library 給其他人用，審核者也需要看得到這一版至少實際跑過一次
+export function canSubmitSkill(skill: Skill): boolean {
   return isSkillTested(skill)
 }
 
@@ -1963,15 +1994,18 @@ export const useSkillStore = defineStore('skillStore', () => {
     versionName: string,
     targetScope: 'enterprise' | 'team' = 'enterprise',
     targetTeamName?: string,
-    updateTargetId?: string
+    updateTargetId?: string,
+    libraryName?: string
   ): void {
     const skill = myPersonalSkillsRef.value.find(s => s.id === id)
-    if (!skill) return
+    // 這一版沒測過不收送審（UI 端會先攔下來引導去測試，這裡是最後一道保險）
+    if (!skill || !canSubmitSkill(skill)) return
     skill.personalStatus = 'reviewing'
     skill.submitNote = note
     skill.submitMode = mode
     const targetId = mode === 'version_update' ? (updateTargetId ?? skill.derivedFrom) : undefined
     skill.updateTargetId = targetId
+    skill.libraryName = mode === 'new_skill' ? (libraryName?.trim() || skill.name) : undefined
     skill.targetScope = targetScope
     skill.targetTeamName = targetScope === 'team' ? targetTeamName : undefined
     skill.submittedBy = 'jocelyn.tseng'
@@ -2006,7 +2040,28 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
   }
 
-  // 撤回審核：技能回到送審前的「可使用」，這次送審填的資料一併清掉；
+  // 團隊技能範本管理卡片上的「編輯」：管理者只改範本名稱，不動技能內容。範本名稱是整個
+  // 範本的屬性，每個版本快照的 name 都一起改，不然之後切換版本（setLibraryActiveVersion
+  // 會用快照的 name 蓋回 skill.name）名稱又會變回舊的
+  function renameLibrarySkill(skillId: string, name: string): void {
+    const skill = _findAny(skillId)
+    const nextName = name.trim()
+    if (!skill || !nextName) return
+    skill.name = nextName
+    skill.versions?.forEach(v => { v.name = nextName })
+  }
+
+  // 版本歷史裡改單一版本的版本名稱；改到生效版本時，技能上顯示的版本名稱也跟著換
+  function renameSkillVersion(skillId: string, versionId: string, versionName: string): void {
+    const skill = _findAny(skillId)
+    const version = skill?.versions?.find(v => v.id === versionId)
+    const next = versionName.trim()
+    if (!skill || !version || !next) return
+    version.versionName = next
+    if (version.status === 'active') skill.version = next
+  }
+
+  // 撤回審核：技能回到送審前的狀態（不再是審核中），這次送審填的資料一併清掉；
   // 「更新版本」模式掛在目標 Library 技能上的審核中版本也要移除，不然審核者還會看到它
   function withdrawPersonalSkill(id: string): void {
     const skill = myPersonalSkillsRef.value.find(s => s.id === id)
@@ -2026,6 +2081,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     skill.submitMode = undefined
     skill.updateTargetId = undefined
     skill.submittedVersionId = undefined
+    skill.libraryName = undefined
     skill.targetScope = undefined
     skill.targetTeamName = undefined
     skill.submittedBy = undefined
@@ -2075,7 +2131,7 @@ export const useSkillStore = defineStore('skillStore', () => {
     if (idx !== -1) myPersonalSkillsRef.value.splice(idx, 1)
   }
 
-  // 版本會隨時間越積越多，管理者可以清掉不需要的舊版本；生效中的版本
+  // 版本會隨時間越積越多，管理者可以清掉不需要的舊版本；使用中的版本
   // 不能刪，要刪之前得先用 setLibraryActiveVersion 切換到別的版本
   function deleteSkillVersion(skillId: string, versionId: string): void {
     const skill = _findAny(skillId)
@@ -2412,14 +2468,15 @@ export const useSkillStore = defineStore('skillStore', () => {
     }
 
     const rate = total > 0 ? correct / total : 0
+    // summary 只講這輪結果代表什麼；怎麼改、怎麼重測、怎麼啟用交給測試 tab 的「下一步」，避免兩段重複
     let summary: string
     const agent = aiTestAnsweringAgent.value ? `「${aiTestAnsweringAgent.value}」` : 'Agent'
     if (rate === 1) {
-      summary = `${agent}全部判斷正確，這顆技能的說明描述得夠清楚。`
+      summary = `${agent}全部判斷正確，技能內文已經足夠清楚。`
     } else if (rate >= 0.7) {
-      summary = `${agent}判斷對 ${correct} / ${total} 題，整體不錯；看看判斷錯的題目，補強說明，讓 Agent 更容易分辨。`
+      summary = `${agent}判斷對 ${correct} / ${total} 題，大致分辨得出來，只有少數情境容易混淆。`
     } else {
-      summary = `${agent}只判斷對 ${correct} / ${total} 題，建議重新檢視這顆技能的說明，修改後再測一次。`
+      summary = `${agent}只判斷對 ${correct} / ${total} 題，技能內文可能不夠明確，Agent 不容易分辨什麼時候該用。`
     }
 
     aiTestReport.value = { total, correct, byTag, summary }
@@ -2568,6 +2625,8 @@ export const useSkillStore = defineStore('skillStore', () => {
     submitDraft,
     submitPersonalSkill,
     withdrawPersonalSkill,
+    renameLibrarySkill,
+    renameSkillVersion,
     suggestVersionName,
     deletePersonalSkill,
     duplicateAsPersonalSkill,

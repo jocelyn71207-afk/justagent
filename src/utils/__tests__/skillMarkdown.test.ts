@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildSkillDefinitionMarkdown, buildSkillMarkdown, buildSkillContentMarkdown, parseSkillContentMarkdown } from '../skillMarkdown'
+import { buildSkillDefinitionMarkdown, buildSkillMarkdown, buildSkillContentMarkdown, parseSkillContentMarkdown, skillCodeOf } from '../skillMarkdown'
 import type { Skill } from '@/stores/skillStore'
 
 function makeSkill(overrides: Partial<Skill> = {}): Skill {
@@ -86,5 +86,15 @@ describe('parseSkillContentMarkdown', () => {
   it('跟 buildSkillContentMarkdown 互為反向', () => {
     const fields = { steps: ['a', 'b'], exceptions: ['c'], outputFormat: 'd', applicableScope: 'e' }
     expect(parseSkillContentMarkdown(buildSkillContentMarkdown(fields))).toEqual(fields)
+  })
+})
+
+describe('skillCodeOf', () => {
+  it('有 skillCode 就用 skillCode，skill.md 的 name 也跟著用', () => {
+    expect(skillCodeOf({ name: '週報', skillCode: 'weekly-report' })).toBe('weekly-report')
+  })
+
+  it('沒有 skillCode：從名稱推（小寫、非字母數字換成連字號）', () => {
+    expect(skillCodeOf({ name: ' Weekly Report v2 ' })).toBe('weekly-report-v2')
   })
 })

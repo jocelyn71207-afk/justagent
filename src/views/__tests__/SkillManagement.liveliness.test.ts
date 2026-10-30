@@ -25,13 +25,13 @@ describe('SkillManagement 統計列', () => {
     const wrapper = rootWrapper.findComponent(SkillManagement)
     // 目前 mock 角色為管理者且有待審核個人技能，還有預設一筆 AI 建議技能假資料，
     // 所以會多兩個需要行動的 pill 徽章（「待審核」「AI 建議」）排在最前面；
-    // 其餘四個維持純資訊的色點語彙
+    // 其餘三個維持純資訊的色點語彙（「本月自動觸發次數」暫時隱藏）
     const stats = wrapper.findAll('.skill-stat')
-    expect(stats.length).toBe(6)
+    expect(stats.length).toBe(5)
     const infoStats = stats.filter(s =>
       !s.classes().includes('skill-stat--pending') && !s.classes().includes('skill-stat--suggestion')
     )
-    expect(infoStats.length).toBe(4)
+    expect(infoStats.length).toBe(3)
     infoStats.forEach(stat => {
       expect(stat.find('.stat-dot').exists()).toBe(true)
       expect(stat.find('b').exists()).toBe(true)
@@ -47,6 +47,6 @@ describe('SkillManagement 統計列', () => {
     expect(wrapper.find('.skill-stat--enabled').exists()).toBe(true)
     expect(wrapper.find('.skill-stat--ext').exists()).toBe(true)
     expect(wrapper.find('.skill-stat--team').exists()).toBe(true)
-    expect(wrapper.find('.skill-stat--usage').exists()).toBe(true)
+    expect(wrapper.find('.skill-stat--usage').exists()).toBe(false)
   })
 })

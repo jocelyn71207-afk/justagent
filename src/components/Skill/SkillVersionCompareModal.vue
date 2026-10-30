@@ -223,7 +223,7 @@ function versionOptionLabel(ver: SkillVersion): string {
 
 function versionStatusLabel(status: SkillVersionStatus): string {
   const map: Record<SkillVersionStatus, string> = {
-    draft: '草稿', reviewing: '審核中', approved: '待啟用', active: '生效中', history: '歷史', rejected: '已退回',
+    draft: '草稿', reviewing: '審核中', approved: '待啟用', active: '使用中', history: '歷史', rejected: '已退回',
   }
   return map[status] ?? status
 }

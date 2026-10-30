@@ -19,6 +19,7 @@
         <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
         <span class="status-text">{{ statusText }}</span>
       </div>
+      <SkillTestMark v-if="tested !== null" :tested="tested" />
     </div>
   </div>
 </template>
@@ -26,24 +27,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Skill } from '@/stores/skillStore'
+import { skillEnableStatus, skillTested } from '@/utils/skillStatus'
+import SkillTestMark from '@/components/Skill/SkillTestMark.vue'
 
 const props = defineProps<{ skill: Skill }>()
 const emit = defineEmits<{
   manage: [skill: Skill]
 }>()
 
-// 卡片只標「審核中」：草稿不另外貼標籤——草稿就是「尚未測試／停用中」，底下的狀態文字
-// 已經表達了；has_library（已核准並發布至 Library）是後台狀態，也不用標出來。
+// 卡片只標「審核中」：草稿不另外貼標籤——草稿就是「停用中＋未測試」，底下的狀態與測試
+// 標註已經表達了；has_library（已核准並發布至 Library）是後台狀態，也不用標出來。
 // personalStatus 本身跟送審層級鎖定邏輯不受影響
 const statusLabel = computed(() => props.skill.personalStatus === 'reviewing' ? '審核中' : null)
 
-// 後端技能卡片只顯示有沒有測過（「我的技能」不顯示版本號）；其餘維持原本的啟用／測試狀態文字
-const statusText = computed(() => {
-  const bv = props.skill.backendVersion
-  if (bv) return bv.tested ? '測過' : '沒測過'
-  if (props.skill.isEnabled) return '啟用中'
-  return props.skill.aiTestPassRate == null ? '尚未測試' : '停用中'
-})
+// 狀態只有啟用中／停用中；測過沒另外標在右下（SkillTestMark），後端技能看最新版的測過記號
+const statusText = computed(() => skillEnableStatus(props.skill))
+const tested = computed(() => skillTested({ ...props.skill, zone: 'personal' }))
 
 // 用「AI 賦能」建立的技能，圖示換成建立方式本身（跟 SkillMethodChooser 選卡同一組
 // icon：對話 forum／積木 dashboard_customize），一眼看出這顆技能怎麼來的；

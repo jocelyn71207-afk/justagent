@@ -626,3 +626,9 @@
     .material-symbols-outlined { font-size: 16px; }
   }
 }
+
+// 對話「輸入中」三個點的彈跳：SkillStudio 與技能測試沙盒（_SkillSandbox.scss 的 .sb-typing）共用
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%            { transform: translateY(-6px); opacity: 1; }
+}

@@ -44,7 +44,8 @@
         <div class="skill-stat skill-stat--team">
           <i class="stat-dot"></i><b>{{ store.teamExtensionCount }}</b>團隊擴充
         </div>
-        <div class="skill-stat skill-stat--usage">
+        <!-- 暫時隱藏：本月自動觸發次數，要恢復拿掉 v-if 即可 -->
+        <div v-if="false" class="skill-stat skill-stat--usage">
           <i class="stat-dot"></i><b>{{ store.totalUsageCount.toLocaleString() }}</b>本月自動觸發次數
         </div>
       </div>
@@ -82,7 +83,6 @@
             <SkillReviewQueue
               v-if="store.pendingReviewSkills.length"
               :skills="store.pendingReviewSkills"
-              @view="detailFromLibrary = false; detailFromTemplateManage = false; detailSkillId = $event.id"
               @approve="handleApprove"
               @reject="handleReject"
             />
@@ -325,6 +325,41 @@
       </Transition>
     </Teleport>
 
+    <!-- 團隊技能範本的「編輯」：只改範本名稱，不進編輯流程 -->
+    <Teleport to="body">
+      <Transition name="confirm-fade">
+        <div
+          v-if="renameSkill"
+          class="drawer-confirm-overlay"
+          @click.self="renameSkill = null"
+        >
+          <div class="drawer-confirm-dialog">
+            <div class="confirm-icon confirm-icon--update">
+              <i class="material-symbols-outlined">edit</i>
+            </div>
+            <h4>編輯範本</h4>
+            <label class="dsd-note-label pdd-name-label">範本名稱</label>
+            <input
+              v-model="renameName"
+              class="custom-input pdd-name-input"
+              placeholder="輸入範本名稱"
+              @keydown.enter="confirmRename"
+            />
+            <div class="confirm-actions">
+              <button class="custom-btn" @click="renameSkill = null">取消</button>
+              <button
+                class="custom-btn custom-main-btn"
+                :disabled="!renameName.trim()"
+                @click="confirmRename"
+              >
+                <i class="material-symbols-outlined">check_circle</i>儲存
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- 選擇建立方式：點「我的技能」頁的「建立技能」 -->
     <Teleport to="body">
       <Transition name="confirm-fade">
@@ -500,6 +535,16 @@
                   </option>
                 </select>
               </div>
+              <!-- 建立新技能：Library 上要顯示的名稱，預設帶入送審這一版的技能名稱 -->
+              <div v-if="submitMode === 'new_skill'" class="dsd-team">
+                <label class="dsd-note-label">範本名稱</label>
+                <input
+                  v-model="submitLibraryName"
+                  class="custom-input"
+                  maxlength="40"
+                  placeholder="審核通過後在 Library 顯示的名稱"
+                />
+              </div>
             </div>
 
             <div class="dsd-note">
@@ -645,6 +690,17 @@ const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
 // 建立副本第一步：先確認顯示名稱，確認後才真正建立副本（此時才會出現在「我的技能」列表）
 const pendingDuplicateSource = ref<Skill | null>(null)
 const pendingDuplicateName = ref('')
+
+// 團隊技能範本改名對話框
+const renameSkill = ref<Skill | null>(null)
+const renameName = ref('')
+
+function confirmRename() {
+  if (!renameSkill.value || !renameName.value.trim()) return
+  store.renameLibrarySkill(renameSkill.value.id, renameName.value)
+  renameSkill.value = null
+  popDialog.toast('已更新範本名稱', 2000)
+}
 const pendingDuplicateConflict = computed(() =>
   pendingDuplicateSource.value ? store.wouldSkillNameConflict(pendingDuplicateSource.value.id) : false
 )
@@ -673,6 +729,7 @@ function toTileSkill(v: BackendSkillVersion): Skill {
   return {
     id: v.skill_id,
     name: v.display_name,
+    skillCode: v.name,            // 後端的 name 是技能代號（skill_name），display_name 才是給人看的名稱
     description: v.description,
     type: 'extension',
     origin: 'manually_created',
@@ -747,6 +804,7 @@ const submitTeamLocked = ref(false)
 const submitTeamName = ref('')
 const submitNote = ref('')
 const submitVersionName = ref('')
+const submitLibraryName = ref('')
 const submitUpdateTargetId = ref('')
 const suggestingVersionName = ref(false)
 
@@ -771,7 +829,8 @@ watch(updateTargetOptions, options => {
 
 const canConfirmSubmit = computed(() =>
   !!submitVersionName.value.trim() &&
-  (submitMode.value !== 'version_update' || !!submitUpdateTargetId.value)
+  (submitMode.value !== 'version_update' || !!submitUpdateTargetId.value) &&
+  (submitMode.value !== 'new_skill' || !!submitLibraryName.value.trim())
 )
 
 function selectVersionUpdate() {
@@ -859,8 +918,11 @@ function handleEdit(skill: Skill) {
     openBackendModify(skill, skill.backendVersion.version)
     return
   }
+  // 團隊技能範本（只有管理者在團隊技能管理裡看得到「編輯」）：不進編輯流程，
+  // 只開對話框改範本名稱；版本名稱在詳情的版本歷史裡逐筆改
   if (skill.zone !== 'personal') {
-    router.push({ path: '/view/SkillEditor', query: { skillId: skill.id } })
+    renameSkill.value = skill
+    renameName.value = skill.name
     return
   }
   detailSkillId.value = null
@@ -932,7 +994,14 @@ function handleChatEdit() {
 
 // ── 個人技能 handlers ──────────────────────────────
 
-function handlePersonalSubmit(skill: Skill) {
+async function handlePersonalSubmit(clicked: Skill) {
+  // 送審前這一版一定要測過（交卷就算，不用全對）；沒測過就在啟用流程那個對話框裡就地做
+  // AI 快速測試，不導去測試沙盒。跟啟用不同，這裡不提供略過，取消就不送審
+  const ready = await enableFlowRef.value!.requestTestBeforeSubmit(store.findSkill(clicked.id) ?? clicked)
+  if (!ready) return
+  // 測完 store 裡那份才有最新的測試記號，送審 dialog 用最新的那份
+  const skill = store.findSkill(clicked.id) ?? clicked
+
   const teamAlreadyPublished = skill.personalStatus === 'has_library' && skill.targetScope === 'team'
 
   submitConfirmSkill.value = skill
@@ -943,6 +1012,7 @@ function handlePersonalSubmit(skill: Skill) {
   submitUpdateTargetId.value = updateTargetOptions.value.some(s => s.id === skill.derivedFrom) ? skill.derivedFrom! : ''
   submitNote.value = ''
   submitVersionName.value = ''
+  submitLibraryName.value = skill.name
   // 開啟 dialog 就先給一個 AI 建議草稿（此時說明通常還沒填，用泛用建議打底），
   // 使用者填完說明後可以再按「AI 建議」重新生成一次更貼近內容的名稱
   suggestVersionNameNow()
@@ -971,7 +1041,8 @@ function confirmSubmitSkill() {
     submitVersionName.value.trim(),
     submitScope.value,
     submitScope.value === 'team' ? submitTeamName.value : undefined,
-    submitMode.value === 'version_update' ? submitUpdateTargetId.value : undefined
+    submitMode.value === 'version_update' ? submitUpdateTargetId.value : undefined,
+    submitMode.value === 'new_skill' ? submitLibraryName.value.trim() : undefined
   )
   submitConfirmSkill.value = null
   submitNote.value = ''
@@ -979,7 +1050,7 @@ function confirmSubmitSkill() {
 }
 
 function handlePersonalWithdraw(skill: Skill) {
-  popDialog.confirm('確定要撤回此審核申請嗎？撤回後技能會回到「可使用」狀態。', '撤回', '取消', () => {
+  popDialog.confirm('確定要撤回此審核申請嗎？撤回後技能就不再是審核中，啟用狀態維持不變。', '撤回', '取消', () => {
     store.withdrawPersonalSkill(skill.id)
     popDialog.toast('已撤回審核', 2000)
   })

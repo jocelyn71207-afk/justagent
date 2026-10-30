@@ -80,11 +80,32 @@
 
   .dh-title { flex: 1; min-width: 0; }
 
+  .dh-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+    margin-bottom: 7px;
+  }
+
   .dh-name {
     font-size: 16px;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+    max-width: 100%;
+  }
+
+  // 技能代號（skill_name）：等寬淡色跟顯示名稱區隔；空間不夠時名稱優先完整顯示，代號先被截斷
+  .dh-code {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-faint);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

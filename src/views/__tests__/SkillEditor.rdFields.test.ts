@@ -6,7 +6,7 @@ import SkillEditor from '@/views/SkillEditor.vue'
 import { useSkillStore } from '@/stores/skillStore'
 
 // RD 技能定義的步驟／例外／固定輸出格式／適用範圍：精靈只有一個技能內文輸入框，
-// 存檔時依標題拆成四項；步驟必填、其餘選填
+// 存檔時依標題拆成四項；技能內文必填，但不檢查標題
 let currentWrapper: VueWrapper | null = null
 
 async function mountEditor(query: Record<string, string> = {}) {
@@ -32,19 +32,19 @@ describe('SkillEditor：RD 技能定義欄位', () => {
   beforeEach(() => { setActivePinia(createPinia()) })
   afterEach(() => { currentWrapper?.unmount(); currentWrapper = null })
 
-  it('步驟必填：技能內文拆不出步驟時不能送出，提示「步驟」', async () => {
+  it('技能內文必填但不檢查標題：空白不能送出，沒有「步驟」標題也能送出', async () => {
     const { wrapper, editor } = await mountEditor()
     const vm = editor.vm as any
     vm.form.name = '新技能'
     vm.form.capabilities = ['能力A']
     vm.form.assignedAgents = ['通用助理']
-    vm.form.content = '## 固定輸出格式\n表格'
+    vm.form.content = '   '
     vm.currentStep = 2
     await wrapper.vm.$nextTick()
     expect(vm.canSubmit).toBe(false)
-    expect(wrapper.find('.se-submit-missing-hint').text()).toContain('步驟')
+    expect(wrapper.find('.se-submit-missing-hint').text()).toContain('技能內文')
 
-    vm.form.content = '## 步驟\n1. 查詢資料'
+    vm.form.content = '查詢庫存後用表格回覆'
     await wrapper.vm.$nextTick()
     expect(vm.canSubmit).toBe(true)
   })

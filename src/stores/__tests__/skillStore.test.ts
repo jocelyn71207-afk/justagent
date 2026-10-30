@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useSkillStore } from '@/stores/skillStore'
+import { useSkillStore, canSubmitSkill } from '@/stores/skillStore'
 
 describe('skillStore', () => {
   beforeEach(() => {
@@ -231,6 +231,7 @@ describe('skillStore', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]
       expect(skill.personalStatus).toBe('available')
+      store.findSkill(skill.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本')
       expect(store.myPersonalSkills[0].personalStatus).toBe('reviewing')
       expect(store.myPersonalSkills[0].submitNote).toBe('測試說明')
@@ -242,12 +243,65 @@ describe('skillStore', () => {
       expect(() => store.submitPersonalSkill('nonexistent', 'new_skill', '', '測試版本')).not.toThrow()
     })
 
+    it('submitPersonalSkill 建立新技能：記錄使用者填的範本名稱（Library 顯示名稱），沒填就預設技能名稱', () => {
+      const store = useSkillStore()
+      const [a, b] = store.myPersonalSkills.filter(s => s.personalStatus === 'available')
+      store.findSkill(a.id)!.aiTestPassRate = 1
+      store.findSkill(b.id)!.aiTestPassRate = 1
+
+      store.submitPersonalSkill(a.id, 'new_skill', '', 'v1', 'enterprise', undefined, undefined, '  行銷週報範本  ')
+      store.submitPersonalSkill(b.id, 'new_skill', '', 'v1')
+
+      expect(store.findSkill(a.id)!.libraryName).toBe('行銷週報範本')
+      expect(store.findSkill(b.id)!.libraryName).toBe(b.name)
+    })
+
+    it('submitPersonalSkill 更新版本不記錄範本名稱；撤回審核會清掉範本名稱', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.derivedFrom && s.personalStatus === 'available')!
+      store.findSkill(skill.id)!.aiTestPassRate = 1
+
+      store.submitPersonalSkill(skill.id, 'version_update', '', 'v2', 'enterprise', undefined, undefined, '不該被記錄')
+      expect(store.findSkill(skill.id)!.libraryName).toBeUndefined()
+      store.withdrawPersonalSkill(skill.id)
+
+      store.submitPersonalSkill(skill.id, 'new_skill', '', 'v3', 'enterprise', undefined, undefined, '範本')
+      expect(store.findSkill(skill.id)!.libraryName).toBe('範本')
+      store.withdrawPersonalSkill(skill.id)
+      expect(store.findSkill(skill.id)!.libraryName).toBeUndefined()
+    })
+
+    it('submitPersonalSkill 這一版沒測過時不收送審，狀態維持不變', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.personalStatus === 'available' && s.aiTestPassRate == null)!
+      store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本')
+      const after = store.myPersonalSkills.find(s => s.id === skill.id)!
+      expect(after.personalStatus).toBe('available')
+      expect(after.submitNote).toBeUndefined()
+    })
+
+    it('啟用中的個人技能預設都測過', () => {
+      const store = useSkillStore()
+      const enabled = store.myPersonalSkills.filter(s => s.isEnabled)
+      expect(enabled.length).toBeGreaterThan(0)
+      enabled.forEach(s => expect(s.aiTestPassRate ?? null).not.toBeNull())
+    })
+
+    it('canSubmitSkill 只看這一版測過沒，答對率 0 也算測過', () => {
+      const store = useSkillStore()
+      const skill = store.myPersonalSkills.find(s => s.personalStatus === 'available' && s.aiTestPassRate == null)!
+      expect(canSubmitSkill(skill)).toBe(false)
+      skill.aiTestPassRate = 0
+      expect(canSubmitSkill(skill)).toBe(true)
+    })
+
     it('submitPersonalSkill 在 version_update 模式下，會在來源 Library 技能新增一筆 reviewing 版本，帶著使用者命名的版本名稱', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills.find(s => s.derivedFrom)
       expect(skill).toBeDefined()
       const before = store.getSkillVersions(skill!.derivedFrom!).length
 
+      store.findSkill(skill!.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill!.id, 'version_update', '改動說明', 'VIP 退貨優惠更新')
 
       const versions = store.getSkillVersions(skill!.derivedFrom!)
@@ -263,6 +317,7 @@ describe('skillStore', () => {
       const sourceBefore = store.getSkillVersions(skill.derivedFrom!).length
       const otherBefore = store.getSkillVersions(other.id).length
 
+      store.findSkill(skill.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill.id, 'version_update', '', '改掛別的技能', 'enterprise', undefined, other.id)
 
       expect(store.myPersonalSkills.find(s => s.id === skill.id)!.updateTargetId).toBe(other.id)
@@ -273,6 +328,7 @@ describe('skillStore', () => {
     it('submitPersonalSkill 在 new_skill 模式下不記錄 updateTargetId', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills.find(s => s.derivedFrom)!
+      store.findSkill(skill.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill.id, 'new_skill', '', '新技能', 'enterprise', undefined, 'whatever')
       expect(store.myPersonalSkills.find(s => s.id === skill.id)!.updateTargetId).toBeUndefined()
     })
@@ -280,6 +336,7 @@ describe('skillStore', () => {
     it('withdrawPersonalSkill 撤回後 personalStatus 回到 available，並清掉這次送審資料', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]
+      store.findSkill(skill.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本', 'team', '客服組')
 
       store.withdrawPersonalSkill(skill.id)
@@ -297,6 +354,7 @@ describe('skillStore', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills.find(s => s.derivedFrom)!
       const before = store.getSkillVersions(skill.derivedFrom!).length
+      store.findSkill(skill.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill.id, 'version_update', '改動說明', 'VIP 退貨優惠更新')
 
       store.withdrawPersonalSkill(skill.id)
@@ -594,6 +652,7 @@ describe('skillStore', () => {
     it('updateSkill 對 reviewing 狀態的個人技能不會意外改動 personalStatus', () => {
       const store = useSkillStore()
       const skill = store.myPersonalSkills[0]
+      store.findSkill(skill.id)!.aiTestPassRate = 1 // 送審前這一版要測過
       store.submitPersonalSkill(skill.id, 'new_skill', '測試說明', '測試版本')
       expect(store.findSkill(skill.id)?.personalStatus).toBe('reviewing')
       store.updateSkill(skill.id, {
@@ -880,6 +939,60 @@ describe('skillStore', () => {
       const file = { id: 'sf-7', fileName: 'notes.txt', fileSize: 64, fileType: 'TXT' as const, uploadedAt: '2026-08-19T00:00:00Z' }
       store.updateSkillFiles(copy.id, [file])
       expect(store.findSkill(copy.id)?.personalStatus).toBe('available')
+    })
+  })
+
+  describe('renameLibrarySkill', () => {
+    it('只改範本名稱，每個版本快照的名稱一起改，版本名稱不動', () => {
+      const store = useSkillStore()
+      const skill = store.flatSkills.find(s => (s.versions?.length ?? 0) > 1)!
+      const versionNames = skill.versions!.map(v => v.versionName)
+      const version = skill.version
+      store.renameLibrarySkill(skill.id, ' 新範本名稱 ')
+      const after = store.flatSkills.find(s => s.id === skill.id)!
+      expect(after.name).toBe('新範本名稱')
+      expect(after.version).toBe(version)
+      after.versions!.forEach(v => expect(v.name).toBe('新範本名稱'))
+      expect(after.versions!.map(v => v.versionName)).toEqual(versionNames)
+    })
+
+    it('切換生效版本後範本名稱不會變回舊的', () => {
+      const store = useSkillStore()
+      const skill = store.flatSkills.find(s => s.versions?.some(v => v.status === 'history' || v.status === 'approved'))!
+      store.renameLibrarySkill(skill.id, '新範本名稱')
+      const other = skill.versions!.find(v => v.status === 'history' || v.status === 'approved')!
+      store.setLibraryActiveVersion(skill.id, other.id)
+      expect(store.flatSkills.find(s => s.id === skill.id)!.name).toBe('新範本名稱')
+    })
+
+    it('名稱留空時不改', () => {
+      const store = useSkillStore()
+      const { id, name } = store.flatSkills[0]
+      store.renameLibrarySkill(id, '  ')
+      expect(store.flatSkills[0].name).toBe(name)
+    })
+  })
+
+  describe('renameSkillVersion', () => {
+    it('改生效版本的版本名稱，技能顯示的版本名稱跟著換', () => {
+      const store = useSkillStore()
+      const skill = store.flatSkills.find(s => s.versions?.some(v => v.status === 'active'))!
+      const active = skill.versions!.find(v => v.status === 'active')!
+      store.renameSkillVersion(skill.id, active.id, ' 新版本名稱 ')
+      const after = store.flatSkills.find(s => s.id === skill.id)!
+      expect(after.versions!.find(v => v.id === active.id)!.versionName).toBe('新版本名稱')
+      expect(after.version).toBe('新版本名稱')
+    })
+
+    it('改非生效版本時，技能顯示的版本名稱不變', () => {
+      const store = useSkillStore()
+      const skill = store.flatSkills.find(s => s.versions?.some(v => v.status !== 'active'))!
+      const other = skill.versions!.find(v => v.status !== 'active')!
+      const version = skill.version
+      store.renameSkillVersion(skill.id, other.id, '舊版改名')
+      const after = store.flatSkills.find(s => s.id === skill.id)!
+      expect(after.versions!.find(v => v.id === other.id)!.versionName).toBe('舊版改名')
+      expect(after.version).toBe(version)
     })
   })
 })

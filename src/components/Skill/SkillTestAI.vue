@@ -136,20 +136,22 @@
             <div class="report-next-label">
               <i class="material-symbols-outlined">{{ nextStep.tone === 'pass' ? 'task_alt' : 'lightbulb' }}</i>下一步
             </div>
-            <ul class="report-next-list">
+            <p v-if="nextStep.intro" class="report-next-intro">{{ nextStep.intro }}</p>
+            <ul v-if="nextStep.lines.length" class="report-next-list">
               <li v-for="(line, i) in nextStep.lines" :key="i">{{ line }}</li>
             </ul>
-            <!-- 儲存歸儲存、啟用歸啟用：不管 Agent 答對答錯，測過就能啟用，「啟用技能」一律在這裡；
-                 還沒存檔、或已經啟用中時按鈕反灰，原因寫在上面的引導文字裡 -->
+            <!-- 不管 Agent 答對答錯，測過就能啟用，「儲存並啟用」一律在這裡：草稿還沒存檔就先存再啟用；
+                 已經啟用中（修改技能進來沒改內容、直接測）也能按，確認 Agent 後維持啟用。
+                 只有草稿存不了（呼叫端沒給 saveDraft，例如必填欄位沒填完）時反灰，原因寫在上面的引導文字裡 -->
             <div class="report-next-actions">
               <button
                 v-if="!props.embedded"
                 type="button"
                 class="custom-btn custom-main-btn custom-btn--sm ai-enable-btn"
-                :disabled="enableState !== 'ready'"
+                :disabled="enableState === 'unsaved' && !props.saveDraft"
                 @click="handleEnableClick"
               >
-                <i class="material-symbols-outlined">check_circle</i>啟用技能
+                <i class="material-symbols-outlined">check_circle</i>儲存並啟用
               </button>
               <button
                 v-if="nextStep.tone === 'fail'"
@@ -157,7 +159,7 @@
                 class="custom-btn custom-btn--sm report-next-retest"
                 @click="regenerate"
               >
-                <i class="material-symbols-outlined">refresh</i>重新測試
+                <i class="material-symbols-outlined">refresh</i>重新生成
               </button>
             </div>
           </div>
@@ -203,6 +205,9 @@ const props = defineProps<{
   // 測試沒全對時，引導使用者去哪裡改技能內容——依呼叫端的畫面而定（對話方式在左側對話、
   // 積木方式在基本設定…），沒傳就用通用說法
   editHint?: string
+  // 「儲存並啟用」遇到還沒存檔的草稿時，用這個先存成技能、拿回真正的技能 id；
+  // 呼叫端在草稿存不了（必填欄位沒填完）時不要傳，按鈕會反灰
+  saveDraft?: () => string | null
 }>()
 const store = useSkillStore()
 const enableFlowRef = ref<InstanceType<typeof SkillEnableFlow> | null>(null)
@@ -211,8 +216,9 @@ const scenariosEl = ref<HTMLElement | null>(null)
 onMounted(() => store.ensureAITestStateForSkill(props.skillId))
 watch(() => props.skillId, (id) => store.ensureAITestStateForSkill(id))
 
-// 「啟用技能」能不能按：草稿還沒存成技能（store 找不到）不能啟用；已經啟用中也不用再啟用。
-// 不看答對比例——測過就能啟用、不用全對（見 skillStore 的 canEnableSkill）
+// 「儲存並啟用」要做什麼：草稿還沒存成技能（store 找不到）要先存；已經啟用中只確認 Agent、
+// 不切換（toggleSkill 是切換，直接呼叫會變成停用）。不看答對比例——測過就能啟用、不用全對
+// （見 skillStore 的 canEnableSkill）
 const enableState = computed<'unsaved' | 'enabled' | 'ready'>(() => {
   const skill = store.findSkill(props.skillId)
   if (!skill) return 'unsaved'
@@ -220,39 +226,55 @@ const enableState = computed<'unsaved' | 'enabled' | 'ready'>(() => {
 })
 
 async function handleEnableClick() {
-  const skill = store.findSkill(props.skillId)
-  if (!skill) return
+  let skill = store.findSkill(props.skillId)
+  let savedNow = false
+  if (!skill) {
+    const id = props.saveDraft?.()
+    skill = id ? store.findSkill(id) : undefined
+    if (!skill) return
+    savedNow = true
+  }
+  const wasEnabled = skill.isEnabled
   // 呼叫端要處理完整的 EnableFlowOutcome，不能假設只會 resolve confirmed
   const outcome = await enableFlowRef.value!.requestEnable(skill, skill.assignedAgents ?? [])
-  if (outcome.type === 'cancelled') return
+  if (outcome.type === 'cancelled') {
+    // 已經先存了檔，取消的只是啟用：講清楚技能存下來了、還沒上線
+    if (savedNow) popDialog.toast('已儲存為個人技能，尚未啟用')
+    return
+  }
   store.setAssignedAgents(skill.id, outcome.agents)
-  store.toggleSkill(skill.id)
+  if (!wasEnabled) store.toggleSkill(skill.id)
+  popDialog.toast(savedNow ? '已儲存並啟用技能' : wasEnabled ? '已更新可調用的 Agent，技能維持啟用中' : '已啟用技能')
 }
 
 // 交卷後的「下一步」引導：不管 Agent 答對答錯，都會講怎麼啟用（跟下方「啟用技能」按鈕
-// 的狀態對齊）；沒全對時另外講怎麼改、怎麼重測
-const nextStep = computed<{ tone: 'pass' | 'fail'; lines: string[] } | null>(() => {
+// 的狀態對齊）；沒全對時另外講怎麼改、怎麼重新生成。答對幾題、代表什麼已經寫在上方的
+// report-summary，這裡只講「接下來做什麼」，不重複結果
+const nextStep = computed<{ tone: 'pass' | 'fail'; intro?: string; lines: string[] } | null>(() => {
   const report = store.aiTestReport
   if (!report || report.total === 0 || store.aiTestScenariosSkillId !== props.skillId) return null
-  const agent = store.aiTestAnsweringAgent ? `「${store.aiTestAnsweringAgent}」` : 'Agent'
   const enableLine = props.embedded
     ? '可以繼續啟用。'
     : {
-        unsaved: '要啟用的話，先按「儲存」存成技能，再回來按「啟用技能」。',
-        enabled: '這顆技能已經是啟用中，不用再啟用。',
-        ready: '按「啟用技能」，確認可用的 Agent 後就能上線。',
+        unsaved: props.saveDraft
+          ? '按「儲存並啟用」，存成個人技能並確認要開放給哪些 Agent 後就能上線。'
+          : '還有必填欄位沒填完，補齊後就能「儲存並啟用」。',
+        enabled: '這顆技能目前已經啟用中；要調整可調用的 Agent，按「儲存並啟用」確認。',
+        ready: '按「儲存並啟用」，確認要開放給哪些 Agent 後就能上線。',
       }[enableState.value]
   if (report.correct === report.total) {
-    return { tone: 'pass', lines: [`${agent}全部判斷正確！${enableLine}`] }
+    return { tone: 'pass', intro: enableLine, lines: [] }
   }
   const wrong = report.total - report.correct
   return {
     tone: 'fail',
+    intro: `有 ${wrong} 題判斷錯了，可以這樣處理：`,
     lines: [
-      `${agent}判斷錯了 ${wrong} 題，可以這樣處理：`,
-      `${props.editHint ?? '修改技能的說明'}，把容易混淆的情境講清楚，讓 Agent 更容易分辨。`,
-      '如果是正確答案標錯了，按「重新測試」換一批題目再測一次。',
-      `這次先不改也可以，測過就能啟用、不用全對：${enableLine}`,
+      `改技能內文：看看判斷錯的題目，${props.editHint ?? '修改技能內文'}，把容易混淆的情境寫清楚。`,
+      '標註有誤：如果是自己標錯了，按「重新生成」出一批新題目再測一次。',
+      enableState.value === 'enabled' && !props.embedded
+        ? `先不改：${enableLine}`
+        : `先不改：測過就能啟用，不用全對。${enableLine}`,
     ],
   }
 })

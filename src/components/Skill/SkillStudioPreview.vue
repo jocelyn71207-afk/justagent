@@ -30,6 +30,7 @@
             {{ props.draft.name || '尚未命名的技能' }}
           </div>
           <span :class="['ssp-status-badge', `ssp-status-badge--${status.tone}`]">{{ status.label }}</span>
+          <SkillTestMark v-if="savedTested !== null" :tested="savedTested" />
         </div>
         <div v-if="props.draft.skillCode" class="ssp-skill-code">代號：{{ props.draft.skillCode }}</div>
 
@@ -169,6 +170,7 @@
           :skill-id="effectiveTestId!"
           :draft-context="testDraftContext"
           :edit-hint="testEditHint"
+          :save-draft="props.canSave ? props.saveDraft : undefined"
         />
         <div v-if="props.savedSkillId" class="ssp-test-foot">
           <span class="ssp-test-foot-text">想手動模擬使用者對話，或比較不同版本？</span>
@@ -187,6 +189,8 @@ import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import 'github-markdown-css/github-markdown.css'
 import { useSkillStore } from '@/stores/skillStore'
+import { skillEnableStatus, skillTested } from '@/utils/skillStatus'
+import SkillTestMark from '@/components/Skill/SkillTestMark.vue'
 import type { SkillFile, TriggerEdgeSource } from '@/stores/skillStore'
 import type { SkillDraft, StudioMode } from '@/composables/useSkillStudioConversation'
 import SkillTestAI from '@/components/Skill/SkillTestAI.vue'
@@ -222,6 +226,8 @@ const props = defineProps<{
   testedNote?: string
   // 後端對話的便利貼（儲存前的暫存）；有步驟才顯示，沒傳就不顯示
   note?: { topic: string; steps: string[] }
+  // 測試報告「儲存並啟用」遇到還沒存檔的草稿時先存檔，回傳真正的技能 id（見 SkillTestAI 的 saveDraft）
+  saveDraft?: () => string | null
 }>()
 
 const emit = defineEmits<{
@@ -256,7 +262,7 @@ const effectiveTestId = computed(() => props.testSkillId ?? props.savedSkillId)
 // （見 generateDynamicTriggerEdgeScenarios），沒有這個欄位會被誤判成對話建立的技能
 // 測試沒全對時，報告裡「下一步」要告訴使用者去哪裡改：對話方式在對話裡（抽屜左側／畫布的對話分頁），積木方式在基本設定
 const testEditHint = computed(() =>
-  props.draft.method === 'blocks' ? '回到「基本設定」調整技能描述' : '到對話裡告訴 Agent 哪裡要調整',
+  props.draft.method === 'blocks' ? '回到「基本設定」調整技能內文' : '到對話裡告訴 Agent 哪裡要調整',
 )
 
 const testDraftContext = computed<TriggerEdgeSource>(() => ({
@@ -310,8 +316,18 @@ const missingFieldsHint = computed(() => {
 const status = computed<{ label: string; tone: 'amber' | 'slate' }>(() => {
   if (!props.savedSkillId) return { label: '未儲存草稿', tone: 'amber' }
   if (props.isDirty) return { label: '有未儲存變更', tone: 'amber' }
-  // 修改存檔後技能會轉成停用中（見 useSkillStudioConversation 的 save()），要到「測試」重新啟用
-  if (store.findSkill(props.savedSkillId)?.isEnabled === false) return { label: '個人技能 · 停用中', tone: 'amber' }
-  return { label: '個人技能 · 可使用', tone: 'slate' }
+  // 已存檔就顯示啟用狀態（跟卡片、詳情抽屜同一套用詞）。修改存檔後技能會轉成停用中
+  // （見 useSkillStudioConversation 的 save()），要到「測試」重新啟用，所以沒啟用時用醒目色
+  const saved = store.findSkill(props.savedSkillId)
+  if (!saved) return { label: '個人技能', tone: 'slate' }
+  const enable = skillEnableStatus(saved)
+  return { label: `個人技能 · ${enable}`, tone: enable === '啟用中' ? 'slate' : 'amber' }
+})
+
+// 已存檔的技能測過沒：跟狀態分開標；還沒存檔、或有未儲存變更（測的會是改到一半的內容）時不標
+const savedTested = computed(() => {
+  if (!props.savedSkillId || props.isDirty) return null
+  const saved = store.findSkill(props.savedSkillId)
+  return saved ? skillTested(saved) : null
 })
 </script>

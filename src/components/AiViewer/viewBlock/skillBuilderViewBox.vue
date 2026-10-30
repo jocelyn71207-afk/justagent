@@ -105,6 +105,7 @@
         :test-locked="conv.testLocked.value"
         :can-save="conv.canSave.value"
         :name-conflict="nameConflict"
+        :save-draft="saveForEnable"
         @save="onSave"
         @update:files="conv.updateFiles"
         @update:active-tab="setTab"
@@ -259,6 +260,16 @@ function onSave() {
     popDialog.toast('已儲存修改，技能目前停用中，到「測試」重新測試後再啟用')
     setTab('test')
   }
+}
+
+// 測試報告「儲存並啟用」：草稿還沒存時直接存檔（不走對話裡問 Agent，啟用流程本身會確認 Agent），
+// 存完留在測試分頁，啟用的提示由 SkillTestAI 自己跳
+function saveForEnable(): string | null {
+  const id = conv.save()
+  if (!id) return null
+  showRunReport.value = conv.draft.value.method === 'blocks'
+  missingSkill.value = false
+  return id
 }
 
 function openStudio() {

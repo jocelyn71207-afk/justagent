@@ -22,13 +22,12 @@
       </div>
     </div>
 
-    <!-- 右側：選中那筆的完整詳情——技能指令、AI 分析都是做通過/退回決定
+    <!-- 右側：選中那筆的完整詳情——技能描述、技能定義是做通過/退回決定
          必看的內容，維持原本 SkillReviewCard 的呈現，只是不再包一層卡片外框 -->
     <div class="rq-detail">
       <SkillReviewCard
         v-if="selectedSkill"
         :skill="selectedSkill"
-        @view="skill => emit('view', skill)"
         @approve="skill => emit('approve', skill)"
         @reject="handleReject"
       />
@@ -48,7 +47,6 @@ import SkillReviewCard from '@/components/Skill/SkillReviewCard.vue'
 
 const props = defineProps<{ skills: Skill[] }>()
 const emit = defineEmits<{
-  view: [skill: Skill]
   approve: [skill: Skill]
   reject: [skill: Skill, feedback: string]
 }>()

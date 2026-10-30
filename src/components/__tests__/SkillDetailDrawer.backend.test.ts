@@ -31,7 +31,9 @@ describe('SkillDetailDrawer：後端技能', () => {
     const w = mountDrawer(backendSkill)
     await flushPromises()
     expect(w.find('.dh-name').text()).toBe('週報整理')
-    expect(w.find('.dh-status').text()).toContain('沒測過')
+    // 狀態只有啟用中／停用中，最新版測過沒另外標註
+    expect(w.find('.dh-status').text()).toBe('停用中')
+    expect(w.find('.SkillTestMark .stm-label').text()).toBe('未測試')
     expect(w.find('.dh-status').text()).not.toContain('第 2 版')
     expect(w.find('.markdown-body').text()).toContain('步驟')
   })
@@ -78,5 +80,20 @@ describe('SkillDetailDrawer：後端技能啟用', () => {
     await flushPromises()
     expect(w.find('.dm-toggle-btn').exists()).toBe(false)
     expect(w.find('.dh-status').text()).toContain('啟用中')
+  })
+})
+
+describe('SkillDetailDrawer：技能代號（skill_name）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.resetAllMocks()
+    vi.mocked(api.listBackendSkillVersions).mockResolvedValue([])
+  })
+
+  it('版本旁邊顯示技能代號，名稱本身不受影響', async () => {
+    const w = mountDrawer({ ...backendSkill, skillCode: 'weekly-report' })
+    await flushPromises()
+    expect(w.find('.dh-name').text()).toBe('週報整理')
+    expect(w.find('.dh-badges .dh-code').text()).toBe('weekly-report')
   })
 })

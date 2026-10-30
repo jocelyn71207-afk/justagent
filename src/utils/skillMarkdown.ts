@@ -9,6 +9,12 @@ function slugify(name: string): string {
   return slug || 'skill'
 }
 
+// 技能代號（skill_name）：AI Agent 辨識用。有正式代號就用代號，沒有就從名稱推一個，
+// 卡片上顯示的跟 skill.md frontmatter 的 name 是同一個值
+export function skillCodeOf(skill: Pick<Skill, 'name' | 'skillCode'>): string {
+  return skill.skillCode || slugify(skill.name)
+}
+
 const section = (heading: string, body: string) => `## ${heading}\n\n${body}`
 
 // 技能內文：RD 的步驟／例外或特殊情況／固定輸出格式／適用範圍四段。手動建立精靈的
@@ -76,7 +82,7 @@ export function buildSkillMarkdown(skill: Skill): string {
   const lines: string[] = []
 
   lines.push('---')
-  lines.push(`name: ${slugify(skill.name)}`)
+  lines.push(`name: ${skillCodeOf(skill)}`)
   lines.push(`description: ${skill.description}`)
   lines.push('---')
   lines.push('')

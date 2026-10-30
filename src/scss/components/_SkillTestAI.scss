@@ -428,15 +428,19 @@
   &.is-pass .report-next-label .material-symbols-outlined { color: var(--success); }
   &.is-fail .report-next-label .material-symbols-outlined { color: var(--tag-amber-text); }
 
+  .report-next-intro {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
   .report-next-list {
     margin: 0;
     padding-left: 18px;
     font-size: 12.5px;
     line-height: 1.7;
     color: var(--text-muted);
-
-    // 第一行是開頭說明，不當成條列項目
-    li:first-child { list-style: none; margin-left: -18px; color: var(--text); }
   }
 
   .report-next-actions {

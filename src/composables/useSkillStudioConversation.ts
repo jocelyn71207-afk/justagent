@@ -1223,7 +1223,7 @@ export function useSkillStudioConversation() {
       })
       store.updateSkillFiles(savedSkillId.value, d.files)
       // 內容改過就要重新測過才能上線：存檔後一律轉成停用中、舊測試紀錄作廢，
-      // 到「測試」重新作答後再按「啟用技能」
+      // 到「測試」重新作答後再按「儲存並啟用」
       if (store.findSkill(savedSkillId.value)?.isEnabled) store.toggleSkill(savedSkillId.value)
       store.invalidateAITest(savedSkillId.value)
     }

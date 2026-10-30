@@ -559,6 +559,12 @@
 
   .dsd-team {
     margin-top: 10px;
+
+    // 範本名稱輸入框跟上下的下拉選單同寬
+    .custom-input {
+      width: 100%;
+      box-sizing: border-box;
+    }
   }
 
   .dsd-team-select {

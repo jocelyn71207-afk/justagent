@@ -8,6 +8,7 @@
             <SkillStudioModeHeader
               :mode="workspaceRef?.mode ?? 'create'"
               :skill-name="workspaceRef?.skillName ?? ''"
+              :title="workspaceRef?.fromHandoff ? '編輯技能' : undefined"
             />
             <button type="button" class="ssd-close-btn" @click="emit('close')">
               <i class="material-symbols-outlined">close</i>

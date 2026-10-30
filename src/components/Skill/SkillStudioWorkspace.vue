@@ -74,7 +74,7 @@
 
       <!-- 儲存／放棄固定在這裡，不隨右欄「技能預覽／測試」tab 切換而消失或跑到
            看不到的地方——見 SkillStudioPreview.vue 的 hideFooter。
-           儲存歸儲存、啟用歸啟用：這顆鍵只存檔，啟用一律在測試報告的「下一步」按「啟用技能」 -->
+           這顆鍵只存檔；啟用在測試報告的「下一步」按「儲存並啟用」（草稿沒存會先幫忙存） -->
       <div class="studio-save-footer">
         <button
           type="button"
@@ -124,6 +124,7 @@
         :backend-test="backendSave"
         :conversation-id="conv.conversationId.value"
         :tested-note="conv.testedNote.value"
+        :save-draft="conv.save"
         @save="onSave"
         @discard="onDiscard"
       />
@@ -208,6 +209,8 @@ watch(() => conv.requestNewSkillDrawer.value, requested => {
 // ?from= 是方案三的 conv4 交接：consumeSkillHandoff() 有值才套用預填草稿並記住
 // 返回連結；讀不到（例如重新整理過頁面、交接資料已被用掉）就退回一般建立模式。
 function applyQuery(query: LocationQuery) {
+  // 抽屜會重用同一個工作區，換一次 query 就是換一份草稿，上一次交接的來源不能留著
+  handoffOrigin.value = null
   activeTab.value = query.tab === 'test' ? 'test' : 'preview'
   const skillId = typeof query.skillId === 'string' ? query.skillId : ''
   // ?backendSkillId=&version= 是從後端技能清單進修改：用那一版開後端對話
@@ -324,6 +327,8 @@ defineExpose({
   isDirty: conv.isDirty,
   mode: conv.mode,
   skillName: computed(() => conv.draft.value.name),
+  // AI 建議建立的技能（交接過來、帶預填草稿）：抽屜標題用「編輯技能」
+  fromHandoff: computed(() => handoffOrigin.value !== null),
   applyQuery,
 })
 </script>

@@ -90,7 +90,8 @@ describe('SkillStudioPreview', () => {
     const w = mountPreview({ mode: 'edit', savedSkillId: 'p1', canSave: true, isDirty: false })
     expect(w.find('.ssp-save-btn').text()).toContain('儲存修改')
     expect(w.find('.ssp-save-btn').attributes('disabled')).toBeDefined()
-    expect(w.find('.ssp-status-badge').text()).toBe('個人技能 · 可使用')
+    // p1 不在 store 裡：只標「個人技能」，不再有「可使用」
+    expect(w.find('.ssp-status-badge').text()).toBe('個人技能')
     expect(w.text()).toContain('直接編輯')
     expect(w.text()).toContain('到技能管理')
     await w.setProps({ isDirty: true })

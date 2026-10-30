@@ -16,4 +16,9 @@ describe('SkillStudioModeHeader', () => {
     expect(wrapper.find('.ssc-mode-chip').classes()).toContain('ssc-mode-chip--edit')
     expect(wrapper.find('.ssc-mode-chip').text()).toContain('修改：週報自動生成')
   })
+
+  it('有給 title 時蓋掉預設標題', () => {
+    const wrapper = mount(SkillStudioModeHeader, { props: { mode: 'create', skillName: '', title: '編輯技能' } })
+    expect(wrapper.find('.banner-title').text()).toBe('編輯技能')
+  })
 })

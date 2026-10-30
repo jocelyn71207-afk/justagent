@@ -31,20 +31,37 @@
         <span v-if="submittedBy" class="src-meta-item">
           <i class="material-symbols-outlined">person</i>送審人：{{ submittedBy }}
         </span>
-        <span v-if="updateTargetName" class="src-meta-item">
-          <i class="material-symbols-outlined">update</i>更新對象：{{ updateTargetName }}
+        <!-- 技能來源：跟詳情抽屜「來源關係」同一套說法，只講延伸自哪個技能或自建，
+             不附來源的版本名稱（那是來源技能自己的資訊） -->
+        <span class="src-meta-item">
+          <i class="material-symbols-outlined">{{ derivedFromName ? 'call_split' : 'edit' }}</i>
+          技能來源：<template v-if="derivedFromName">延伸自「{{ derivedFromName }}」</template><template v-else>自建</template>
         </span>
-        <span v-if="derivedFromName" class="src-meta-item">
-          <i class="material-symbols-outlined">link</i>來源：{{ derivedFromName }}
+        <!-- 建立新技能：審核通過後在 Library 顯示的名稱（舊資料沒填就是技能名稱本身） -->
+        <span v-if="submitMode === 'new_skill'" class="src-meta-item">
+          <i class="material-symbols-outlined">label</i>範本名稱：{{ skill.libraryName || skill.name }}
+        </span>
+        <!-- 更新版本：審核通過後會更新的 Library 範本（送審時選的，舊資料退回來源技能） -->
+        <span v-if="submitMode === 'version_update'" class="src-meta-item">
+          <i class="material-symbols-outlined">label</i>更新範本：<template v-if="updateTargetName">「{{ updateTargetName }}」</template><template v-else>未指定</template>
         </span>
         <span v-if="skill.submitNote" class="src-meta-item">
-          <i class="material-symbols-outlined">sticky_note_2</i>{{ skill.submitNote }}
+          <i class="material-symbols-outlined">sticky_note_2</i>送審說明：{{ skill.submitNote }}
         </span>
       </div>
     </div>
 
-    <!-- ── 技能定義：RD 六段（技能描述／步驟／例外或特殊情況／固定輸出格式／適用範圍／
-         覆蓋能力），跟詳情抽屜、skill.md 同一份組法。預設收合：面板固定高度，
+    <!-- ── 技能描述：審核者第一眼要知道這個技能在做什麼，獨立放在外層、不收合 ── -->
+    <div v-if="skill.description" class="src-section">
+      <div class="src-section-label src-section-label--static">
+        <i class="material-symbols-outlined">info</i>
+        技能描述
+      </div>
+      <div class="src-description">{{ skill.description }}</div>
+    </div>
+
+    <!-- ── 技能定義：RD 六段扣掉技能描述的其餘五段（步驟／例外或特殊情況／固定輸出格式／
+         適用範圍／覆蓋能力），跟詳情抽屜、skill.md 同一份組法。預設收合：面板固定高度，
          全部展開會把通過／退回按鈕擠到很下面，要看內容再點開 ── -->
     <div v-if="definitionHtml" class="src-section">
       <div class="src-section-label" @click="showDefinition = !showDefinition">
@@ -55,32 +72,8 @@
       <div v-show="showDefinition" class="markdown-body src-definition" v-html="definitionHtml"></div>
     </div>
 
-    <!-- ── 技能指令 ────────────────────────────── -->
-    <div v-if="skill.instructions" class="src-section">
-      <div class="src-section-label" @click="showInstructions = !showInstructions">
-        <i class="material-symbols-outlined">code</i>
-        技能指令
-        <i :class="['material-symbols-outlined', 'src-chevron', { 'is-open': showInstructions }]">expand_more</i>
-      </div>
-      <div v-show="showInstructions" class="src-instructions">{{ skill.instructions }}</div>
-    </div>
-
-    <!-- ── AI 分析 ─────────────────────────────── -->
-    <div v-if="skill.aiAnalysis?.length" class="src-section src-section--ai">
-      <div class="src-section-label">
-        <i class="material-symbols-outlined">auto_awesome</i>
-        AI 分析：新版使用情境
-      </div>
-      <ul class="src-ai-list">
-        <li v-for="(item, i) in skill.aiAnalysis" :key="i">{{ item }}</li>
-      </ul>
-    </div>
-
     <!-- ── Actions ────────────────────────────── -->
     <div class="src-actions">
-      <button class="custom-btn src-btn" @click="emit('view', skill)">
-        <i class="material-symbols-outlined">open_in_new</i>查看完整詳情
-      </button>
       <button class="custom-btn src-btn" @click="showMarkdown = true">
         <i class="material-symbols-outlined">description</i>skill.md
       </button>
@@ -152,13 +145,11 @@ import { buildSkillDefinitionMarkdown } from '@/utils/skillMarkdown'
 
 const props = defineProps<{ skill: Skill }>()
 const emit = defineEmits<{
-  view: [skill: Skill]
   approve: [skill: Skill]
   reject: [skill: Skill, feedback: string]
 }>()
 
 const store = useSkillStore()
-const showInstructions = ref(false)
 const showDefinition = ref(false)
 const showMarkdown = ref(false)
 const showRejectDialog = ref(false)
@@ -178,7 +169,8 @@ function confirmApprove() {
 
 const md = new MarkdownIt({ html: false, breaks: true, linkify: false })
 const definitionHtml = computed(() => {
-  const source = buildSkillDefinitionMarkdown(props.skill)
+  // 技能描述已經獨立顯示在外層，這裡不再重複
+  const source = buildSkillDefinitionMarkdown({ ...props.skill, description: '' })
   return source ? md.render(source) : ''
 })
 
@@ -190,15 +182,15 @@ const targetScope = computed(() => props.skill.targetScope ?? 'enterprise')
 const targetTeamName = computed(() => props.skill.targetTeamName)
 const submittedBy = computed(() => props.skill.submittedBy)
 
-const updateTargetName = computed(() => {
-  if (submitMode.value !== 'version_update') return null
-  const targetId = props.skill.updateTargetId ?? props.skill.derivedFrom
-  if (!targetId) return null
-  return store.flatSkills.find(s => s.id === targetId)?.name ?? null
-})
-
 const derivedFromName = computed(() => {
   if (!props.skill.derivedFrom) return null
   return store.flatSkills.find(s => s.id === props.skill.derivedFrom)?.name ?? null
+})
+
+// 跟 store.submitPersonalSkill 同一套規則：沒有 updateTargetId 的舊資料視為更新來源技能
+const updateTargetName = computed(() => {
+  const targetId = props.skill.updateTargetId ?? props.skill.derivedFrom
+  if (!targetId) return null
+  return store.flatSkills.find(s => s.id === targetId)?.name ?? null
 })
 </script>

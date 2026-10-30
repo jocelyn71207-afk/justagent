@@ -28,7 +28,7 @@
     <div class="skill-card-right">
       <div class="skill-card-meta">
         <span :class="['status-dot', skill.isEnabled ? 'dot--on' : 'dot--off']"></span>
-        <span class="status-text">{{ skill.isEnabled ? '啟用中' : (skill.zone === 'personal' && skill.aiTestPassRate == null ? '尚未測試' : '已停用') }}</span>
+        <span class="status-text">{{ skillEnableStatus(skill) }}</span>
       </div>
       <div class="skill-card-actions" @click.stop>
         <button
@@ -47,6 +47,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Skill } from '@/stores/skillStore'
+import { skillEnableStatus } from '@/utils/skillStatus'
 
 const props = withDefaults(defineProps<{
   skill: Skill

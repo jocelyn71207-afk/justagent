@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount, DOMWrapper, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import SkillStudioDrawer from '@/components/Skill/SkillStudioDrawer.vue'
+import { setSkillHandoff } from '@/composables/useSkillHandoff'
 
 // SkillStudioDrawer 整個殼透過 <Teleport to="body"> 掛到 document.body，不在
 // wrapper 的元素樹底下，wrapper.find() 找不到，比照 SkillEditor.enableGate.test.ts
@@ -31,6 +32,22 @@ describe('SkillStudioDrawer', () => {
     expect(body().find('.ssd-panel').exists()).toBe(true)
     expect(body().find('.banner-title').text()).toBe('新增技能')
     expect(body().find('.SkillStudioChat').exists()).toBe(true)
+  })
+
+  it('AI 建議建立的技能（帶交接草稿）打開：標題是「編輯技能」；換成空白建立就回到「新增技能」', async () => {
+    setSkillHandoff({
+      prefill: { name: '週報自動生成', method: 'chat' },
+      openingMessage: '幫你整理好了',
+      origin: { conversationId: 'conv1', reason: '週報整理' },
+    })
+    const wrapper = mount(SkillStudioDrawer, { props: { open: true, query: { from: 'conv1' } } })
+    currentWrapper = wrapper
+    await wrapper.vm.$nextTick()
+    expect(body().find('.banner-title').text()).toBe('編輯技能')
+
+    ;(wrapper.vm as any).applyQuery({ method: 'chat' })
+    await wrapper.vm.$nextTick()
+    expect(body().find('.banner-title').text()).toBe('新增技能')
   })
 
   it('點背景遮罩觸發 close', async () => {

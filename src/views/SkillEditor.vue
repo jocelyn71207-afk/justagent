@@ -60,7 +60,7 @@
           <div class="se-primary-section">
             <label class="se-label">技能內文 <span class="se-required">*</span></label>
             <p class="se-hint">
-              Agent 執行此技能時依照這份內文運作。請依範例的標題填寫步驟（必填）、例外或特殊情況、固定輸出格式、適用範圍。
+              Agent 執行此技能時依照這份內文運作。可參考範例的標題撰寫步驟、例外或特殊情況、固定輸出格式、適用範圍，標題不是必要的。
             </p>
             <div class="se-editor-wrap">
               <textarea
@@ -99,7 +99,7 @@
                 <span class="se-confirm-key">技能描述</span>
                 <span class="se-confirm-val">
                   <span v-if="finalDescription">{{ finalDescription }}</span>
-                  <span v-else class="se-empty">（填寫步驟後由 Agent 生成）</span>
+                  <span v-else class="se-empty">（填寫技能內文後由 Agent 生成）</span>
                   <span v-if="descriptionIsGenerated && finalDescription" class="se-generated-tag">
                     <i class="material-symbols-outlined">auto_awesome</i>AI 建立
                   </span>
@@ -352,12 +352,13 @@ const willGoThroughEnableFlow = computed(() =>
   isEditMode && !!existingSkill && form.isEnabled && !existingSkill.isEnabled
 )
 
-// 唯一不受「只卡最終送出」限制的必填（名稱）卡在能不能往下一步走；步驟／覆蓋能力／
+// 唯一不受「只卡最終送出」限制的必填（名稱）卡在能不能往下一步走；技能內文／覆蓋能力／
 // 指派 Agent 必填只卡在真正送出（建立技能／儲存變更）那一刻，中途步驟之間可以留白
 const missingRequiredFields = computed(() => {
   const missing: string[] = []
   if (!form.name.trim()) missing.push('技能名稱')
-  if (!parsedContent.value.steps.length) missing.push('技能內文的「步驟」')
+  // 技能內文只要有填就好，不檢查有沒有「步驟」「例外」等標題——標題只用來拆 RD 四項
+  if (!form.content.trim()) missing.push('技能內文')
   if (!form.capabilities.length) missing.push('覆蓋能力')
   if (!willGoThroughEnableFlow.value && !form.assignedAgents.length) missing.push('指派 Agent')
   return missing
