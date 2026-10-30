@@ -88,6 +88,27 @@ describe('useSandboxBrain：先出結果、再問原因', () => {
     expect(brain.messages.value[1].decision?.reason).toContain('使用者想「整理這週的業績週報」')
   })
 
+  it('對話開始後鎖定 Agent：不能增減，重置對話後才能再改', async () => {
+    const brain = useSandboxBrain()
+    brain.toggleAgent('業務分析助理')
+    expect(brain.agentsLocked.value).toBe(false)
+
+    const p = brain.send('幫我整理這週的業績週報')
+    expect(brain.agentsLocked.value).toBe(true)
+    brain.toggleAgent('客服中心助理')
+    await vi.advanceTimersByTimeAsync(1300)
+    await p
+
+    brain.toggleAgent('客服中心助理')
+    brain.toggleAgent('業務分析助理')
+    expect(brain.selectedAgents.value).toEqual(['業務分析助理'])
+
+    brain.reset()
+    expect(brain.agentsLocked.value).toBe(false)
+    brain.toggleAgent('客服中心助理')
+    expect(brain.selectedAgents.value).toEqual(['業務分析助理', '客服中心助理'])
+  })
+
   it('處理中不接受新訊息、也不能重置', async () => {
     const brain = useSandboxBrain()
     brain.toggleAgent('倉儲管理助理')

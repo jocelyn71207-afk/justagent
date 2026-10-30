@@ -10,6 +10,8 @@ import type { RoutingCandidate } from '@/composables/useSandboxRouting'
 // 分工本身沿用 useSandboxRouting 的模擬路由（技能池、包含草稿開關都一樣），
 // 只是原因改由大腦用自然語言講，不再是「相似度幾分、分數最高」。
 // 參與分工的 Agent 由使用者選（至少一個），大腦只會把工作分給這些 Agent。
+// 對話一開始就鎖定：同一段對話中途換 Agent，前後的分工結果就不是同一組條件下測的，
+// 要換 Agent 得先重置對話。
 
 export interface BrainDecision {
   agent: string
@@ -79,8 +81,10 @@ export function useSandboxBrain() {
   const phase = ref<BrainPhase>('idle')
   const selectedAgents = ref<string[]>([])
   const canSend = computed(() => selectedAgents.value.length > 0 && phase.value === 'idle')
+  const agentsLocked = computed(() => messages.value.length > 0 || phase.value !== 'idle')
 
   function toggleAgent(agent: string) {
+    if (agentsLocked.value) return
     const i = selectedAgents.value.indexOf(agent)
     if (i === -1) selectedAgents.value = [...selectedAgents.value, agent]
     else selectedAgents.value = selectedAgents.value.filter(a => a !== agent)
@@ -131,6 +135,7 @@ export function useSandboxBrain() {
     availableAgents: AVAILABLE_AGENTS,
     selectedAgents,
     canSend,
+    agentsLocked,
     toggleAgent,
     includeDrafts: routing.includeDrafts,
     agentCount: routing.agentCount,

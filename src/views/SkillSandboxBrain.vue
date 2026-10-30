@@ -36,6 +36,9 @@
           <div class="sb-agent-picker-label">
             參與分工的 Agent<span class="sb-required">*</span>
             <span class="sb-agent-picker-count">已選 {{ selectedAgents.length }} / {{ availableAgents.length }}</span>
+            <span v-if="agentsLocked" class="sb-agent-locked">
+              <i class="material-symbols-outlined">lock</i>對話進行中已鎖定，要換 Agent 請先重置對話
+            </span>
           </div>
           <div class="sb-agent-chips">
             <button
@@ -44,7 +47,7 @@
               type="button"
               :class="['sb-agent-chip', { 'is-selected': selectedAgents.includes(agent) }]"
               :aria-pressed="selectedAgents.includes(agent)"
-              :disabled="phase !== 'idle'"
+              :disabled="agentsLocked"
               @click="toggleAgent(agent)"
             >
               <i class="material-symbols-outlined">{{ selectedAgents.includes(agent) ? 'check' : 'smart_toy' }}</i>{{ agent }}
@@ -155,7 +158,7 @@ import { useSkillStore } from '@/stores/skillStore'
 const route = useRoute()
 const store = useSkillStore()
 const {
-  messages, phase, availableAgents, selectedAgents, canSend, toggleAgent, includeDrafts, agentCount, liveSkillCount, draftCount,
+  messages, phase, availableAgents, selectedAgents, canSend, agentsLocked, toggleAgent, includeDrafts, agentCount, liveSkillCount, draftCount,
   suggestedPrompts, send, reset,
 } = useSandboxBrain()
 

@@ -391,6 +391,17 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .sb-agent-locked {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: auto;
+    font-weight: 500;
+    color: var(--text-faint);
+
+    .material-symbols-outlined { font-size: 14px; }
+  }
+
   .sb-agent-chips {
     display: flex;
     flex-wrap: wrap;
@@ -421,7 +432,8 @@
       font-weight: 600;
     }
 
-    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    &:disabled { cursor: not-allowed; }
+    &:disabled:not(.is-selected) { opacity: 0.5; }
   }
 
   .sb-focus-line {
